@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  postgreSQL:
+    build:
+      context: ./requirements/postgreSQL/
+    env_file: .env
+    volumes:
+    - dbdata:/var/lib/mysql
+    restart: always
+    #expose:
+   #- "3306"
+    networks:
+    - ft_transcendence_network
+    container_name : postgreSQL
+    hostname: postgreSQL
+
+#  nginx:
+#    build:
+#      context: .
+#      dockerfile: ./requirements/nginx/Dockerfile
+#    restart: always
+#    ports:
+#    - 443:443
+#    networks:
+#    - ft_transcend_network
+#    container_name : nginx
+#    hostname: nginx
+#    depends_on:
+#    - wordpress
+#    volumes:
+#    - wpdata:/var/www/html/wordpress
+
+volumes:
+  dbdata:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/alganoun/data/dbdata
+
+networks:
+  ft_transcendence_network:
+    driver: bridge
