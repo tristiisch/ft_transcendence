@@ -18,21 +18,22 @@ services:
     - ft_transcendence_network
     container_name : postgreSQL
     hostname: postgreSQL
-    command: postgres -c config_file=/data/postgres/postgresql.conf
+    command: postgres -c stats_temp_directory=/tmp
 
   pgAdmin:
     image: dpage/pgadmin4:2022-06-27-1
     #build:
     #  context: ./requirements/postgreSQL/
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-tglory@student.42Lyon.fr}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-foobar}
+      PGADMIN_LISTEN_PORT: 8080
  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
     - db_pgadmin:/var/lib/pgadmin
     restart: unless-stopped
     ports:
-    - 8080:80
+    - 8080:8080
     networks:
     - ft_transcendence_network
     container_name : pgAdmin
