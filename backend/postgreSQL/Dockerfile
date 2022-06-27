@@ -1,9 +1,9 @@
 FROM debian:buster
+#FROM postgres:latest
 
 # Install dependencies
-RUN apt-get update
-RUN apt-get full-upgrade
-RUN	apt-get install postgresql postgresql-client
+RUN apt update
+RUN	apt install postgresql postgresql-client
 
 COPY tools/ /tools/
 COPY conf/ /etc/mysql/mariadb.conf.d/

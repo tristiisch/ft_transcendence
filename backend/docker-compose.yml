@@ -1,19 +1,44 @@
-version: '3'
+version: '3.8'
 
 services:
   postgreSQL:
-    build:
-      context: ./requirements/postgreSQL/
-    env_file: .env
+    image: postgres:14.4
+    #build:
+    #  context: ./requirements/postgreSQL/
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bob}
+      PGDATA: /data/postgres
     volumes:
-    - dbdata:/var/lib/mysql
-    restart: always
-    #expose:
-   #- "3306"
+    - db_postgres:/data/postgres
+    restart: unless-stopped
+    ports:
+    - 5432:5432
     networks:
     - ft_transcendence_network
     container_name : postgreSQL
     hostname: postgreSQL
+    command: postgres -c config_file=/data/postgres/postgresql.conf
+
+  pgAdmin:
+    image: dpage/pgadmin4:2022-06-27-1
+    #build:
+    #  context: ./requirements/postgreSQL/
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+ #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+    - db_pgadmin:/var/lib/pgadmin
+    restart: unless-stopped
+    ports:
+    - 8080:80
+    networks:
+    - ft_transcendence_network
+    container_name : pgAdmin
+    hostname: pgAdmin
+    depends_on:
+    - postgreSQL
 
 #  nginx:
 #    build:
@@ -32,12 +57,18 @@ services:
 #    - wpdata:/var/www/html/wordpress
 
 volumes:
-  dbdata:
+  db_postgres:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: /home/alganoun/data/dbdata
+      device: ${HOME}/ft_transcendence_volumes/db_postgres
+  db_pgadmin:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${HOME}/ft_transcendence_volumes/db_pgadmin
 
 networks:
   ft_transcendence_network:
