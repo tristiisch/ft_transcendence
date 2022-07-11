@@ -1,5 +1,14 @@
 all: setup build logs
 
+nest_setup:
+	npm i -g @nestjs/cli
+	cd nest
+	npm install
+
+nest_start:
+	cd nest
+	npm run start
+
 setup:
 	@mkdir -p ${HOME}/ft_transcendence_volumes/db_postgres ; mkdir -p ${HOME}/ft_transcendence_volumes/db_pgadmin
 	@chmod -R 777 ${HOME}/ft_transcendence_volumes
