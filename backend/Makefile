@@ -1,13 +1,16 @@
 all: setup build logs
 
-nest_setup:
+web_setup:
 	npm i -g @nestjs/cli
-	cd nest
-	npm install
+	cd nest.js && npm install
+	cd frontend && npm install
 
-nest_start:
-	cd nest
-	npm run start
+web_start:
+	cd frontend && npm run build
+	cd nest.js && npm run start
+
+web_test:
+	cd nest.js && npm run test
 
 setup:
 	@mkdir -p ${HOME}/ft_transcendence_volumes/db_postgres ; mkdir -p ${HOME}/ft_transcendence_volumes/db_pgadmin
