@@ -36,22 +36,9 @@
 	<div class="background"></div>
 </template>
 
-
 <style scoped>
 
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@700&display=swap');
-
-@font-face {
-  font-family: Noir_regular;
-  src: url(@/assets/font/Noir_regular.otf);
-}
-
-.base {
-	height: 100%;
-	width: 100%;
-	padding-left: 5.5vw;
-	padding-right: 5.5vw;
-}
 
 .container-top {
 	display: flex;

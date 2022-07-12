@@ -21,7 +21,6 @@
   width: 100%;
   filter: blur(4px);
   transform: scale(1.2)
-  
 }
 
 .button-42 {

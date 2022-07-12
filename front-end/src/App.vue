@@ -5,6 +5,10 @@
 </template>
 
 <style>
+@font-face {
+  font-family: Noir_regular;
+  src: url(@/assets/font/Noir_regular.otf);
+}
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -13,6 +17,14 @@
   color: #2c3e50;
 }
 
-html, body, #app { width:100%; height:100%; margin:0; padding:0; }
+* {
+  box-sizing: border-box;
+}
 
+html, body, #app {  margin:0; padding:0; }
+
+body {
+	padding-left: 5.5vw;
+	padding-right: 5.5vw;
+}
 </style>

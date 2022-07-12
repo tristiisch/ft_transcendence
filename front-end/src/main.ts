@@ -17,6 +17,6 @@ app.use(VueAxios, axios);
 app.provide('axios', app.config.globalProperties.axios);
 
 app.component('base-button', BaseButton);
-app.component('base-card', BaseButton);
+app.component('base-card', BaseCard);
 
 app.mount('#app');
