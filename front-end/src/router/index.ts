@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import Login from '@/views/Login.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import Login from '@/views/Login.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,7 +21,7 @@ const router = createRouter({
       component: () => import('@/views/Game.vue'),
     },
     {
-      path: '/profile',
+      path: '/profile/:id',
       name: 'profile',
       component: () => import('@/views/Profile.vue'),
     },
@@ -40,8 +40,8 @@ const router = createRouter({
       name: 'lobby',
       component: () => import('@/views/Lobby.vue'),
     },
-    //{ path: '/:notFound(.*)', component: null },
+    { path: '/:notFound(.*)', component: () => import('@/views/NotFound.vue') },
   ],
-});
+})
 
-export default router;
+export default router
