@@ -17,11 +17,11 @@
   color: #2c3e50;
 }
 
-* {
+*, *:before, *:after {
   box-sizing: border-box;
 }
 
-html, body, #app {  margin:0; padding:0; }
+html, body, #app { height: 100%; width: 100%; margin:0; padding:0; }
 
 body {
 	padding-left: 5.5vw;

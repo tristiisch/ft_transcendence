@@ -15,7 +15,7 @@
             <h1>{{ user.name }}</h1>
         </div>
         <div class="container-right">
-            <base-card mode="card">
+            <base-card class="card-dimension" mode="card">
                 <div class="wrap-row">
                     <img src="../assets/trophy.png" class="img-trophy">
                     <div>
@@ -28,7 +28,7 @@
                     </div>
                 </div>
             </base-card>
-            <base-card mode="card">
+            <base-card class="card-dimension" mode="card">
                 <div class="wrap-column">
                     <div class="title-card"> 
                         <h1>MATCH HISTORY</h1>
@@ -73,7 +73,7 @@ const user=useLoggedInUserStore()
 }
 
 h1 {
-    font-size: 5vw;
+    font-size: 4vw;
     font-weight: bold;
     color: white;
     font-family: Noir_regular;
@@ -110,8 +110,8 @@ p.match-list {
 
 #card {
     display: flex;
-    height: 70vh;
-    margin: 15vh 15vw;
+    height: 60vh;
+    margin: 20vh 20vw;
     background-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     
@@ -138,8 +138,8 @@ p.match-list {
 	border: 0.1rem solid rgba(255, 255, 255, 0.6);
 	border-radius: 50%;
 	object-fit: cover;
-	width: 7rem;
-	height: 7rem;
+	width: 8vw;
+	height: 8vw;
 }
 
 .top2 {
@@ -147,7 +147,7 @@ p.match-list {
     display: flex;
     flex-direction: row;
     align-items: center;
-    height: 10%;
+    height: 4vh;
     bottom: 4vh;
     left: 0;
 }
@@ -187,6 +187,12 @@ p.match-list {
 .rank {
     font-size: 2vw;
 
+}
+
+.card-dimension {
+    width: 90%;
+    height: 50%;
+    margin: 2%; 
 }
 </style>
 
