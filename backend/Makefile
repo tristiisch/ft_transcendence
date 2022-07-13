@@ -2,6 +2,7 @@ all: setup build logs
 
 web_setup:
 	npm i -g @nestjs/cli
+	npm i -g @vue/cli
 	cd nest.js && npm install
 	cd frontend && npm install
 
