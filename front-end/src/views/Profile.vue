@@ -7,7 +7,7 @@ import { useRoute } from 'vue-router'
 
 const userStore = useUserStore()
 const route = useRoute()
-const user = ref()
+const user = ref({} as User)
 
 async function fetchUser(name: string) {
   return await UsersService.get(route.params.id as string)
@@ -22,18 +22,20 @@ async function fetchUser(name: string) {
 watch(
   () => route.params.id,
   () => {
-    user.value = fetchUser(route.params.id as string)
+    fetchUser(route.params.id as string)
   }
 )
 
 onMounted(() => {
   if (parseInt(route.params.id as string) === userStore.getId) {
-    user.value = userStore.getUser
-    console.log(1)
+    user.value  = userStore.getUser
   } else {
     fetchUser(route.params.id as string)
-    console.log(2)
   }
+})
+
+defineExpose({
+  user
 })
 </script>
 

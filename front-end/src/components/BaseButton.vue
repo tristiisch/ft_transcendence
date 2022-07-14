@@ -3,21 +3,22 @@
     <slot></slot>
   </button>
   <router-link v-else :to="to" :class="mode">
-      <slot></slot>
+    <slot></slot>
   </router-link>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  mode?: string;
-  link?: boolean;
-  to?: string;
+export interface Props {
+  mode?: string
+  link?: boolean
+  to?: string
 }
-const props = withDefaults(defineProps<Props>(), {
-  mode: null,
+
+withDefaults(defineProps<Props>(), {
+  mode: '',
   link: false,
   to: '/',
-});
+})
 </script>
 
 <style scoped>
@@ -85,5 +86,4 @@ a.text-button:active {
 .button-play:active {
   color: #f1cf3b;
 }
-
 </style>
