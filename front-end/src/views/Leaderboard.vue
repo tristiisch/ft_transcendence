@@ -31,7 +31,7 @@ onMounted(() => {
         <h1 class="ml-10 text-2xl text-white">Leaderboard</h1>
       </div>
       <div>
-        <table class="table-auto w-full border-separate border-spacing-3">
+        <table class="w-full text-left border-separate border-spacing-3">
           <thead class="border-b border-slate-700 myshadow2 h-16">
             <tr class="text-white">
               <th>Rank</th>

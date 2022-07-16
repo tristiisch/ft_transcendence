@@ -24,7 +24,7 @@
 html, body, #app { height: 100%; width: 100%; margin:0; padding:0; }
 
 body {
-	padding-left: 5.5vw;
-	padding-right: 5.5vw;
+  padding-left: 8vw;
+  padding-right: 8vw;
 }
 </style>

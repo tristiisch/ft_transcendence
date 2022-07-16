@@ -12,7 +12,7 @@
 .background {
   position: fixed;
   margin: 0;
-  background-image: url(@/assets/background.png);
+  background-image: url(@/assets/brick.jpg);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: bottom;

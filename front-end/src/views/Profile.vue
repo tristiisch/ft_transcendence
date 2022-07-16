@@ -146,7 +146,7 @@ p.match-list {
   left: 0;
   position: fixed;
   margin: 0;
-  background-image: url(@/assets/background.png);
+  background-image: url(@/assets/brick.jpg);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: bottom;
@@ -154,7 +154,6 @@ p.match-list {
   height: 100%;
   width: 100%;
   transform: scale(1.2);
-  filter: blur(4px);
   z-index: -100;
 }
 
