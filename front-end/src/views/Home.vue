@@ -5,13 +5,9 @@ const userStore = useUserStore()
 </script>
 
 <template>
-  <div class="base">
-    <div class="container-top">
-      <div class="div-avatar">
-        <base-button link :to="`/profile/${userStore.getId}`">
-          <img src="../assets/obama.jpeg" class="avatar" />
-        </base-button>
-      </div>
+  <div class="flex flex-col justify-between h-full">
+    <the-header class="1/6"></the-header>
+    <!--
       <div class="div-title">
         <span>W</span>
         <span>E</span>
@@ -21,24 +17,15 @@ const userStore = useUserStore()
         <span>M</span>
         <span>E</span>
       </div>
-      <div class="div-logout">
-        <base-button mode="logout-button"> Logout </base-button>
-      </div>
-    </div>
-    <div class="container-middle">
-      <img src="../assets/TV2.png" class="tv" />
-      <div class="tv-background">
+    //-->
+    <div class="relative flex justify-center h-4/6">
+      <img src="../assets/TV2.png" class="absolute w-full sm:w-[500px] lg:w-[600px] xl:w-[700px] -bottom-6" />
+      <div class="absolute w-1/3 bottom-[120px] -z-10 min-w-[200px] overflow-hidden bg-[rgb(32, 32, 32)] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] [animation:_flicker_0.15s_infinite alternate]">
         <div class="refresh"></div>
       </div>
       <base-button mode="button-play" link to="/game"> PLAY </base-button>
     </div>
-    <div class="container-bottom">
-      <base-button mode="text-button" link to="/chat"> Chat </base-button>
-      <base-button mode="text-button" link to="/leaderboard">
-        Leaderboard
-      </base-button>
-      <base-button mode="text-button" link to="/lobby"> Lobby </base-button>
-    </div>
+    <the-footer class="h-1/6"></the-footer>
   </div>
   <div class="background"></div>
 </template>
@@ -98,13 +85,6 @@ span {
   width: 100%;
   transform: scale(1.2);
   z-index: -100;
-}
-
-.container-middle {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  height: 68vh;
 }
 
 .tv {

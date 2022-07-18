@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: Noir;
+    src: url(@/assets/font/Noir_regular.otf);
+  }

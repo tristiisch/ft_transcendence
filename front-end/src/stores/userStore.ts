@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type User from '@/types/User'
+import Status from '@/types/Status'
 import UsersService from '@/services/UserService'
 
 export const useUserStore = defineStore('userStore', {
@@ -15,7 +16,7 @@ export const useUserStore = defineStore('userStore', {
       '42token': '',
       created: '',
       register_ip: '',
-      current_status: '',
+      current_status: Status.OFFLINE,
       last_connection: '',
     },
   }),

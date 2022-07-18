@@ -4,6 +4,9 @@ module.exports = {
   theme: {
     extend: {
       mode: 'jit',
+      fontFamily: {
+        Noir: ["Noir", "sans-serif"],
+      },
       minHeight: {
         '81': '325px',
       },
