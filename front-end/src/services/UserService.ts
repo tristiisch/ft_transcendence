@@ -6,8 +6,8 @@ class UserDataService {
     return http.get('users')
   }
 
-  getUserInfo(id: string) {
-    return http.get('user/' + id)
+  getUserInfo(username: string) {
+    return http.get('user/' + username)
   }
 
   create(data: User) {

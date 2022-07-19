@@ -10,7 +10,7 @@ const route = useRoute();
 const user = ref<User>();
 
 async function fetchUser(name: string) {
-	return await UsersService.getUserInfo(route.params.id as string)
+	return await UsersService.getUserInfo(route.params.username as string)
 		.then((response) => {
 			user.value = response.data;
 		})
@@ -27,10 +27,10 @@ watch(
 );
 
 onMounted(() => {
-	if (parseInt(route.params.id as string) === userStore.getId) {
+	if (route.params.username as string === userStore.getUsername) {
 		user.value = userStore.getUser;
 	} else {
-		fetchUser(route.params.id as string);
+		fetchUser(route.params.username as string);
 	}
 });
 

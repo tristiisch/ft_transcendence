@@ -52,7 +52,7 @@ onMounted(() => {
 							alt="Rounded avatar"
 						/>
 						<div class="flex items-center pl-20 md:pl-32">
-							<base-button link :to="{ name: 'profile', params: { id: user.id}}">{{user.username}}</base-button>
+							<base-button link :to="{ name: 'profile', params: { username: user.username}}">{{user.username}}</base-button>
 						</div>
 						<div class="flex justify-center items-center">
 							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
