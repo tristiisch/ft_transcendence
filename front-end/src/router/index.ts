@@ -12,32 +12,32 @@ const router = createRouter({
     },
     {
       path: '/home',
-      name: 'home',
+      name: 'Home',
       component: () => import('@/views/Home.vue'),
     },
     {
       path: '/game',
-      name: 'game',
+      name: 'Game',
       component: () => import('@/views/Game.vue'),
     },
     {
       path: '/profile/:username',
-      name: 'profile',
+      name: 'Profile',
       component: () => import('@/views/Profile.vue'),
     },
     {
       path: '/leaderboard',
-      name: 'leaderboard',
+      name: 'Leaderboard',
       component: () => import('@/views/Leaderboard.vue'),
     },
     {
       path: '/chat',
-      name: 'chat',
+      name: 'Chat',
       component: () => import('@/views/Chat.vue'),
     },
     {
       path: '/lobby',
-      name: 'lobby',
+      name: 'Lobby',
       component: () => import('@/views/Lobby.vue'),
     },
     { path: '/:notFound(.*)', component: () => import('@/views/NotFound.vue') },

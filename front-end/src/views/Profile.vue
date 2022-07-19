@@ -20,14 +20,14 @@ async function fetchUser(name: string) {
 }
 
 watch(
-	() => route.params.id,
+	() => route.params.username,
 	() => {
-		fetchUser(route.params.id as string);
+		fetchUser(route.params.username as string);
 	}
 );
 
 onMounted(() => {
-	if (route.params.username as string === userStore.getUsername) {
+	if (route.params.username === userStore.getUsername) {
 		user.value = userStore.getUser;
 	} else {
 		fetchUser(route.params.username as string);
