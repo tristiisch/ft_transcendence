@@ -6,3 +6,8 @@
     font-family: Noir;
     src: url(@/assets/font/Noir_regular.otf);
   }
+
+@font-face {
+    font-family: Neon;
+    src: url(@/assets/font/BPneon.otf);
+  }

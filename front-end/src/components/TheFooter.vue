@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import { useUserStore } from '@/stores/userStore'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+const userStore = useUserStore()
+defineProps<{
+  isProfilePage?: boolean
+  isHomePage?: boolean
+}>()
+const route = useRoute()
+const titles:string[] = ['Chat', 'Leaderboard', 'Lobby']
+
+</script>
+
 <template>
     <nav class="flex flex-col justify-end sm:justify-center font-Noir">
         <ul class="flex flex-col items-center sm:flex-row sm:justify-around">
