@@ -2,12 +2,12 @@ import type User from '@/types/User'
 import http from '@/services/http-common'
 
 class UserDataService {
-  getAll() {
-    return http.get('/users.json')
+  getUsers() {
+    return http.get('users')
   }
 
-  get(id: string) {
-    return http.get(`/users/${id}.json`)
+  getUserInfo(id: string) {
+    return http.get('user/' + id)
   }
 
   create(data: User) {

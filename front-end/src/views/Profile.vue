@@ -7,10 +7,10 @@ import { useRoute } from 'vue-router';
 
 const userStore = useUserStore();
 const route = useRoute();
-const user = ref({} as User);
+const user = ref<User>();
 
 async function fetchUser(name: string) {
-	return await UsersService.get(route.params.id as string)
+	return await UsersService.getUserInfo(route.params.id as string)
 		.then((response) => {
 			user.value = response.data;
 		})

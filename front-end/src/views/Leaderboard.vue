@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService'
-import type User from '@/types/User'
-import { ref, onMounted } from 'vue'
+import UsersService from '@/services/UserService';
+import type User from '@/types/User';
+import { ref, onMounted } from 'vue';
 
-const users = ref<User[]>()
+const users = ref<User[]>();
 
 async function fetchUsers() {
-  return await UsersService.getAll()
-    .then((response) => {
-      users.value = response.data
-      console.log(users.value)
-    })
-    .catch((e: Error) => {
-      console.log(e)
-    })
+	return await UsersService.getUsers()
+		.then((response) => {
+			users.value = response.data;
+			console.log(users.value);
+		})
+		.catch((e: Error) => {
+			console.log(e);
+		});
 }
 
 onMounted(() => {
-  fetchUsers()
-})
+	fetchUsers();
+});
 </script>
 
 <template>
@@ -42,114 +42,24 @@ onMounted(() => {
 						<div class="text-center flex-1">Rank</div>
 					</div>
 				</div>
-				<div class="overflow-y-auto max-h-[316px] md:max-h-[380px] xl:max-h-[444px] text-sm sm:text-base">
+				<div v-for="user in users" :key="user.id" class="overflow-y-auto max-h-[316px] md:max-h-[380px] xl:max-h-[444px] text-sm sm:text-base">
 					<div
 						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
 					>
 						<img
 							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
+							:src="user.avatar"
 							alt="Rounded avatar"
 						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
+						<div class="flex items-center pl-20 md:pl-32">
+							<base-button link :to="{ name: 'profile', params: { id: user.id}}">{{user.username}}</base-button>
+						</div>
 						<div class="flex justify-center items-center">
 							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
+							{{user.current_status}}
 						</div>
 						<div class="flex justify-center items-center">1</div>
 					</div>
-                    <div
-						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
-					>
-						<img
-							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
-							alt="Rounded avatar"
-						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
-						<div class="flex justify-center items-center">
-							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
-						</div>
-						<div class="flex justify-center items-center">1</div>
-					</div>
-                    <div
-						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
-					>
-						<img
-							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
-							alt="Rounded avatar"
-						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
-						<div class="flex justify-center items-center">
-							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
-						</div>
-						<div class="flex justify-center items-center">1</div>
-					</div>
-                    <div
-						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
-					>
-						<img
-							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
-							alt="Rounded avatar"
-						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
-						<div class="flex justify-center items-center">
-							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
-						</div>
-						<div class="flex justify-center items-center">1</div>
-					</div>
-                    <div
-						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
-					>
-						<img
-							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
-							alt="Rounded avatar"
-						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
-						<div class="flex justify-center items-center">
-							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
-						</div>
-						<div class="flex justify-center items-center">1</div>
-					</div>
-                    <div
-						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
-					>
-						<img
-							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
-							alt="Rounded avatar"
-						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
-						<div class="flex justify-center items-center">
-							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
-						</div>
-						<div class="flex justify-center items-center">1</div>
-					</div>
-                    <div
-						class="relative grid grid-flow-col auto-cols-fr place-content-center h-16 md:h-20 xl:h-24 myshadow2 m-3 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
-					>
-						<img
-							class="absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 rounded-full object-cover"
-							src="@/assets/obama.jpeg"
-							alt="Rounded avatar"
-						/>
-						<div class="flex items-center pl-20 md:pl-32">Robert</div>
-						<div class="flex justify-center items-center">
-							<div class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2"></div>
-							Online
-						</div>
-						<div class="flex justify-center items-center">1</div>
-					</div>
-                    
-				
 				</div>
 			</div>
 		</div>
