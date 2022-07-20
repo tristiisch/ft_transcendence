@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const apiClient = axios.create({
-  baseURL: 'https://ft-transcendence-e2f0d-default-rtdb.europe-west1.firebasedatabase.app',
+const axiosClient = axios.create({
+  baseURL: 'http://localhost:3000/',
   withCredentials: false,
   headers: {
     Accept: 'application/json',
@@ -9,4 +9,4 @@ const apiClient = axios.create({
   },
 })
 
-export default apiClient
+export default axiosClient

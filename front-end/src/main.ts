@@ -11,6 +11,11 @@ import BaseCard from '@/components/BaseCard.vue';
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from '@/components/TheHeader.vue';
 
+if (process.env.NODE_ENV === 'development') {
+	const { worker } = await import('./mocks/browser');
+	worker.start();
+}
+
 const app = createApp(App);
 
 app.use(createPinia());

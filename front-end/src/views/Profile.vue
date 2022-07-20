@@ -11,7 +11,7 @@ const route = useRoute();
 const user = ref<User>();
 
 async function fetchUser(name: string) {
-	return await UsersService.get(route.params.id as string)
+	return await UsersService.getUserInfo(route.params.username as string)
 		.then((response) => {
 			user.value = response.data;
 		})
@@ -21,7 +21,7 @@ async function fetchUser(name: string) {
 }
 
 async function fetchMatchHistory(UserName: string, nbMatch: number) {
-	return await UsersService.get(route.params.id as string)
+	return await UsersService.getUserInfo(route.params.id as string)
 		.then((response) => {
 			user.value = response.data;
 		})
@@ -39,17 +39,17 @@ function isInGame() {
 }
 
 watch(
-	() => route.params.id,
+	() => route.params.username,
 	() => {
-		fetchUser(route.params.id as string);
+		fetchUser(route.params.username as string);
 	}
 );
 
 onMounted(() => {
-	if (parseInt(route.params.id as string) === userStore.getId) {
+	if (route.params.username === userStore.getUsername) {
 		user.value = userStore.getUser;
 	} else {
-		fetchUser(route.params.id as string);
+		fetchUser(route.params.username as string);
 	}
 });
 
