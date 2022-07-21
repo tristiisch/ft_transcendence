@@ -1,7 +1,14 @@
 import { rest } from 'msw';
 import users from "@/data/users";
+import friends from "@/data/friends";
 
 export default [
+
+	rest.get('/users', (req, res, ctx) => {
+		return res(
+			ctx.json(users)
+		);
+	}),
 
 	rest.get('/user/:username', (req, res, ctx) => {
 		return res(
@@ -9,9 +16,9 @@ export default [
 		);
 	}),
 
-	rest.get('/users', (req, res, ctx) => {
+	rest.get('/user/friends/:username', (req, res, ctx) => {
 		return res(
-			ctx.json(users)
-		);
-	}),
-];
+			ctx.json(friends.get(req.params.username as string))
+	)}),
+
+]

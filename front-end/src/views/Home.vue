@@ -12,7 +12,7 @@ const userStore = useUserStore()
       <div class="absolute  -z-10 bottom-[50px] w-[210px] h-[160px] sm:bottom-[120px] sm:w-[360px] sm:h-[280px] lg:bottom-[150px] lg:w-[420px] lg:h-[330px] xl:bottom-[140px] xl:w-[500px] xl:h-[360px] overflow-hidden bg-[rgb(32, 32, 32)] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] [animation:_flicker_0.15s_infinite alternate]">
         <div class="absolute w-full h-[80px] opacity-10 [background:_linear-gradient(0deg,#00ff00,rgba(255, 255, 255, 0.25)_10%,rgba(0,_0,_0,_0.1)_100%)] [animation:_refresh_8s_linear_infinite]"></div>
       </div>
-      <base-button link to="/game" class="absolute text-white font-BPNeon  brightness-200 text-[3rem] bottom-[85px] sm:text-[5rem] sm:bottom-[180px] lg:text-[6rem] lg:bottom-[210px] xl:text-[8rem] xl:bottom-[210px] hover:text-yellow-300 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> PLAY </base-button>
+      <base-button link :to="{ name: 'Game' }" class="absolute text-white font-BPNeon  brightness-200 text-[3rem] bottom-[85px] sm:text-[5rem] sm:bottom-[180px] lg:text-[6rem] lg:bottom-[210px] xl:text-[8rem] xl:bottom-[210px] hover:text-yellow-300 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> PLAY </base-button>
     </div>
     <the-footer class="h-1/6"></the-footer>
   </div>

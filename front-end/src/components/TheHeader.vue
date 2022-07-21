@@ -11,7 +11,7 @@ defineProps<{
     <div  class="relative flex items-center" :class="{'justify-end': isProfilePage, 'justify-between': !isProfilePage}">
         <div v-show="!isProfilePage">
             <base-button link :to="{ name: 'Profile', params: { username: userStore.getUsername }}">
-                <img class="w-16 h-16 md:w-20 md:h-20 xl:w-28 xl:h-28 rounded-full border-2 object-cover hover:border-[#f1cf3b]" src="@/assets/obama.jpeg" alt="Rounded avatar">
+                <img class="w-16 h-16 md:w-20 md:h-20 xl:w-28 xl:h-28 rounded-full border-2 object-cover hover:border-[#f1cf3b]" :src="userStore.getAvatar" alt="Rounded avatar">
             </base-button>
         </div>
         <div v-show="isHomePage" class="absolute m-auto left-0 right-0 -bottom-10 text-center text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
