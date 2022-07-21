@@ -1,1 +1,1 @@
- systemctl enable --now postgresql
+systemctl enable --now postgresql
