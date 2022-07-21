@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { User } from 'src/interface/user.interface';
 
 @Injectable()
 export class PostgreService {
@@ -15,7 +16,7 @@ export class PostgreService {
         }
     ];
 
-    findAllUsers(): any[] {
+    findAllUsers(): User[] {
         return this.users;
     }
 }
