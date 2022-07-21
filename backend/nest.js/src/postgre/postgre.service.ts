@@ -19,4 +19,8 @@ export class PostgreService {
     findAllUsers(): User[] {
         return this.users;
     }
+
+    addUser(user : User) {
+        this.users = [...this.users, user]; // Get the array users and push back the new user
+    }
 }

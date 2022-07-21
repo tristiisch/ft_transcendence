@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { User } from 'src/interface/user.interface';
 import { PostgreService } from './postgre.service';
 
@@ -11,5 +11,11 @@ export class PostgreController {
     @Get()
     findAllUsers(): User[] {
         return this.postgreService.findAllUsers();
+    }
+
+    @Post()
+    addUser(@Body() newUser) {
+        console.log('new user added : ', newUser)
+        this.postgreService.addUser(newUser);
     }
 }
