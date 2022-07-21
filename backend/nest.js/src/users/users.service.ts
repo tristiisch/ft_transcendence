@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from 'src/interface/user.interface';
 
 @Injectable()
-export class PostgreService {
+export class UsersService {
     users = [
         {
             id: 1,
@@ -16,7 +16,7 @@ export class PostgreService {
         }
     ];
 
-    findAllUsers(): User[] {
+    getAllUsers(): User[] {
         return this.users;
     }
 
