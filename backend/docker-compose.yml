@@ -41,22 +41,21 @@ services:
     depends_on:
     - postgreSQL
 
-#  nginx:
+#  Api: (not tested for now)_
 #    build:
 #      context: .
-#      dockerfile: ./requirements/nginx/Dockerfile
+#      dockerfile: ./requirements/api/Dockerfile --> il faut encore faire le dockerfile
 #    restart: always
 #    ports:
 #    - 443:443
 #    networks:
 #    - ft_transcend_network
-#    container_name : nginx
-#    hostname: nginx
+#    container_name : api.back
+#    hostname: api.back
 #    depends_on:
-#    - wordpress
-#    volumes:
-#    - wpdata:/var/www/html/wordpress
-
+#    - postgreSQL
+#    volumes: pas sûr de si il ya besoin de déclarer un volume ici
+#
 volumes:
   db_postgres:
     driver: local
