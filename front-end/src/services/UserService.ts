@@ -1,4 +1,6 @@
 import axios from '@/api/axios';
+import type User from '@/types/User';
+import type Match from '@/types/Match';
 
 class UserService {
 	getUsers() {
@@ -19,6 +21,10 @@ class UserService {
 
 	sendUnfriendRequest(fromUser: string, friendUser: string) {
 		return axios.post('user/unfriend-request', { fromUser, friendUser });
+	}
+
+	getCurrentMatchs() {
+		return axios.get(`matchs`);
 	}
 }
 

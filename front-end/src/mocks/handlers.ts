@@ -1,6 +1,7 @@
 import { rest } from 'msw';
-import users from '@/data/users';
-import friends from '@/data/friends';
+import users from "@/data/users";
+import matchs from "@/data/matchs";
+import friends from "@/data/friends";
 
 export default [
 	rest.get('/users', (req, res, ctx) => {
@@ -32,6 +33,12 @@ export default [
 		}
 		console.log(friends);
 		return res(ctx.status(200));
+	}),
+
+	rest.get('/matchs', (req, res, ctx) => {
+		return res(
+			ctx.json(matchs)
+		);
 	}),
 
 	rest.post('/login-request', async (req, res, ctx) => {
