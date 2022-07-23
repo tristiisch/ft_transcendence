@@ -41,6 +41,20 @@ const users = [
 		current_status: 'Ongame',
 		last_connection: '',
 	},
+	{
+		id: 3,
+		username: 'Aragorn',
+		rank: 4,
+		nbVictory: 0,
+		nbDefeat: 100,
+		avatar: 'https://avatarfiles.alphacoders.com/257/257355.jpg',
+		'2fa': '',
+		'42token': '',
+		created: '',
+		register_ip: '',
+		current_status: 'Ongame',
+		last_connection: '',
+	  }
 ];
 
 export default users; 

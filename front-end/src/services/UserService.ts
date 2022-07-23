@@ -11,6 +11,10 @@ class UserDataService {
     return http.get('user/' + username)
   }
 
+  getUserfriends(username: string) {
+    return http.get('user/friends/' + username )
+  }
+
   create(data: User) {
     return http.post('/users', data)
   }
