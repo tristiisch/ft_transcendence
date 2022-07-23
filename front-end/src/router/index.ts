@@ -11,6 +11,11 @@ const router = createRouter({
 			component: () => import('@/views/Login.vue'),
 		},
 		{
+			path: '/login/callback',
+			name: 'Callback',
+			component: () => import('@/views/Callback.vue')
+		},
+		{
 			path: '/home',
 			name: 'Home',
 			component: () => import('@/views/Home.vue'),
@@ -58,4 +63,5 @@ router.beforeEach((to, _, next) => {
 		next();
 	}
 });
+
 export default router;

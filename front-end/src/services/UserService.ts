@@ -1,38 +1,25 @@
-import type User from '@/types/User'
-import http from '@/services/http-common'
+import axios from '@/api/axios';
 
-class UserDataService {
-  getUsers() {
-    return http.get('users')
-  }
+class UserService {
+	getUsers() {
+		return axios.get('users');
+	}
 
-  getUserInfo(username: string) {
-    return http.get('user/' + username)
-  }
+	getUserInfo(username: string) {
+		return axios.get('user/' + username);
+	}
 
-  getUserfriends(username: string) {
-    return http.get('user/friends/' + username )
-  }
+	getUserfriends(username: string) {
+		return axios.get('user/friends/' + username);
+	}
 
-  create(data: User) {
-    return http.post('/users', data)
-  }
+	sendFriendRequest(fromUser: string, friendUser: string) {
+		return axios.post('user/friend-request', { fromUser, friendUser });
+	}
 
-  update(id: number, data: User) {
-    return http.put(`/users/${id}`, data)
-  }
-
-  delete(id: number) {
-    return http.delete(`/users/${id}`)
-  }
-
-  deleteAll() {
-    return http.delete(`/users`)
-  }
-
-  findByName(name: string) {
-    return http.get(`/users?username=${name}`)
-  }
+	sendUnfriendRequest(fromUser: string, friendUser: string) {
+		return axios.post('user/unfriend-request', { fromUser, friendUser });
+	}
 }
 
-export default new UserDataService()
+export default new UserService();

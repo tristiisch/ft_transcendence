@@ -5,18 +5,18 @@
 </template>
 
 <script setup lang="ts">
-interface Props {
+export interface Props {
   mode?: string;
 }
 const props = withDefaults(defineProps<Props>(), {
-  mode: null
+  mode: ''
 });
 </script>
 
 <style scoped>
 .card {
   padding: 0.5rem 1.5rem;
-  
+
 }
 .card2 {
   border-radius: 0 20px 20px 0;
