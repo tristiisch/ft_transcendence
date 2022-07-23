@@ -22,8 +22,8 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="flex flex-col justify-between h-full font-Noir">
-		<the-header class="h-1/6"></the-header>
+	<div class="flex flex-col justify-between h-full font-Noir mx-[8vw]">
+		<the-header></the-header>
 		<div class="flex flex-col justify-center items-center">
 			<div class="flex-col justify-center min-w-full xl:min-w-0 xl:w-4/6 rounded-t-lg bg-slate-900 [box-shadow:_0_0_20px_rgba(0,_0,_0,_0.8)]">
 				<div class="flex flex-col justify-around bg-slate-900 rounded-t-lg h-26">
@@ -63,7 +63,7 @@ onMounted(() => {
 				</div>
 			</div>
 		</div>
-		<the-footer class="h-1/6"></the-footer>
+		<the-footer></the-footer>
 	</div>
 	<div class="background"></div>
 </template>

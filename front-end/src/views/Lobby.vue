@@ -1,91 +1,65 @@
-<template>
-	<div class="flex flex-col justify-between h-full font-Noir">
-		<the-header class="h-1/6"></the-header>
-		<div class="flex flex-col justify-center sm:flex-row min-w-full xl:min-w-0 xl:w-4/6 self-center min-h-[420px] md:min-h-[488px] xl:min-h-[552px] [box-shadow:_0_0_20px_rgba(0,_0,_0,_0.8)]">
-			<div class="relative flex flex-col items-center w-full h-[180px] sm:h-[420px] md:h-[488px] xl:h-[552px] sm:w-2/5 p-4 bg-slate-900">
-				<h1 class="flex items-center text-white text-3xl h-1/5">CURRENT GAMES</h1>
-				<div class="flex flex-col items-center h-4/5 w-full overflow-y-auto overflow-x-auto  bg-gradient-to-r from-red-400 to-blue-500 shadow-red-900 shadow-inner">
-					<div class="flex flex-col justify-center items-center w-[95%] border-b-[1px]">
-						<div class="flex justify-evenly items-center flex-wrap w-full px-2 py-3 xl:py-5">
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Bobjjoi</span>
-							<span class="p-2 text-sm sm:text-base md:text-lg xl:text-xl">VS</span>
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Rachid</span>
-							<button type="button" class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 font-medium rounded-lg text-sm  px-2.5 py-1 lg:px-4 sm:py-2.5 text-center">Watch</button>
-						</div>
-					</div>
-					<div class="flex flex-col justify-center items-center w-[95%] border-b-[1px]">
-						<div class="flex justify-evenly items-center flex-wrap w-full px-2 py-3 xl:py-5">
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Bobjjoi</span>
-							<span class="p-2 text-sm sm:text-base md:text-lg xl:text-xl">VS</span>
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Rachid</span>
-							<button type="button" class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 font-medium rounded-lg text-sm  px-2.5 py-1 lg:px-4 sm:py-2.5 text-center">Watch</button>
-						</div>
-					</div>
-					<div class="flex flex-col justify-center items-center w-[95%] border-b-[1px]">
-						<div class="flex justify-evenly items-center flex-wrap w-full px-2 py-3 xl:py-5">
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Bobjjoi</span>
-							<span class="p-2 text-sm sm:text-base md:text-lg xl:text-xl">VS</span>
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Rachid</span>
-							<button type="button" class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 font-medium rounded-lg text-sm  px-2.5 py-1 lg:px-4 sm:py-2.5 text-center">Watch</button>
-						</div>
-					</div>
-					<div class="flex flex-col justify-center items-center w-[95%] border-b-[1px]">
-						<div class="flex justify-evenly items-center flex-wrap w-full px-2 py-3 xl:py-5">
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Bobjjoi</span>
-							<span class="p-2 text-sm sm:text-base md:text-lg xl:text-xl">VS</span>
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Rachid</span>
-							<button type="button" class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 font-medium rounded-lg text-sm  px-2.5 py-1 lg:px-4 sm:py-2.5 text-center">Watch</button>
-						</div>
-					</div>
-					<div class="flex flex-col justify-center items-center w-[95%] border-b-[1px]">
-						<div class="flex justify-evenly items-center flex-wrap w-full px-2 py-3 xl:py-5">
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Bobjjoi</span>
-							<span class="p-2 text-sm sm:text-base md:text-lg xl:text-xl">VS</span>
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Rachid</span>
-							<button type="button" class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 font-medium rounded-lg text-sm  px-2.5 py-1 lg:px-4 sm:py-2.5 text-center">Watch</button>
-						</div>
-					</div>
-					<div class="flex flex-col justify-center items-center w-[95%] border-b-[1px]">
-						<div class="flex justify-evenly items-center flex-wrap w-full px-2 py-3 xl:py-5">
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Bobjjoi</span>
-							<span class="p-2 text-sm sm:text-base md:text-lg xl:text-xl">VS</span>
-							<span class="p-2 text-xs sm:text-sm md:text-base xl:text-lg">Rachid</span>
-							<button type="button" class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 font-medium rounded-lg text-sm  px-2.5 py-1 lg:px-4 sm:py-2.5 text-center">Watch</button>
-						</div>
-					</div>
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-				</div>
-			</div>
-			<div class="flex flex-col justify-evenly items-center w-full sm:w-3/5 h-full bg-red-500">
-				<div class="w-4/5 h-3/6">
-					<div class="flex justify-around items-center h-full w-full [box-shadow:_0_2px_8px_rgba(0,_0,_0,_0.26)]">
+<script setup lang="ts">
+import UsersService from '@/services/UserService';
+import type Match from '@/types/Match';
+import { ref, onMounted } from 'vue';
+import CardLeft from '@/components/CardLeft.vue';
+import CardRight from '@/components/CardRight.vue';
+import CurrentGame from '@/components/Lobby/CurrentGame.vue';
 
+
+const matchs = ref([] as Match[]);
+
+async function fetchUsers() {
+	return await UsersService.getCurrentMatchs()
+		.then((response) => {
+			matchs.value = response.data;
+			console.log(matchs.value);
+		})
+		.catch((e: Error) => {
+			console.log(e);
+		});
+}
+
+onMounted(() => {
+	fetchUsers();
+});
+</script>
+
+
+<template>
+	<base-ui>
+		<card-left>
+				<div class="relative flex flex-col justify-center items-center h-full w-full">
+					<current-game :matchs="matchs"></current-game>
+					<div class="flex flex-col justify-center items-center gap-3  h-[40%] w-full">
+						<button class="flex justify-center items-cente w-1/2 rounded-[20px] bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-bl">
+							<img src="@/assets/inGame.png" class="h-20 w-20">
+						</button>
 					</div>
 				</div>
-				<div class="w-4/5 h-2/6">
-					<div class="flex justify-around items-center h-full w-full [box-shadow:_0_2px_8px_rgba(0,_0,_0,_0.26)]">
-					</div>
+		</card-left>
+		<card-right title="CUSTOM GAME">
+			<div class=" flex flex-col justify-evenly items-center gap-4 w-full h-3/4">
+				<div class="flex flex-col justify-center gap-2 w-3/4 h-2/5">
+					<p>BALL SPEED</p>
+					<input id="small-range" type="range" value="50" class="mb-6 w-full h-1 rounded-lg appearance-none cursor-pointer range-sm bg-gray-700">
+					<p>RACKET SIZE</p>
+					<input id="small-range" type="range" value="50" class="mb-6 w-full h-1 rounded-lg appearance-none cursor-pointer range-sm bg-gray-700">
 				</div>
-			</div>
-		</div>
-		<the-footer class="h-1/6"></the-footer>
-	</div>
+				<h1 class="text-center text-red-200 sm:text-xl mx-6 h-[20%] md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">CHOOSE WORLD</h1>
+				<div class="flex justify-evenly h-3/4 w-4/5 gap-4">
+					<div class="w-1/2 h-full bg-sky-200"></div>
+					<div class="w-1/2 h-full bg-black"></div>
+				</div>
+			</div>	
+		</card-right>
+	</base-ui>
 	<div class="background"></div>
 </template>
 
 <style scoped>
 
+@import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
 .background {
 	top: 0;
 	left: 0;

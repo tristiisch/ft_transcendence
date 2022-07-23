@@ -17,9 +17,15 @@ module.exports = {
         'vsm': {'raw': '(max-height: 375px)'},
         // => @media (max-height: 639px) { ... }
       },
+      backgroundImage: {
+        'bricks': "url(@/assets/brick.jpeg)",
+        'TvScreen-texture': "url('@/assets/checkered-pattern.png')",
+        'TvScreen': "url('@/assets/TV_screen2.png')",
+      },
       fontFamily: {
         Noir: ["Noir", "sans-serif"],
-        BPNeon:["Neon"],
+        BPNeon:["Neon", "ns-serif"],
+        Arlon:["Arlon", "sans-serif"],
       },
       minHeight: {
         '81': '325px',

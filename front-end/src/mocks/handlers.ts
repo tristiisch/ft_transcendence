@@ -1,5 +1,6 @@
 import { rest } from 'msw';
 import users from "@/data/users";
+import matchs from "@/data/matchs";
 
 export default [
 
@@ -12,6 +13,11 @@ export default [
 	rest.get('/users', (req, res, ctx) => {
 		return res(
 			ctx.json(users)
+		);
+	}),
+	rest.get('/matchs', (req, res, ctx) => {
+		return res(
+			ctx.json(matchs)
 		);
 	}),
 ];

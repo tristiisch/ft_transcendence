@@ -15,10 +15,10 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <button v-if="!link" :class="mode">
+  <button v-if="!link">
     <slot></slot>
   </button>
-  <router-link v-else :to="to" :class="mode">
+  <router-link v-else :to="to">
     <slot></slot>
   </router-link>
 </template>

@@ -1,4 +1,5 @@
 import type User from '@/types/User'
+import type Match from '@/types/Match'
 import http from '@/services/http-common'
 
 class UserDataService {
@@ -29,6 +30,12 @@ class UserDataService {
   findByName(name: string) {
     return http.get(`/users?username=${name}`)
   }
+
+  getCurrentMatchs() {
+    return http.get(`matchs`)
+  }
 }
+
+
 
 export default new UserDataService()

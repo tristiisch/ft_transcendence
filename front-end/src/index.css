@@ -11,3 +11,8 @@
     font-family: Neon;
     src: url(@/assets/font/BPneon.otf);
   }
+
+  @font-face {
+    font-family: Arlon;
+    src: url(@/assets/font/Arlon-UltraBold.ttf);
+  }
