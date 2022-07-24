@@ -1,26 +1,5 @@
 <template>
-  <div :class="mode">
-    <slot></slot>
-  </div>
+    <div class="flex justify-around items-center rounded-3xl gap-2 min-h-[200px] bg-slate-900 sm:w-3/6 sm:flex-col sm:justify-evenly">
+        <slot></slot>
+    </div>
 </template>
-
-<script setup lang="ts">
-export interface Props {
-  mode?: string;
-}
-const props = withDefaults(defineProps<Props>(), {
-  mode: ''
-});
-</script>
-
-<style scoped>
-.card {
-  padding: 0.5rem 1.5rem;
-
-}
-.card2 {
-  border-radius: 0 20px 20px 0;
-  padding: 0.5rem 2.5rem;
-  background-color: black;
-}
-</style>

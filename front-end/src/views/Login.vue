@@ -3,6 +3,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AuthService from '@/services/AuthService';
+import BaseCard from '../components/BaseCard.vue';
+import ButtonGradient1 from '@/components/ButtonGradient1.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -29,7 +31,7 @@ function redirectTo42LoginPage(): void {
 }
 
 function redirectToHome(): void {
-	router.push('/home')
+	router.push('/home');
 }
 
 onMounted(() => {
@@ -40,21 +42,26 @@ onMounted(() => {
 
 <template>
 	<div class="background" />
-	<div class="flex items-center justify-center h-screen" >
-		<base-button
-			v-if="!authStore.getIsAuthenticated"
-			class="text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-xs px-3 py-2 sm:px-5 md:text-sm md:px-8 sm:py-2.5 text-center"
-		 @click="redirectTo42LoginPage()">
-			Login with 42</base-button
-		>
-		<div v-else>
-			<input type="text" name="username" v-model.trim="username" placeholder="Username" />
-			<base-button
-			class="text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-xs px-3 py-2 sm:px-5 md:text-sm md:px-8 sm:py-2.5 text-center"
-		 @click="redirectToHome()">
-			Send</base-button
-		>
-		</div>
+
+	<div class="flex flex-col items-center justify-center h-full pb-32">
+		<div class="flex justify-center font-Arlon text-white text-6xl m-4">TV PONG<span class="text-white">™</span></div>
+		<button-gradient1 v-if="!authStore.getIsAuthenticated" @click="redirectTo42LoginPage()"><span>Login with 42</span></button-gradient1>
+		<BaseCard v-else>
+			<div class="flex gap-4 ">
+				<div class="flex flex-col gap-4 ">
+					<p class="text-gray-500 bg-slate-800 w-full">Please choose an username and avatar</p>
+					<input
+						class="placeholder-gray-500 text-center font-medium rounded-lg text-xs px-3 py-2 sm:px-5 md:text-sm md:px-8 sm:py-2.5"
+						type="text"
+						name="username"
+						v-model.trim="username"
+						placeholder="Username"
+					/>
+					<button-gradient1 @click="redirectToHome"><span>Send</span></button-gradient1>
+				</div>
+				<img class="w-20 h-20 rounded-full object-cover border-2 sm:w-28 sm:h-28 md:w-36 md:h-36" src="@/assets/obama.jpeg" alt="Rounded avatar" />
+			</div>
+		</BaseCard>
 	</div>
 </template>
 
