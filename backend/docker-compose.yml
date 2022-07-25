@@ -3,8 +3,6 @@ version: '3.8'
 services:
   postgreSQL:
     image: postgres:14.4
-    #build:
-    #  context: ./requirements/postgreSQL/
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bob}
@@ -21,9 +19,7 @@ services:
     command: postgres -c stats_temp_directory=/tmp
 
   pgAdmin:
-    image: dpage/pgadmin4:2022-06-27-1
-    #build:
-    #  context: ./requirements/postgreSQL/
+    image: dpage/pgadmin4:6.11
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-tglory@student.42Lyon.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-foobar}
@@ -31,6 +27,8 @@ services:
  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
     - db_pgadmin:/var/lib/pgadmin
+    - ./pgAdmin/servers.json:/pgadmin4/servers.json
+    - ./pgAdmin/pgpass:/pgpass
     restart: unless-stopped
     ports:
     - 8080:8080
