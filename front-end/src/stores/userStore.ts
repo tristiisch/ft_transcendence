@@ -3,6 +3,13 @@ import type User from '@/types/User';
 import Status from '@/types/Status';
 import UsersService from '@/services/UserService';
 
+interface State {
+	isAuthenticated: boolean;
+	username: string;
+	avatar: string;
+	token: string;
+  }
+
 export const useUserStore = defineStore('userStore', {
 	state: () => ({
 		user: {
@@ -16,7 +23,7 @@ export const useUserStore = defineStore('userStore', {
 			'42token': '',
 			created: '',
 			register_ip: '',
-			current_status: Status.INGAME,
+			current_status: Status.ONLINE,
 			last_connection: '',
 		},
 	}),

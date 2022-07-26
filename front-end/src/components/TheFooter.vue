@@ -14,11 +14,12 @@ const route = useRoute();
 const button = computed<string[]>(() => {
 	if (route.name === 'Chat') {
 		return ['Leaderboard', 'Home', 'Lobby'];
-	} else if (route.name === 'Leaderboard') {
+	} else if (route.name === 'Leaderboard' || route.name === 'Profile') {
 		return ['Chat', 'Home', 'Lobby'];
 	} else if (route.name === 'Lobby') {
 		return ['Chat', 'Home', 'Leaderboard'];
-    } else if (route.name === 'Home') {
+	}
+	else {
 		return ['Chat', 'Leaderboard', 'Lobby'];
 	} else {
 		return ['Chat', 'Home', 'Lobby'];
