@@ -18,7 +18,7 @@ module.exports = {
         // => @media (max-height: 639px) { ... }
       },
       backgroundImage: {
-        'bricks': "url(@/assets/brick.jpeg)",
+        'brick': "url('@/assets/brick.jpg')",
         'TvScreen-texture': "url('@/assets/checkered-pattern.png')",
         'TvScreen': "url('@/assets/TV_screen2.png')",
       },
@@ -36,6 +36,9 @@ module.exports = {
         '104': '26rem',
         '96': '24rem',
         '36': '9rem',
+      },
+      screens: {
+        '3xl': '1792px',
       },
     },
   },
