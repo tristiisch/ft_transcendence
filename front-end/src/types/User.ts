@@ -14,3 +14,8 @@ export default interface User {
   current_status: Status
   last_connection: string
 }
+
+export interface AuthUser {
+	id: string;
+	token: string;
+}
