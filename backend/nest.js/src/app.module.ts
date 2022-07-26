@@ -7,6 +7,7 @@ import { getEnvPath } from './utils/env';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseService } from './database/database.service';
+import { ChatModule } from './chat/chat.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
 
@@ -15,7 +16,8 @@ const envFilePath: string = getEnvPath(`${__dirname}`);
 		UsersModule,
 		DatabaseModule,
 		ConfigModule.forRoot({ envFilePath, isGlobal: true }),
-		TypeOrmModule.forRootAsync({ useClass: DatabaseService })
+		TypeOrmModule.forRootAsync({ useClass: DatabaseService }),
+		ChatModule
 	],
 	controllers: [AppController],
 	providers: [AppService],

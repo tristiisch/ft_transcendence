@@ -45,6 +45,14 @@ export class UsersService {
 	findOne(id: number): Promise<User> {
 		return this.usersRepository.findOneBy({ id });
 	}
+
+	findOneByUsername(name: string): Promise<User> {
+		return this.usersRepository.findOne({ where: {email : name } });
+	}
+
+	findOneByEmail(name: string): Promise<User> {
+		return this.usersRepository.findOne({ where: {email : name } });
+	}
 	
 	async remove(id: number): Promise<void> {
 		await this.usersRepository.delete(id);
@@ -77,10 +85,6 @@ export class UsersService {
 	}
 
 	update(id: number, user: User) {
-		throw new Error('Method not implemented.');
-	}
-
-	findOneByUsername(name: string): Promise<User> {
-		throw new Error('Method not implemented.');
+		return this.usersRepository.save(user);
 	}
 }

@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { Channel } from 'src/chat/entity/channel.entity';
 import { User } from 'src/users/entity/user.entity';
 
 @Injectable()
@@ -17,7 +18,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
 			username: this.config.get<string>('DATABASE_USER'),
 			password: this.config.get<string>('DATABASE_PASSWORD'),
 			// entities: ['dist/**/**/*.entity.{ts,js}'],
-			entities: [User],
+			entities: [User, Channel],
 			// migrations: ['dist/migrations/*.{ts,js}'],
 			// migrationsTableName: 'typeorm_migrations',
 			logger: 'file',
