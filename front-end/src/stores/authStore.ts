@@ -11,7 +11,6 @@ interface AuthState {
 	isAuthenticated: boolean;
 	user: AuthUser;
 	isLoading: boolean;
-	isReady: boolean
 }
 
 const userString = localStorage.getItem('user');
@@ -21,7 +20,7 @@ export const useAuthStore = defineStore('authStore', {
 		isAuthenticated: userString ? true : false,
 		user: userString ? JSON.parse(userString) : ({} as AuthUser),
 		isLoading: false,
-		isReady: false
+		//isReady: userString ? true : false
 	}),
 	getters: {},
 	actions: {
