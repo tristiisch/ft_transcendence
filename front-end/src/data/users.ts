@@ -1,3 +1,5 @@
+import Status from '@/types/Status';
+
 const users = [
 	{
 		id: 0,
@@ -10,7 +12,7 @@ const users = [
 		'42token': '',
 		created: true,
 		register_ip: false,
-		current_status: 'Online',
+		current_status: Status.ONLINE,
 		last_connection: '',
 	},
 	{
@@ -24,7 +26,7 @@ const users = [
 		'42token': '',
 		created: true,
 		register_ip: false,
-		current_status: 'Offline',
+		current_status: Status.OFFLINE,
 		last_connection: '',
 	},
 	{
@@ -38,7 +40,7 @@ const users = [
 		'42token': '',
 		created: true,
 		register_ip: false,
-		current_status: 'Ongame',
+		current_status: Status.INGAME,
 		last_connection: '',
 	},
 	{
@@ -52,7 +54,21 @@ const users = [
 		'42token': '',
 		created: '',
 		register_ip: '',
-		current_status: 'Ongame',
+		current_status: Status.ONLINE,
+		last_connection: '',
+	  },
+	  {
+		id: 4,
+		username: 'Frodon',
+		rank: 4,
+		nbVictory: 4,
+		nbDefeat: 100,
+		avatar: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/47a52edc-4044-4149-b159-53d3f298c462/d6umrhk-fe4b292f-e30a-40fc-b932-07a0feca7fbc.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzQ3YTUyZWRjLTQwNDQtNDE0OS1iMTU5LTUzZDNmMjk4YzQ2MlwvZDZ1bXJoay1mZTRiMjkyZi1lMzBhLTQwZmMtYjkzMi0wN2EwZmVjYTdmYmMuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.wlWmNDIluH3_9jnKh3EO7AMh2pKCx4d1j8NO---C4hM',
+		'2fa': '',
+		'42token': '',
+		created: '',
+		register_ip: '',
+		current_status: Status.INGAME,
 		last_connection: '',
 	  }
 ];

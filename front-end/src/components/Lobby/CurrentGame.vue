@@ -7,11 +7,10 @@ const props = defineProps<{
 
 
 <template>
-    <h1 class="font-Arlon tracking-tight text-3xl pt-5 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CURRENT GAMES</h1>
-    <div class="flex flex-col justify-center items-center gap-4 h-[50%] w-3/4 overflow-y-auto border-b-[1px] border-slate-700">
+    <div class="flex flex-col justify-start items-center sm:gap-4 flex-wrap order-2 w-3/4 overflow-y-auto max-h-[70px] md:max-h-[248px] xl:max-h-[260px] 3xl:max-h-[352px] sm:flex-nowrap sm:order-none">
         <div v-for="match in matchs" :key="match.id" class="flex justify-around items-center w-full">
             <div class="flex flex-col justify-between items-center h-full">
-                <img class="w-12 h-12 rounded object-cover" src="@/assets/obama.jpeg" alt="Rounded avatar">
+                <img class="w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
                 <span class="text-xs sm:text-sm md:text-base xl:text-lg">Robert</span>
             </div>
             <div class="flex flex-col justify-end gap-1 items-center h-full">
@@ -23,7 +22,7 @@ const props = defineProps<{
                 <span class="text-sm sm:text-base md:text-lg">VS</span>
             </div>
             <div class="flex flex-col justify-between items-center h-full">
-                <img class="w-12 h-12 rounded object-cover" src="@/assets/obama.jpeg" alt="Rounded avatar">
+                <img class="w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
                 <span class="text-xs sm:text-sm md:text-base xl:text-lg">Igor</span>
             </div>
         </div>

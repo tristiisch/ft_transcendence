@@ -18,8 +18,10 @@ const button = computed<string[]>(() => {
 		return ['Chat', 'Home', 'Lobby'];
 	} else if (route.name === 'Lobby') {
 		return ['Chat', 'Home', 'Leaderboard'];
-	} else {
+    } else if (route.name === 'Home') {
 		return ['Chat', 'Leaderboard', 'Lobby'];
+	} else {
+		return ['Chat', 'Home', 'Lobby'];
 	}
 });
 

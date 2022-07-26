@@ -21,11 +21,8 @@ export default [
 			ctx.json(matchs)
 		);
 	}),
-];
-
 	rest.get('/user/friends/:username', (req, res, ctx) => {
 		return res(
 			ctx.json(friends.get(req.params.username as string))
 	)}),
-
-]
+];

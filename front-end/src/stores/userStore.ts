@@ -16,7 +16,7 @@ export const useUserStore = defineStore('userStore', {
 			'42token': '',
 			created: '',
 			register_ip: '',
-			current_status: Status.OFFLINE,
+			current_status: Status.INGAME,
 			last_connection: '',
 		},
 	}),
