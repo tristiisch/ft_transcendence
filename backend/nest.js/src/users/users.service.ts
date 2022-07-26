@@ -10,7 +10,7 @@ export class UsersService {
 		private dataSource: DataSource
 	) {}
 
-	users: User[] = [
+	/*users: User[] = [
 		{
 			id: 1,
 			username: 'tglory',
@@ -36,7 +36,7 @@ export class UsersService {
 			username: 'bperez',
 			email: 'bperez@student.42Lyon.fr'
 		}
-	];
+	];*/
 
 	findAll(): Promise<User[]> {
 		return this.usersRepository.find();
@@ -47,11 +47,11 @@ export class UsersService {
 	}
 
 	findOneByUsername(name: string): Promise<User> {
-		return this.usersRepository.findOne({ where: {email : name } });
+		return this.usersRepository.findOne({ where: {username : name } });
 	}
 
-	findOneByEmail(name: string): Promise<User> {
-		return this.usersRepository.findOne({ where: {email : name } });
+	findOneByEmail(email: string): Promise<User> {
+		return this.usersRepository.findOne({ where: {email : email } });
 	}
 	
 	async remove(id: number): Promise<void> {
@@ -84,7 +84,7 @@ export class UsersService {
 		}
 	}
 
-	update(id: number, user: User) {
+	update(id: number, user: CreateUserDTO) {
 		return this.usersRepository.save(user);
 	}
 }
