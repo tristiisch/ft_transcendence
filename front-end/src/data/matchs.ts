@@ -5,10 +5,31 @@ const matchs = [
 		player2: 'Aragorn'
 	},
 	{
-        id: '2',
-		player1: 'Legolas',
-		player2: 'Gandalf'
-	}
+        id: '1',
+		player1: 'Boromir',
+		player2: 'Aragorn'
+	},
+	{
+        id: '1',
+		player1: 'Boromir',
+		player2: 'Aragorn'
+	},
+	{
+        id: '1',
+		player1: 'Boromir',
+		player2: 'Aragorn'
+	},
+	{
+        id: '1',
+		player1: 'Boromir',
+		player2: 'Aragorn'
+	},
+	{
+        id: '1',
+		player1: 'Boromir',
+		player2: 'Aragorn'
+	},
+	
 ];
 
 export default matchs;

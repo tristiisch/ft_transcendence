@@ -78,42 +78,29 @@ onMounted(() => {
 
 <template>
 	<base-ui>
-		<card-left>
-			<player-profile :user="user"></player-profile>
-			<div class="flex flex-col gap-4">
-				<button-gradient1 @click="treatFriendRequest()"
+		<div class="flex flex-col h-full w-full sm:flex-row">
+			<card-left>
+				<div class="flex justify-around items-center h-full pb-2 sm:flex-col sm:justify-around">
+					<player-profile :user="user"></player-profile>
+					<div class="flex flex-col gap-4 3xl:gap-6">
+						<button-gradient1 @click="treatFriendRequest()"
 					><span>{{ friendButton }}</span></button-gradient1
 				>
-				<button-gradient1><span>MESSAGE</span></button-gradient1>
-			</div>
-			<rank-card :rank="user.rank"></rank-card>
-		</card-left>
-		<card-right title="PLAYER STATS">
-			<div class="w-4/5 h-1/4">
-				<player-stats :user="user"></player-stats>
-			</div>
-			<div class="w-4/5 h-1/2">
-				<player-history></player-history>
-			</div>
-		</card-right>
+						<button-gradient1><span>MESSAGE</span></button-gradient1>
+					</div>
+					<rank-card :rank="user.rank"></rank-card>
+				</div>
+			</card-left>
+			<card-right title="PLAYER STATS">
+				<div class="flex flex-col justify-around items-center w-full">
+					<div class="w-4/5">
+						<player-stats :user="user"></player-stats>
+					</div>
+					<div class="w-4/5">
+						<player-history></player-history>
+					</div>
+				</div>
+			</card-right>
+		</div>
 	</base-ui>
-	<div class="background"></div>
 </template>
-
-<style scoped>
-.background {
-	top: 0;
-	left: 0;
-	position: fixed;
-	margin: 0;
-	background-image: url(@/assets/brick.jpg);
-	background-size: cover;
-	background-repeat: no-repeat;
-	background-position: bottom;
-	background-attachment: fixed;
-	height: 100%;
-	width: 100%;
-	transform: scale(1.2);
-	z-index: -100;
-}
-</style>
