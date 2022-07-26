@@ -57,13 +57,15 @@ router.beforeEach((to, _, next) => {
 		authStore.handleLogin(to.query.code as string, to.query.state as string);
 		authStore.isLoading = true;
 		console.log('test')
+		next('/login')
 	}
-	else if (to.name === 'Login' && authStore.isAuthenticated && !!authStore.user.username) {
-		next({ name: 'Home' })}
-	//if (to.meta.requiresAuth  && !authStore.isAuthenticated) {
-		//next({ name: 'Login' })}
-	else if (to.meta.requiresAuth  && !authStore.isAuthenticated) {
-		next({ name: 'Login' })
+	else if ((to.meta.requiresAuth  && !authStore.isAuthenticated)) {
+		next('/login')
+	} else if (authStore.isAuthenticated && !authStore.user.username) {
+		authStore.user.username = JSON.parse(localStorage.getItem('user') as string).id
+		next('/login')
+	} else if (!to.meta.requiresAuth  && authStore.isAuthenticated && JSON.parse(localStorage.getItem('user') as string).username) {
+		next('/home')
 	} else {
 		next();
 	}

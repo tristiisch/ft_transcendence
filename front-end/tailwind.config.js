@@ -7,18 +7,18 @@ module.exports = {
       screens: {
         'vxl': {'raw': '(min-height: 1280px)'},
         // => @media (max-height: 1279px) { ... }
-  
+
         'vlg': {'raw': '(min-height: 1024px)'},
         // => @media (max-height: 1023px) { ... }
-  
+
         'vmd': {'raw': '(min-height: 880px)'},
         // => @media (max-height: 767px) { ... }
-  
+
         'vsm': {'raw': '(max-height: 375px)'},
         // => @media (max-height: 639px) { ... }
       },
       backgroundImage: {
-        'bricks': "url(@/assets/brick.jpeg)",
+        'brick': "url(@/assets/brick.jpg)",
         'TvScreen-texture': "url('@/assets/checkered-pattern.png')",
         'TvScreen': "url('@/assets/TV_screen2.png')",
       },
