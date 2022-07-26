@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/authStore';
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,8 +7,9 @@ const router = createRouter({
 		{ path: '/', redirect: '/login' },
 		{
 			path: '/login',
-			name: 'login',
+			name: 'Login',
 			component: () => import('@/views/Login.vue'),
+			meta: { requiresAuth: false },
 		},
 		{
 			path: '/home',
@@ -51,9 +52,18 @@ const router = createRouter({
 });
 
 router.beforeEach((to, _, next) => {
-	const authStore = useAuthStore()
-	if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-		next('/login');
+	const authStore = useAuthStore();
+	if (to.name === 'Login' && to.query.code !== undefined && !authStore.isAuthenticated) {
+		authStore.handleLogin(to.query.code as string, to.query.state as string);
+		authStore.isLoading = true;
+		console.log('FUCKKKKKKKKKKKK')
+	}
+	if (to.name === 'Login' && authStore.isAuthenticated && authStore.isReady) {
+		next({ name: 'Home' })}
+	if (to.meta.requiresAuth && !authStore.isReady && !authStore.isAuthenticated) {
+		next({ name: 'Login' })}
+	if (to.meta.requiresAuth && !authStore.isReady && authStore.isAuthenticated) {
+		next({ name: 'Login' })
 	} else {
 		next();
 	}

@@ -1,21 +1,16 @@
 import axios from 'axios';
+import { useAuthStore } from '@/stores/authStore';
 
 const instance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
-	withCredentials: false,
-	headers: {
-		Accept: 'application/json',
-		'Content-type': 'application/json',
-	},
 });
 
-/*instance.interceptors.response.use(
-	function (response) {
-		return response;
-	},
-	function (error) {
-		if (error && error.response.status === 401) {
-			//globalStore.disconnectUser({ message: 'Your session has expired' })
+instance.interceptors.response.use(
+	response => response,
+	error => {
+		const authStore = useAuthStore();
+		if (error.response.status === 401) {
+			authStore.handlelogout()
 			console.log(error);
 		}
 		return Promise.reject(error);
@@ -23,13 +18,11 @@ const instance = axios.create({
 );
 
 instance.interceptors.response.use(
-	function (response) {
-		return response;
-	},
-	function (error) {
-		if (error && error.response.status === 444) {
-			//globalStore.disconnectUser({ message: 'Your session has expired' })
-			//store.commit('disconnectUser', { message: "You are blocked from the website" });
+	response => response,
+	error => {
+		const authStore = useAuthStore();
+		if (error.response.status === 444) {
+			authStore.handlelogout()
 			console.log(error);
 		}
 		return Promise.reject(error);
@@ -37,16 +30,13 @@ instance.interceptors.response.use(
 );
 
 instance.interceptors.response.use(
-	function (response) {
-		return response;
-	},
-	function (error) {
-		if (error && error.response.status === 445) {
-			//store.commit('notAdminRedirect');
+	response => response,
+	error => {
+		if (error.response.status === 445) {
 			console.log(error);
 		}
 		return Promise.reject(error);
 	}
-);*/
+);
 
 export default instance;
