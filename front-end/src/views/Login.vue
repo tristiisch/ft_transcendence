@@ -1,37 +1,22 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/authStore';
-import { storeToRefs } from 'pinia'
-import { onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import BaseCard from '../components/BaseCard.vue';
 import ButtonGradient1 from '@/components/ButtonGradient1.vue';
 import UsersService from '@/services/UserService';
 
 const authStore = useAuthStore();
-const route = useRoute();
 const router = useRouter();
-
-const code = route.query.code as string;
-const state = route.query.state as string;
-//const username = storeToRefs(authStore.user.id as string)
 
 function redirectTo42LoginPage(): void {
 	window.location.href = import.meta.env.VITE_REDIRECT_42;
 }
 
 function redirectToHome(): void {
-	console.log(authStore.user.username)
 	localStorage.setItem('user', JSON.stringify(authStore.user));
-	//UsersService.setDisplayName(authStore.getUser.id);
+	UsersService.setUsername(authStore.user.id, authStore.user.username);
 	router.replace( {name: 'Home'} );
 }
-
-onMounted(() => {
-	console.log(authStore.isAuthenticated);
-	console.log(code);
-	console.log(state);
-	console.log(authStore.isLoading);
-});
 </script>
 
 <template>

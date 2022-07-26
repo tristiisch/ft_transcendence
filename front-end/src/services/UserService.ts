@@ -3,6 +3,11 @@ import type User from '@/types/User';
 import type Match from '@/types/Match';
 
 class UserService {
+
+	setUsername(id: string, username: string) {
+		return axios.post('user/' + id, { username });
+	}
+
 	getUsers() {
 		return axios.get('users');
 	}

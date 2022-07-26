@@ -1,17 +1,6 @@
 import { defineStore } from 'pinia';
 import AuthService from '@/services/AuthService';
-
-interface AuthUser {
-	id: string;
-	token: string;
-	username: string;
-	avatar: string;
-}
-interface AuthState {
-	isAuthenticated: boolean;
-	user: AuthUser;
-	isLoading: boolean;
-}
+import type { AuthState, AuthUser } from '@/types/User';
 
 const userString = localStorage.getItem('user');
 
@@ -36,11 +25,8 @@ export const useAuthStore = defineStore('authStore', {
 			this.isLoading = false;
 		},
 		handlelogout() {
-			//this.user = {} as AuthUser;
 			localStorage.removeItem('user');
-			//this.isAuthenticated = false;
 			location.reload()
-
 		},
 	},
 });
