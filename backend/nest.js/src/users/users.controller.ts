@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { User } from 'src/users/interface/user.interface';
 import { CreateUserDTO } from './dto/create-user.dto';
+import { User } from './entity/user.entity';
 import { UsersService } from './users.service';
 
 // localhost:3000/users
@@ -11,38 +11,39 @@ export class UsersController {
 
 	// localhost:3000/users/name/<name>
 	@Get('name/:name')
-	getUserByUsername(@Param('name') name: string): User {
-		return this.usersService.getUserByUsername(name);
+	getUserByUsername(@Param('name') name: string): Promise<User> {
+		return this.usersService.findOneByUsername(name);
 	}
 
 	// localhost:3000/users/<id>
 	@Get(':id')
-	getUser(@Param('id') id: number): User {
-		return this.usersService.getUser(id);
+	getUser(@Param('id') id: number): Promise<User> {
+		return this.usersService.findOne(id);
 	}
 
 	// localhost:3000/users
 	@Get()
-	getAllUsers(): User[] {
-		return this.usersService.getAllUsers();
+	getAllUsers(): Promise<User[]> {
+		return this.usersService.findAll();
 	}
 
 	// localhost:3000/users
 	@Post()
-	// addUser(@Body() newUser) {
-	addUser(@Body() newUser: CreateUserDTO) {
+	// addUser(@Body() newUser: CreateUserDTO) {
+	addUser(@Body() newUser) {
 		console.log('new user want to be added : ', newUser)
-		this.usersService.addUser(newUser)
+		this.usersService.add(newUser);
 	}
 
 	// localhost:3000/users/<id>
 	@Patch(':id')
 	updateUser(@Param('id') id: number, @Body() userToUpdate: CreateUserDTO) {
-		return this.usersService.updateUser(id, userToUpdate);
+		return this.usersService.update(id, userToUpdate);
 	}
 
+	// localhost:3000/users/<id>
 	@Delete(':id')
 	deleteUser(@Param('id') id: number) {
-		return this.usersService.deleteUser(id);
+		return this.usersService.remove(id);
 	}
 }

@@ -2,10 +2,10 @@
 export class CreateUserDTO {
 
 	readonly id: number;
-	username: string;
-	email: string;
+	readonly username: string;
+	readonly email: string;
 
 	// ? is for optional field 
-	token42?: string; 
+	readonly token42?: string; 
 
 }
