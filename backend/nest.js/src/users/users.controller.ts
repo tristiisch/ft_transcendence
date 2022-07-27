@@ -20,8 +20,7 @@ export class UsersController {
 	@Post()
 	// addUser(@Body() newUser: CreateUserDTO) {
 	addUser(@Body() newUser) {
-		console.log('new user want to be added : ', newUser)
-		this.usersService.add(newUser);
+		return this.usersService.add(newUser);
 	}
 
 	// localhost:3000/users/<id>

@@ -1,5 +1,6 @@
+import { BadRequestException, ConflictException, HttpException, NotAcceptableException, NotFoundException, ServiceUnavailableException, UnprocessableEntityException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, InsertResult, Repository } from "typeorm";
 import { CreateUserDTO } from "./dto/create-user.dto";
 import { User } from "./entity/user.entity";
 
@@ -9,6 +10,17 @@ export class UsersService {
 		private usersRepository: Repository<User>,
 		private dataSource: DataSource
 	) {}
+
+
+	lambdaGetUser = (user: User) => {
+		if (!user)
+			throw new NotFoundException();
+		return user;
+	};
+
+	lambdaDatabaseUnvailable = (reason: string) => {
+		throw new ServiceUnavailableException("Database error with reason '" + reason + "'");
+	};
 
 	/*users: User[] = [
 		{
@@ -39,23 +51,32 @@ export class UsersService {
 	];*/
 
 	findAll(): Promise<User[]> {
-		return this.usersRepository.find();
+		return this.usersRepository.find().then(null, this.lambdaDatabaseUnvailable);
 	}
 	
 	findOne(id: number): Promise<User> {
-		return this.usersRepository.findOneBy({ id });
+		if (id < 0) {
+			throw new NotAcceptableException("Can't get a user with negative id " + id + ".");
+		}
+		return this.usersRepository.findOneBy({ id }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
 
 	findOneByUsername(name: string): Promise<User> {
-		return this.usersRepository.findOne({ where: {username : name } });
+		if (!name || name.length == 0) {
+			throw new NotAcceptableException("Can't get a user by an empty name.");
+		}
+		return this.usersRepository.findOne({ where: {username : name } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
 
 	findOneByEmail(email: string): Promise<User> {
-		return this.usersRepository.findOne({ where: {email : email } });
+		if (!email || email.length == 0) {
+			throw new NotAcceptableException("Can't get a user by an empty email.");
+		}
+		return this.usersRepository.findOne({ where: {email : email } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
 	
 	async remove(id: number): Promise<void> {
-		await this.usersRepository.delete(id);
+		return await this.usersRepository.delete(id).then(null, this.lambdaDatabaseUnvailable);
 	}
 
 	async saveMany(users: User[]) {
@@ -77,11 +98,49 @@ export class UsersService {
 	}
 
 	async add(newUser: User) {
-		try {
-			await this.usersRepository.insert(newUser);
-		} catch (err) {
-			err.message;
+		const sql = this.usersRepository.createQueryBuilder("user").where("user.id = :id", { id: newUser.id }).orWhere("user.username = :username", { username: newUser.username }).orWhere("user.email = :email", { email: newUser.email });
+
+		
+		//console.log("SQL", sql.getQueryAndParameters());
+		await sql.getOne().then((checkUserExist: User) => {
+			if (checkUserExist)
+				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username.");
+		}, this.lambdaDatabaseUnvailable);
+
+		// Same as before but with 3 requests SQL
+		/*if (newUser.id) {
+			try {
+				if (this.findOne(newUser.id)) {
+					throw new ConflictException("A user with id '" + newUser.id + "' already exist");
+				}
+			} catch (err) {
+				if (err instanceof ServiceUnavailableException || !(err instanceof NotFoundException)) {
+					return err;
+				}
+			}
 		}
+		try {
+			if (this.findOneByUsername(newUser.username)) {
+				throw new ConflictException("A user with username '" + newUser.username + "' already exist");
+			}
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException || !(err instanceof NotFoundException)) {
+				return err;
+			}
+		}
+		try {
+			if (this.findOneByEmail(newUser.email)) {
+				throw new ConflictException("A user with email '" + newUser.email + "' already exist");
+			}
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException || !(err instanceof NotFoundException)) {
+				return err;
+			}
+		}*/
+		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => {
+			console.log('new user add : ', newUser)
+			return newUser;
+		}, this.lambdaDatabaseUnvailable);
 	}
 
 	update(id: number, user: CreateUserDTO) {

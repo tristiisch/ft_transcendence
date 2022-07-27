@@ -31,7 +31,7 @@ clean:
 	@docker volume rm backend_db_postgres backend_db_pgadmin
 
 fclean: clean
-	@sudo rm -rf ${HOME}/ft_transcendence_volumes
+	@rm -rf ${HOME}/ft_transcendence_volumes
 
 logs:
 	@docker-compose logs --follow
