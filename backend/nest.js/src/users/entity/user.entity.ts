@@ -43,5 +43,5 @@ export class User {
 	ladder_score: number;
 
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
-	status: UserStatus
+	status: UserStatus;
 }

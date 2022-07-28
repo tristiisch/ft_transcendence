@@ -1,8 +1,9 @@
-import { BadRequestException, ConflictException, HttpException, NotAcceptableException, NotFoundException, ServiceUnavailableException, UnprocessableEntityException } from "@nestjs/common";
+import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, InsertResult, Repository } from "typeorm";
-import { CreateUserDTO } from "./dto/create-user.dto";
+import { DataSource, DeleteResult, InsertResult, Repository } from "typeorm";
+import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
+import * as _ from "lodash";
 
 export class UsersService {
 	constructor(
@@ -10,7 +11,6 @@ export class UsersService {
 		private usersRepository: Repository<User>,
 		private dataSource: DataSource
 	) {}
-
 
 	lambdaGetUser = (user: User) => {
 		if (!user)
@@ -56,30 +56,39 @@ export class UsersService {
 	
 	findOne(id: number): Promise<User> {
 		if (id < 0) {
-			throw new NotAcceptableException("Can't get a user with negative id " + id + ".");
+			throw new PreconditionFailedException("Can't get a user with negative id " + id + ".");
 		}
 		return this.usersRepository.findOneBy({ id }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
 
 	findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
-			throw new NotAcceptableException("Can't get a user by an empty name.");
+			throw new PreconditionFailedException("Can't get a user by an empty name.");
 		}
 		return this.usersRepository.findOne({ where: {username : name } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
 
 	findOneByEmail(email: string): Promise<User> {
 		if (!email || email.length == 0) {
-			throw new NotAcceptableException("Can't get a user by an empty email.");
+			throw new PreconditionFailedException("Can't get a user by an empty email.");
 		}
 		return this.usersRepository.findOne({ where: {email : email } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
 	
-	async remove(id: number): Promise<void> {
-		return await this.usersRepository.delete(id).then(null, this.lambdaDatabaseUnvailable);
+	async remove(id: number) {
+		if (id < 0) {
+			throw new PreconditionFailedException("Can't remove a user with negative id " + id + ".");
+		}
+		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
+			if (!value.affected || value.affected == 0) {
+				throw new NotFoundException();
+			} else {
+				return { deleted : value.affected };
+			}
+		}, this.lambdaDatabaseUnvailable);
 	}
 
-	async saveMany(users: User[]) {
+	/*async saveMany(users: User[]) {
 		const queryRunner = this.dataSource.createQueryRunner();
 
 		await queryRunner.connect();
@@ -95,14 +104,15 @@ export class UsersService {
 			// you need to release a queryRunner which was manually instantiated
 			await queryRunner.release();
 		}
-	}
+	}*/
 
-	async add(newUser: User) {
-		const sql = this.usersRepository.createQueryBuilder("user").where("user.id = :id", { id: newUser.id }).orWhere("user.username = :username", { username: newUser.username }).orWhere("user.email = :email", { email: newUser.email });
-
+	async add(newUser: User): Promise<User> {
+		const sqlStatermentCheckIfExist = this.usersRepository.createQueryBuilder("user").where("user.id = :id", { id: newUser.id })
+			.orWhere("user.username = :username", { username: newUser.username })
+			.orWhere("user.email = :email", { email: newUser.email });
 		
 		//console.log("SQL", sql.getQueryAndParameters());
-		await sql.getOne().then((checkUserExist: User) => {
+		await sqlStatermentCheckIfExist.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
 				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username.");
 		}, this.lambdaDatabaseUnvailable);
@@ -137,13 +147,82 @@ export class UsersService {
 				return err;
 			}
 		}*/
-		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => {
-			console.log('new user add : ', newUser)
+		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
+			if (insertResult.identifiers.length < 1) {
+				throw new InternalServerErrorException("Can't add user " + newUser.username);
+			} else if (insertResult.identifiers.length > 1) {
+				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one");
+			}
+			console.log('new user added : ', newUser)
 			return newUser;
 		}, this.lambdaDatabaseUnvailable);
 	}
 
-	update(id: number, user: CreateUserDTO) {
-		return this.usersRepository.save(user);
+	async update(userId: number, user: UserDTO) {
+		let userBefore = await this.findOne(userId);
+		await this.usersRepository.update(userId, user);
+		let userAfter = await this.findOne(userId);
+
+		if (_.isEqual(userBefore, userAfter)) {
+			return { statusCode: "200", message: "Nothing change."}
+		}
+		return userAfter;
+	}
+
+	async getFriendsIds(userId: number): Promise<number[]> {
+		let user: User = await this.findOne(userId);
+		return user.friends;
+	}
+
+	async getFriends(userId: number): Promise<User[]>  {
+		return await Promise.all((await this.getFriendsIds(userId)).map(async (friendId) => {
+			return (await this.findOne(friendId))
+		}));
+	}
+
+	async getFriendsNames(userId: number): Promise<string[]> {
+		return (await this.getFriends(userId)).map(friend => friend.username);
+	}
+
+	async addFriend(userId: number, targetId: number) {
+		let user: User = await this.findOne(userId);
+		let target: User = await this.findOne(targetId);
+
+		let userFriends: number[], targetFriends: number[];
+		if (user.friends != null) {
+			userFriends = user.friends;
+			if (userFriends.includes(target.id)) {
+				throw new NotAcceptableException(user.username + " is already friend with " + target.username);
+			}
+		} else
+			userFriends = new Array<number>();
+
+		if (target.friends != null) {
+			targetFriends = target.friends;
+			if (targetFriends.includes(user.id)) {
+				throw new NotAcceptableException(target.username + " is already friend with " + user.username);
+			}
+		}
+		else
+			targetFriends = new Array<number>();
+
+		userFriends.push(target.id);
+		targetFriends.push(user.id);
+
+		let isAffected: boolean = await this.usersRepository.update({id: user.id} , { friends: userFriends }).then(res => res.affected == 1, this.lambdaDatabaseUnvailable);
+		if (isAffected) {
+			isAffected = await this.usersRepository.update({id: target.id}, { friends: targetFriends }).then(res => res.affected == 1, reason => false);
+			if (isAffected)
+				return { statusCode: 200, message: user.username + " and " + target.username + " are now friends." };
+			else {
+				userFriends.splice(userFriends.indexOf(target.id), 1);
+				isAffected = await this.usersRepository.update({id: user.id} , { friends: userFriends }).then(res => res.affected == 1, this.lambdaDatabaseUnvailable);
+				if (!isAffected) {
+					throw new NotAcceptableException(user.username + " is now friend with " + target.username + " but " + target.username + " is not friend with " + target.username);
+				}
+			}
+		} else {
+			throw new NotAcceptableException("Can't make " + user.username + " and " + target.username + " friends.");
+		}
 	}
 }

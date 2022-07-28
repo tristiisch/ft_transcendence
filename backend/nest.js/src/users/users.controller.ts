@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, NotImplementedException, Param, Patch, Post } from '@nestjs/common';
-import { throws } from 'assert';
-import { CreateUserDTO } from './dto/create-user.dto';
+import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';
 import { UsersService } from './users.service';
 
@@ -31,7 +30,7 @@ export class UsersController {
 
 	// localhost:3000/users/<id>
 	@Patch(':id')
-	updateUser(@Param('id') id: number, @Body() userToUpdate: CreateUserDTO) {
+	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		return this.usersService.update(id, userToUpdate);
 	}
 
@@ -53,15 +52,40 @@ export class UsersController {
 		return this.usersService.findOneByEmail(email);
 	}
 
-	// localhost:3000/users/friend-request
-	@Post('friend-request')
-	addFriendRequest(@Body() unknownEntity) {
+	// localhost:3000/users/friends/ids/:id
+	@Get('friends/:id')
+	getFriends(@Param('id') id: number) {
+		return this.usersService.getFriends(id);
+	}
+
+	// localhost:3000/users/friends/ids/:id
+	@Get('friends/ids/:id')
+	getFriendsIds(@Param('id') id: number) {
+		return this.usersService.getFriendsIds(id);
+	}
+
+	// localhost:3000/users/friends/names/:id
+	@Get('friends/names/:id')
+	getFriendsNames(@Param('id') id: number) {
+		return this.usersService.getFriendsNames(id);
+	}
+
+	// localhost:3000/users/friends/add/:id1/:id2
+	@Get('friends/add/:id1/:id2')
+	addFriends(@Param('id1') id1: number, @Param('id2') id2: number) {
+		return this.usersService.addFriend(id1, id2);
+	}
+
+	// localhost:3000/users/friends/:id1/:id2
+	@Delete('friends/add/:id1/:id2')
+	removeFriends(@Param('id1') id1: number, @Param('id2') id2: number) {
+		// return this.usersService.removeFriend(id1, id2);
 		throw new NotImplementedException();
 	}
 
-	// localhost:3000/users/unfriend-request
-	@Post('unfriend-request')
-	addUnFriendRequest(@Body() unknownEntity) {
+	// localhost:3000/users/friend-request
+	@Post('friend-request')
+	addFriendRequest(@Body() unknownEntity) {
 		throw new NotImplementedException();
 	}
 }
