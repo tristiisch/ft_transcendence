@@ -2,6 +2,7 @@ import { rest } from 'msw';
 import axios from 'axios';
 import users from '@/data/users';
 import matchs from '@/data/matchs';
+import matchsHistory from '@/data/matchsHistory';
 import friends from '@/data/friends';
 
 export default [
@@ -38,6 +39,10 @@ export default [
 
 	rest.get('/matchs', (req, res, ctx) => {
 		return res(ctx.json(matchs));
+	}),
+
+	rest.get('/user/matchsHistory', (req, res, ctx) => {
+		return res(ctx.json(matchsHistory));
 	}),
 
 	rest.post('/login-request', async (req, res, ctx) => {

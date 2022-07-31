@@ -1,6 +1,6 @@
 const friends = new Map<string, string[]>([
-	['Aragorn', ['Boromir', 'Gandalf']],
-	['Boromir', ['Legolas', 'Gandalf']],
+	['Aragorn', ['Boromir', 'Gandalf', 'Frodon']],
+	['Boromir', ['Legolas', 'Gandalf', 'Frodon']],
 ]);
 
 export default friends;

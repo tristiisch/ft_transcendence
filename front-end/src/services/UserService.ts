@@ -26,6 +26,10 @@ class UserService {
 	getCurrentMatchs() {
 		return axios.get(`matchs`);
 	}
+
+	getMatchsHistory() {
+		return axios.get('user/matchsHistory');
+	}
 }
 
 export default new UserService();

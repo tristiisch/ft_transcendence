@@ -23,7 +23,6 @@ function redirectToHome(): void {
 	console.log(authStore.user.username)
 	localStorage.setItem('user', JSON.stringify(authStore.user));
 	//UsersService.setDisplayName(authStore.getUser.id);
-	authStore.isReady = true
 	router.push('/home');
 }
 
