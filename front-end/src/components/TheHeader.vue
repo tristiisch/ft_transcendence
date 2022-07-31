@@ -8,7 +8,7 @@ const route = useRoute();
 
 const isProfilePage = computed(() => {
     console.log(route.name)
-    return route.name === 'Profile'
+    return route.params.username === userStore.userData.username
 })
 
 const isHomePage = computed(() => {

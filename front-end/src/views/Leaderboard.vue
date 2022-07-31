@@ -11,6 +11,64 @@ const users = ref([] as User[]);
 const friends = ref([] as User[]);
 const type = ref<string>('All');
 
+function rankOrder() {
+	if (type.value === 'All')
+	{
+		users.value.sort((a, b) => {
+		return a.rank - b.rank;
+		});
+	}
+	else
+	{
+		friends.value.sort((a, b) => {
+		return a.rank - b.rank;
+		});
+	}
+}
+
+function nameOrder() {
+	if (type.value === 'All')
+	{
+		users.value.sort((a, b) => {
+		let fa = a.username
+        let fb = b.username
+		if (fa < fb)
+			return -1;
+		if (fa > fb)
+			return 1;
+		return 0;
+		});
+	}
+	else
+	{
+		friends.value.sort((a, b) => {
+		let fa = a.username
+        let fb = b.username
+		if (fa < fb)
+			return -1;
+		if (fa > fb)
+			return 1;
+		return 0;
+		});
+	}
+}
+
+function statusOrder() {
+	if (type.value === 'All')
+	{
+		users.value.sort((a, b) => {
+		return b.current_status - a.current_status;
+		});
+	}
+	else
+	{
+		friends.value.sort((a, b) => {
+		return b.current_status - a.current_status;
+		});
+	}
+}
+
+
 async function fetchUsers() {
 	await UsersService.getUsers()
 		.then((response) => {
@@ -19,6 +77,7 @@ async function fetchUsers() {
 		.catch((e: Error) => {
 			console.log(e);
 		});
+		rankOrder()
 }
 
 async function fetchfriends() {
@@ -71,9 +130,15 @@ onMounted(() => {
 				</div>
 			</div>
 			<div class="flex justify-center items-center text-base sm:text-lg text-zinc-400 pb-3">
-				<div class="text-center flex-1">Player</div>
-				<div class="text-center flex-1">Status</div>
-				<div class="text-center flex-1">Rank</div>
+				<div class="text-center flex-1">
+					<base-button @click="nameOrder()">Player</base-button>
+				</div>
+				<div class="text-center flex-1">
+					<base-button @click="statusOrder()">Status</base-button>
+				</div>
+				<div class="text-center flex-1">
+					<base-button @click="rankOrder()">Rank</base-button>
+				</div>
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">
@@ -83,20 +148,3 @@ onMounted(() => {
 		</div>
 	</base-ui>
 </template>
-
-<style>
-
-.button_selected {
-	background-color: red;
-	color: white;
-}
-.myshadow {
-	box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-}
-
-.myshadow2 {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-}
-</style>
-
-<!-- max-h-[316px] md:max-h-[380px] xl:max-h-[444px] -->

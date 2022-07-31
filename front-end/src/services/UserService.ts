@@ -44,6 +44,10 @@ class UserService {
 	sendUnfriendRequest(username: string, target: string) {
 		return axios.post(`users/${username}/unfriend-request`, { target });
 	}
+
+	getMatchsHistory() {
+		return axios.get('user/matchsHistory');
+	}
 }
 
 export default new UserService();

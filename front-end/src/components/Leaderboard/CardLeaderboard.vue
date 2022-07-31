@@ -30,7 +30,7 @@ const userStatus = computed(() => {
             <player-status :user="user"></player-status>
             <span>{{ userStatus }}</span>
         </div>
-        <div class="flex justify-center items-center">1</div>
+        <div class="flex justify-center items-center">{{ user.rank }}</div>
     </div>
 </template>
 

@@ -2,6 +2,7 @@ import { rest } from 'msw';
 import axios from 'axios';
 import users from '@/data/users';
 import matchs from '@/data/matchs';
+import matchsHistory from '@/data/matchsHistory';
 import friends from '@/data/friends';
 import Status from '@/types/Status';
 
@@ -41,6 +42,10 @@ export default [
 
 	rest.get('/users/:username/matchs', (req, res, ctx) => {
 		return res(ctx.json(matchs));
+	}),
+
+	rest.get('/user/matchsHistory', (req, res, ctx) => {
+		return res(ctx.json(matchsHistory));
 	}),
 
 	rest.post('/users/:username/friend-request', async (req, res, ctx) => {
