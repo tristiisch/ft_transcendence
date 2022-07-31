@@ -6,6 +6,12 @@ import matchsHistory from '@/data/matchsHistory';
 import friends from '@/data/friends';
 
 export default [
+
+	rest.post('/user/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.status(200));
+	}),
+
 	rest.get('/users', (req, res, ctx) => {
 		return res(ctx.json(users));
 	}),

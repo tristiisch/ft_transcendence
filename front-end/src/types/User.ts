@@ -18,4 +18,11 @@ export default interface User {
 export interface AuthUser {
 	id: string;
 	token: string;
+	username: string;
+	avatar: string;
+}
+export interface AuthState {
+	isAuthenticated: boolean;
+	user: AuthUser;
+	isLoading: boolean;
 }
