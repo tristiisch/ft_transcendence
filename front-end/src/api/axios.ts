@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
 
 const instance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
@@ -8,9 +8,9 @@ const instance = axios.create({
 instance.interceptors.response.use(
 	response => response,
 	error => {
-		const authStore = useAuthStore();
+		const userStore = useUserStore();
 		if (error.response.status === 401) {
-			authStore.handlelogout()
+			userStore.handlelogout()
 			console.log(error);
 		}
 		return Promise.reject(error);
@@ -20,9 +20,9 @@ instance.interceptors.response.use(
 instance.interceptors.response.use(
 	response => response,
 	error => {
-		const authStore = useAuthStore();
+		const userStore = useUserStore();
 		if (error.response.status === 444) {
-			authStore.handlelogout()
+			userStore.handlelogout()
 			console.log(error);
 		}
 		return Promise.reject(error);

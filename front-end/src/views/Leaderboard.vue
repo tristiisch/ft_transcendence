@@ -3,7 +3,7 @@ import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import { ref, onMounted, computed, onBeforeMount, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/userStore';
-import Toogle from '@/components/Leaderboard/Toogle.vue'
+import Toogle from '@/components/Leaderboard/ToogleButton.vue'
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue'
 
 const userStore = useUserStore();
@@ -22,7 +22,7 @@ async function fetchUsers() {
 }
 
 async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.getUsername)
+	await UsersService.getUserfriends(userStore.userData.username)
 		.then((response) => {
 			for (let i = 0; i < response.data.length; i++) {
 				users.value.find((user) => {
@@ -78,7 +78,7 @@ onMounted(() => {
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">
 			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] pb-3 px-3">
-				<card-Leaderboard :user="user"></card-Leaderboard>
+				<CardLeaderboard :user="user"></CardLeaderboard>
 			</div>
 		</div>
 	</base-ui>

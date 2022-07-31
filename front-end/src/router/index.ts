@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,24 +51,23 @@ const router = createRouter({
 	],
 });
 
-router.beforeEach((to, _, next) => {
-	const authStore = useAuthStore();
-	if (to.name === 'Login' && to.query.code !== undefined && !authStore.isAuthenticated) {
-		authStore.handleLogin(to.query.code as string, to.query.state as string);
-		authStore.isLoading = true;
-		console.log('test')
-		next('/login')
-	}
-	else if ((to.meta.requiresAuth  && !authStore.isAuthenticated)) {
-		next('/login')
-	} else if (authStore.isAuthenticated && !authStore.user.username) {
-		authStore.user.username = JSON.parse(localStorage.getItem('user') as string).id
-		next('/login')
-	} else if (!to.meta.requiresAuth  && authStore.isAuthenticated && JSON.parse(localStorage.getItem('user') as string).username) {
-		next('/home')
-	} else {
-		next();
-	}
-});
+const userString = localStorage.getItem('user');
+
+router.beforeEach((to, _) => {
+	const userStore = useUserStore();
+	if (to.name === 'Login' && to.query.code !== undefined && to.query.state !== undefined && !userStore.isLoggedIn) {
+		console.log('true')
+		userStore.handleLogin(to.query.code as string, to.query.state as string);
+		console.log('false')
+		return { name: 'Login' };
+	} else if (to.meta.requiresAuth && !userStore.isLoggedIn && !userStore.isRegistered) {
+		return { name: 'Login' };
+	} else if (!to.meta.requiresAuth && userStore.isLoggedIn && userStore.isRegistered) {
+		return { name: 'Home' };
+}});
+
+/*else if (userStore.isLoggedIn && userStore.isNotSet && !userStore.isLoading) {
+	userStore.fetchMyData(JSON.parse(userString as string).id);
+	return { name: 'Login' };*/
 
 export default router;

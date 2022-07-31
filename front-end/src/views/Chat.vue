@@ -21,7 +21,7 @@ async function fetchUsers() {
 }
 
 async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.getUsername)
+	await UsersService.getUserfriends(userStore.userData.username)
 		.then((response) => {
 			for (let i = 0; i < response.data.length; i++) {
 				users.value.find((user) => {
@@ -67,7 +67,7 @@ onMounted(() => {
 			<card-right title="CHAT">
 				<div class="flex flex-col justify-center items-center w-full h-full">
 					<div class="h-full w-5/6 overflow-y-auto border-t-[1px] border-red-300"></div>
-					<input type="text" class="w-5/6 p-2  bg-gray-700 rounded-lg text-white ">	
+					<input type="text" class="w-5/6 p-2  bg-gray-700 rounded-lg text-white ">
 				</div>
 			</card-right>
 		</div>

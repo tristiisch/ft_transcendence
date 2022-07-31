@@ -1,46 +1,51 @@
 import { defineStore } from 'pinia';
-import type User from '@/types/User';
-import Status from '@/types/Status';
+import AuthService from '@/services/AuthService';
 import UsersService from '@/services/UserService';
+import type { UserState } from '@/types/User';
+import type User from '@/types/User';
+import axios from '@/api/axios';
 
-interface State {
-	isAuthenticated: boolean;
-	username: string;
-	avatar: string;
-	token: string;
-  }
+const authString = localStorage.getItem('userAuth');
+const userString = localStorage.getItem('userData');
+
+if (authString) {
+	const token = JSON.parse(authString).accessToken;
+	axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
 
 export const useUserStore = defineStore('userStore', {
-	state: () => ({
-		user: {
-			id: 3,
-			username: 'Aragorn',
-			rank: 4,
-			nbVictory: 0,
-			nbDefeat: 100,
-			avatar: 'https://avatarfiles.alphacoders.com/257/257355.jpg',
-			'2fa': '',
-			'42token': '',
-			created: '',
-			register_ip: '',
-			current_status: Status.ONLINE,
-			last_connection: '',
-		},
+	state: (): UserState => ({
+		userAuth: authString ? JSON.parse(authString) : null,
+		isLoading: false,
+		userData: userString ? JSON.parse(userString) : ({} as User),
 	}),
 	getters: {
-		getUser: (state) => state.user,
-		getId: (state) => state.user.id,
-		getUsername: (state) => state.user.username,
-		getRank: (state) => state.user.rank,
-		getnbVictory: (state) => state.user.nbVictory,
-		getnbDefeat: (state) => state.user.nbDefeat,
-		getAvatar: (state) => state.user.avatar,
-		get2fa: (state) => state.user['2fa'],
-		get42token: (state) => state.user['42token'],
-		getCreated: (state) => state.user.created,
-		getRegisterIp: (state) => state.user.register_ip,
-		getCurrentStatus: (state) => state.user.current_status,
-		getLastConnection: (state) => state.user.last_connection,
+		isLoggedIn: (state) => state.userAuth !== null,
+		isRegistered: (state) => state.userAuth !== null && state.userAuth.isRegistered !== false,
 	},
-	actions: {},
+	actions: {
+		async handleLogin(code: string, state: string) {
+			try {
+				this.isLoading = true;
+				this.userAuth = await AuthService.login(code, state);
+				this.userData = await UsersService.getMyData(this.userAuth.id);
+				if (!this.userData.username) {
+					this.userData.username = this.userAuth.id as string;
+					this.userAuth.isRegistered = false;
+				} else this.userAuth.isRegistered = true;
+				localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
+				localStorage.setItem('userData', JSON.stringify(this.userData));
+				console.log(this.userAuth);
+			} catch (error) {
+				console.log('error in store');
+				console.log(error);
+			}
+			this.isLoading = false;
+		},
+		handlelogout() {
+			localStorage.removeItem('userAuth');
+			localStorage.removeItem('userData');
+			location.reload();
+		},
+	},
 });

@@ -18,10 +18,11 @@ const route = useRoute();
 const user = ref({} as User);
 const friends = ref([] as string[]);
 
-async function fetchUser(name: string) {
-	return await UsersService.getUserInfo(route.params.username as string)
+async function fetchUser() {
+	return await UsersService.getUser(route.params.username as string)
 		.then((response) => {
 			user.value = response.data;
+			console.log(user.value)
 		})
 		.catch((e: Error) => {
 			console.log(e);
@@ -29,7 +30,7 @@ async function fetchUser(name: string) {
 }
 
 /*async function fetchMatchHistory(UserName: string, nbMatch: number) {
-	return await UsersService.getUserInfo(route.params.id as string)
+	return await UsersService.getUserData(route.params.id as string)
 		.then((response) => {
 			user.value = response.data;
 		})
@@ -47,7 +48,7 @@ function isInGame() {
 }
 
 async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.getUsername)
+	await UsersService.getUserfriends(userStore.userData.username)
 		.then((response) => {
 			friends.value = response.data;
 			console.log(response.data);
@@ -65,13 +66,14 @@ const friendButton = computed(() => {
 });
 
 function treatFriendRequest() {
-	if (friendButton.value === 'Add friend') UsersService.sendFriendRequest(userStore.getUsername, route.params.username as string);
-	else UsersService.sendUnfriendRequest(userStore.getUsername, route.params.username as string);
+	if (friendButton.value === 'Add friend') UsersService.sendFriendRequest(userStore.userData.username, route.params.username as string);
+	else UsersService.sendUnfriendRequest(userStore.userData.username, route.params.username as string);
 	fetchfriends();
 }
 
 onMounted(() => {
-	fetchUser(route.params.username as string);
+	if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
+	else fetchUser();
 	fetchfriends();
 });
 </script>
@@ -84,8 +86,8 @@ onMounted(() => {
 					<player-profile :user="user"></player-profile>
 					<div class="flex flex-col gap-4 3xl:gap-6">
 						<button-gradient1 @click="treatFriendRequest()"
-					><span>{{ friendButton }}</span></button-gradient1
-				>
+							><span>{{ friendButton }}</span></button-gradient1
+						>
 						<button-gradient1><span>MESSAGE</span></button-gradient1>
 					</div>
 					<rank-card :rank="user.rank"></rank-card>
