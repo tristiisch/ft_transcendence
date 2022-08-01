@@ -28,7 +28,7 @@ services:
     volumes:
     - db_pgadmin:/var/lib/pgadmin
     - ./pgAdmin/servers.json:/pgadmin4/servers.json
-    - ./pgAdmin/.pgpass:${HOME}/.pgpass
+    - ./pgAdmin/.pgpass:/pgadmin4/.pgpass
     restart: unless-stopped
     ports:
     - 8080:8080
