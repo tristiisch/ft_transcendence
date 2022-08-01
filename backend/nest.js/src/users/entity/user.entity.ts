@@ -13,10 +13,11 @@ export enum UserStatus {
 export class User {
 
 	@PrimaryGeneratedColumn()
-	@IsInt()
+	// @IsInt()
 	id: number;
 
 	@Column({ unique: true, length: 32 })
+	@IsNotEmpty()
 	username: string;
 
 	@Column({ unique: true, length: 64 })
@@ -31,15 +32,15 @@ export class User {
 	friends?: number[];
 
 	@Column({ default: 0 })
-	@IsInt()
+	// @IsInt()
 	wins: number;
 
 	@Column({ default: 0 })
-	@IsInt()
+	// @IsInt()
 	losses: number;
 
 	@Column({ unique: true, nullable: true })
-	@IsInt()
+	// @IsInt()
 	ladder_score: number;
 
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})

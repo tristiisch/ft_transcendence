@@ -17,8 +17,7 @@ export class UsersController {
 
 	// localhost:3000/users
 	@Post()
-	// addUser(@Body() newUser: CreateUserDTO) {
-	addUser(@Body() newUser) {
+	addUser(@Body() newUser: User) {
 		return this.usersService.add(newUser);
 	}
 
@@ -76,11 +75,10 @@ export class UsersController {
 		return this.usersService.addFriend(id1, id2);
 	}
 
-	// localhost:3000/users/friends/:id1/:id2
-	@Delete('friends/add/:id1/:id2')
+	// localhost:3000/users/friends/remove/:id1/:id2
+	@Delete('friends/remove/:id1/:id2')
 	removeFriends(@Param('id1') id1: number, @Param('id2') id2: number) {
-		// return this.usersService.removeFriend(id1, id2);
-		throw new NotImplementedException();
+		return this.usersService.removeFriend(id1, id2);
 	}
 
 	// localhost:3000/users/friend-request
