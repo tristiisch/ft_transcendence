@@ -54,7 +54,7 @@ export class UsersService {
 	findAll(): Promise<User[]> {
 		return this.usersRepository.find().then(null, this.lambdaDatabaseUnvailable);
 	}
-	
+
 	findOne(id: number): Promise<User> {
 		if (id < 0) {
 			throw new PreconditionFailedException("Can't get a user with negative id " + id + ".");
@@ -75,7 +75,7 @@ export class UsersService {
 		}
 		return this.usersRepository.findOne({ where: {email : email } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
 	}
-	
+
 	async remove(id: number) {
 		if (id < 0) {
 			throw new PreconditionFailedException("Can't remove a user with negative id " + id + ".");
@@ -112,7 +112,7 @@ export class UsersService {
 			.where("user.id = :id", { id: newUser.id })
 			.orWhere("user.username = :username", { username: newUser.username })
 			.orWhere("user.email = :email", { email: newUser.email });
-		
+
 		//console.log("SQL", sql.getQueryAndParameters());
 		await sqlStatermentCheckIfExist.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
