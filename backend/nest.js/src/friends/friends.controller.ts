@@ -40,9 +40,52 @@ export class FriendsController {
 		return this.friendsService.removeFriend(id1, id2);
 	}
 
-	// localhost:3000/friend-request
-	@Post('friend-request')
-	addFriendRequest(@Body() unknownEntity) {
-		throw new NotImplementedException();
+	// localhost:3000/friends/request/pending/:id
+	@Get('request/pending/:id')
+	getFriendRequestsPending(@Param('id') id: number) {
+		return this.friendsService.getFriendsPending(id);
 	}
+
+	// localhost:3000/friends/request/pending/ids/:id
+	@Get('request/pending/ids/:id')
+	getFriendRequestsPendingIds(@Param('id') id: number) {
+		return this.friendsService.getFriendsPendingIds(id);
+	}
+
+	// localhost:3000/friends/request/pending/names/:id
+	@Get('request/pending/names/:id')
+	getFriendRequestsPendingNames(@Param('id') id: number) {
+		return this.friendsService.getFriendsPendingNames(id);
+	}
+
+	// localhost:3000/friends/request/received/:id
+	@Get('request/received/:id')
+	getFriendRequestsReceived(@Param('id') id: number) {
+		return this.friendsService.getFriendsReceived(id);
+	}
+
+	// localhost:3000/friends/request/received/ids/:id
+	@Get('request/received/ids/:id')
+	getFriendRequestsReceivedIds(@Param('id') id: number) {
+		return this.friendsService.getFriendsReceivedIds(id);
+	}
+
+	// localhost:3000/friends/request/received/names/:id
+	@Get('request/received/names/:id')
+	getFriendRequestsReceivedNames(@Param('id') id: number) {
+		return this.friendsService.getFriendsReceivedNames(id);
+	}
+
+	// localhost:3000/friends/request/add/:id1/:id2
+	@Get('request/add/:id1/:id2')
+	addFriendRequest(@Param('id1') id1: number, @Param('id2') id2: number) {
+		return this.friendsService.addFriendRequest(id1, id2);
+	}
+
+	// localhost:3000/friends/request/remove/:id1/:id2
+	@Delete('request/remove/:id1/:id2')
+	removeFriendRequest(@Param('id1') id1: number, @Param('id2') id2: number) {
+		return this.friendsService.removeFriendRequest(id1, id2);
+	}
+
 }

@@ -9,13 +9,17 @@ import * as _ from "lodash";
 export class UsersService {
 	constructor(
 		@InjectRepository(User)
-		public usersRepository: Repository<User>, // NEED TO BE PRIVATE
+		private usersRepository: Repository<User>,
 		// private dataSource: DataSource
 	) {}
 
+	public getRepo() {
+		return this.usersRepository;
+	}
+
 	lambdaGetUser = (user: User) => {
 		if (!user)
-			throw new NotFoundException();
+			throw new NotFoundException("The user does not exist");
 		return user;
 	};
 
@@ -51,8 +55,12 @@ export class UsersService {
 		}
 	];*/
 
-	findAll(): Promise<User[]> {
-		return this.usersRepository.find().then(null, this.lambdaDatabaseUnvailable);
+	async findAll(): Promise<User[]> {
+		try {
+			return await this.usersRepository.find();
+		} catch (reason) {
+			return this.lambdaDatabaseUnvailable(reason);
+		}
 	}
 
 	findOne(id: number): Promise<User> {
@@ -82,7 +90,7 @@ export class UsersService {
 		}
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) {
-				throw new NotFoundException();
+				throw new NotFoundException("The user " + id + " does not exist");
 			} else {
 				return { deleted : value.affected };
 			}
