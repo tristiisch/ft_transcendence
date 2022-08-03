@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseService } from './database/database.service';
 import { ChatModule } from './chat/chat.module';
 import { resolve } from 'path';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
 	imports: [
@@ -15,7 +16,8 @@ import { resolve } from 'path';
 		DatabaseModule,
 		ConfigModule.forRoot({ envFilePath: resolve(`${__dirname}/.env`), isGlobal: true }),
 		TypeOrmModule.forRootAsync({ useClass: DatabaseService }),
-		ChatModule
+		ChatModule,
+		FriendsModule
 	],
 	controllers: [AppController],
 	providers: [AppService],

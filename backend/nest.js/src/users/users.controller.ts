@@ -50,40 +50,4 @@ export class UsersController {
 	getUserByEmail(@Param('email') email: string): Promise<User> {
 		return this.usersService.findOneByEmail(email);
 	}
-
-	// localhost:3000/users/friends/ids/:id
-	@Get('friends/:id')
-	getFriends(@Param('id') id: number) {
-		return this.usersService.getFriends(id);
-	}
-
-	// localhost:3000/users/friends/ids/:id
-	@Get('friends/ids/:id')
-	getFriendsIds(@Param('id') id: number) {
-		return this.usersService.getFriendsIds(id);
-	}
-
-	// localhost:3000/users/friends/names/:id
-	@Get('friends/names/:id')
-	getFriendsNames(@Param('id') id: number) {
-		return this.usersService.getFriendsNames(id);
-	}
-
-	// localhost:3000/users/friends/add/:id1/:id2
-	@Get('friends/add/:id1/:id2')
-	addFriends(@Param('id1') id1: number, @Param('id2') id2: number) {
-		return this.usersService.addFriend(id1, id2);
-	}
-
-	// localhost:3000/users/friends/remove/:id1/:id2
-	@Delete('friends/remove/:id1/:id2')
-	removeFriends(@Param('id1') id1: number, @Param('id2') id2: number) {
-		return this.usersService.removeFriend(id1, id2);
-	}
-
-	// localhost:3000/users/friend-request
-	@Post('friend-request')
-	addFriendRequest(@Body() unknownEntity) {
-		throw new NotImplementedException();
-	}
 }
