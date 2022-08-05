@@ -9,6 +9,7 @@ import { DatabaseService } from './database/database.service';
 import { ChatModule } from './chat/chat.module';
 import { resolve } from 'path';
 import { FriendsModule } from './friends/friends.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
 	imports: [
@@ -17,7 +18,8 @@ import { FriendsModule } from './friends/friends.module';
 		ConfigModule.forRoot({ envFilePath: resolve(`${__dirname}/.env`), isGlobal: true }),
 		TypeOrmModule.forRootAsync({ useClass: DatabaseService }),
 		ChatModule,
-		FriendsModule
+		FriendsModule,
+		StatsModule
 	],
 	controllers: [AppController],
 	providers: [AppService],

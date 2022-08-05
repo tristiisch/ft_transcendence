@@ -31,18 +31,6 @@ export class User {
 	// @Column("int", { nullable: true, array: true })
 	// friends?: number[];
 
-	@Column({ default: 0 })
-	// @IsInt()
-	wins: number;
-
-	@Column({ default: 0 })
-	// @IsInt()
-	losses: number;
-
-	@Column({ unique: true, nullable: true })
-	// @IsInt()
-	ladder_score: number;
-
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
 	status: UserStatus;
 }

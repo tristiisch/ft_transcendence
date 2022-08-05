@@ -1,9 +1,9 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { isEquals } from "src/utils/entityutils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from "typeorm";
 import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
-import * as _ from "lodash";
 
 @Injectable()
 export class UsersService {
@@ -63,25 +63,25 @@ export class UsersService {
 		}
 	}
 
-	findOne(id: number): Promise<User> {
+	async findOne(id: number): Promise<User> {
 		if (id < 0) {
 			throw new PreconditionFailedException("Can't get a user with negative id " + id + ".");
 		}
-		return this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
+		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
-	findOneByUsername(name: string): Promise<User> {
+	async findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty name.");
 		}
-		return this.usersRepository.findOne({ where: {username : name } }).then((user: User) => this.lambdaGetUser(user, name), this.lambdaDatabaseUnvailable);
+		return await this.usersRepository.findOne({ where: {username : name } }).then((user: User) => this.lambdaGetUser(user, name), this.lambdaDatabaseUnvailable);
 	}
 
-	findOneByEmail(email: string): Promise<User> {
+	async findOneByEmail(email: string): Promise<User> {
 		if (!email || email.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty email.");
 		}
-		return this.usersRepository.findOne({ where: {email : email } }).then((user: User) => this.lambdaGetUser(user, email), this.lambdaDatabaseUnvailable);
+		return await this.usersRepository.findOne({ where: {email : email } }).then((user: User) => this.lambdaGetUser(user, email), this.lambdaDatabaseUnvailable);
 	}
 
 	async remove(id: number) {
@@ -139,12 +139,12 @@ export class UsersService {
 	}
 
 	async update(userId: number, user: UserDTO) {
-		let userBefore = await this.findOne(userId);
+		const userBefore: User = await this.findOne(userId);
 		await this.usersRepository.update(userId, user);
-		let userAfter = await this.findOne(userId);
+		const userAfter: User = await this.findOne(userId);
 
-		if (_.isEqual(userBefore, userAfter)) {
-			return { statusCode: "200", message: "Nothing change."}
+		if (isEquals(userBefore, userAfter)) {
+			return { statusCode: 200, message: "Nothing change."}
 		}
 		return userAfter;
 	}
