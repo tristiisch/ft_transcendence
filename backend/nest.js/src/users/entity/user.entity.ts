@@ -28,14 +28,8 @@ export class User {
 	@Column({ unique: true, nullable: true })
 	token42?: string;
 
-	@Column("int", { nullable: true, array: true })
-	friends?: number[];
-
-	@Column("int", { nullable: true, array: true })
-	pending_friends_requests?: number[];
-
-	@Column("int", { nullable: true, array: true })
-	received_friends_requests?: number[];
+	// @Column("int", { nullable: true, array: true })
+	// friends?: number[];
 
 	@Column({ default: 0 })
 	// @IsInt()

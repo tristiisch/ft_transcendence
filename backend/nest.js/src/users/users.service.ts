@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, DeleteResult, InsertResult, Repository } from "typeorm";
+import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from "typeorm";
 import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
 import * as _ from "lodash";
@@ -116,13 +116,13 @@ export class UsersService {
 	}*/
 
 	async add(newUser: User): Promise<User> {
-		const sqlStatermentCheckIfExist = this.usersRepository.createQueryBuilder("user")
+		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder("user")
 			.where("user.id = :id", { id: newUser.id })
 			.orWhere("user.username = :username", { username: newUser.username })
 			.orWhere("user.email = :email", { email: newUser.email });
 
 		//console.log("SQL", sql.getQueryAndParameters());
-		await sqlStatermentCheckIfExist.getOne().then((checkUserExist: User) => {
+		await sqlStatement.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
 				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username.");
 		}, this.lambdaDatabaseUnvailable);
@@ -159,9 +159,9 @@ export class UsersService {
 		}*/
 		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
 			if (insertResult.identifiers.length < 1) {
-				throw new InternalServerErrorException("Can't add user " + newUser.username);
+				throw new InternalServerErrorException("Can't add user " + newUser.username + ".");
 			} else if (insertResult.identifiers.length > 1) {
-				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one");
+				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}
 			console.log('new user added : ', newUser)
 			return newUser;
