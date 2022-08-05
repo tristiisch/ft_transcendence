@@ -17,14 +17,14 @@ export class UsersService {
 		return this.usersRepository;
 	}
 
-	lambdaGetUser = (user: User) => {
+	lambdaGetUser = (user: User, identifier: any) => {
 		if (!user)
-			throw new NotFoundException("The user does not exist");
+			throw new NotFoundException("The user '" + identifier + "' does not exist.");
 		return user;
 	};
 
 	lambdaDatabaseUnvailable = (reason: string) => {
-		throw new ServiceUnavailableException("Database error with reason '" + reason + "'");
+		throw new ServiceUnavailableException("Database error with reason '" + reason + "'.");
 	};
 
 	/*users: User[] = [
@@ -67,21 +67,21 @@ export class UsersService {
 		if (id < 0) {
 			throw new PreconditionFailedException("Can't get a user with negative id " + id + ".");
 		}
-		return this.usersRepository.findOneBy({ id }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
+		return this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
 	findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty name.");
 		}
-		return this.usersRepository.findOne({ where: {username : name } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
+		return this.usersRepository.findOne({ where: {username : name } }).then((user: User) => this.lambdaGetUser(user, name), this.lambdaDatabaseUnvailable);
 	}
 
 	findOneByEmail(email: string): Promise<User> {
 		if (!email || email.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty email.");
 		}
-		return this.usersRepository.findOne({ where: {email : email } }).then(this.lambdaGetUser, this.lambdaDatabaseUnvailable);
+		return this.usersRepository.findOne({ where: {email : email } }).then((user: User) => this.lambdaGetUser(user, email), this.lambdaDatabaseUnvailable);
 	}
 
 	async remove(id: number) {
@@ -90,7 +90,7 @@ export class UsersService {
 		}
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) {
-				throw new NotFoundException("The user " + id + " does not exist");
+				throw new NotFoundException("The user " + id + " does not exist.");
 			} else {
 				return { deleted : value.affected };
 			}
@@ -127,36 +127,6 @@ export class UsersService {
 				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username.");
 		}, this.lambdaDatabaseUnvailable);
 
-		// Same as before but with 3 requests SQL
-		/*if (newUser.id) {
-			try {
-				if (this.findOne(newUser.id)) {
-					throw new ConflictException("A user with id '" + newUser.id + "' already exist");
-				}
-			} catch (err) {
-				if (err instanceof ServiceUnavailableException || !(err instanceof NotFoundException)) {
-					return err;
-				}
-			}
-		}
-		try {
-			if (this.findOneByUsername(newUser.username)) {
-				throw new ConflictException("A user with username '" + newUser.username + "' already exist");
-			}
-		} catch (err) {
-			if (err instanceof ServiceUnavailableException || !(err instanceof NotFoundException)) {
-				return err;
-			}
-		}
-		try {
-			if (this.findOneByEmail(newUser.email)) {
-				throw new ConflictException("A user with email '" + newUser.email + "' already exist");
-			}
-		} catch (err) {
-			if (err instanceof ServiceUnavailableException || !(err instanceof NotFoundException)) {
-				return err;
-			}
-		}*/
 		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
 			if (insertResult.identifiers.length < 1) {
 				throw new InternalServerErrorException("Can't add user " + newUser.username + ".");

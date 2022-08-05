@@ -23,6 +23,8 @@ export class FriendsService {
 		if (userId == targetId)
 			throw new PreconditionFailedException("A user cannot ask for friendships himself.");
 
+		await this.userService.findOne(userId);
+		await this.userService.findOne(targetId);
 		const friendshipCheck: Friendship = await this.findOne(userId, targetId, false);
 
 		if (friendshipCheck) {
@@ -51,6 +53,8 @@ export class FriendsService {
 		if (userId1 == userId2)
 			throw new PreconditionFailedException("A user cannot ask for friendships himself.");
 
+		await this.userService.findOne(userId1);
+		await this.userService.findOne(userId2);
 		const friendship: Friendship = await this.findOne(userId1, userId2, true);
 
 		if (!friendship) {
@@ -75,6 +79,8 @@ export class FriendsService {
 		if (userId == targetId)
 			throw new PreconditionFailedException("A user cannot be friend with itself.");
 
+		await this.userService.findOne(userId);
+		await this.userService.findOne(targetId);
 		const friendship: Friendship = await this.findOne(userId, targetId, false);
 
 		if (!friendship) {
@@ -99,7 +105,7 @@ export class FriendsService {
 		if (!strict) {
 			sqlStatement.orWhere("friendship.user_id1 = :id2").andWhere("friendship.user_id2 = :id1");
 		}
-		console.log("SQL friendship", sqlStatement.getQueryAndParameters());
+		// console.log("SQL friendship", sqlStatement.getQueryAndParameters());
 	
 		return await sqlStatement.getOne().then((friendship: Friendship) => {
 			return friendship;
@@ -109,6 +115,7 @@ export class FriendsService {
 	async findAllRelations(userId: number): Promise<Friendship[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
+		await this.userService.findOne(userId);
 		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).orWhere("friendship.user_id2 = :id");
 	
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -122,6 +129,7 @@ export class FriendsService {
 	async findPendingIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
+		await this.userService.findOne(userId);
 		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).andWhere("friendship.status = :status", { status: FriendshipStatus.PENDING });
 	
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -153,6 +161,7 @@ export class FriendsService {
 	async findWaitingIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
+		await this.userService.findOne(userId);
 		sqlStatement.where("friendship.user_id2 = :id", { id: userId }).andWhere("friendship.status = :status", { status: FriendshipStatus.PENDING });
 	
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -184,6 +193,7 @@ export class FriendsService {
 	async findFriendsIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
+		await this.userService.findOne(userId);
 		sqlStatement.where("friendship.status = :status", { status: FriendshipStatus.ACCEPTED });
 		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).orWhere("friendship.user_id2 = :id");
 	
