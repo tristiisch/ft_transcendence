@@ -26,11 +26,11 @@
                 displayPart.value = 'Player Stats'
         else
             if (displayPart.value === 'Player Stats')
-                displayPart.value = '2Fa'
-            else if (displayPart.value === '2Fa' )
+                displayPart.value = 'Setting'
+            else if (displayPart.value === 'Setting' )
                 displayPart.value = 'Notifications'
             else
-                displayPart.value = '2Fa'
+                displayPart.value = 'Setting'
         emit('changeDisplay', displayPart.value)
     }
 
@@ -49,17 +49,17 @@
     });
 
     const button1Name = computed(() => {
-        if (displayPart.value === 'Notifications' || displayPart.value === '2Fa')
+        if (displayPart.value === 'Notifications' || displayPart.value === 'Setting')
             return 'Player Stats'
         else
             return 'Notifications'
     });
 
     const button2Name = computed(() => {
-        if (displayPart.value === '2Fa')
+        if (displayPart.value === 'Setting')
             return 'Notifications'
         else
-            return '2Fa'
+            return 'Setting'
     });
 
     async function fetchfriends() {

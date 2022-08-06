@@ -5,6 +5,26 @@ import matchs from '@/data/matchs';
 import matchsHistory from '@/data/matchsHistory';
 import friends from '@/data/friends';
 import Status from '@/types/Status';
+import { authenticator } from 'otplib';
+import qrcode from 'qrcode';
+
+function generateQRCode(): string {
+	const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
+
+	const user = 'jlaronch';
+	const service = 'ft-transcendence';
+	const otpauth = authenticator.keyuri(user, service, secret);
+	let imagePath = '';
+
+	qrcode.toDataURL(otpauth, (err, imageUrl) => {
+		if (err) {
+			console.log('Could not generate QR code', err);
+			return;
+		}
+		imagePath = imageUrl;
+	});
+	return imagePath;
+}
 
 export default [
 	rest.get('/users', (req, res, ctx) => {
@@ -17,7 +37,8 @@ export default [
 
 	rest.post('/users/me/:id/set-username', async (req, res, ctx) => {
 		const data = await req.json();
-		console.log(data)
+		console.log(data);
+		if (users.find((user) => user.username === data.username)) return res(ctx.status(403), ctx.json({ message: `username ${data.username} already exist.` }));
 		const user = users.find((user) => user.id === req.params.id);
 		if (user) user.username = data.username;
 		return res(ctx.status(200));
@@ -25,7 +46,7 @@ export default [
 
 	rest.post('/users/me/:id/set-avatar', async (req, res, ctx) => {
 		const data = await req.json();
-		console.log(data)
+		console.log(data);
 		const user = users.find((user) => user.id === req.params.id);
 		if (user) user.avatar = data.avatar;
 		return res(ctx.status(200));
@@ -67,7 +88,7 @@ export default [
 		return res(ctx.status(200));
 	}),
 
-	rest.post('/auth/login-request', async (req, res, ctx) => {
+	rest.post('/auth/login', async (req, res, ctx) => {
 		const data = await req.json();
 		if (data.code == '' || data.state !== import.meta.env.VITE_CLIENT_STATE) return res(ctx.status(400));
 		console.log(data.code, data.state);
@@ -103,5 +124,31 @@ export default [
 			})
 		);
 		//return res(ctx.status(404));
+	}),
+	rest.post('/auth/2fa/login', async (req, res, ctx) => {
+		const data = await req.json();
+		const otpToken = data.otpToken;
+
+		const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
+		//const token = totp.generate(secret);
+		//const token = authenticator.generate(secret);
+		try {
+			const isValid = authenticator.check(otpToken, secret);
+			console.log(isValid);
+			return res(ctx.status(200));
+		} catch (err) {
+			console.log(err);
+			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
+		}
+	}),
+
+	rest.post('/auth/2fa/enable', (req, res, ctx) => {
+		const data = generateQRCode();
+		console.log(data);
+		return res(ctx.set('Content-Length', 'image/png'), ctx.json(data));
+	}),
+
+	rest.post('/auth/2fa/disable', (req, res, ctx) => {
+		return res(ctx.status(200));
 	}),
 ];

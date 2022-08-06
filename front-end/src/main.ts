@@ -10,7 +10,8 @@ import BaseCard from '@/components/BaseCard.vue';
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from '@/components/TheHeader.vue';
 import BaseUi from '@/components/BaseUi.vue';
-import { watch } from 'vue';
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 if (process.env.NODE_ENV === 'development') {
 	const { worker } = await import('./mocks/browser');
@@ -19,15 +20,12 @@ if (process.env.NODE_ENV === 'development') {
 
 const app = createApp(App);
 const pinia = createPinia();
-//if (localStorage.getItem('userState')) pinia.state.value.user = JSON.parse(localStorage.getItem('userState') as string);
 
-/*watch(
-	() => pinia.state.value.userStore,
-	(state) => {
-		localStorage.setItem('userState', JSON.stringify(state));
-	},
-	{ deep: true }
-);*/
+const options = {
+    // You can set your default options here
+};
+
+app.use(Toast, options);
 app.use(pinia);
 app.use(router);
 app.use(VueAxios, axios);
