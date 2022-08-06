@@ -80,17 +80,16 @@ watch(
 </script>
 
 <template>
-	<div class="background" />
 	<div v-if="userStore.isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
-	<div v-else class="flex flex-col items-center justify-center h-full pb-32">
-		<div class="flex justify-center font-Arlon text-white text-6xl m-4">TV PONG<span class="text-white">™</span></div>
+	<div v-else class="flex flex-col items-center justify-center h-full pb-32 mx-[8vw]">
+		<div class="flex justify-center font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
 		<button-gradient1 v-if="!userStore.isLoggedIn" @click="redirectTo42LoginPage()"><span>Login with 42</span></button-gradient1>
 		<BaseCard v-else>
-			<form class="flex gap-4" @submit.prevent>
-				<div class="flex flex-col gap-4">
-					<p class="text-gray-500 bg-slate-800 w-full">Please choose an username and avatar</p>
+			<form class="flex justify-center items-center gap-8 w-full" @submit.prevent>
+				<div class="flex flex-col gap-4 items-center">
+					<p class="text-gray-300 text-center w-full">Please choose an username and avatar</p>
 					<input
-						class="placeholder-gray-500 text-center font-medium rounded-lg text-xs px-3 py-2 sm:px-5 md:text-sm md:px-8 sm:py-2.5"
+						class="placeholder-gray-500 w-full bg-slate-700 text-center text-white font-medium text-xs px-3 py-2 sm:px-5 sm:py-2.5"
 						type="text"
 						name="username"
 						v-model.trim="username"
@@ -102,23 +101,6 @@ watch(
 			</form>
 		</BaseCard>
 	</div>
+	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]"></div>
 </template>
 
-<style scoped>
-.background {
-	top: 0;
-	left: 0;
-	position: fixed;
-	margin: 0;
-	background-image: url(@/assets/brick.jpg);
-	background-size: cover;
-	background-repeat: no-repeat;
-	background-position: bottom;
-	background-attachment: fixed;
-	height: 100%;
-	width: 100%;
-	transform: scale(1.2);
-	/*background: radial-gradient(ellipse farthest-corner at center top, #f39264 0%, #f2606f 100%);*/
-	z-index: -100;
-}
-</style>

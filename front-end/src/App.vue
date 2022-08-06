@@ -23,20 +23,4 @@
 
 html, body, #app { height: 100%; width: 100%; margin:0; padding:0; }
 
-
-/* .background {
-	top: 0;
-	left: 0;
-	position: fixed;
-	margin: 0;
-	background-image: url(@/assets/brick.jpg);
-	background-size: cover;
-	background-repeat: no-repeat;
-	background-position: bottom;
-	background-attachment: fixed;
-	height: 100%;
-	width: 100%;
-	transform: scale(1.2);
-	z-index: -100;
-} */
 </style>

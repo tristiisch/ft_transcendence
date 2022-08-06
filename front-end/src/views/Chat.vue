@@ -19,6 +19,9 @@ const messages = ref([] as {message: string, sender: string, date: string}[]);
 const newMessage = ref('')
 const scroll = ref<HTMLInputElement | null>(null)
 
+socket.auth = [userStore.userData.username];
+socket.connect();
+
 function showFriends () {
 	if (showItems.value != 'friends')
 		showItems.value = 'friends'

@@ -30,6 +30,6 @@ const changeAvatar = () => {
 </script>
 
 <template>
-	<img @click="changeAvatar" class="w-20 h-20 rounded-full object-cover border-2 sm:w-28 sm:h-28 md:w-36 md:h-36" :src="image" alt="Rounded avatar" />
+	<img @click="changeAvatar" class="w-20 h-20 rounded-full object-cover border-2 sm:w-36 sm:h-36" :src="image" alt="Rounded avatar" />
 	<input style="display: none" ref="inputEvent" @change="createBase64Image" type="file" name="upload" accept="image/*" />
 </template>

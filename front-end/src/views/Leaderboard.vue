@@ -123,7 +123,7 @@ onMounted(() => {
 				<div class="mr-5 mb-2 self-end">
 					<div class="flex justify-center items-center">
 						<span class="text-slate-600 pr-2">All</span>
-						<Toogle @switch-dysplay-users="switchDysplayUsers"></Toogle>
+						<Toogle @switch-button="switchDysplayUsers"></Toogle>
 						<span class="text-slate-600 pl-2">Friends</span>
 					</div>
 				</div>

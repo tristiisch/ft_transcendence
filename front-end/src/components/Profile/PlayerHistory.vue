@@ -22,16 +22,16 @@ function colorText(value:MatchHistory, side:string) {
     if (value.result === 'won')
     {
         if (side === 'player')
-            return 'text-red-800'
+            return 'text-lime-400'
         else
-            return 'text-red-300'
+            return 'text-red-700'
     }
     else
     {
         if (side === 'player')
-            return 'text-red-300'
+            return 'text-red-700'
         else
-            return 'text-red-800'
+            return 'text-lime-400'
     }
 }
 

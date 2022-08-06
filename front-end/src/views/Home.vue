@@ -22,26 +22,11 @@
 		</div>
 		<the-footer></the-footer>
 	</div>
-	<div class="background"></div>
+	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]"></div>
 </template>
 
 <style scoped>
-.background {
-	top: 0;
-	left: 0;
-	position: fixed;
-	margin: 0;
-	background-image: url(@/assets/brick.jpg);
-	background-size: cover;
-	background-repeat: no-repeat;
-	background-position: bottom;
-	background-attachment: fixed;
-	height: 100%;
-	width: 100%;
-	transform: scale(1.2);
-	/*background: radial-gradient(ellipse farthest-corner at center top, #f39264 0%, #f2606f 100%);*/
-	z-index: -100;
-}
+
 
 @keyframes refresh {
 	0% {
