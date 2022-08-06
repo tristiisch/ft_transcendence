@@ -5,7 +5,7 @@ import UsersService from '@/services/UserService';
 import BaseCard from '../components/BaseCard.vue';
 import ButtonGradient1 from '@/components/ButtonGradient1.vue';
 import UploadAvatar from '@/components/Login/UploadAvatar.vue';
-
+import socket from '@/socket';
 const userStore = useUserStore();
 const router = useRouter();
 
@@ -18,6 +18,8 @@ function submitForm(): void {
 	userStore.userAuth.isRegistered = true
 	localStorage.setItem('userAuth', JSON.stringify(userStore.userAuth));
 	router.replace({ name: 'Home' });
+	socket.auth = { id: userStore.userAuth.id }
+  	socket.connect();
 }
 
 function handleAvatarUpload(value: string): void {

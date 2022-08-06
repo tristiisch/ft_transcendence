@@ -1,6 +1,6 @@
 import axios from '@/api/axios';
 import type User from '@/types/User';
-import type Match from '@/types/Match';
+import type Match from '@/types/MatchHistory';
 
 class UserService {
 
@@ -45,8 +45,8 @@ class UserService {
 		return axios.post(`users/${username}/unfriend-request`, { target });
 	}
 
-	getMatchsHistory() {
-		return axios.get('user/matchsHistory');
+	getMatchsHistory(username: string) {
+		return axios.get(`users/${username}/matchsHistory`);
 	}
 }
 

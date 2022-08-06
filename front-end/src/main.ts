@@ -19,7 +19,6 @@ if (process.env.NODE_ENV === 'development') {
 
 const app = createApp(App);
 const pinia = createPinia();
-
 //if (localStorage.getItem('userState')) pinia.state.value.user = JSON.parse(localStorage.getItem('userState') as string);
 
 /*watch(
@@ -29,7 +28,6 @@ const pinia = createPinia();
 	},
 	{ deep: true }
 );*/
-
 app.use(pinia);
 app.use(router);
 app.use(VueAxios, axios);

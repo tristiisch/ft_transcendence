@@ -2,7 +2,7 @@
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import { useUserStore } from '@/stores/userStore';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PlayerHistory from '@/components/Profile/PlayerHistory.vue';
 import CardRight from '@/components/CardRight.vue';
@@ -11,6 +11,7 @@ import CardLeft from '@/components/CardLeft.vue';
 import RankCard from '@/components/Profile/RankCard.vue';
 import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
+import Notifications from '@/components/Profile/Notifications.vue';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -42,6 +43,10 @@ async function fetchUser(name: string) {
 		});
 }
 
+watch (() => route.params.username, () => {
+	user.value = userStore.userData
+});
+
 onMounted(() => {
 	if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
 	else fetchUser(route.params.username as string);
@@ -68,7 +73,9 @@ onMounted(() => {
 						<player-history></player-history>
 					</div>
 				</div>
-				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-around items-center w-full"></div>
+				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-full">
+					<notifications></notifications>
+				</div>
 				<div v-else class="flex flex-col justify-around items-center w-full"></div>
 			</card-right>
 		</div>

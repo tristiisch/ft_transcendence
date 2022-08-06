@@ -1,52 +1,37 @@
-const matchsHistory = [
+import type matchHistory from '@/types/MatchHistory';
+
+const matchsHistory = new Map<string, matchHistory[]>([
+    ['nlaronch', [
 	{
-        id: '1',
-		player1: 'Boromir',
-		player2: 'Aragorn',
+        date: 'Sep 5, 2018 12:32:28',
+		opponent: 'Boromir',
 		score: [3, 0],
-        winner: 'Boromir',
-		Date: '12/08/2022',
+        result: 'won',
 	},
 	{
-        id: '2',
-		player1: 'Boromir',
-		player2: 'Aragorn',
-		score: [3, 0],
-        winner: 'Boromir',
-		Date: '12/08/2022',
+        date: 'Sep 4, 2018 15:17:15',
+		opponent: 'Aragorn',
+		score: [0, 1],
+        result: 'lost',
 	},
     {
-        id: '3',
-		player1: 'Boromir',
-		player2: 'Aragorn',
-		score: [3, 0],
-        winner: 'Boromir',
-		Date: '12/08/2022',
+        date: 'Sep 3, 2018 21:40:22',
+		opponent: 'Gandalf',
+		score: [10, 0],
+        result: 'won',
 	},
     {
-        id: '4',
-		player1: 'Boromir',
-		player2: 'Aragorn',
-		score: [3, 0],
-        winner: 'Boromir',
-		Date: '12/08/2022',
+        date: 'Sep 2, 2018 11:31:34',
+		opponent: 'Legolas',
+		score: [4, 5],
+        result: 'lost',
 	},
     {
-        id: '5',
-		player1: 'Boromir',
-		player2: 'Aragorn',
-		score: [3, 0],
-        winner: 'Boromir',
-		Date: '12/08/2022',
-	},
-    {
-        id: '6',
-		player1: 'Boromir',
-		player2: 'Aragorn',
-		score: [3, 0],
-        winner: 'Boromir',
-		Date: '12/08/2022',
-	},
-];
+        date: 'Sep 1, 2018 12:33:23',
+		opponent: 'Frodon',
+		score: [2, 1],
+        result: 'won',
+	}],
+]]);
 
 export default matchsHistory;

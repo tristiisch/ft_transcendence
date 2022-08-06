@@ -44,8 +44,8 @@ export default [
 		return res(ctx.json(matchs));
 	}),
 
-	rest.get('/user/matchsHistory', (req, res, ctx) => {
-		return res(ctx.json(matchsHistory));
+	rest.get('/users/:username/matchsHistory', (req, res, ctx) => {
+		return res(ctx.json(matchsHistory.get(req.params.username as string)));
 	}),
 
 	rest.post('/users/:username/friend-request', async (req, res, ctx) => {
@@ -87,12 +87,12 @@ export default [
 		const userInfo = await axios.get(import.meta.env.VITE_42_API_ME, { headers: headersRequest });
 		console.log(userInfo);
 		users.push({
-			id: 'jlaronch',
+			id: userInfo.data.login,
 			username: '',
 			rank: 0,
 			nbVictory: 0,
 			nbDefeat: 0,
-			avatar: 'https://cdn.intra.42.fr/users/jlaronch.jpg',
+			avatar: userInfo.data.image_url,
 			'2fa': '',
 			current_status: Status.OFFLINE,
 		});

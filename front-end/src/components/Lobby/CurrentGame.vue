@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type Match from '@/types/Match';
+import type Match from '@/types/MatchHistory';
 const props = defineProps<{
   matchs: Match[]
 }>()
