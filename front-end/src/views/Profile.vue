@@ -12,6 +12,7 @@ import RankCard from '@/components/Profile/RankCard.vue';
 import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import QRCode from '@/components/Profile/QRCode.vue';
+import Notifications from '@/components/Profile/Notifications.vue';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -52,7 +53,7 @@ onBeforeMount(() => {
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:flex-col sm:justify-around">
-					<player-profile :user="user" :modeInput="modeInput"></player-profile>
+					<player-profile :user="user"></player-profile>
 					<button-part @change-display="setPartToDisplay"></button-part>
 					<rank-card :rank="user.rank"></rank-card>
 				</div>
@@ -66,7 +67,9 @@ onBeforeMount(() => {
 						<player-history></player-history>
 					</div>
 				</div>
-				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-around items-center w-full"></div>
+				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-full">
+					<notifications></notifications>
+				</div>
 				<div v-else class="overflow-y-scroll flex flex-col items-center w-full gap-5">
 					<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">
 							Activation 2FA

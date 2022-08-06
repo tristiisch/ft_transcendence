@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
-import type Match from '@/types/Match';
+import type Match from '@/types/MatchHistory';
 import { ref, onMounted } from 'vue';
 import CardLeft from '@/components/CardLeft.vue';
 import CardRight from '@/components/CardRight.vue';

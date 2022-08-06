@@ -68,7 +68,6 @@ function statusOrder() {
 	}
 }
 
-
 async function fetchUsers() {
 	await UsersService.getUsers()
 		.then((response) => {

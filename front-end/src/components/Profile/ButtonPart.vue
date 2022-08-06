@@ -10,12 +10,6 @@
     const friends = ref([] as string[]);
     const displayPart = ref('Player Stats');
 
-    const friendButton = computed(() => {
-        for (let i = 0; i < friends.value.length; i++) {
-            if (route.params.username === friends.value[i]) return 'Remove friend';
-        }
-        return 'Add friend';
-    });
 
     function isUser() {
         if (route.params.username === userStore.userData.username)
@@ -40,6 +34,19 @@
         emit('changeDisplay', displayPart.value)
     }
 
+    async function treatFriendRequest() {
+        if (friendButton.value === 'Add friend') await UsersService.sendFriendRequest(userStore.userData.username, route.params.username as string);
+        else await UsersService.sendUnfriendRequest(userStore.userData.username, route.params.username as string);
+        await fetchfriends();
+    }
+
+     const friendButton = computed(() => {
+        for (let i = 0; i < friends.value.length; i++) {
+            if (route.params.username === friends.value[i])
+                return 'Remove friend';
+        }
+        return 'Add friend';
+    });
 
     const button1Name = computed(() => {
         if (displayPart.value === 'Notifications' || displayPart.value === 'Setting')
@@ -66,18 +73,13 @@
             });
     }
 
-    function treatFriendRequest() {
-        if (friendButton.value === 'Add friend') UsersService.sendFriendRequest(userStore.userData.username, route.params.username as string);
-        else UsersService.sendUnfriendRequest(userStore.userData.username, route.params.username as string);
-        fetchfriends();
-    }
-
     const emit = defineEmits<{
     (e: 'changeDisplay', displayedPart:string): void
     }>()
 
     onMounted(() => {
-	fetchfriends();
+	if (route.params.username != userStore.userData.username)
+        fetchfriends();
     });
 </script>
 

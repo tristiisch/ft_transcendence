@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, watch } from 'vue';
+import socket from '@/socket';
 
 const router = useRouter();
 const userStore = useUserStore();
