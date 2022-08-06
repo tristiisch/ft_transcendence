@@ -11,8 +11,6 @@ class UserService {
 	}
 
 	setUsername(id: string, username: string) {
-		console.log(username)
-		console.log(id)
 		return axios.post(`users/me/${id}/set-username`, { username });
 	}
 

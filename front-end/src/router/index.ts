@@ -47,6 +47,12 @@ const router = createRouter({
 			component: () => import('@/views/Lobby.vue'),
 			meta: { requiresAuth: true },
 		},
+		{
+			path: '/twofa',
+			name: 'TwoFa',
+			component: () => import('@/views/TwoFa.vue'),
+			meta: { requiresAuth: true },
+		},
 		{ path: '/:notFound(.*)', component: () => import('@/views/NotFound.vue') },
 	],
 });
@@ -56,9 +62,7 @@ const userString = localStorage.getItem('user');
 router.beforeEach((to, _) => {
 	const userStore = useUserStore();
 	if (to.name === 'Login' && to.query.code !== undefined && to.query.state !== undefined && !userStore.isLoggedIn) {
-		console.log('true')
 		userStore.handleLogin(to.query.code as string, to.query.state as string);
-		console.log('false')
 		return { name: 'Login' };
 	} else if (to.meta.requiresAuth && !userStore.isLoggedIn && !userStore.isRegistered) {
 		return { name: 'Login' };

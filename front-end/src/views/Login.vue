@@ -1,31 +1,81 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/userStore';
-import UsersService from '@/services/UserService';
 import BaseCard from '../components/BaseCard.vue';
 import ButtonGradient1 from '@/components/ButtonGradient1.vue';
 import UploadAvatar from '@/components/Login/UploadAvatar.vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
+import { useToast } from 'vue-toastification';
+import { ref, watch } from 'vue';
 
-const userStore = useUserStore();
 const router = useRouter();
+const userStore = useUserStore();
+const toast = useToast();
+
+const username = ref(userStore.userData.username);
+const image = ref(userStore.userData.avatar);
+let isUpload = false;
 
 function redirectTo42LoginPage(): void {
-	window.location.href = import.meta.env.VITE_REDIRECT_42;
+	const baseUrl = import.meta.env.VITE_42_API_URL;
+
+	const options = {
+		client_id: import.meta.env.VITE_CLIENT_ID,
+		redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT,
+		scope: 'public',
+		state: import.meta.env.VITE_CLIENT_STATE,
+		response_type: 'code',
+	};
+
+	const queryString = new URLSearchParams(options).toString();
+	window.location.href = `${baseUrl}?${queryString}`;
 }
 
-function submitForm(): void {
-	UsersService.setUsername(userStore.userAuth.id, userStore.userData.username);
-	userStore.userAuth.isRegistered = true
-	localStorage.setItem('userAuth', JSON.stringify(userStore.userAuth));
-	router.replace({ name: 'Home' });
+function onlyLettersAndNumbers(str: string) {
+	return /^[A-Za-z0-9]*$/.test(str);
 }
 
-function handleAvatarUpload(value: string): void {
-	userStore.userData.avatar = value;
-	UsersService.setAvatar(userStore.userAuth.id, userStore.userData.avatar);
-	localStorage.setItem('userData', JSON.stringify(userStore.userData));
+function submitForm() {
+	if (!username.value || (username.value.length < 2 && username.value.length > 9)) toast.error('Please enter a username between 2 and 9 characters long.');
+	else if (!onlyLettersAndNumbers(username.value)) toast.error('Username can only contain alphanumeric characters.');
+	else {
+		userStore
+			.updateUsername(username.value)
+			.then(() => {
+				if (isUpload)
+					userStore
+						.updateAvatar(image.value)
+						.then(() => {
+							router.replace({ name: 'Home' });
+						})
+						.catch((e) => {
+							toast.error(e.response.data.message);
+						});
+				else router.replace({ name: 'Home' });
+			})
+			.catch((e) => {
+				toast.error(e.response.data.message);
+			});
+	}
 }
 
+function uploadImage(imageData: string): void {
+	image.value = imageData;
+	isUpload = true;
+}
+
+watch(
+	() => userStore.userData.username,
+	() => {
+		username.value = userStore.userData.username;
+	}
+);
+
+watch(
+	() => userStore.userData.avatar,
+	() => {
+		image.value = userStore.userData.avatar;
+	}
+);
 </script>
 
 <template>
@@ -42,12 +92,12 @@ function handleAvatarUpload(value: string): void {
 						class="placeholder-gray-500 text-center font-medium rounded-lg text-xs px-3 py-2 sm:px-5 md:text-sm md:px-8 sm:py-2.5"
 						type="text"
 						name="username"
-						v-model.trim="userStore.userData.username"
+						v-model.trim="username"
 						placeholder="Username"
 					/>
-					<button-gradient1 @click="submitForm"><span>Send</span></button-gradient1>
+					<button-gradient1 @click="submitForm">Send</button-gradient1>
 				</div>
-				<upload-avatar @image-loaded="handleAvatarUpload" :image="userStore.userData.avatar"></upload-avatar>
+				<upload-avatar @image-loaded="uploadImage" :image="image"></upload-avatar>
 			</form>
 		</BaseCard>
 	</div>
