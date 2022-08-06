@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import users from '@/data/users';
 import { useUserStore } from '@/stores/userStore';
-import { ref, watch } from 'vue'
+import { ref, watch, onUpdated } from 'vue'
 import type User from '@/types/User';
 
 const userStore = useUserStore();
@@ -11,12 +11,20 @@ defineProps<{
     users: User[];
 }>();
 
+const emit = defineEmits<{
+  (e: 'scroll'): void
+}>();
+
 function searchPlayerAvatar(sender: string) {
     console.log(sender)
     let avatar = (users.find(element => element.username === sender))?.avatar;
     console.log(avatar);
     return avatar;
 }
+
+onUpdated(()=> {
+    emit('scroll')
+});
 
 </script>
 

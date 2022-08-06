@@ -118,7 +118,7 @@ onMounted(() => {
 			<card-right title="CHAT">
 				<div class="flex flex-col justify-between items-center w-11/12 px-12 h-full">
 					<div class="flex flex-col w-full h-[calc(100%_-_36px)] border-t-[1px] border-red-300 overflow-y-auto" ref="scroll">
-						<message :messages="messages" :users="users"></message>
+						<message @scroll="scrollToEnd" :messages="messages" :users="users"></message>
 					</div>
 					<form @submit.prevent="sendMessage()" class="w-full">
 						<input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white">
