@@ -10,6 +10,7 @@ import { ChatModule } from './chat/chat.module';
 import { resolve } from 'path';
 import { FriendsModule } from './friends/friends.module';
 import { StatsModule } from './stats/stats.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
 	imports: [
@@ -19,7 +20,8 @@ import { StatsModule } from './stats/stats.module';
 		TypeOrmModule.forRootAsync({ useClass: DatabaseService }),
 		ChatModule,
 		FriendsModule,
-		StatsModule
+		StatsModule,
+		AuthModule
 	],
 	controllers: [AppController],
 	providers: [AppService],
