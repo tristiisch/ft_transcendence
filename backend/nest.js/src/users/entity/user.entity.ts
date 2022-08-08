@@ -1,5 +1,5 @@
 import { IsEmail, IsInt, IsNotEmpty } from "class-validator";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 export enum UserStatus {
 	OFFLINE,
@@ -10,7 +10,7 @@ export enum UserStatus {
 }
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	// @IsInt()
@@ -24,9 +24,6 @@ export class User {
 	@IsEmail()
 	@IsNotEmpty()
 	email: string;
-
-	@Column({ unique: true, nullable: true })
-	token42?: string;
 
 	// @Column("int", { nullable: true, array: true })
 	// friends?: number[];

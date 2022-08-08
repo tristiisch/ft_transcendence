@@ -3,11 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseService } from './database/database.service';
 import { ChatModule } from './chat/chat.module';
-import { resolve } from 'path';
 import { FriendsModule } from './friends/friends.module';
 import { StatsModule } from './stats/stats.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,7 +14,6 @@ import { AuthModule } from './auth/auth.module';
 	imports: [
 		UsersModule,
 		DatabaseModule,
-		ConfigModule.forRoot({ envFilePath: resolve(`${__dirname}/.env`), isGlobal: true }),
 		TypeOrmModule.forRootAsync({ useClass: DatabaseService }),
 		ChatModule,
 		FriendsModule,
