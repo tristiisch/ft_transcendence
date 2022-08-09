@@ -3,40 +3,64 @@
 import { ref, onMounted, onUpdated } from 'vue';
 import Konva from 'konva'
 
-const ratio = 3989/2976
+const stage_ratio = 3989/2976
+const ball_speed_quotient = 200 // the least, the faster
 
 onMounted(() => {
-	var height = window.innerHeight * (75 / 100)
-	var width = height * ratio
+	function computeStageHeight(): number { return window.innerHeight * (75 / 100) }
+	var stage_height = computeStageHeight()
+	var stage_width = stage_height * stage_ratio
 	var stage = new Konva.Stage({
 		container: 'stage-container',
 		visible: true,
-		width: width,
-		height: height
+		height: computeStageHeight(),
+		width: stage_width
 	})
 	stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
 	var layer = new Konva.Layer()
 
+	var ball_x = stage.width() / 2
+	var ball_y = stage.height() / 2
+	var ball_radius = stage.width() / 100
 	var ball = new Konva.Circle({
-		x: stage.width() / 2,
-		y: stage.height() / 2,
-		radius: stage.width() / 100,
+		x: ball_x,
+		y: ball_y,
+		radius: ball_radius,
 		fill: 'red'
 	})
 	layer.add(ball)
 
+	var ball_speed = stage.width() / ball_speed_quotient
+	var dx = ball_speed
+	var dy = -ball_speed
+	var ball_animation = new Konva.Animation(function(frame) {
+		if (ball.x() + dx > stage.width() - ball_radius || ball.x() + dx < ball_radius) { dx = -dx; }
+		if (ball.y() + dy > stage.height() - ball_radius || ball.y() + dy < ball_radius) { dy = -dy; }
+		ball.x(ball.x() + dx);
+		ball.y(ball.y() + dy);
+	}, layer);
+
+	ball_animation.start();
+
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
-		height = window.innerHeight * (75 / 100)
-		width = height * ratio
+		stage.height(computeStageHeight())
+		stage.width(stage.height() * stage_ratio)
 
-		stage.width(width)
-		stage.height(height)
-		ball.x(stage.width () / 2)
-		ball.y(stage.height () / 2)
-		ball.radius(stage.width() / 100)
+		ball_x = stage_width / stage.width() * ball_x
+		ball_y = stage_height / stage.height() * ball_y
+		ball.x(ball_x)
+		ball.y(ball_y)
+		ball_speed = stage.width() / ball_speed_quotient
+		dx = ball_speed
+		dy = -ball_speed
+		ball_radius = stage.width() / 100
+		ball.radius(ball_radius)
+
+		stage_height = stage.height()
+		stage_width = stage.width()
 	}
 	window.onresize = resizeStage
 	//-------------------------------------------------
