@@ -22,7 +22,7 @@ const partToDisplay = ref('Player Stats');
 
 function setRightCardTitle(displayPart: string) {
 	if (displayPart === 'Notifications') rightCardTitle.value = 'NOTIFICTIONS';
-	else if (displayPart === 'Setting') rightCardTitle.value = 'SETTINGS';
+	else if (displayPart === 'Settings') rightCardTitle.value = 'SETTINGS';
 	else rightCardTitle.value = 'PLAYER STATS';
 }
 
