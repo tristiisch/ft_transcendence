@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
-import { ref, onMounted, computed, onBeforeMount, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted } from 'vue';
+import { ref, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import Toogle from '@/components/Leaderboard/ToogleButton.vue'
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue'
@@ -68,8 +68,8 @@ function statusOrder() {
 	}
 }
 
-async function fetchUsers() {
-	await UsersService.getUsers()
+function fetchUsers() {
+	UsersService.getUsers()
 		.then((response) => {
 			users.value = response.data;
 		})
@@ -79,8 +79,8 @@ async function fetchUsers() {
 		rankOrder()
 }
 
-async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.userData.username)
+function fetchfriends() {
+	UsersService.getUserfriends(userStore.userData.username)
 		.then((response) => {
 			for (let i = 0; i < response.data.length; i++) {
 				users.value.find((user) => {
@@ -106,7 +106,7 @@ const displayUser = computed<User[]>(() => {
 	else return friends.value;
 });
 
-onMounted(() => {
+onBeforeMount(() => {
 	fetchUsers();
 	fetchfriends();
 });
@@ -123,7 +123,7 @@ onMounted(() => {
 				<div class="mr-5 mb-2 self-end">
 					<div class="flex justify-center items-center">
 						<span class="text-slate-600 pr-2">All</span>
-						<Toogle @switch-button="switchDysplayUsers"></Toogle>
+						<Toogle @switchButton="switchDysplayUsers"></Toogle>
 						<span class="text-slate-600 pl-2">Friends</span>
 					</div>
 				</div>
