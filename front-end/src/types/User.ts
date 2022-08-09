@@ -7,7 +7,7 @@ export default interface User {
   nbVictory: number
   nbDefeat: number
   avatar: string
-  '2fa': string
+  '2fa': boolean
   current_status: Status
 }
 
@@ -18,7 +18,6 @@ export default interface User {
 	//avatar: string;
 }*/
 export interface UserState {
-	userAuth: { id: string, token: string, isRegistered: boolean;};
-	isLoading: boolean;
+	userAuth: { id: string, token: string, isRegistered: boolean, isAuthenticated: boolean};
 	userData: User;
 }

@@ -51,13 +51,13 @@ onMounted(() => {
 						<h1 class="text-center text-red-200 text-sm sm:text-base w-3/4 sm:mx-6 h-[50px] md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">CHOOSE WORLD</h1>
 						<div class="flex justify-center w-full md:gap-4">
 							<div class="w-28 h-24 sm:w-32 sm:h-28 md:w-36 md:h-32  bg-sky-200"></div>
-							<div class="w-28 h-24 sm:w-32 sm:h-28 md:w-36 md:h-32  bg-black"></div> 
+							<div class="w-28 h-24 sm:w-32 sm:h-28 md:w-36 md:h-32  bg-black"></div>
 						</div>
 					</div>
 					<button-gradient2 class="flex justify-center mb-4 sm:mb-0 sm:mt-4 sm:w-3/4">
 						<span class="text-sm sm:text-base md:text-lg xl:text-xl">LAUNCH</span>
 					</button-gradient2>
-				</div>	
+				</div>
 			</card-right>
 		</div>
 	</base-ui>

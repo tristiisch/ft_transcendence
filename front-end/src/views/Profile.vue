@@ -2,8 +2,8 @@
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import { useUserStore } from '@/stores/userStore';
-import { ref, onBeforeMount } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onBeforeMount, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import PlayerHistory from '@/components/Profile/PlayerHistory.vue';
 import CardRight from '@/components/CardRight.vue';
 import PlayerStats from '@/components/Profile/PlayerStats.vue';
@@ -16,7 +16,11 @@ import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
 
 const userStore = useUserStore();
 const route = useRoute();
+const router = useRouter();
+
 const user = ref({} as User);
+const newUsername = ref('');
+const isLoading = ref(false);
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
 
@@ -32,12 +36,17 @@ function setPartToDisplay(displayPart: string) {
 }
 
 function fetchUser(name: string) {
+	isLoading.value = true;
 	UsersService.getUser(route.params.username as string)
 		.then((response) => {
 			user.value = response.data;
+			isLoading.value = false;
 		})
-		.catch((e: Error) => {
-			console.log(e);
+		.catch((e) => {
+			router.replace({
+				name: 'NotFound',
+				params: { pathMatch: route.path.substring(1).split('/') },
+			});
 		});
 }
 
@@ -45,11 +54,13 @@ onBeforeMount(() => {
 	if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
 	else fetchUser(route.params.username as string);
 });
-
 </script>
 
 <template>
-	<base-ui>
+	<div v-if="isLoading" class="flex items-center justify-center font-Arlon text-white text-6xl h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]">
+		Loading
+	</div>
+	<base-ui v-else>
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">

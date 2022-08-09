@@ -54,7 +54,9 @@ export default [
 
 	rest.get('/users/:username', (req, res, ctx) => {
 		console.log(req.params.username);
-		return res(ctx.json(users.find((user) => user.username === req.params.username)));
+		const user = users.find((user) => user.username === req.params.username)
+		if (user) return res(ctx.json(user));
+		else return res(ctx.status(403), ctx.json({ message: `user don't exist` }));
 	}),
 
 	rest.get('/users/:username/friends', (req, res, ctx) => {
@@ -102,44 +104,48 @@ export default [
 			redirect_uri: import.meta.env.VITE_REDIRECT_URI,
 		};
 		console.log(postData);
-		const result = await axios.post(url, postData);
-		console.log(result);
-		const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
-		const userInfo = await axios.get(import.meta.env.VITE_42_API_ME, { headers: headersRequest });
-		console.log(userInfo);
-		users.push({
-			id: userInfo.data.login,
-			username: '',
-			rank: 0,
-			nbVictory: 0,
-			nbDefeat: 0,
-			avatar: userInfo.data.image_url,
-			'2fa': '',
-			current_status: Status.OFFLINE,
-		});
-		return res(
-			ctx.json({
+		try {
+			const result = await axios.post(url, postData);
+			console.log(result);
+			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
+			const userInfo = await axios.get(import.meta.env.VITE_42_API_ME, { headers: headersRequest });
+			console.log(userInfo);
+			users.push({
 				id: userInfo.data.login,
-				accessToken: 'fake-jwt-token',
-			})
-		);
-		//return res(ctx.status(404));
+				username: '',
+				rank: 0,
+				nbVictory: 0,
+				nbDefeat: 0,
+				avatar: userInfo.data.image_url,
+				'2fa': false,
+				current_status: Status.OFFLINE,
+			});
+			return res(
+				ctx.json({
+					id: userInfo.data.login,
+					accessToken: 'fake-jwt-token',
+				})
+			);
+		} catch {
+			return res(ctx.status(404), ctx.json({ message: 'Error of connection' }));
+		}
 	}),
+
 	rest.post('/auth/2fa/login', async (req, res, ctx) => {
 		const data = await req.json();
 		const otpToken = data.otpToken;
-
-		const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
-		//const token = totp.generate(secret);
-		//const token = authenticator.generate(secret);
+		/*const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
+		const token = totp.generate(secret);
+		const token = authenticator.generate(secret);
 		try {
-			const isValid = authenticator.check(otpToken, secret);
-			console.log(isValid);
-			return res(ctx.status(200));
+			authenticator.check(otpToken, secret);
 		} catch (err) {
-			console.log(err);
 			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
-		}
+		}*/
+		if (otpToken)
+			return res(ctx.status(200), ctx.json({ accessToken: 'fake-jwt-token' }));
+		else
+			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
 	}),
 
 	rest.post('/auth/2fa/enable', (req, res, ctx) => {
