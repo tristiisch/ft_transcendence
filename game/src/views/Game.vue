@@ -5,9 +5,19 @@ import Konva from 'konva'
 
 const stage_ratio = 3989/2976
 const ball_speed_quotient = 200 // the least, the faster
+const ball_size_quotient = 100 // the least, the bigger
+const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
+const ball_ypos_quotient = 2
+
+const rect_width_quotient = 50
+const rect_height_quotient = 5
 
 onMounted(() => {
 	function computeStageHeight(): number { return window.innerHeight * (75 / 100) }
+	function computeBallSize(): number { return stage.width() / ball_size_quotient }
+	function computeRectWidth(): number { return stage.width() / rect_width_quotient }
+	function computeRectHeight(): number { return stage.height() / rect_height_quotient }
+
 	var stage_height = computeStageHeight()
 	var stage_width = stage_height * stage_ratio
 	var stage = new Konva.Stage({
@@ -20,14 +30,24 @@ onMounted(() => {
 
 	var layer = new Konva.Layer()
 
-	var ball_radius = stage.width() / 100
+	var ball_radius = computeBallSize()
 	var ball = new Konva.Circle({
-		x: stage.width() / 2,
-		y: stage.height() / 2,
+		x: stage.width() / ball_xpos_quotient,
+		y: stage.height() / ball_ypos_quotient,
 		radius: ball_radius,
 		fill: 'red'
 	})
+
+	var rect_p1 = new Konva.Rect({
+		x: stage.width() / 10,
+		y: stage.height() / 2.5,
+		width: computeRectWidth(),
+		height: computeRectHeight(),
+		fill: 'purple'
+	})
+
 	layer.add(ball)
+	layer.add(rect_p1)
 
 	var ball_speed = stage.width() / ball_speed_quotient
 	var dx = ball_speed
@@ -53,7 +73,7 @@ onMounted(() => {
 		ball_speed = stage.width() / ball_speed_quotient
 		dx = dx > 0 ? ball_speed : -ball_speed
 		dy = dy > 0 ? ball_speed : -ball_speed
-		ball_radius = stage.width() / 100
+		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
 
 		stage_height = stage.height()
@@ -84,9 +104,9 @@ onMounted(() => {
 <style scoped>
 
 #stage-container {
-	height:75%;
-	max-width:3989px;
-	max-height:2976px;
+	height: 75%;
+	max-width: 3989px;
+	max-height: 2976px;
 	aspect-ratio: 3989/2976;
 	position: absolute;
 	margin-right: auto;
