@@ -21,6 +21,8 @@ export class AuthController {
 	@UseGuards(FtAuthguard)
 	async redirect(@Res() res: Response, @Req() req: Request) {
 		const username = req.user['username'];
+		console.log(req.user);
+		await this.authService.UserConnecting(username);
 		let auth: boolean = false;
 		const payload: FtPayload = { username, auth };
 		const accessToken: string = this.jwtService.sign(payload);

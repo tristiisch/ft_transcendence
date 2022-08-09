@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 
@@ -9,12 +10,21 @@ export class AuthService {
 	}
 
 	async UserConnecting(username: string){
-
-		const user = await this.usersService.findOneByUsername(username);
-		if (!user){
-			//creation de l'user
-			//creation connection
+		let user: User;
+		try {
+			user = await this.usersService.findOneByUsername(username);
+		} catch (err) {
+			if (err instanceof NotFoundException) {
+				user = new User;
+				user.username = username;
+				user.status = UserStatus.ONLINE;
+				this.usersService.add(user);
+			} else {
+				throw err;
+			}
 		}
+	//	if (!user){
+	//	}
 	}
 
 	public async createToken(username: string): Promise<string> {
