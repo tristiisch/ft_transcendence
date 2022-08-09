@@ -23,7 +23,7 @@ export class AuthController {
 		const username = req.user['username'];
 		console.log(req.user);
 		await this.authService.UserConnecting(username);
-		let auth: boolean = false;
+		let auth: boolean = true;
 		const payload: FtPayload = { username, auth };
 		const accessToken: string = this.jwtService.sign(payload);
 		res.cookie('jwt', accessToken, {httpOnly: true});
