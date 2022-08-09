@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
-import { useToast } from 'vue-toastification';
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -54,11 +53,11 @@ const router = createRouter({
 			component: () => import('@/views/NotFound.vue'),
 			meta: { requiresAuth: true },
 		},
+		{ path: '/:notFound(.*)', name: 'notFound', component: () => import('@/views/NotFound.vue') },
 	],
 });
 
 router.beforeEach((to, _) => {
-
 	const userStore = useUserStore();
 	if (to.name !== 'Login' && !userStore.isLoggedIn) {
 		return { name: 'Login' };
@@ -69,25 +68,6 @@ router.beforeEach((to, _) => {
 	} else if (to.name === 'Login' && userStore.isLoggedIn && userStore.isRegistered && userStore.isAuthenticated) {
 		return { name: 'Home' };
 	}
-
-
-	/*if (to.name === 'Login' && !userStore.isLoggedIn) {
-		return { name: 'Login' };
-	} else if (to.meta.requiresAuth && !userStore.isLoggedIn && !userStore.isRegistered) {
-		return { name: 'Login' };
-	} else if (to.meta.requiresAuth && userStore.isLoggedIn && userStore.isRegistered) {
-		if (userStore.is2faEnable && !userStore.isAuthenticated) return { name: 'Login' };
-	} else if (to.name === 'Login' && userStore.isLoggedIn && userStore.isRegistered) {
-		return { name: 'Home' };
-	}*/
 });
-
-/*if (to.name === 'Login' && to.query.code !== undefined && to.query.state !== undefined && !userStore.isLoggedIn) {
-	userStore.handleLogin(to.query.code as string, to.query.state as string);
-	return { name: 'Login' };
-} else if (to.meta.requiresAuth && !userStore.isLoggedIn && !userStore.isRegistered) {
-	return { name: 'Login' };
-} else if (!to.meta.requiresAuth && userStore.isLoggedIn && userStore.isRegistered) {
-	return { name: 'Home' };*/
 
 export default router;

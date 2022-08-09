@@ -4,19 +4,6 @@ module.exports = {
   theme: {
     extend: {
       mode: 'jit',
-      screens: {
-        'vxl': {'raw': '(min-height: 1280px)'},
-        // => @media (max-height: 1279px) { ... }
-
-        'vlg': {'raw': '(min-height: 1024px)'},
-        // => @media (max-height: 1023px) { ... }
-
-        'vmd': {'raw': '(min-height: 880px)'},
-        // => @media (max-height: 767px) { ... }
-
-        'vsm': {'raw': '(max-height: 375px)'},
-        // => @media (max-height: 639px) { ... }
-      },
       backgroundImage: {
         'brick': "url(@/assets/brick.jpg)",
         'TvScreen-texture': "url('@/assets/checkered-pattern.png')",
@@ -38,6 +25,12 @@ module.exports = {
         '36': '9rem',
       },
       screens: {
+        'tvxs': { 'raw': '(max-height: 375px)' },
+        // => @media (max-height: 800px),(min-width: 375px) { ... }
+        'tvsm': { 'raw': '(max-height: 640px),(min-width: 640px)' },
+        // => @media (max-height: 800px),(min-width: 375px) { ... }
+        'tvlg': { 'raw': '(max-height: 1024px),(min-width: 1024px)' },
+        // => @media (max-height: 800px),(min-width: 375px) { ... }
         '3xl': '1792px',
       },
     },
