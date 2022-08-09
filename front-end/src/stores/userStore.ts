@@ -62,8 +62,8 @@ export const useUserStore = defineStore('userStore', {
 		async updateAvatar(image: string) {
 			try {
 				console.log(image);
-				await UsersService.setAvatar(this.userAuth.id, this.userData.avatar);
 				this.userData.avatar = image;
+				await UsersService.setAvatar(this.userAuth.id, this.userData.avatar);
 				localStorage.setItem('userData', JSON.stringify(this.userData));
 			} catch (error: unknown) {
 				throw error;

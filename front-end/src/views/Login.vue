@@ -123,7 +123,7 @@ onBeforeMount(() => {
 			<div class="font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
 			<button-gradient1 v-if="!userStore.isLoggedIn" @click="redirectTo42LoginPage()">Login with 42</button-gradient1>
 			<BaseCard v-else-if="!userStore.isRegistered">
-				<form class="flex justify-center items-center gap-8 w-full" @submit.prevent>
+				<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent>
 					<div class="flex flex-col gap-4 items-center">
 						<p class="text-gray-300 text-center w-full">Please choose an username and avatar</p>
 						<input
@@ -135,7 +135,7 @@ onBeforeMount(() => {
 						/>
 						<button-gradient1 @click="submitRegistrationForm">Send</button-gradient1>
 					</div>
-					<upload-avatar @image-loaded="uploadImage" :image="image"></upload-avatar>
+					<upload-avatar login @image-loaded="uploadImage" :image="image"></upload-avatar>
 				</form>
 			</BaseCard>
 			<BaseCard v-else-if="userStore.userData['2fa']">

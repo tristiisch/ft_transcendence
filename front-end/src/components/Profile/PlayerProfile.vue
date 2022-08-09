@@ -27,7 +27,7 @@ watch(
 
 <template>
 	<div class="self-center flex flex-col justify-around items-center gap-3 pt-4 sm:pt-0 pl-3 sm:pl-0 sm:max-w-full">
-		<upload-avatar @image-loaded="uploadImage" :image="image"></upload-avatar>
+		<img class="w-20 h-20 rounded-full object-cover border-2 sm:w-36 sm:h-36" :src="user.avatar" alt="Rounded avatar" />
 		<div class="flex gap-2 sm:gap-5">
 			<player-status :user="user"></player-status>
 			<span class="text-xl sm:text-3xl">{{ user.username }}</span>
