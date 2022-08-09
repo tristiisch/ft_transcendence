@@ -53,7 +53,7 @@ const router = createRouter({
 			component: () => import('@/views/TwoFa.vue'),
 			meta: { requiresAuth: true },
 		},
-		{ path: '/:notFound(.*)', component: () => import('@/views/NotFound.vue') },
+		{ path: '/:notFound(.*)', name: 'notFound', component: () => import('@/views/NotFound.vue') },
 	],
 });
 
