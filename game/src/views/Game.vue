@@ -20,12 +20,10 @@ onMounted(() => {
 
 	var layer = new Konva.Layer()
 
-	var ball_x = stage.width() / 2
-	var ball_y = stage.height() / 2
 	var ball_radius = stage.width() / 100
 	var ball = new Konva.Circle({
-		x: ball_x,
-		y: ball_y,
+		x: stage.width() / 2,
+		y: stage.height() / 2,
 		radius: ball_radius,
 		fill: 'red'
 	})
@@ -33,10 +31,10 @@ onMounted(() => {
 
 	var ball_speed = stage.width() / ball_speed_quotient
 	var dx = ball_speed
-	var dy = -ball_speed
+	var dy = ball_speed
 	var ball_animation = new Konva.Animation(function(frame) {
-		if (ball.x() + dx > stage.width() - ball_radius || ball.x() + dx < ball_radius) { dx = -dx; }
-		if (ball.y() + dy > stage.height() - ball_radius || ball.y() + dy < ball_radius) { dy = -dy; }
+		if (ball.x() + dx > stage_width - ball_radius || ball.x() + dx < ball_radius) { dx = -dx; }
+		if (ball.y() + dy > stage_height - ball_radius || ball.y() + dy < ball_radius) { dy = -dy; }
 		ball.x(ball.x() + dx);
 		ball.y(ball.y() + dy);
 	}, layer);
@@ -49,13 +47,12 @@ onMounted(() => {
 		stage.height(computeStageHeight())
 		stage.width(stage.height() * stage_ratio)
 
-		ball_x = stage_width / stage.width() * ball_x
-		ball_y = stage_height / stage.height() * ball_y
-		ball.x(ball_x)
-		ball.y(ball_y)
+		var ratio = stage.height() / stage_height
+		ball.x(ball.x() * ratio)
+		ball.y(ball.y() * ratio)
 		ball_speed = stage.width() / ball_speed_quotient
-		dx = ball_speed
-		dy = -ball_speed
+		dx = dx > 0 ? ball_speed : -ball_speed
+		dy = dy > 0 ? ball_speed : -ball_speed
 		ball_radius = stage.width() / 100
 		ball.radius(ball_radius)
 
