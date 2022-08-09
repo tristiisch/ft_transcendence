@@ -77,13 +77,6 @@ export class UsersService {
 		return await this.usersRepository.findOne({ where: {username : name } }).then((user: User) => this.lambdaGetUser(user, name), this.lambdaDatabaseUnvailable);
 	}
 
-	async findOneByEmail(email: string): Promise<User> {
-		if (!email || email.length == 0) {
-			throw new PreconditionFailedException("Can't get a user by an empty email.");
-		}
-		return await this.usersRepository.findOne({ where: {email : email } }).then((user: User) => this.lambdaGetUser(user, email), this.lambdaDatabaseUnvailable);
-	}
-
 	async remove(id: number) {
 		if (id < 0) {
 			throw new PreconditionFailedException("Can't remove a user with negative id " + id + ".");
@@ -118,8 +111,7 @@ export class UsersService {
 	async add(newUser: User): Promise<User> {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder("user")
 			.where("user.id = :id", { id: newUser.id })
-			.orWhere("user.username = :username", { username: newUser.username })
-			.orWhere("user.email = :email", { email: newUser.email });
+			.orWhere("user.username = :username", { username: newUser.username });
 
 		//console.log("SQL", sql.getQueryAndParameters());
 		await sqlStatement.getOne().then((checkUserExist: User) => {

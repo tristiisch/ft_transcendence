@@ -32,6 +32,16 @@ export class UsersController {
 	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		return this.usersService.update(id, userToUpdate);
 	}
+	
+	@Patch('me/:id/set-username')
+	updateUsername(@Param('id') id: number, @Body() userToUpdate) {
+		throw new NotImplementedException();
+	}
+
+	@Patch('me/:id/set-avatar')
+	update(@Param('id') id: number, @Body() userToUpdate) {
+		throw new NotImplementedException();
+	}
 
 	// localhost:3000/users/<id>
 	@Delete(':id')
@@ -43,11 +53,5 @@ export class UsersController {
 	@Get('name/:name')
 	getUserByUsername(@Param('name') name: string): Promise<User> {
 		return this.usersService.findOneByUsername(name);
-	}
-
-	// localhost:3000/users/email/<email>
-	@Get('email/:email')
-	getUserByEmail(@Param('email') email: string): Promise<User> {
-		return this.usersService.findOneByEmail(email);
 	}
 }

@@ -20,10 +20,8 @@ export class User extends BaseEntity {
 	@IsNotEmpty()
 	username: string;
 
-	@Column({ unique: true, length: 64 })
-	@IsEmail()
-	@IsNotEmpty()
-	email: string;
+	@Column({ nullable: true })
+	avatar_base64: string;
 
 	// @Column("int", { nullable: true, array: true })
 	// friends?: number[];

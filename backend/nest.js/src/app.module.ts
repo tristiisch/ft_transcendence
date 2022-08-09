@@ -9,6 +9,7 @@ import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
 import { StatsModule } from './stats/stats.module';
 import { AuthModule } from './auth/auth.module';
+import { MatchsHistoryModule } from './matchs-history/matchs-history.module';
 
 @Module({
 	imports: [
@@ -18,7 +19,8 @@ import { AuthModule } from './auth/auth.module';
 		ChatModule,
 		FriendsModule,
 		StatsModule,
-		AuthModule
+		AuthModule,
+		MatchsHistoryModule
 	],
 	controllers: [AppController],
 	providers: [AppService],
