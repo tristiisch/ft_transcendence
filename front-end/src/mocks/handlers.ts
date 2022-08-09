@@ -112,12 +112,12 @@ export default [
 			console.log(userInfo);
 			users.push({
 				id: userInfo.data.login,
-				username: 'jo',
+				username: '',
 				rank: 0,
 				nbVictory: 0,
 				nbDefeat: 0,
 				avatar: userInfo.data.image_url,
-				'2fa': true,
+				'2fa': false,
 				current_status: Status.OFFLINE,
 			});
 			return res(
