@@ -81,7 +81,7 @@ function fetchUsers() {
 }
 
 function fetchfriends() {
-	UsersService.getUserfriends(userStore.userData.username)
+	UsersService.getUserfriends(userStore.userData.id)
 		.then((response) => {
 			for (let i = 0; i < response.data.length; i++) {
 				users.value.find((user) => {

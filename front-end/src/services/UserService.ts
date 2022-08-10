@@ -27,20 +27,28 @@ class UserService {
 		return axios.get(`users/${username}`);
 	}
 
-	getUserfriends(username: string) {
-		return axios.get(`users/${username}/friends`);
+	getUserfriends(id: number) {
+		return axios.get(`friends/names/${id}`);
 	}
 
-	getCurrentMatchs(username: string) {
-		return axios.get(`users/${username}/matchs`);
+	getCurrentMatchs() {
+		return axios.get('matchs');
 	}
 
-	sendFriendRequest(username: string, target: string) {
-		return axios.post(`users/${username}/friend-request`, { target });
+	sendFriendRequest(id: number, target: string) {
+		return axios.post(`users/${id}/friend-request`, { target });
 	}
 
-	sendUnfriendRequest(username: string, target: string) {
-		return axios.post(`users/${username}/unfriend-request`, { target });
+	AcceptFriendRequest(id: number, target: string) {
+		return axios.post(`users/${id}/friend-request`, { target });
+	}
+
+	RefuseFriendRequest(id: number, target: number) {
+		return axios.post(`users/${id}/friend-request`, { target });
+	}
+
+	removeFriend(id: number, target: string) {
+		return axios.post(`users/${id}/unfriend-request`, { target });
 	}
 
 	getMatchsHistory(username: string) {

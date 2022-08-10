@@ -6,6 +6,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, watch, onBeforeMount } from 'vue';
+import AuthService from '@/services/AuthService';
 
 const router = useRouter();
 const route = useRoute();

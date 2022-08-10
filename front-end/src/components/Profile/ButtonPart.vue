@@ -35,8 +35,8 @@
     }
 
     async function treatFriendRequest() {
-        if (friendButton.value === 'Add friend') await UsersService.sendFriendRequest(userStore.userData.username, route.params.username as string);
-        else await UsersService.sendUnfriendRequest(userStore.userData.username, route.params.username as string);
+        if (friendButton.value === 'Add friend') await UsersService.sendFriendRequest(userStore.userData.id, route.params.username as string);
+        else await UsersService.removeFriend(userStore.userData.id, route.params.username as string);
         await fetchfriends();
     }
 
@@ -63,7 +63,7 @@
     });
 
     async function fetchfriends() {
-        await UsersService.getUserfriends(userStore.userData.username)
+        await UsersService.getUserfriends(userStore.userData.id)
             .then((response) => {
                 friends.value = response.data;
                 console.log(response.data);

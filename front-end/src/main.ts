@@ -13,10 +13,10 @@ import BaseUi from '@/components/BaseUi.vue';
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 
-if (process.env.NODE_ENV === 'development') {
+/*if (process.env.NODE_ENV === 'development') {
 	const { worker } = await import('./mocks/browser');
 	worker.start();
-}
+}*/
 
 const app = createApp(App);
 
