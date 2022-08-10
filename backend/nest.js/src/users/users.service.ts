@@ -116,7 +116,7 @@ export class UsersService {
 		//console.log("SQL", sql.getQueryAndParameters());
 		await sqlStatement.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
-				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username.");
+				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username."); // TODO Change msg for client
 		}, this.lambdaDatabaseUnvailable);
 
 		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
