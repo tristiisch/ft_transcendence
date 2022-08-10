@@ -25,8 +25,8 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-tglory@student.42Lyon.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-foobar}
       PGADMIN_LISTEN_PORT: 8080
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_CONFIG_SERVER_MODE: "False" # Required to have more permission in containers, but remove connection with email & password to pgAdmin
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False" # If this is set to false, no one needs a "master password" to log in 
     volumes:
     - db_pgadmin:/var/lib/pgadmin
     - ./pgAdmin/servers.json:/pgadmin4/servers.json
@@ -40,9 +40,10 @@ services:
     hostname: pgAdmin
     depends_on:
     - postgreSQL
+# tricky way to set the right permissions on the file that contains the PostgreSQL database password
     entrypoint: >
       /bin/sh -c "
-      mv /pgadmin4/.pgpass /var/lib/pgadmin/;
+      cp -f /pgadmin4/.pgpass /var/lib/pgadmin/;
       chmod 600 /var/lib/pgadmin/.pgpass;
       chown pgadmin /var/lib/pgadmin/.pgpass;
       /entrypoint.sh
