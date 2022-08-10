@@ -10,12 +10,12 @@ async function bootstrap() {
 	const port = process.env.PORT;
 
 	// setting localhost:3000 to localhost:3000/api
-	// app.setGlobalPrefix('api');
+	app.setGlobalPrefix('api');
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
 	await app.listen(port, () => {
-	  console.log('[WEB]', 'http://localhost:' + port);
+		console.log('[WEB]', `http://localhost:${port}/api`);
 	});
 }
 bootstrap();

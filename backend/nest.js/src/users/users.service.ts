@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { isEquals } from "src/utils/entityutils";
+import { isEquals, isNumberPositive } from "src/utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from "typeorm";
 import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
@@ -64,9 +64,7 @@ export class UsersService {
 	}
 
 	async findOne(id: number): Promise<User> {
-		if (id < 0) {
-			throw new PreconditionFailedException("Can't get a user with negative id " + id + ".");
-		}
+		isNumberPositive(id, 'get a user');
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
@@ -74,13 +72,13 @@ export class UsersService {
 		if (!name || name.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty name.");
 		}
-		return await this.usersRepository.findOne({ where: {username : name } }).then((user: User) => this.lambdaGetUser(user, name), this.lambdaDatabaseUnvailable);
+		return await this.usersRepository.findOne({ where: {username : name } }).then((user: User) => {
+			return this.lambdaGetUser(user, name);
+		}, this.lambdaDatabaseUnvailable);
 	}
 
 	async remove(id: number) {
-		if (id < 0) {
-			throw new PreconditionFailedException("Can't remove a user with negative id " + id + ".");
-		}
+		isNumberPositive(id, 'remove a user');
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) {
 				throw new NotFoundException("The user " + id + " does not exist.");

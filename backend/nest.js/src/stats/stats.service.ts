@@ -1,7 +1,7 @@
 import { Inject, Injectable, InternalServerErrorException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
-import { isEquals } from 'src/utils/entityutils';
+import { isEquals, isNumberPositive } from 'src/utils/utils';
 import { InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { UserStats } from './entity/userstats.entity';
 
@@ -17,8 +17,7 @@ export class StatsService {
     private readonly userService: UsersService;
 
     async findOne(userId: number): Promise<UserStats> {
-		if (userId < 0)
-			throw new PreconditionFailedException("Can't get a user with negative id " + userId + ".");
+		isNumberPositive(userId, 'get a user');
         await this.userService.findOne(userId);
 		return await this.statsRepository.findOneBy({ user_id: userId }).then((stats: UserStats) => {
             return stats;
@@ -35,7 +34,6 @@ export class StatsService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}
-			console.log('new user added : ', stats)
 			return stats;
 		}, this.userService.lambdaDatabaseUnvailable);
     }

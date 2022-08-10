@@ -1,3 +1,5 @@
+import { PreconditionFailedException } from "@nestjs/common";
+
 export function isEquals(entity1: any, entity2: any) : boolean {
     if (!entity1 && !entity2)
         return true;
@@ -19,4 +21,14 @@ export function isEquals(entity1: any, entity2: any) : boolean {
             return false;
     }
     return true;
+}
+
+/**
+ * @throws {PreconditionFailedException} If {@link nb} is negative or not a number
+ */
+export function isNumberPositive(nb: number, actionMsg: string) {
+    if (Number.isNaN(nb))
+        throw new PreconditionFailedException(`Can't ${actionMsg} with a non-numeric variable.`);
+    else if (nb < 0)
+        throw new PreconditionFailedException(`Can't ${actionMsg} with negative number ${nb}.`);
 }

@@ -17,24 +17,30 @@ export class FriendsService {
     private readonly userService: UsersService;
 
 	/**
-	 * Add a friend request. @param user1 is the userId of the user who ask for friendship @param user2
+	 * Add a friend request.
+	 * 
+	 * @param user is the user who ask for friendship.
+	 * @param target is the user who receives the request.
+	 * @return A confimation message
+	 * 
+	 * @throws {PreconditionFailedException} When {@link user} is same user as {@link target}.
+	 * @throws {NotAcceptableException} When they are already friends or waiting for one of them to accept a friend request.
+	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async addFriendRequest(userId: number, targetId: number): Promise<Friendship> {
-		if (userId == targetId)
-			throw new PreconditionFailedException("A user cannot ask for friendships himself.");
+	async addFriendRequest(user: User, target: User): Promise<{statusCode: number, message: string}> {
+		if (user.id == target.id)
+			throw new PreconditionFailedException("You can't be friends with yourself.");
 
-		await this.userService.findOne(userId);
-		await this.userService.findOne(targetId);
-		const friendshipCheck: Friendship = await this.findOne(userId, targetId, false);
+		const friendshipCheck: Friendship = await this.findOne(user.id, target.id, false);
 
 		if (friendshipCheck) {
-			throw new NotAcceptableException("They is already a relation between " + friendshipCheck.user_id1 + " and " + friendshipCheck.user_id2
+			throw new NotAcceptableException("They is already a relation between " + user.username + " and " + target.username
 				+ " with status " + FriendshipStatus[friendshipCheck.status] + ".");
 		}
 		const friendship: Friendship = new Friendship();
 
-		friendship.user_id1 = userId;
-		friendship.user_id2 = targetId;
+		friendship.user_id1 = user.id;
+		friendship.user_id2 = target.id;
 	
 		return await this.friendsRepository.insert(friendship).then((insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
@@ -42,61 +48,78 @@ export class FriendsService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}
-			return friendship;
+			return { statusCode: 200, message: `You asked as a friend ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
 
 	/**
-	 * Add a friend request. @param user1 is the userId of the user who ask for friendship @param user2
+	 * Accept a friend request.
+	 *
+	 * @param user is the user who accepts the request.
+	 * @param target is the user who ask for friendship.
+	 * @return A confimation message
+	 * 
+	 * @throws {PreconditionFailedException} When {@link user} is same user as {@link target}.
+	 * @throws {NotAcceptableException} When they are already friends or waiting for one of them to accept a friend request.
+	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	 async acceptFriendRequest(userId1: number, userId2: number): Promise<Friendship> {
-		if (userId1 == userId2)
-			throw new PreconditionFailedException("A user cannot ask for friendships himself.");
+	 async acceptFriendRequest(user: User, target: User): Promise<{statusCode: number, message: string}> {
+		if (target.id == user.id)
+			throw new PreconditionFailedException("You can't be friends with yourself.");
 
-		await this.userService.findOne(userId1);
-		await this.userService.findOne(userId2);
-		const friendship: Friendship = await this.findOne(userId1, userId2, true);
+		this.acceptFriendRequest
+		const friendship: Friendship = await this.findOne(target.id, user.id, true);
 
-		if (!friendship) {
-			throw new NotAcceptableException(userId2 + " has no friend request from " + userId1 + ".");
-		}
+		if (!friendship)
+			throw new NotAcceptableException(user.username + " has no friend request from " + target.username + ".");
 
-		if (friendship.status == FriendshipStatus.ACCEPTED) {
-			throw new NotAcceptableException(userId2 + " is already friend with " + userId1 + ".");
-		}
+		if (friendship.status == FriendshipStatus.ACCEPTED)
+			throw new NotAcceptableException(`You are already friend with ${target.username}.`);
 
 		friendship.status = FriendshipStatus.ACCEPTED;
 	
 		return await this.friendsRepository.save(friendship).then((fs: Friendship) => {
-			return fs;
+			return { statusCode: 200, message: `You are now friend with ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
 
 	/**
-	 * Remove a relation (friend request or friend relation). Order of params changed nothing
+	 * Remove a relation (friend request or friend relation). Order of params changed only confirmation message.
+	 * 
+	 * @return A confirmation message.
+	 * 
+	 * @throws {PreconditionFailedException} When {@link user} is same user as {@link target}.
+	 * @throws {NotAcceptableException} When there is no pending friendship request or a confirmed friendship.
+	 * @throws {InternalServerErrorException} When the value in database can't be changed.
+	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async removeFriendship(userId: number, targetId: number) {
-		if (userId == targetId)
-			throw new PreconditionFailedException("A user cannot be friend with itself.");
+	async removeFriendship(user: User, target: User): Promise<{statusCode: number, message: string}> {
+		if (target.id == user.id)
+			throw new PreconditionFailedException('Unable to suppress a friendship with oneself.');
 
-		await this.userService.findOne(userId);
-		await this.userService.findOne(targetId);
-		const friendship: Friendship = await this.findOne(userId, targetId, false);
+		const friendship: Friendship = await this.findOne(user.id, target.id, false);
 
 		if (!friendship) {
-			throw new NotAcceptableException("They is no friend request/relation between " + userId + " and " + targetId + ".");
+			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
 		return await this.friendsRepository.delete(friendship).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0)
 				throw new InternalServerErrorException("Can't remove friendship of " + friendship.user_id1 + " and " + friendship.user_id1 + ".");
 			else
-				return { statusCode: 200, message: "Friendship between " + userId + " and " + targetId + " has been successfully removed." };
+				return { statusCode: 200, message: `You are no longer friends with ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
 
 	/**
-	 * @param strict boolean value if the order of the parameters @param user1 & @param user2 is important 
+	 * Find a {@link Friendship} with the two users concerned.
+	 * 
+	 * @param user1 is the user who originally requested the friendship if {@link strict} is true.
+	 * @param user2 is the user who originally receives the request if {@link strict} is true.
+	 * @param strict strict must be set to true if the order of the parameters is important. Otherwise it must be false.
+	 * @return The {@link Friendship} find with theses parameters.
+	 * 
+	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
 	private async findOne(user1: number, user2: number, strict: boolean): Promise<Friendship> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
@@ -112,19 +135,10 @@ export class FriendsService {
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
 
-	async findAllRelations(userId: number): Promise<Friendship[]> {
-		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
-
-		await this.userService.findOne(userId);
-		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).orWhere("friendship.user_id2 = :id");
-	
-		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
-			return friendships;
-		}, this.userService.lambdaDatabaseUnvailable);
-	}
-
 	/**
 	 * A pending invitation is when you make a friend request and you are waiting for its validation
+	 * 
+	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
 	async findPendingIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
@@ -218,5 +232,24 @@ export class FriendsService {
 
 	async findFriendsNames(userId: number): Promise<string[]> {
 		return (await this.findFriends(userId)).map(friend => friend.username);
+	}
+
+	async findAllRelations(userId: number): Promise<Friendship[]> {
+		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
+
+		await this.userService.findOne(userId);
+		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).orWhere("friendship.user_id2 = :id");
+	
+		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
+			return friendships;
+		}, this.userService.lambdaDatabaseUnvailable);
+	}
+
+	async findAll(): Promise<Friendship[]> {
+		try {
+			return await this.friendsRepository.find();
+		} catch (err) {
+			return this.userService.lambdaDatabaseUnvailable(err);
+		}
 	}
 }

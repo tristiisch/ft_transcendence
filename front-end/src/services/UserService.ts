@@ -35,20 +35,20 @@ class UserService {
 		return axios.get('matchs');
 	}
 
-	sendFriendRequest(id: number, target: string) {
-		return axios.post(`users/${id}/friend-request`, { target });
+	sendFriendRequest(id: number, targetUsername: string) {
+		return axios.post(`friends/request/add/${id}`, { username: targetUsername });
 	}
 
-	AcceptFriendRequest(id: number, target: string) {
-		return axios.post(`users/${id}/friend-request`, { target });
+	AcceptFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/accept/${id}`, { id: targetId });
 	}
 
-	RefuseFriendRequest(id: number, target: number) {
-		return axios.post(`users/${id}/friend-request`, { target });
+	RefuseFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/request/remove/${id}`, { id: targetId });
 	}
 
-	removeFriend(id: number, target: string) {
-		return axios.post(`users/${id}/unfriend-request`, { target });
+	removeFriend(id: number, targetUsername: string) {
+		return axios.post(`friends/remove/${id}`, { username: targetUsername });
 	}
 
 	getMatchsHistory(username: string) {

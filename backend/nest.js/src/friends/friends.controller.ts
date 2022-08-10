@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post } from '@nestjs/common';
+import { UserSelectDTO } from 'src/users/entity/user-select.dto';
+import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
+import { Friendship } from './entity/friendship.entity';
 import { FriendsService } from './friends.service';
 
 @Controller('friends')
@@ -10,82 +13,94 @@ export class FriendsController {
 
 	constructor(private readonly friendsService: FriendsService) {}
 
-	// localhost:3000/friends/ids/:id
+	async resolveUsers(func: { (user: User, target: User): any }, userId: number, targetSelect: UserSelectDTO){
+		const user: User = await this.usersService.findOne(userId);
+		const target: User = await targetSelect.resolveUser(this.usersService);
+
+		return func(user, target);
+	}
+
+	/**
+	 * @Debug request used for debug
+	 */
+	@Get('any')
+	getAll() {
+		return this.friendsService.findAll();
+	}
+ 
+	/**
+	 * @Debug request used for debug
+	 */
+	@Get('any/:id')
+	getAllRelations(@Param('id') id: number) {
+		return this.friendsService.findAllRelations(id);
+	}
+
+	@Post('request/add/:id')
+	addFriendRequest(@Param('id') id: number, @Body() targetSelect: UserSelectDTO) {
+		return this.resolveUsers(this.friendsService.addFriendRequest.bind(this.friendsService), id, targetSelect);
+	}
+
+	/**
+	 * Same as {@link removeFriend}
+	 */
+	@Post('request/remove/:id')
+	removeFriendRequest(@Param('id') id: number, @Body() targetSelect: UserSelectDTO) {
+		return this.resolveUsers(this.friendsService.removeFriendship.bind(this.friendsService), id, targetSelect);
+	}
+
+	@Post('accept/:id')
+	acceptFriend(@Param('id') id: number, @Body() targetSelect: UserSelectDTO) {
+		return this.resolveUsers(this.friendsService.acceptFriendRequest.bind(this.friendsService), id, targetSelect);
+	}
+
+	@Post('remove/:id')
+	removeFriend(@Param('id') id: number, @Body() targetSelect: UserSelectDTO) {
+		return this.resolveUsers(this.friendsService.removeFriendship.bind(this.friendsService), id, targetSelect);
+	}
+
 	@Get(':id')
 	getFriends(@Param('id') id: number) {
 		return this.friendsService.findFriends(id);
 	}
 
-	// localhost:3000/friends/ids/:id
 	@Get('ids/:id')
 	getFriendsIds(@Param('id') id: number) {
 		return this.friendsService.findFriendsIds(id);
 	}
 
-	// localhost:3000/friends/names/:id
 	@Get('names/:id')
 	getFriendsNames(@Param('id') id: number) {
 		return this.friendsService.findFriendsNames(id);
 	}
 
-	// localhost:3000/friends/accept/:id2/:id1
-	@Get('accept/:id2/:id1')
-	makeFriends(@Param('id2') id2: number, @Param('id1') id1: number) {
-		return this.friendsService.acceptFriendRequest(id1, id2);
-	}
-
-	// localhost:3000/friends/remove/:id1/:id2 SAME AS #removeFriendRequest
-	@Delete('remove/:id1/:id2')
-	removeFriends(@Param('id1') id1: number, @Param('id2') id2: number) {
-		return this.friendsService.removeFriendship(id1, id2);
-	}
-
-	// localhost:3000/friends/request/pending/:id
 	@Get('request/pending/:id')
 	getFriendRequestsPending(@Param('id') id: number) {
 		return this.friendsService.findPending(id);
 	}
 
-	// localhost:3000/friends/request/pending/ids/:id
 	@Get('request/pending/ids/:id')
 	getFriendRequestsPendingIds(@Param('id') id: number) {
 		return this.friendsService.findPendingIds(id);
 	}
 
-	// localhost:3000/friends/request/pending/names/:id
 	@Get('request/pending/names/:id')
 	getFriendRequestsPendingNames(@Param('id') id: number) {
 		return this.friendsService.findPendingNames(id);
 	}
 
-	// localhost:3000/friends/request/received/:id
 	@Get('request/received/:id')
 	getFriendRequestsReceived(@Param('id') id: number) {
 		return this.friendsService.findWaiting(id);
 	}
 
-	// localhost:3000/friends/request/received/ids/:id
 	@Get('request/received/ids/:id')
 	getFriendRequestsReceivedIds(@Param('id') id: number) {
 		return this.friendsService.findWaitingIds(id);
 	}
 
-	// localhost:3000/friends/request/received/names/:id
 	@Get('request/received/names/:id')
 	getFriendRequestsReceivedNames(@Param('id') id: number) {
 		return this.friendsService.findWaitingNames(id);
 	}
-
-	// localhost:3000/friends/request/add/:id1/:id2
-	@Get('request/add/:id1/:id2')
-	addFriendRequest(@Param('id1') id1: number, @Param('id2') id2: number) {
-		return this.friendsService.addFriendRequest(id1, id2);
-	}
-
-	// localhost:3000/friends/request/remove/:id1/:id2
-	@Delete('request/remove/:id1/:id2')
-	removeFriendRequest(@Param('id1') id1: number, @Param('id2') id2: number) {
-		return this.friendsService.removeFriendship(id1, id2);
-	}
-
 }
