@@ -1,4 +1,4 @@
-import axios from '@/api/axios';
+import axios from '@/plugin/axiosInstance';
 import type User from '@/types/User';
 import type Match from '@/types/MatchHistory';
 

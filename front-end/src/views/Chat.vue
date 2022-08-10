@@ -7,8 +7,8 @@ import CardRight from '@/components/CardRight.vue';
 import PlayerFriends from '@/components/Chat/PlayerFriends.vue';
 import Channels from '@/components/Chat/Channels.vue';
 import Message from '@/components/Chat/Message.vue';
-import { ref, onMounted, computed, onBeforeMount, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted } from 'vue';
-import socket from '@/socket';
+import { ref, onMounted } from 'vue';
+import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
@@ -19,8 +19,8 @@ const messages = ref([] as {message: string, sender: string, date: string}[]);
 const newMessage = ref('')
 const scroll = ref<HTMLInputElement | null>(null)
 
-socket.auth = [userStore.userData.username];
-socket.connect();
+//socket.auth = [userStore.userData.username];
+//socket.connect();
 
 function showFriends () {
 	if (showItems.value != 'friends')
@@ -66,12 +66,12 @@ socket.on("chat-message", (data) => {
 		  console.log(data)
 		  console.log(messages.value)
         });
-    
 
-function scrollToEnd() {    	
+
+function scrollToEnd() {
     if (scroll.value) {
     	scroll.value.scrollTop = scroll.value.scrollHeight
-  	} 
+  	}
     };
 
 function sendMessage() {

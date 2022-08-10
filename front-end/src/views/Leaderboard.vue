@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
-import { ref, computed, onBeforeMount } from 'vue';
+import { ref, computed, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import Toogle from '@/components/Leaderboard/ToogleButton.vue'
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue'
+import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
@@ -106,10 +107,20 @@ const displayUser = computed<User[]>(() => {
 	else return friends.value;
 });
 
+function changeUserStatus(data: string) {
+	console.log(data)
+}
+
 onBeforeMount(() => {
 	fetchUsers();
 	fetchfriends();
+	socket.on('statusChange', (data) => { changeUserStatus(data)});
 });
+
+onBeforeUnmount(() => {
+	socket.off('statusChange', (data) => { changeUserStatus(data)});
+})
+
 </script>
 
 <template>

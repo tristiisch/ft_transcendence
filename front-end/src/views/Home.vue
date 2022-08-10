@@ -1,4 +1,6 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+
+</script>
 
 <template>
 	<div class="flex flex-col justify-between h-full mx-[8vw]">

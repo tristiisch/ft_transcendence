@@ -6,7 +6,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, watch, onBeforeMount } from 'vue';
-import socket from '@/socket';
 
 const router = useRouter();
 const route = useRoute();
@@ -105,7 +104,8 @@ onBeforeMount(() => {
 			.handleLogin(route.query.code as string, route.query.state as string)
 			.then(() => {
 				console.log(userStore.userData['2fa']);
-				if (userStore.isRegistered && !userStore.userData['2fa']) router.replace({ name: 'Home' });
+				if (userStore.isRegistered && !userStore.userData['2fa'])
+					router.replace({ name: 'Home' });
 				isLoading.value = false;
 			})
 			.catch((e) => {

@@ -1,5 +1,5 @@
 import type Status from '@/types/Status'
-
+import type { Socket } from "socket.io-client";
 export default interface User {
   id: string
   username: string

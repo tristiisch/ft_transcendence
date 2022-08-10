@@ -19,6 +19,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const app = createApp(App);
+
 const pinia = createPinia();
 
 const options = {

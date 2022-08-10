@@ -1,4 +1,4 @@
-import axios from '@/api/axios';
+import axios from '@/plugin/axiosInstance';
 
 class AuthService {
 	login(code: string, state: string) {
