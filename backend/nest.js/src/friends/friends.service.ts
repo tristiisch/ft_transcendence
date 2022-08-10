@@ -34,8 +34,8 @@ export class FriendsService {
 		const friendshipCheck: Friendship = await this.findOne(user.id, target.id, false);
 
 		if (friendshipCheck) {
-			throw new NotAcceptableException("They is already a relation between " + user.username + " and " + target.username
-				+ " with status " + FriendshipStatus[friendshipCheck.status] + ".");
+			throw new NotAcceptableException(`They is already a relation between ${user.username} and ${target.username}`
+				+ ` with status ${FriendshipStatus[friendshipCheck.status]}.`);
 		}
 		const friendship: Friendship = new Friendship();
 
@@ -44,7 +44,7 @@ export class FriendsService {
 	
 		return await this.friendsRepository.insert(friendship).then((insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
-				throw new InternalServerErrorException("Can't add friendship of " + friendship.user_id1 + " and " + friendship.user_id1 + ".");
+				throw new InternalServerErrorException(`Can't add friendship of ${friendship.user_id1} and ${friendship.user_id1}.`);
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}
@@ -71,7 +71,7 @@ export class FriendsService {
 		const friendship: Friendship = await this.findOne(target.id, user.id, true);
 
 		if (!friendship)
-			throw new NotAcceptableException(user.username + " has no friend request from " + target.username + ".");
+			throw new NotAcceptableException(`${user.username} has no friend request from ${target.username}.`);
 
 		if (friendship.status == FriendshipStatus.ACCEPTED)
 			throw new NotAcceptableException(`You are already friend with ${target.username}.`);
@@ -105,7 +105,7 @@ export class FriendsService {
 
 		return await this.friendsRepository.delete(friendship).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0)
-				throw new InternalServerErrorException("Can't remove friendship of " + friendship.user_id1 + " and " + friendship.user_id1 + ".");
+				throw new InternalServerErrorException("Can't remove friendship of ${friendship.user_id1} and ${friendship.user_id1}.");
 			else
 				return { statusCode: 200, message: `You are no longer friends with ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);

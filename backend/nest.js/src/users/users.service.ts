@@ -19,12 +19,12 @@ export class UsersService {
 
 	lambdaGetUser = (user: User, identifier: any) => {
 		if (!user)
-			throw new NotFoundException("The user '" + identifier + "' does not exist.");
+			throw new NotFoundException(`The user '${identifier}' does not exist.`);
 		return user;
 	};
 
 	lambdaDatabaseUnvailable = (reason: string) => {
-		throw new ServiceUnavailableException("Database error with reason '" + reason + "'.");
+		throw new ServiceUnavailableException(`Database error with reason '${reason}'.`);
 	};
 
 	/*users: User[] = [
@@ -81,7 +81,7 @@ export class UsersService {
 		isNumberPositive(id, 'remove a user');
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) {
-				throw new NotFoundException("The user " + id + " does not exist.");
+				throw new NotFoundException("The user ${id} does not exist.");
 			} else {
 				return { deleted : value.affected };
 			}
@@ -114,12 +114,12 @@ export class UsersService {
 		//console.log("SQL", sql.getQueryAndParameters());
 		await sqlStatement.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
-				throw new ConflictException("User " + checkUserExist.username + " already exist with same id, email or username."); // TODO Change msg for client
+				throw new ConflictException("User ${checkUserExist.username} already exist with same id, email or username."); // TODO Change msg for client
 		}, this.lambdaDatabaseUnvailable);
 
 		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
 			if (insertResult.identifiers.length < 1) {
-				throw new InternalServerErrorException("Can't add user " + newUser.username + ".");
+				throw new InternalServerErrorException("Can't add user ${newUser.username}.");
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}

@@ -17,7 +17,7 @@ export class MatchHistory {
 	@IsInt()
 	loser_id: number;
 
-	@Column({ type: 'timestamptz', default: () => "CURRENT_TIMESTAMP" })
+	@Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
 	timestamp_started: Date;
 
 	@Column({ type: 'timestamptz', nullable: true })
@@ -25,13 +25,13 @@ export class MatchHistory {
 
 	public isWinner(user : User): boolean {
 		if (user.id !== this.loser_id && user.id !== this.winner_id)
-			throw new NotAcceptableException("User '" + user.username + "' is neither the winner nor the loser.");
+			throw new NotAcceptableException(`User '${user.username}' is neither the winner nor the loser.`);
 		return user.id === this.winner_id;
 	}
 
 	public isLooser(user : User): boolean {
 		if (user.id !== this.loser_id && user.id !== this.winner_id)
-			throw new NotAcceptableException("User '" + user.username + "' is neither the winner nor the loser.");
+			throw new NotAcceptableException(`User '${user.username}' is neither the winner nor the loser.`);
 		return user.id === this.loser_id;
 	}
 
