@@ -33,5 +33,3 @@ const userStatus = computed(() => {
         <div class="flex justify-center items-center">{{ user.rank }}</div>
     </div>
 </template>
-
-<!-- absolute -left-6 -top-3 h-24 w-24 md:-left-8 md:-top-4 md:w-36 md:h-36 -->

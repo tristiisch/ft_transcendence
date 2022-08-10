@@ -31,7 +31,8 @@ module.exports = {
         // => @media (max-height: 800px),(min-width: 375px) { ... }
         'tvlg': { 'raw': '(max-height: 1024px),(min-width: 1024px)' },
         // => @media (max-height: 800px),(min-width: 375px) { ... }
-        '3xl': '1792px',
+        '3xl': { 'raw': '(min-height: 1024px)' },
+		// => @media (min-height: 1024px) { ... }
       },
     },
   },

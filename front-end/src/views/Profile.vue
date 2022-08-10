@@ -67,7 +67,7 @@ onBeforeMount(() => {
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
-				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-around items-center w-full">
+				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-around items-center w-11/12">
 					<div class="w-4/5">
 						<player-stats :user="user"></player-stats>
 					</div>
@@ -75,10 +75,10 @@ onBeforeMount(() => {
 						<player-history></player-history>
 					</div>
 				</div>
-				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-full">
+				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">
 					<notifications></notifications>
 				</div>
-				<div v-else class="flex flex-col items-center w-full overflow-y-auto h-full gap-5 mr-2">
+				<div v-else class=" w-11/12 overflow-y-auto h-full mr-3">
 					<player-settings></player-settings>
 				</div>
 			</card-right>

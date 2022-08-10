@@ -29,7 +29,7 @@ function toogle2FA() {
 </script>
 
 <template>
-	<div class="flex justify-center">
+	<div class="flex justify-center sm:py-8">
 		<span class="text-slate-600 pr-2">OFF</span>
 		<Toogle @switch-button="toogle2FA"></Toogle>
 		<span class="text-slate-600 pl-2">ON</span>

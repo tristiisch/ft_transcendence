@@ -24,29 +24,31 @@ function submitProfileForm() {
 </script>
 
 <template>
-	<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Activation 2FA</h1>
-	<q-r-code></q-r-code>
-	<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Edit Profile</h1>
-	<div class="w-full px-10">
-		<h2 class="text-left mb-4 text-red-800 text-lg">Change Username:</h2>
-		<div class="flex items-center w-full gap-2 mb-4">
-			<p>Username:</p>
-			<form class="w-full">
-				<input
-					class="placeholder-red-200 w-full bg-red-400 text-center font-medium text-xs py-1 px-3 text-red-200 sm:px-5 md:text-sm md:px-8"
-					type="text"
-					name="username"
-					v-model.trim="newUsername"
-					placeholder="username"
-				/>
-			</form>
+	<div class="flex flex-col items-center h-full w-full gap-5">
+		<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Activation 2FA</h1>
+		<q-r-code></q-r-code>
+		<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Edit Profile</h1>
+		<div class="flex flex-col justify-center w-3/4 sm:pt-8">
+			<h2 class="mb-4 text-red-800 text-lg">Change Username:</h2>
+			<div class="flex items-center w-full gap-2 mb-4">
+				<p>Username:</p>
+				<form class="w-full">
+					<input
+						class="placeholder-red-200 bg-red-400 w-full text-center font-medium text-xs py-1 px-3 text-red-200 sm:px-5 md:text-sm md:px-8"
+						type="text"
+						name="username"
+						v-model.trim="newUsername"
+						placeholder="username"
+					/>
+				</form>
+			</div>
+			<h2 class="mb-4 text-red-800 text-lg">Change Avatar:</h2>
+			<div class="flex items-center gap-2">
+				<upload-avatar @image-loaded="uploadImage"></upload-avatar>
+			</div>
 		</div>
-		<h2 class="text-left mb-4 text-red-800 text-lg">Change Avatar:</h2>
-		<div class="flex items-center gap-2">
-			<upload-avatar @image-loaded="uploadImage"></upload-avatar>
-		</div>
+		<base-button @click="submitProfileForm" class="self-end mr-6 bg-blue-600 py-1 px-5 text-white">Save</base-button>
+		<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Remove Profile</h1>
+		<base-button class="mr-6 bg-blue-600 py-1 px-5 text-white">Delete</base-button>
 	</div>
-	<base-button @click="submitProfileForm" class="self-end mr-6 bg-blue-600 py-1 px-5 text-white">Save</base-button>
-	<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Remove Profile</h1>
-	<base-button class="mr-6 bg-blue-600 py-1 px-5 text-white">Delete</base-button>
 </template>

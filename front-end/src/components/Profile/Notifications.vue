@@ -1,6 +1,6 @@
 <template>
     <div class="flex justify-center w-full">
-        <div class="flex justify-between items-center p-4 mb-4 w-full text-white bg-blue-600">
+        <div class="flex justify-between items-center p-4 mb-4 w-3/4 text-white bg-blue-600">
             <div class="pl-3 text-sm font-normal">Friend request from Jlaronch</div>
             <div class="flex gap-2">
                 <button class=" bg-green-600 text-green-200 hover:text-white rounded-lg focus:ring-2 focus:ring-gray-300 p-1 sm:p-1.5 inline-flex h-6 w-6 sm:h-8 sm:w-8">
