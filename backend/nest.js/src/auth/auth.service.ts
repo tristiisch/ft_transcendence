@@ -23,8 +23,7 @@ export class AuthService {
 				throw err;
 			}
 		}
-	//	if (!user){
-	//	}
+		return user;
 	}
 
 	public async createToken(username: string): Promise<string> {

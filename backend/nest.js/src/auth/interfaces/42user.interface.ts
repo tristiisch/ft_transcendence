@@ -1,4 +1,5 @@
 export interface FtPayload {
-    username: string;
+    userid: number;
+	username: string;
     auth: boolean;
 }

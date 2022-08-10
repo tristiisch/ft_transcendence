@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Axios } from 'axios';
 import { AuthService } from './auth.service';
@@ -22,11 +22,16 @@ export class AuthController {
 	async redirect(@Res() res: Response, @Req() req: Request) {
 		const username = req.user['username'];
 		console.log(req.user);
-		await this.authService.UserConnecting(username);
-		let auth: boolean = true;
-		const payload: FtPayload = { username, auth };
-		const accessToken: string = this.jwtService.sign(payload);
+		const user = await this.authService.UserConnecting(username);
+		let auth: boolean = false;
+		const userid = user.id;
+		const payload: FtPayload = { userid, username, auth };
+		const accessToken = this.jwtService.signAsync(payload, {
+			expiresIn: "15m",
+			secret: process.env.JWT_SECRET
+		});
 		res.cookie('jwt', accessToken, {httpOnly: true});
 		res.redirect(process.env.FRONT_URL);
+		return(accessToken);
 	}
 }
