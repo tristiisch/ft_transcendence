@@ -25,6 +25,8 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-tglory@student.42Lyon.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-foobar}
       PGADMIN_LISTEN_PORT: 8080
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     volumes:
     - db_pgadmin:/var/lib/pgadmin
     - ./pgAdmin/servers.json:/pgadmin4/servers.json
@@ -38,6 +40,13 @@ services:
     hostname: pgAdmin
     depends_on:
     - postgreSQL
+    entrypoint: >
+      /bin/sh -c "
+      mv /pgadmin4/.pgpass /var/lib/pgadmin/;
+      chmod 600 /var/lib/pgadmin/.pgpass;
+      chown pgadmin /var/lib/pgadmin/.pgpass;
+      /entrypoint.sh
+      "
 
 #  Api: (not tested for now)_
 #    build:
