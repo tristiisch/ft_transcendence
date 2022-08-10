@@ -1,1 +1,0 @@
-systemctl enable --now postgresql
