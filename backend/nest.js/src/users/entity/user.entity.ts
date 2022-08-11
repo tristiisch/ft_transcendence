@@ -21,7 +21,7 @@ export class User extends BaseEntity {
 	username: string;
 
 	@Column({ nullable: true })
-	avatar_base64: string;
+	avatar: string;
 
 	// @Column("int", { nullable: true, array: true })
 	// friends?: number[];

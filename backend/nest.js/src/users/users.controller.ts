@@ -35,13 +35,19 @@ export class UsersController {
 	}
 	
 	@Patch('me/:id/set-username')
-	updateUsername(@Param('id') id: number, @Body() userToUpdate) {
-		throw new NotImplementedException();
+	async updateUsername(@Param('id') id: number, @Body() newUsername) {
+		const user: User = await this.usersService.findOne(id);
+
+		user.username = newUsername;
+		return user;
 	}
 
 	@Patch('me/:id/set-avatar')
-	updateAvatar(@Param('id') id: number, @Body() userToUpdate) {
-		throw new NotImplementedException();
+	async updateAvatar(@Param('id') id: number, @Body() newAvatar) {
+		const user: User = await this.usersService.findOne(id);
+
+		user.avatar = newAvatar;
+		return user;
 	}
 
 	@Delete(':id')
