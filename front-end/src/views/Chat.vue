@@ -8,12 +8,12 @@ import PlayerFriends from '@/components/Chat/PlayerFriends.vue';
 import Channels from '@/components/Chat/Channels.vue';
 import Message from '@/components/Chat/Message.vue';
 import AddDiscussion from '@/components/Chat/AddDiscussion.vue';
+import AddChannel from '@/components/Chat/AddChannel.vue';
 import { ref, onMounted } from 'vue';
 import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
-// const userSocket = ref({} as {userID: string, username: string});
 const friends = ref([] as User[]);
 const leftPartToDisplay = ref( 'discussions' );
 const messages = ref([] as {message: string, sender: string, date: string}[]);
@@ -158,10 +158,8 @@ onMounted(() => {
 				<div v-else-if="rightPartToDisplay === 'addDiscussion'" class="flex flex-col justify-between items-center w-11/12 px-10 h-full">
 					<Add-Discussion></Add-Discussion>
 				</div>
-				<div v-else class="flex flex-col justify-between items-center w-11/12 px-12 h-full">
-					<div class="flex flex-col w-full h-[calc(100%_-_36px)] border-t-[1px] border-red-300 overflow-y-auto" ref="scroll">
-						<message @scroll="scrollToEnd" :messages="messages" :users="users"></message>
-					</div>
+				<div v-else class="flex flex-col items-center w-11/12 px-12 h-full">
+					<Add-Channel></Add-Channel>
 				</div>
 			</card-right>
 		</div>

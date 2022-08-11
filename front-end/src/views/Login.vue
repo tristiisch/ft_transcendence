@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseCard from '../components/BaseCard.vue';
 import ButtonGradient1 from '@/components/ButtonGradient1.vue';
-import UploadAvatar from '@/components/Login/UploadAvatar.vue';
+import UploadAvatar from '@/components/UploadAvatar.vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';

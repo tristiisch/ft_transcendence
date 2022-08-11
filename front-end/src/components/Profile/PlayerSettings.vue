@@ -3,7 +3,7 @@ import QRCode from '@/components/Profile/QRCode.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
-import UploadAvatar from '@/components/Login/UploadAvatar.vue';
+import UploadAvatar from '@/components/UploadAvatar.vue';
 
 const userStore = useUserStore();
 const router = useRouter();
