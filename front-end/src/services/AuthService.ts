@@ -7,24 +7,12 @@ class AuthService {
 			if (response.data.accessToken) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
 			}
+			console.log(response)
 			return response.data;
+		}).catch((error) => {
+			console.log(error.response.data.message)
 		});
 	}
-
-	/*login() {
-		return axios.get('auth/42/login').then((response: AxiosResponse<any, any>) => {
-
-			//console.log("DEBUG", response.headers['Location'], response.headers);
-			/*if (response.data.accessToken) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
-			}
-			return response.data;
-		})
-		.catch((error) => {
-			if (error.response && error.response.status === 302)
-				window.location.href = "logon";
-		})
-	}*/
 
 	login2FA(otpToken: string) {
 		return axios.post('auth/2fa/login', { otpToken }).then((response) => {
