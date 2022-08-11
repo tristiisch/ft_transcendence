@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable } from "@nestjs/common";
+import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isEquals, isNumberPositive } from "src/utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from "typeorm";
@@ -133,9 +133,9 @@ export class UsersService {
 		await this.usersRepository.update(userId, user);
 		const userAfter: User = await this.findOne(userId);
 
-		if (isEquals(userBefore, userAfter)) {
-			return { statusCode: 200, message: "Nothing change."}
-		}
+//		if (isEquals(userBefore, userAfter)) {
+//			throw new BadRequestException();
+//		}
 		return userAfter;
 	}
 }

@@ -39,7 +39,7 @@ export class UsersController {
 		const user: User = await this.usersService.findOne(id);
 
 		user.username = newUsername;
-		return user;
+		return await this.usersService.update(id, user);
 	}
 
 	@Patch('me/:id/set-avatar')
@@ -47,7 +47,7 @@ export class UsersController {
 		const user: User = await this.usersService.findOne(id);
 
 		user.avatar = newAvatar;
-		return user;
+		return await this.usersService.update(id, user);
 	}
 
 	@Delete(':id')
