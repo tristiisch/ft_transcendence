@@ -12,15 +12,15 @@ export class AuthService {
 	async UserConnecting(userInfo42: any){
 		let user: User;
 		try {
-			user = await this.usersService.findOneBy42Id(userInfo42.data.id);
+			user = await this.usersService.findOneBy42Login(userInfo42.data.login);
 		} catch (err) {
 			if (err instanceof NotFoundException) {
 				user = new User;
-				user.username = userInfo42.data.login;
-				user.id_42 = userInfo42.data.id;
+				// user.username = userInfo42.data.login; Est définie a null tant que l'user n'est pas register
+				user.login_42 = userInfo42.data.login;
 				user.avatar = userInfo42.data.image_url;
 				user.status = UserStatus.ONLINE;
-				return this.usersService.add(user);
+				user = await this.usersService.add(user);
 			} else {
 				throw err;
 			}

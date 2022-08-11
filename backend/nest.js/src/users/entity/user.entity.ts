@@ -16,10 +16,10 @@ export class User extends BaseEntity {
 	// @IsInt()
 	id: number;
 
-	@Column({ nullable: true })
-	id_42: number;
+	@Column()
+	login_42: string;
 
-	@Column({ unique: true, length: 32 })
+	@Column({ unique: true, nullable: true, length: 32 })
 	@IsNotEmpty()
 	username: string;
 

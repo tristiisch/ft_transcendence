@@ -78,10 +78,12 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
-	async findOneBy42Id(id42: number): Promise<User> {
-		isNumberPositive(id42, 'get user');
-		return await this.usersRepository.findOne({ where: {id_42 : id42 } }).then((user: User) => {
-			return this.lambdaGetUser(user, id42);
+	async findOneBy42Login(login42: string): Promise<User> {
+		if (!login42 || login42.length == 0) {
+			throw new PreconditionFailedException("Can't get a user by an empty 42login.");
+		}
+		return await this.usersRepository.findOne({ where: {login_42 : login42 } }).then((user: User) => {
+			return this.lambdaGetUser(user, login42);
 		}, this.lambdaDatabaseUnvailable);
 	}
 
@@ -144,6 +146,15 @@ export class UsersService {
 //		if (isEquals(userBefore, userAfter)) {
 //			throw new BadRequestException();
 //		}
+		return userAfter;
+	}
+
+	async register(userId: number, user: UserDTO) {
+		const userBefore: User = await this.findOne(userId);
+		if (userBefore.username !== null)
+			throw new BadRequestException(`User ${userBefore.username} already register.`);
+		await this.usersRepository.update(userId, user);
+		const userAfter: User = await this.findOne(userId);
 		return userAfter;
 	}
 }

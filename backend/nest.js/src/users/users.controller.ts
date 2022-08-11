@@ -29,9 +29,14 @@ export class UsersController {
 		return this.usersService.findOneByUsername(name);
 	}
 
-	@Get('42id/:id')
-	getUserBy42Id(@Param('id') id: number): Promise<User> {
-		return this.usersService.findOneBy42Id(id);
+	@Get('login42/:login')
+	getUserBy42Login(@Param('login') login: string): Promise<User> {
+		return this.usersService.findOneBy42Login(login);
+	}
+
+	@Patch('register/:id')
+	registerUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
+		return this.usersService.register(id, userToUpdate);
 	}
 
 	@Patch(':id')
