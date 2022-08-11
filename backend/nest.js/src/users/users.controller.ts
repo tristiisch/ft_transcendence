@@ -29,6 +29,11 @@ export class UsersController {
 		return this.usersService.findOneByUsername(name);
 	}
 
+	@Get('42id/:id')
+	getUserBy42Id(@Param('id') id: number): Promise<User> {
+		return this.usersService.findOneBy42Id(id);
+	}
+
 	@Patch(':id')
 	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		return this.usersService.update(id, userToUpdate);

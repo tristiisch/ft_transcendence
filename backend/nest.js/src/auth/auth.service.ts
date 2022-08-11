@@ -9,14 +9,15 @@ export class AuthService {
 	constructor(private jwtService: JwtService, private usersService: UsersService){
 	}
 
-	async UserConnecting(username: string){
+	async UserConnecting(userInfo42: any){
 		let user: User;
 		try {
-			user = await this.usersService.findOneByUsername(username);
+			user = await this.usersService.findOneBy42Id(userInfo42.data.id).then();
 		} catch (err) {
 			if (err instanceof NotFoundException) {
 				user = new User;
-				user.username = username;
+				user.username = userInfo42.data.login;
+				user.avatar = userInfo42.data.image_url;
 				user.status = UserStatus.ONLINE;
 				this.usersService.add(user);
 			} else {

@@ -7,6 +7,7 @@ import { User } from "./entity/user.entity";
 
 @Injectable()
 export class UsersService {
+
 	constructor(
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
@@ -74,6 +75,13 @@ export class UsersService {
 		}
 		return await this.usersRepository.findOne({ where: {username : name } }).then((user: User) => {
 			return this.lambdaGetUser(user, name);
+		}, this.lambdaDatabaseUnvailable);
+	}
+
+	async findOneBy42Id(id42: number): Promise<User> {
+		isNumberPositive(id42, 'get user');
+		return await this.usersRepository.findOne({ where: {id_42 : id42 } }).then((user: User) => {
+			return this.lambdaGetUser(user, id42);
 		}, this.lambdaDatabaseUnvailable);
 	}
 
