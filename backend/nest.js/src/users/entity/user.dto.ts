@@ -14,29 +14,10 @@ export class UserDTO {
 	@IsNotEmpty()
 	username?: string;
 
-	@IsEmail()
+	@IsString()
+	@IsOptional()
 	@IsNotEmpty()
-	@IsOptional()
-	email?: string;
-
-	// ? is for optional field 
-	token42?: string; 
-	friends?: number[];
-
-	@IsInt()
-	@IsOptional()
-	@IsPositive()
-	wins?: number;
-
-	@IsInt()
-	@IsOptional()
-	@IsPositive()
-	losses?: number;
-
-	@IsInt()
-	@IsPositive()
-	@IsOptional()
-	ladder_score?: number;
+	avatar?: string;
 
 	status?: UserStatus;
 }

@@ -35,18 +35,18 @@ export class UsersController {
 	}
 	
 	@Patch('me/:id/set-username')
-	async updateUsername(@Param('id') id: number, @Body() newUsername) {
+	async updateUsername(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		const user: User = await this.usersService.findOne(id);
 
-		user.username = newUsername;
+		user.username = userToUpdate.username;
 		return await this.usersService.update(id, user);
 	}
 
 	@Patch('me/:id/set-avatar')
-	async updateAvatar(@Param('id') id: number, @Body() newAvatar) {
+	async updateAvatar(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		const user: User = await this.usersService.findOne(id);
 
-		user.avatar = newAvatar;
+		user.avatar = userToUpdate.avatar;
 		return await this.usersService.update(id, user);
 	}
 
