@@ -20,6 +20,10 @@ export class User extends BaseEntity {
 	@IsNotEmpty()
 	username: string;
 
+	//@Column({ unique: true, length: 32 })
+	//@IsNotEmpty()
+	//displayname: string;
+
 	@Column({ nullable: true })
 	avatar_base64: string;
 

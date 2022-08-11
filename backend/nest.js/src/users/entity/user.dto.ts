@@ -14,6 +14,11 @@ export class UserDTO {
 	@IsNotEmpty()
 	username?: string;
 
+	@IsString()
+	@IsOptional()
+	@IsNotEmpty()
+	displayname?: string;
+
 	@IsEmail()
 	@IsNotEmpty()
 	@IsOptional()

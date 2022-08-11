@@ -9,21 +9,28 @@ export class AuthService {
 	constructor(private jwtService: JwtService, private usersService: UsersService){
 	}
 
-	async UserConnecting(username: string){
+	async UserConnecting(username: string): Promise<User>{
 		let user: User;
-		try {
-			user = await this.usersService.findOneByUsername(username);
-		} catch (err) {
-			if (err instanceof NotFoundException) {
-				user = new User;
-				user.username = username;
-				user.status = UserStatus.ONLINE;
-				this.usersService.add(user);
-			} else {
-				throw err;
-			}
+		user  = await this.usersService.findOneByUsername(username);
+		if (!user){
+			let db_user = new User;
+			db_user.username = username;
+			db_user.status = UserStatus.ONLINE;
+			user = await this.usersService.add(db_user);
 		}
-		return user;
+		//try {
+		//	user = await this.usersService.findOneByUsername(username);
+		//} catch (err) {
+		//	if (err instanceof NotFoundException) {
+		//		user = new User;
+		//		user.username = username
+		//		user.status = UserStatus.ONLINE;
+		//		this.usersService.add(user);
+		//	} else {
+		//		throw err;
+		//	}
+		//}
+		return user
 	}
 
 	public async createToken(username: string): Promise<string> {
