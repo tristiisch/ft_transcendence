@@ -16,6 +16,9 @@ export class User extends BaseEntity {
 	// @IsInt()
 	id: number;
 
+	@Column({ nullable: true })
+	id_42: number;
+
 	@Column({ unique: true, length: 32 })
 	@IsNotEmpty()
 	username: string;
