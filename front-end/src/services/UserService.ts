@@ -27,6 +27,10 @@ class UserService {
 		return axios.get(`users/${username}`);
 	}
 
+	getChannels() {
+		return axios.get('channels');
+	}
+
 	getUserfriends(username: string) {
 		return axios.get(`users/${username}/friends`);
 	}

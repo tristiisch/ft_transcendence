@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import type User from '@/types/User';
+import type Channel from '@/types/Channel';
 import UsersService from '@/services/UserService';
 import { useUserStore } from '@/stores/userStore';
 import CardLeft from '@/components/CardLeft.vue';
 import CardRight from '@/components/CardRight.vue';
-import PlayerFriends from '@/components/Chat/PlayerFriends.vue';
+import PlayerDiscussion from '@/components/Chat/PlayerDiscussion.vue';
 import Channels from '@/components/Chat/Channels.vue';
 import Message from '@/components/Chat/Message.vue';
-import AddDiscussion from '@/components/Chat/AddDiscussion.vue';
+import AddSearchPlayerVue from '@/components/Chat/AddSearchPlayer.vue';
 import AddChannel from '@/components/Chat/AddChannel.vue';
+import ButtonPlus from '@/components/Chat/ButtonPlus.vue';
 import { ref, onMounted } from 'vue';
 import socket from '@/plugin/socketInstance';
+import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
+import InChatTopImage from '@/components/Chat/InChatTopImage.vue';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
+const channels = ref([] as Channel[]);
 const friends = ref([] as User[]);
 const leftPartToDisplay = ref( 'discussions' );
 const messages = ref([] as {message: string, sender: string, date: string}[]);
@@ -21,6 +26,8 @@ const newMessage = ref('')
 const scroll = ref<HTMLInputElement | null>(null)
 const rightCardTitle = ref('CHAT');
 const rightPartToDisplay = ref('chat');
+const inChatWith = ref<User | null>(null);
+const inChannel = ref<Channel | null>(null);
 
 //socket.auth = [userStore.userData.username];
 //socket.connect();
@@ -59,6 +66,16 @@ function fetchfriends() {
 					if (user.username === response.data[i]) friends.value.push(user);
 				});
 			}
+		})
+		.catch((e: Error) => {
+			console.log(e);
+		});
+}
+
+function fetchChannels() {
+	UsersService.getChannels()
+		.then((response) => {
+			channels.value = response.data;
 		})
 		.catch((e: Error) => {
 			console.log(e);
@@ -115,9 +132,36 @@ function sendMessage() {
 	scrollToEnd()
 };
 
+function invitePlayer() {
+	setRightCardTitle('chat')
+	rightPartToDisplay.value = 'chat'
+}
+
+function addButtonText() {
+	if (leftPartToDisplay.value === 'discussions')
+		return 'Add discussion'	
+	else
+		return 'Add channel'
+}
+
+
+
+function loadDiscussion( user:User ) {
+	inChatWith.value = null;
+	inChatWith.value = user
+
+}
+
+function loadChannel( channel:Channel ) {
+	inChatWith.value = null;
+	inChannel.value = channel
+
+}
+
 onMounted(() => {
 	fetchUsers();
 	fetchfriends();
+	fetchChannels();
 });
 
 // onbeforeunload = () => {
@@ -136,30 +180,36 @@ onMounted(() => {
 						<button @click="showChannels" class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CHANNELS</button>
 					</div>
 					<div class="overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-[300px] w-full">
-						<div v-for="friend in friends" :key="friend.id">
-							<player-friends v-if="leftPartToDisplay === 'discussions'" :friend="friend"></player-friends>
-							<channels v-else :friend="friend"></channels>
+						<div v-if="leftPartToDisplay === 'discussions'" v-for="friend in friends" :key="friend.id">
+							<player-discussion  @click="loadDiscussion(friend)" :friend="friend"></player-discussion>
+						</div>
+						<div v-else v-for="channel in channels" :key="channel.name">
+							<channels :channel="channel" @click="loadChannel(channel)"></channels>
 						</div>
 					</div>
-					<button @click="setPartToDisplay" class="self-end bg-green-600 text-green-200 hover:text-white rounded-lg focus:ring-2 focus:ring-gray-300 p-1 sm:p-2 inline-flex h-6 w-6 sm:h-9 sm:w-9">
-                    	<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" ></path></svg>
-                	</button>
+					<div class="flex self-start items-center gap-4 ml-2">
+						<button-plus @click="setPartToDisplay"></button-plus>
+						<label class="text-white">{{ addButtonText() }}</label>
+					</div>
 				</div>
 			</card-left>
 			<card-right :title=rightCardTitle>
-				<div v-if="rightPartToDisplay === 'chat'" class="flex flex-col justify-between items-center w-11/12 px-12 h-full">
-					<div class="flex flex-col w-full h-[calc(100%_-_36px)] border-t-[1px] border-red-300 overflow-y-auto" ref="scroll">
-						<message @scroll="scrollToEnd" :messages="messages" :users="users"></message>
+				<div v-if="rightPartToDisplay === 'chat'" class="w-11/12 px-12 h-full">
+					<div v-if="inChatWith || inChannel" class="flex flex-col justify-between items-center h-full">
+						<InChat-TopImage :inChatWith=inChatWith :inChannel=inChannel></InChat-TopImage>
+						<div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
+							<message @scroll="scrollToEnd" :messages="messages" :users="users"></message>
+						</div>
+						<form @submit.prevent="sendMessage()" class="w-full">
+							<input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white">
+						</form>
 					</div>
-					<form @submit.prevent="sendMessage()" class="w-full">
-						<input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white">
-					</form>
 				</div>
 				<div v-else-if="rightPartToDisplay === 'addDiscussion'" class="flex flex-col justify-between items-center w-11/12 px-10 h-full">
-					<Add-Discussion></Add-Discussion>
+					<AddSearchPlayer @close="rightPartToDisplay = 'chat', setRightCardTitle('chat')" @validate="invitePlayer"></AddSearchPlayer>
 				</div>
-				<div v-else class="flex flex-col items-center w-11/12 px-12 h-full">
-					<Add-Channel></Add-Channel>
+				<div v-else class="w-11/12 px-6 sm:px-12 h-full">
+					<Add-Channel @close="rightPartToDisplay = 'chat', setRightCardTitle('chat')" @validate="invitePlayer"></Add-Channel>
 				</div>
 			</card-right>
 		</div>

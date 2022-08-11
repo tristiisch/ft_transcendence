@@ -32,50 +32,7 @@ function showUsers() {
 			</button>
 		</div>
 	</form>
-
-		<div class="overflow-y-auto h-full w-full grid grid-cols-2 gap-4 pt-4 border-t-[1px] border-red-400">
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			<div class="flex flex-col justify-center items-center pb-4 sm:flex-row">
-           		<img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" src='@/assets/obama.jpeg' alt="Rounded avatar">
-				<p class="px-4 text-sm ">Obama</p>
-			</div>
-			
-		</div>
+	<
 		
 </template>
 

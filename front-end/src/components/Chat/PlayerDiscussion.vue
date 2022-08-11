@@ -6,7 +6,7 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex w-full h-[60px] border-b-[1px] border-slate-600">
+    <button class="flex w-full h-[60px] border-b-[1px] border-slate-600">
         <div class="flex items-center w-[20%] h-full">
             <img class="shrink-0 w-12 h-12 rounded-full object-cover border-[1px] border-zinc-300" :src="friend.avatar" alt="Rounded avatar">
         </div>
@@ -17,5 +17,5 @@ defineProps<{
             </div>
             <P class="truncate text-xs">WEFWKEFWE3po3j4j4rj4rpkpkpkopopkio34rio3</P>
         </div>
-    </div>
+    </button>
 </template>

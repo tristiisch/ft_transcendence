@@ -4,6 +4,7 @@ import users from '@/data/users';
 import matchs from '@/data/matchs';
 import matchsHistory from '@/data/matchsHistory';
 import friends from '@/data/friends';
+import channels from '@/data/Channels';
 import Status from '@/types/Status';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
@@ -65,6 +66,10 @@ export default [
 
 	rest.get('/users/:username/matchs', (req, res, ctx) => {
 		return res(ctx.json(matchs));
+	}),
+
+	rest.get('/channels', (req, res, ctx) => {
+		return res(ctx.json(channels));
 	}),
 
 	rest.get('/users/:username/matchsHistory', (req, res, ctx) => {
