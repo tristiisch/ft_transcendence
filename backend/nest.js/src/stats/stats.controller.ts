@@ -14,19 +14,8 @@ export class StatsController {
 
 	constructor(private readonly statsService: StatsService) {}
 
-	@Patch(':id')
-	changeStats(@Param('id') id: number, @Body() stats: UserStats) {
-        stats.user_id = id
-		return this.statsService.update(stats);
-	}
-
-    @Get(':id')
-	getStats(@Param('id') id: number) {
-		return this.statsService.findOne(id);
-	}
-
     @Get('leaderboard')
-	getLeaderboard(@Param('page') page: number) {
+	getLeaderboard() {
 		return this.statsService.leaderboard();
 	}
 
@@ -45,5 +34,16 @@ export class StatsController {
         const min: number = (page - 1) * this.userPerPage;
         const max: number = this.userPerPage;
 		return this.statsService.leaderboardPage(min, max);
+	}
+
+	@Patch(':id')
+	changeStats(@Param('id') id: number, @Body() stats: UserStats) {
+        stats.user_id = id
+		return this.statsService.update(stats);
+	}
+
+    @Get(':id')
+	getStats(@Param('id') id: number) {
+		return this.statsService.findOne(id);
 	}
 }

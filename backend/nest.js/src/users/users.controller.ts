@@ -19,11 +19,6 @@ export class UsersController {
 		return this.usersService.add(newUser);
 	}
 
-	@Get(':id')
-	getUser(@Param('id') id: number): Promise<User> {
-		return this.usersService.findOne(id);
-	}
-
 	@Get('name/:name')
 	getUserByUsername(@Param('name') name: string): Promise<User> {
 		return this.usersService.findOneByUsername(name);
@@ -39,11 +34,6 @@ export class UsersController {
 		return this.usersService.register(id, userToUpdate);
 	}
 
-	@Patch(':id')
-	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		return this.usersService.update(id, userToUpdate);
-	}
-	
 	@Patch('me/:id/set-username')
 	async updateUsername(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		const user: User = await this.usersService.findOne(id);
@@ -58,6 +48,16 @@ export class UsersController {
 
 		user.avatar = userToUpdate.avatar;
 		return await this.usersService.update(id, user);
+	}
+
+	@Patch(':id')
+	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
+		return this.usersService.update(id, userToUpdate);
+	}
+
+	@Get(':id')
+	getUser(@Param('id') id: number): Promise<User> {
+		return this.usersService.findOne(id);
 	}
 
 	@Delete(':id')

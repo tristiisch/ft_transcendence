@@ -64,12 +64,12 @@ export class StatsService {
 
     async leaderboardPage(min: number, max: number): Promise<UserStats[]> {
 		if (min < 0)
-			throw new PreconditionFailedException(`Can't get leaderboard with negative min ${max}.`);
+			throw new PreconditionFailedException(`Can't get leaderboard with negative min ${min}.`);
 		if (max <= 0)
 			throw new PreconditionFailedException(`Can't get leaderboard with negative max ${max}.`);
 		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
 
-		sqlStatement.skip(min).limit(max).addOrderBy('userstats.score', 'DESC', 'NULLS LAST');
+		sqlStatement.skip(min).limit(max).orderBy('userstats.score', 'DESC', 'NULLS LAST');
 	
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;
@@ -79,7 +79,10 @@ export class StatsService {
     async leaderboard(): Promise<UserStats[]> {
 		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
 
-		sqlStatement.addOrderBy('userstats.score', 'DESC', 'NULLS LAST');
+		sqlStatement.orderBy('userstats.score', 'DESC', 'NULLS LAST');
+			// Need to order by date update
+			// .addOrderBy('userstats.victories', 'ASC', 'NULLS LAST')
+			// .addOrderBy('userstats.defeats', 'DESC', 'NULLS LAST');
 	
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;

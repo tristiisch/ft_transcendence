@@ -66,8 +66,8 @@ export class TestFakeService {
 		let userStats: UserStats = new UserStats();
 
 		userStats.user_id = user.id;
-		userStats.wins = random(0, this.randomMaxStats);
-		userStats.losses = random(0, this.randomMaxStats);
+		userStats.victories = random(0, this.randomMaxStats);
+		userStats.defeats = random(0, this.randomMaxStats);
 
 		return this.statsService.add(userStats);
 	}
