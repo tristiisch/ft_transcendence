@@ -28,7 +28,18 @@ export class AuthService {
 		return user;
 	}
 
-	public async createToken(username: string): Promise<string> {
-		return this.jwtService.sign({username: username});
+	public async createToken(id: number): Promise<string> {
+		const payload = {
+			id: id
+		};
+		return this.jwtService.signAsync(payload);
+	}
+
+	public async create2FaToken(id: number): Promise<string> {
+		const payload = {
+			id: id,
+			expires_in: "2min"
+		};
+		return this.jwtService.signAsync(payload);
 	}
 }

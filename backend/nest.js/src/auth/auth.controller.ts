@@ -15,6 +15,9 @@ export class AuthController {
 	@Post('42/redirect')
 	//@UseGuards(FtAuthguard)
 	async redirect(@Res() res: Response, @Req() req: Request) {
+		//try{ 
+		//if (!req.body.code)
+		//	throw err
 		const postData = {
 			grant_type: 'authorization_code',
 			client_id: process.env.FT_UID,
@@ -24,24 +27,31 @@ export class AuthController {
 		};
 		const url = process.env.FT_API;
 		const result = await axios.post(url, postData);
+		//}cath(err42){
+		//	throw("unauthorized")	
+		//}
 		const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 		const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-        console.log(userInfo);
+		//checker avec login si user existe
+		//Si (il existe, ne pas créer et verifier si 2fa ON ou OFF)\
+		//Si (2fa ON)
+		//	dire au front que que le 2fa est ON
+		//	(Créer token special 2fa)
 		const user = await this.authService.UserConnecting(userInfo);
-​
+		if (user)
 		res.json({
-			auth: {
-				user_id: user.id,
-				token: 'fake-jwt-token',
-				has_2fa: false},
-			user: user
-			/*user: { 
-				id: user.id,
-				login_42: userInfo.data.login,
-				avatar: userInfo.data.image_url,
-				username: "",
-				status: 0*/
-			});
-		
+				auth: {
+					user_id: user.id, // voir si on le garde ou pas
+					token: await this.authService.createToken(user.id),
+					has_2fa: false},
+				user: user
+			});	
 	}
+
+	//inL:@Post('2fa')
+	//async TwoFactorAuth(@Res() res: Response, @Req() req: Request){
+	//	
+	//}
 }
+
+
