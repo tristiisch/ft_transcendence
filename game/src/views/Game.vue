@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, onUpdated } from 'vue';
+import { onMounted } from 'vue';
 import Konva from 'konva'
 
 const stage_ratio = 3989/2976
@@ -11,7 +11,7 @@ const ball_ypos_quotient = 2 // same
 
 const blocker_width_quotient = 50 // the least, the bigger
 const blocker_height_quotient = 5 // the least, the longer
-const blocker_movements_delta = 30 // the least, the slower (needs some kind of better way tho imo)
+const blocker_movements_delta = 20 // the least, the slower (needs some kind of better way tho imo)
 const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
 onMounted(() => {
@@ -29,7 +29,7 @@ onMounted(() => {
 		height: computeStageHeight(),
 		width: stage_width
 	})
-	stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
+	//stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
 	var layer = new Konva.Layer()
 
@@ -58,9 +58,30 @@ onMounted(() => {
 		fill: 'purple'
 	})
 
+	function getBlobPointsArray(): Array<number>
+	{
+		return ([
+			stage.width() / 2, stage.height() / 40, // 0 1
+			stage.width() / 1.09, stage.height() / 10.5, // 2 3
+			stage.width() / 1.02, stage.height() / 2, // 4 5
+			stage.width() / 1.09, stage.height() / 1.111, // 6 7
+			stage.width() / 2, stage.height() / 1.023, // 8 9
+			stage.width() / 12.7, stage.height() / 1.11, // 10 11
+			stage.width() / 55, stage.height() / 2, // 12 13
+			stage.width() / 14, stage.height() / 10 // 14 15
+		])
+	}
+	var blob = new Konva.Line({
+		points: getBlobPointsArray(),
+		fill: 'rgba(0, 0, 0, 0.005)',
+		closed: true,
+		tension: 0.3,
+	});
+
 	layer.add(ball)
 	layer.add(p1_blocker)
 	layer.add(p2_blocker)
+	layer.add(blob)
 
 	var ball_speed = computeBallSpeed()
 	var dx = ball_speed
@@ -76,22 +97,28 @@ onMounted(() => {
 				p1_blocker.y(p1_blocker.y() - blocker_movements_delta)
 		}
 	})
-	function checkCollisionWithBlocker(blocker: Konva.Rect) {
-		if (!(ball.x() + dx > blocker.x() + blocker.width() ||
-			ball.x() + dx < blocker.x()||
-			ball.y() + dy > blocker.y() + blocker.height() ||
-			ball.y() + dy < blocker.y())) {
-				if (ball.y() > blocker.y() && ball.y() < blocker.y() + blocker.height())
-					dx = -dx
-				else
-					dy = -dy
-		}
+	// --- old way of checking blocker's collisions
+	//
+	// function checkCollisionWithBlocker(blocker: Konva.Rect) {
+	// 	if (!(ball.x() + dx > blocker.x() + blocker.width() ||
+	// 		ball.x() + dx < blocker.x() ||
+	// 		ball.y() + dy > blocker.y() + blocker.height()||
+	// 		ball.y() + dy < blocker.y() )) {
+	// 			if (ball.y() > blocker.y() && ball.y() < blocker.y() + blocker.height())
+	// 				dx = -dx
+	// 			else
+	// 				dy = -dy
+	// 	}
+	// }
+	function checkCollisions() {
+		console.log(layer.canvas.context.getImageData(ball.x(), ball.y(), 1, 1).data[0])
+		if (layer.canvas.context.getImageData(ball.x() + dx, ball.y(), 1, 1).data[0] != 254)
+			dx = -dx
+		if (layer.canvas.context.getImageData(ball.x(), ball.y() + dy, 1, 1).data[0] != 254)
+			dy = -dy
 	}
 	var ball_animation = new Konva.Animation(function(frame) {
-		if (ball.x() + dx < ball_radius || ball.x() + dx > stage_width - ball_radius) { dx = -dx; }
-		if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) { dy = -dy; }
-		checkCollisionWithBlocker(p1_blocker)
-		checkCollisionWithBlocker(p2_blocker)
+		checkCollisions()
 		ball.x(ball.x() + dx);
 		ball.y(ball.y() + dy);
 	}, layer)
@@ -103,6 +130,7 @@ onMounted(() => {
 		stage.height(computeStageHeight())
 		stage.width(stage.height() * stage_ratio)
 
+		blob.points(getBlobPointsArray())
 		var ratio = stage.height() / stage_height
 		ball.x(ball.x() * ratio)
 		ball.y(ball.y() * ratio)
@@ -164,7 +192,7 @@ onMounted(() => {
 	right: 0;
 	bottom: 0;
 	top: 0;
-	background-color:rgba(1,255,1,1);
+	/* background-color:rgba(1,255,1,1); */
 }
 
 </style>
