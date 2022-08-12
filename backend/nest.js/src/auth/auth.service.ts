@@ -30,7 +30,8 @@ export class AuthService {
 
 	public async createToken(id: number): Promise<string> {
 		const payload = {
-			id: id
+			id: id,
+			secret: process.env.JWT_PASS,
 		};
 		return this.jwtService.signAsync(payload);
 	}
@@ -38,6 +39,7 @@ export class AuthService {
 	public async create2FaToken(id: number): Promise<string> {
 		const payload = {
 			id: id,
+			secret: process.env.JWT_PASS,
 			expires_in: "2min"
 		};
 		return this.jwtService.signAsync(payload);
