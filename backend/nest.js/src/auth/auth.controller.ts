@@ -42,7 +42,8 @@ export class AuthController {
 		res.json({
 				auth: {
 					user_id: user.id, // voir si on le garde ou pas
-					token: await this.authService.createToken(user.id),
+					// token: await this.authService.createToken(user.id),
+					token: 'fake-jwt-token',
 					has_2fa: false},
 				user: user
 			});	
