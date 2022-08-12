@@ -16,6 +16,7 @@ import socket from '@/plugin/socketInstance';
 import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
 import InChatTopImage from '@/components/Chat/InChatTopImage.vue';
 import ChannelSettings from '@/components/Chat/ChannelSettings.vue';
+import JoinChannelDiscussionRequestVue from '@/components/Chat/JoinChannelDiscussionRequest.vue';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
@@ -156,14 +157,15 @@ function addButtonText() {
 
 
 function loadDiscussion( user:User ) {
-	inChatWith.value = null;
+	if (inChannel.value) inChannel.value = null;
 	inChatWith.value = user
-
 }
 
 function loadChannel( channel:Channel ) {
-	inChatWith.value = null;
+	if (inChatWith.value) inChatWith.value = null;
 	inChannel.value = channel
+	// if ()
+	// 	rightPartToDisplay.value = 'joinRequest'
 
 }
 
@@ -213,6 +215,9 @@ onMounted(() => {
 							<input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white">
 						</form>
 					</div>
+				</div>
+				<div v-else-if="rightPartToDisplay === 'joinRequest'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
+					<join-request @close="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></join-request>
 				</div>
 				<div v-else-if="rightPartToDisplay === 'channelSettings'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
 					<channel-settings @close="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></channel-settings>

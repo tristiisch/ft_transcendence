@@ -16,7 +16,7 @@ const users = [
 	{
 		name: 'tsv',
 		type: Status.PROTECTED,
-		avatar: '@/assets/obama.jpeg',
+		avatar: null,
 		users: [Users[1], Users[2]],
 		password: 'krondor',
 		admin: [Users[1], Users[2]],

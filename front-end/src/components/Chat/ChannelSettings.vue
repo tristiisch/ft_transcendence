@@ -22,18 +22,25 @@ function labelText(channel: Channel) {
 	else
 		return 'you can set a password'
 }
+
+function statusText(channel: Channel)
+{
+	if ( ) 
+}
+
 </script>
 
 <template>
 	<InChat-TopImage :inChannel="inChannel"></InChat-TopImage>
+	<div>your current channel status is {{ statusText(inChannel) }}</div>
 	<div class="inline-flex shadow-sm w-full">
-		<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded-l-lg border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+		<button class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded-l-lg border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 			Password
 		</button>
-		<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 border-t border-b border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+		<button class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 border-t border-b border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 			Administrator
 		</button>
-		<button @click="protectedChannel = true" class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded-r-md border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+		<button class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded-r-md border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 			Mute/Ban
 		</button>
 	</div>
