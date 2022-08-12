@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
@@ -16,6 +17,10 @@ export class FriendsService {
     @Inject(UsersService)
     private readonly userService: UsersService;
 
+	public getRepo() {
+		return this.friendsRepository;
+	}
+
 	/**
 	 * Add a friend request.
 	 * 
@@ -27,7 +32,7 @@ export class FriendsService {
 	 * @throws {NotAcceptableException} When they are already friends or waiting for one of them to accept a friend request.
 	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async addFriendRequest(user: User, target: User): Promise<{statusCode: number, message: string}> {
+	async addFriendRequest(user: User, target: UserSelectDTO): Promise<{statusCode: number, message: string}> {
 		if (user.id == target.id)
 			throw new PreconditionFailedException("You can't be friends with yourself.");
 
@@ -63,7 +68,7 @@ export class FriendsService {
 	 * @throws {NotAcceptableException} When they are already friends or waiting for one of them to accept a friend request.
 	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	 async acceptFriendRequest(user: User, target: User): Promise<{statusCode: number, message: string}> {
+	 async acceptFriendRequest(user: UserSelectDTO, target: User): Promise<{statusCode: number, message: string}> {
 		if (target.id == user.id)
 			throw new PreconditionFailedException("You can't be friends with yourself.");
 
@@ -93,7 +98,7 @@ export class FriendsService {
 	 * @throws {InternalServerErrorException} When the value in database can't be changed.
 	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async removeFriendship(user: User, target: User): Promise<{statusCode: number, message: string}> {
+	async removeFriendship(user: UserSelectDTO, target: User): Promise<{statusCode: number, message: string}> {
 		if (target.id == user.id)
 			throw new PreconditionFailedException('Unable to suppress a friendship with oneself.');
 
@@ -143,7 +148,7 @@ export class FriendsService {
 	async findPendingIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
-		await this.userService.findOne(userId);
+		// await this.userService.findOne(userId);
 		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).andWhere("friendship.status = :status", { status: FriendshipStatus.PENDING });
 	
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -175,7 +180,7 @@ export class FriendsService {
 	async findWaitingIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
-		await this.userService.findOne(userId);
+		// await this.userService.findOne(userId);
 		sqlStatement.where("friendship.user_id2 = :id", { id: userId }).andWhere("friendship.status = :status", { status: FriendshipStatus.PENDING });
 	
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -207,7 +212,7 @@ export class FriendsService {
 	async findFriendsIds(userId: number): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
-		await this.userService.findOne(userId);
+		// await this.userService.findOne(userId);
 		sqlStatement.where("friendship.status = :status", { status: FriendshipStatus.ACCEPTED });
 		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).orWhere("friendship.user_id2 = :id");
 	
@@ -237,7 +242,7 @@ export class FriendsService {
 	async findAllRelations(userId: number): Promise<Friendship[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder("friendship");
 
-		await this.userService.findOne(userId);
+		// await this.userService.findOne(userId);
 		sqlStatement.where("friendship.user_id1 = :id", { id: userId }).orWhere("friendship.user_id2 = :id");
 	
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {

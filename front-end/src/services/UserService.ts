@@ -49,7 +49,7 @@ class UserService {
 	}
 
 	getMatchsHistory(username: string) {
-		return axios.get(`users/${username}/matchsHistory`);
+		return axios.post(`matchs-history`, { username: username });
 	}
 }
 

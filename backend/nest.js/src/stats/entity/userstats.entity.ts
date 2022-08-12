@@ -10,13 +10,13 @@ export class UserStats {
 	@Column({ default: 0 })
 	@IsInt()
 	@Min(0)
-	wins: number;
+	victories: number;
 
 	@Column({ default: 0 })
 	@IsInt()
 	@Min(0)
-	losses: number;
+	defeats: number;
 
-	@Column({ generatedType: 'STORED', asExpression: `wins - losses`, update: false })
+	@Column({ generatedType: 'STORED', asExpression: `victories - defeats`, update: false })
 	score: number;
 }

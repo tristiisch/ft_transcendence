@@ -8,6 +8,7 @@ import { MatchsHistoryService as MatchsHistoryService } from './matchs-history.s
 @Module({
 	imports: [UsersModule, TypeOrmModule.forFeature([MatchHistory])],
 	controllers: [MatchsHistoryController],
-	providers: [MatchsHistoryService]
+	providers: [MatchsHistoryService],
+	exports: [MatchsHistoryService]
 })
 export class MatchsHistoryModule {}

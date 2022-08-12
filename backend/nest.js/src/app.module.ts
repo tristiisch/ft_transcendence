@@ -10,6 +10,7 @@ import { FriendsModule } from './friends/friends.module';
 import { StatsModule } from './stats/stats.module';
 import { AuthModule } from './auth/auth.module';
 import { MatchsHistoryModule } from './matchs-history/matchs-history.module';
+import { TestModule } from './test/test.module';
 
 @Module({
 	imports: [
@@ -20,7 +21,8 @@ import { MatchsHistoryModule } from './matchs-history/matchs-history.module';
 		FriendsModule,
 		StatsModule,
 		AuthModule,
-		MatchsHistoryModule
+		MatchsHistoryModule,
+		TestModule
 	],
 	controllers: [AppController],
 	providers: [AppService],

@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Inject, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post } from '@nestjs/common';
+import { UserSelectDTO } from 'src/users/entity/user-select.dto';
+import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { UserStats } from './entity/userstats.entity';
 import { StatsService } from './stats.service';
@@ -12,6 +14,28 @@ export class StatsController {
 
 	constructor(private readonly statsService: StatsService) {}
 
+    @Get('leaderboard')
+	getLeaderboard() {
+		return this.statsService.leaderboard();
+	}
+
+    @Post('leaderboard-with-friends')
+	async getLeaderboardWithFriends(@Body() userSelected: UserSelectDTO) {
+		const user: User = await userSelected.resolveUser(this.usersService);
+	
+		return this.statsService.leaderboardWithFriends(user);
+	}
+
+	/**
+	 * Won't be used but worked.
+	 */
+    @Get('leaderboard/:page')
+	getLeaderboardPage(@Param('page') page: number) {
+        const min: number = (page - 1) * this.userPerPage;
+        const max: number = this.userPerPage;
+		return this.statsService.leaderboardPage(min, max);
+	}
+
 	@Patch(':id')
 	changeStats(@Param('id') id: number, @Body() stats: UserStats) {
         stats.user_id = id
@@ -21,12 +45,5 @@ export class StatsController {
     @Get(':id')
 	getStats(@Param('id') id: number) {
 		return this.statsService.findOne(id);
-	}
-
-    @Get('leaderboard/:page')
-	getLeaderboard(@Param('page') page: number) {
-        const min: number = (page - 1) * this.userPerPage;
-        const max: number = this.userPerPage;
-		return this.statsService.leaderboard(min, max);
 	}
 }

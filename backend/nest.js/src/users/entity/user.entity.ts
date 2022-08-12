@@ -5,7 +5,6 @@ export enum UserStatus {
 	OFFLINE,
 	ONLINE,
 	IN_GAME,
-	IN_CHAT,
 	SPEC
 }
 
@@ -17,6 +16,7 @@ export class User extends BaseEntity {
 	id: number;
 
 	@Column()
+	@IsNotEmpty()
 	login_42: string;
 
 	@Column({ unique: true, nullable: true, length: 32 })

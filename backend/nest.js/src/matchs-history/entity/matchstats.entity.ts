@@ -1,4 +1,4 @@
-import { NotAcceptableException } from "@nestjs/common";
+import { NotAcceptableException, UnprocessableEntityException } from "@nestjs/common";
 import { IsInt } from "class-validator";
 import { User } from "src/users/entity/user.entity";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
@@ -11,11 +11,14 @@ export class MatchHistory {
 
 	@Column()
 	@IsInt()
-	winner_id: number;
+	user_id1: number;
 
 	@Column()
 	@IsInt()
-	loser_id: number;
+	user_id2: number;
+
+	@Column("int", { nullable: true, array: true })
+	score: number[];
 
 	@Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
 	timestamp_started: Date;
@@ -23,16 +26,38 @@ export class MatchHistory {
 	@Column({ type: 'timestamptz', nullable: true })
 	timestamp_ended: Date;
 
-	public isWinner(user : User): boolean {
-		if (user.id !== this.loser_id && user.id !== this.winner_id)
-			throw new NotAcceptableException(`User '${user.username}' is neither the winner nor the loser.`);
-		return user.id === this.winner_id;
+	public getWinner(): number {
+		const score_user1 = this.score[0];
+		const score_user2 = this.score[1];
+		
+		if (score_user1 > score_user2)
+			return this.user_id1;
+		else if (score_user2 > score_user1)
+			return this.user_id2;
+		throw new UnprocessableEntityException('There was no winner, the match ended in a tie.');
 	}
 
-	public isLooser(user : User): boolean {
-		if (user.id !== this.loser_id && user.id !== this.winner_id)
-			throw new NotAcceptableException(`User '${user.username}' is neither the winner nor the loser.`);
-		return user.id === this.loser_id;
+	public getLooser(): number {
+		const score_user1 = this.score[0];
+		const score_user2 = this.score[1];
+		
+		if (score_user1 < score_user2)
+			return this.user_id1;
+		else if (score_user2 < score_user1)
+			return this.user_id2;
+		throw new UnprocessableEntityException('They is no looser, the match finish by an equality.');
+	}
+
+	public getOpponent(userId: number): number {
+		if (userId === this.user_id1)
+			return this.user_id2;
+		else if (userId === this.user_id2)
+			return this.user_id1;
+		throw new UnprocessableEntityException(`${userId} didn't play in this match.`);
+	}
+
+	public isWinner(userId: number): boolean {
+		return this.getWinner() === userId;
 	}
 
 	public isEnded(): boolean {
