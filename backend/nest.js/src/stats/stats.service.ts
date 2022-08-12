@@ -1,8 +1,11 @@
 import { Inject, Injectable, InternalServerErrorException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FriendsService } from 'src/friends/friends.service';
+import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { isEquals, isNumberPositive } from 'src/utils/utils';
 import { InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { LeaderboardUser } from './entity/leaderboard.entity';
 import { UserStats } from './entity/userstats.entity';
 
 @Injectable()
@@ -15,6 +18,8 @@ export class StatsService {
 
     @Inject(UsersService)
     private readonly userService: UsersService;
+    @Inject(FriendsService)
+    private readonly friendsService: FriendsService;
 
     async findOne(userId: number): Promise<UserStats> {
 		isNumberPositive(userId, 'get a user');
@@ -53,7 +58,7 @@ export class StatsService {
 		return statsAfter;
     }
 
-    async leaderboard(min: number, max: number): Promise<UserStats[]> {
+    async leaderboardPage(min: number, max: number): Promise<UserStats[]> {
 		if (min < 0)
 			throw new PreconditionFailedException(`Can't get leaderboard with negative min ${max}.`);
 		if (max <= 0)
@@ -61,10 +66,42 @@ export class StatsService {
 		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
 
 		sqlStatement.skip(min).limit(max).addOrderBy('userstats.score', 'DESC', 'NULLS LAST');
-		// console.log("SQL UserStats leaderboard", sqlStatement.getQueryAndParameters());
 	
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;
 		}, this.userService.lambdaDatabaseUnvailable);
+    }
+
+    async leaderboard(): Promise<UserStats[]> {
+		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
+
+		sqlStatement.addOrderBy('userstats.score', 'DESC', 'NULLS LAST');
+	
+		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
+			return userStats;
+		}, this.userService.lambdaDatabaseUnvailable);
+    }
+
+    async leaderboardWithFriends(user: User) {
+		const friendsIds: number[] = await this.friendsService.findFriendsIds(user.id);
+		const userStats: UserStats[] = await this.leaderboard();
+		const leaderBoad: LeaderboardUser[] = new Array();
+		const leaderBoadFriends: LeaderboardUser[] = new Array();
+
+		userStats.forEach(async (userStats: UserStats, index: number) => {
+			const leaderUser: LeaderboardUser = new LeaderboardUser();
+			const target: User = await this.userService.findOne(userStats.user_id);
+
+			leaderUser.rank = index + 1;
+			leaderUser.username = target.username;
+			leaderUser.avatar = target.avatar;
+			leaderUser.status = target.status;
+
+			if (friendsIds.length !== 0 && friendsIds.indexOf(userStats.user_id) !== -1)
+				leaderBoadFriends.push(leaderUser);
+
+			leaderBoad.push(leaderUser);
+		});
+		return {leaderBoad, leaderBoadFriends};
     }
 }

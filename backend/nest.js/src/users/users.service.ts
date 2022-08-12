@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isEquals, isNumberPositive } from "src/utils/utils";
-import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from "typeorm";
+import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
 import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
 
