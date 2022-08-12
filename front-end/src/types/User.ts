@@ -1,23 +1,25 @@
 import type Status from '@/types/Status'
-import type { Socket } from "socket.io-client";
+
 export default interface User {
   id: number
-  username: string
-  rank: number
-  nbVictory: number
-  nbDefeat: number
+  login_42: string
+  //rank: number
+  //nbVictory: number
+  //nbDefeat: number
   avatar: string
-  '2fa': boolean
-  current_status: Status
+  username: string
+  status: Status
 }
 
-/*export interface AuthUser {
-	id: string;
+export interface Auth {
+	user_id: number;
 	token: string;
-	//username: string;
-	//avatar: string;
-}*/
+	has_2fa: boolean;
+	isRegistered: boolean, 
+	isAuthenticated: boolean
+}
+
 export interface UserState {
-	userAuth: { id: string, token: string, isRegistered: boolean, isAuthenticated: boolean};
+	userAuth: Auth;
 	userData: User;
 }

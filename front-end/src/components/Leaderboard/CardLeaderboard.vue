@@ -10,11 +10,11 @@
 }>()
 
 const userStatus = computed(() => {
-    if (props.user.current_status === Status.INGAME)
+    if (props.user.status === Status.INGAME)
         return 'Ingame'
-    else if (props.user.current_status === Status.OFFLINE)
+    else if (props.user.status === Status.OFFLINE)
         return 'Offline'
-    else (props.user.current_status === Status.ONLINE)
+    else (props.user.status === Status.ONLINE)
         return 'Online'
 })
 

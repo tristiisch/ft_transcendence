@@ -31,7 +31,7 @@ function redirectTo42LoginPage(): void {
 	};
 
 	const queryString = new URLSearchParams(options).toString();
-	window.location.href = `${baseUrl}?${queryString}`;
+	window.location.href = `${baseUrl}?${queryString}`
 }
 
 function uploadImage(imageData: string): void {
@@ -78,25 +78,17 @@ function submitRegistrationForm() {
 	if (!username.value || !(username.value.length > 1 && username.value.length < 9)) toast.error('Username should have at least 2 and at most 9 characters.');
 	else if (!onlyLettersAndNumbers(username.value)) toast.error('Username can only contain alphanumeric characters.');
 	else {
-		userStore
-			.updateUsername(username.value)
+			userStore
+			.updateUser(username.value, image.value)
 			.then(() => {
-				if (isUpload)
-					userStore
-						.updateAvatar(image.value)
-						.then(() => {
-							redirectToHome();
-						})
-						.catch((e) => {
-							toast.error(e.response.data.message);
-						});
-				else redirectToHome();
+					redirectToHome();
 			})
 			.catch((e) => {
 				toast.error(e.response.data.message);
 			});
+		}
+		//redirectToHome();
 	}
-}
 
 onBeforeMount(() => {
 	if (route.query.code !== undefined && route.query.state !== undefined && !userStore.isLoggedIn) {
@@ -104,8 +96,8 @@ onBeforeMount(() => {
 		userStore
 			.handleLogin(route.query.code as string, route.query.state as string)
 			.then(() => {
-				console.log(userStore.userData['2fa']);
-				if (userStore.isRegistered && !userStore.userData['2fa'])
+				console.log(userStore.userAuth.has_2fa);
+				if (userStore.isRegistered && !userStore.userAuth.has_2fa)
 					router.replace({ name: 'Home' });
 				isLoading.value = false;
 			})
@@ -139,11 +131,11 @@ onBeforeMount(() => {
 					<upload-avatar login @image-loaded="uploadImage" :image="image"></upload-avatar>
 				</form>
 			</BaseCard>
-			<BaseCard v-else-if="userStore.userData['2fa']">
-				<form class="flex flex-col justify-center gap-4">
+			<BaseCard v-else-if="userStore.userAuth.has_2fa">
+				<form class="flex flex-col justify-center gap-4" @submit.prevent>
 					<h1 class="text-yellow-300">⚠️ Two Factor Authentification enabled</h1>
 					<p class="text-gray-300">Please enter your 2FA code below :</p>
-					<div class="flex justify-center gap-4" @submit.prevent>
+					<div class="flex justify-center gap-4">
 						<input type="password" name="TwoFACode" v-model="TwoFACode" placeholder="Enter 2FA code here" class="bg-slate-700 text-white" />
 						<button-gradient1 @click="submit2faForm">Send</button-gradient1>
 					</div>

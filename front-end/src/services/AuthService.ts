@@ -7,11 +7,9 @@ class AuthService {
 			if (response.data.accessToken) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
 			}
-			console.log(response)
+			console.log(response.data)
 			return response.data;
-		}).catch((error) => {
-			console.log(error.response.data.message)
-		});
+		})
 	}
 
 	login2FA(otpToken: string) {

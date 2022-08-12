@@ -58,13 +58,13 @@ function statusOrder() {
 	if (type.value === 'All')
 	{
 		users.value.sort((a, b) => {
-		return b.current_status - a.current_status;
+		return b.status - a.status;
 		});
 	}
 	else
 	{
 		friends.value.sort((a, b) => {
-		return b.current_status - a.current_status;
+		return b.status - a.status;
 		});
 	}
 }
@@ -72,6 +72,7 @@ function statusOrder() {
 function fetchUsers() {
 	UsersService.getUsers()
 		.then((response) => {
+			console.log(response.data)
 			users.value = response.data;
 		})
 		.catch((e: Error) => {

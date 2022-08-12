@@ -33,13 +33,12 @@ export class AuthController {
 			auth: {
 				user_id: user.id,
 				token: 'fake-jwt-token',
-				is_registered: false,
 				has_2fa: false},
 			user: { 
 				id: user.id,
-				id_42: userInfo.data.id,
+				login_42: userInfo.data.login,
 				avatar: userInfo.data.image_url,
-				username: user.username,
+				username: "",
 				status: 0
 			}});
 		

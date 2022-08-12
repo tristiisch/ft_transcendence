@@ -4,18 +4,14 @@ import type Match from '@/types/MatchHistory';
 
 class UserService {
 
-	getMyData(id: string) {
+	/*getMyData(id: string) {
 		return axios.get(`users/me/${id}`).then((response) => {
 			return response.data;
 		});
-	}
+	}*/
 
-	setUsername(id: string, username: string) {
-		return axios.post(`users/me/${id}/set-username`, { username });
-	}
-
-	setAvatar(id: string, avatar: string) {
-		return axios.post(`users/me/${id}/set-avatar`, { avatar });
+	registerUser(id: number, username: string, avatar: string) {
+		return axios.patch(`users/register/${id}`, { username, avatar });
 	}
 
 	getUsers() {
@@ -28,6 +24,7 @@ class UserService {
 	}
 
 	getUserfriends(id: number) {
+		console.log(id)
 		return axios.get(`friends/names/${id}`);
 	}
 

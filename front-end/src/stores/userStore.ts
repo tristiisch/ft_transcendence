@@ -20,13 +20,17 @@ export const useUserStore = defineStore('userStore', {
 	actions: {
 		async handleLogin(code: string, state: string) {
 			try {
-				this.userAuth = await AuthService.login(code, state);
-				this.userData = await UsersService.getMyData(this.userAuth.id);
+				const response = await AuthService.login(code, state);
+				console.log(response)
+				this.userAuth = response.auth
+				this.userData = response.user
+				console.log(this.userData.username)
 				if (!this.userData.username) {
-					this.userData.username = this.userAuth.id as string;
+					this.userData.username = this.userData.login_42;
 					this.userAuth.isRegistered = false;
 				} else this.userAuth.isRegistered = true;
-				if (!this.userData['2fa'])
+				console.log(this.userData.username)
+				if (!this.userAuth.has_2fa)
 					this.userAuth.isAuthenticated = true;
 				else this.userAuth.isAuthenticated = false;
 				localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
@@ -49,29 +53,23 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
-		async updateUsername(username: string) {
+		async updateUser(username: string, image: string) {
 			try {
-				this.userData.username = username;
+				if (username)
+					this.userData.username = username;
+				if (image)
+					this.userData.avatar = image;
 				console.log(username);
-				await UsersService.setUsername(this.userAuth.id, this.userData.username);
-				localStorage.setItem('userData', JSON.stringify(this.userData));
-			} catch (error: unknown) {
-				throw error;
-			}
-		},
-		async updateAvatar(image: string) {
-			try {
 				console.log(image);
-				this.userData.avatar = image;
-				await UsersService.setAvatar(this.userAuth.id, this.userData.avatar);
+				await UsersService.registerUser(this.userData.id, this.userData.username, this.userData.avatar);
 				localStorage.setItem('userData', JSON.stringify(this.userData));
 			} catch (error: unknown) {
 				throw error;
 			}
 		},
 		registerUser() {
-			this.userAuth.isRegistered = true;
-			localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
+				this.userAuth.isRegistered = true;	
+				localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
 		},
 		authenticateUser() {
 			this.userAuth.isAuthenticated = true;

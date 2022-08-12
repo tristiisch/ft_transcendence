@@ -7,11 +7,11 @@ const props = defineProps<{
 }>()
 
 const isInGame = computed(() => {
-    return props.user.current_status === Status.INGAME ? true : false;
+    return props.user.status === Status.INGAME ? true : false;
 })
 
 const isOnline = computed(() => {
-    return props.user.current_status === Status.ONLINE ? true : false;
+    return props.user.status === Status.ONLINE ? true : false;
 })
 
 </script>
