@@ -10,7 +10,7 @@ services:
       PGDATA: /data/postgres
     volumes:
     - db_postgres:/data/postgres
-    restart: unless-stopped
+    restart: always
     ports:
     - 5432:5432
     networks:
@@ -31,7 +31,7 @@ services:
     - db_pgadmin:/var/lib/pgadmin
     - ./pgAdmin/servers.json:/pgadmin4/servers.json
     - ./pgAdmin/.pgpass:/pgadmin4/.pgpass
-    restart: unless-stopped
+    restart: always
     ports:
     - 8080:8080
     networks:

@@ -5,7 +5,6 @@ export enum UserStatus {
 	OFFLINE,
 	ONLINE,
 	IN_GAME,
-	IN_CHAT,
 	SPEC
 }
 

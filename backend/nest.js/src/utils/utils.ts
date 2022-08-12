@@ -32,3 +32,24 @@ export function isNumberPositive(nb: number, actionMsg: string) {
     else if (nb < 0)
         throw new PreconditionFailedException(`Can't ${actionMsg} with negative number ${nb}.`);
 }
+
+/**
+ * Get a random element in array
+ */
+export function random(startNumber: number, nbPosibility: number) : number {
+    return Math.floor(Math.random() * nbPosibility) + startNumber;
+}
+
+/**
+ * Get a random element in array
+ */
+export function randomElement<T>(array: Array<T>) : T {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+export function randomEnum<T>(enumeration: T) {
+    const values = Object.keys(enumeration)
+        .map(n => Number.parseInt(n))
+        .filter(n => !Number.isNaN(n)) as unknown as T[keyof T][]
+    return randomElement(values);
+}
