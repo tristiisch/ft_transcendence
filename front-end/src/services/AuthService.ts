@@ -2,23 +2,26 @@ import axios from '@/plugin/axiosInstance';
 import type { AxiosResponse } from 'axios';
 
 class AuthService {
-	login(code: string, state: string) {
-		return axios.post('auth/42/redirect', { code, state }).then((response) => {
-			if (response.data.accessToken) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
+	login(code: string) {
+		return axios.post('auth/42/redirect', { code }).then((response) => {
+			if (response.data.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 			}
-			console.log(response.data)
 			return response.data;
 		})
 	}
 
 	login2FA(otpToken: string) {
 		return axios.post('auth/2fa/login', { otpToken }).then((response) => {
-			if (response.data.accessToken) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
+			if (response.data.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 			}
 			return response.data;
 		});
+	}
+
+	registerUser(id: number, username: string, avatar: string) {
+		return axios.patch(`users/register/${id}`, { username, avatar });
 	}
 
 	enable2FA() {

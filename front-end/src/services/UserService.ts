@@ -4,16 +4,6 @@ import type Match from '@/types/MatchHistory';
 
 class UserService {
 
-	/*getMyData(id: string) {
-		return axios.get(`users/me/${id}`).then((response) => {
-			return response.data;
-		});
-	}*/
-
-	registerUser(id: number, username: string, avatar: string) {
-		return axios.patch(`users/register/${id}`, { username, avatar });
-	}
-
 	getUsers() {
 		return axios.get('users');
 	}

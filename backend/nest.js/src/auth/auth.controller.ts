@@ -34,13 +34,14 @@ export class AuthController {
 				user_id: user.id,
 				token: 'fake-jwt-token',
 				has_2fa: false},
-			user: { 
+			user: user
+			/*user: { 
 				id: user.id,
 				login_42: userInfo.data.login,
 				avatar: userInfo.data.image_url,
 				username: "",
-				status: 0
-			}});
+				status: 0*/
+			});
 		
 	}
 }
