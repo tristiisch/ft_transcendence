@@ -133,13 +133,13 @@ export class UsersService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}
-			console.log('new user added : ', newUser)
+			// console.log('new user added : ', newUser)
 			return newUser;
 		}, this.lambdaDatabaseUnvailable);
 	}
 
 	async update(userId: number, user: UserDTO) {
-		const userBefore: User = await this.findOne(userId);
+		// const userBefore: User = await this.findOne(userId);
 		await this.usersRepository.update(userId, user);
 		const userAfter: User = await this.findOne(userId);
 

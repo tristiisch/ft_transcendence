@@ -16,6 +16,10 @@ export class StatsService {
 		private statsRepository: Repository<UserStats>,
 	) {}
 
+	public getRepo() {
+		return this.statsRepository;
+	}
+
     @Inject(UsersService)
     private readonly userService: UsersService;
     @Inject(FriendsService)

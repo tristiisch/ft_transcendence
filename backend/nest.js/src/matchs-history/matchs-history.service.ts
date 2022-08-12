@@ -16,6 +16,10 @@ export class MatchsHistoryService {
 	@Inject(UsersService)
 	private readonly userService: UsersService;
 
+	public getRepo() {
+		return this.matchsHistoryRepository;
+	}
+
 	async add(matchHistory: MatchHistory) {
 		return this.matchsHistoryRepository.save(matchHistory);
 	}

@@ -28,14 +28,14 @@ export class TestDbService {
 	}
 
 	async clearTableFriends() {
-		await this.usersService.getRepo().clear()
+		await this.friendsService.getRepo().clear()
 	}
 
 	async clearTableStats() {
-		await this.usersService.getRepo().clear()
+		await this.statsService.getRepo().clear()
 	}
 
 	async clearTableMatchHistory() {
-		await this.usersService.getRepo().clear()
+		await this.matchHistoryService.getRepo().clear()
 	}
 }

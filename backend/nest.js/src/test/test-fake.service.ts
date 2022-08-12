@@ -4,9 +4,10 @@ import { MatchHistory } from 'src/matchs-history/entity/matchstats.entity';
 import { MatchsHistoryService } from 'src/matchs-history/matchs-history.service';
 import { UserStats } from 'src/stats/entity/userstats.entity';
 import { StatsService } from 'src/stats/stats.service';
+import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { random, randomElement, randomEnum } from 'src/utils/utils';
+import { random, randomElement, randomEnum, removeFromArray } from 'src/utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 
 @Injectable()
@@ -25,29 +26,31 @@ export class TestFakeService {
 	private readonly randomMaxScoreGame = 5;
 
 	async generate(nbUsers: number) {
-		let data = new Array();
+		const data = new Array();
+		const allUserIds: number[] = await this.getUsersIds();
 		for (let i: number = 1; i <= nbUsers; ++i) {
-			data.push(await this.createFakeUser());
-			console.log(i, 'done');
+			let fakeUser: {user: User, stats: UserStats, matchs: MatchHistory} = await this.createFakeUser(allUserIds)
+			data.push(fakeUser);
+			allUserIds.push(fakeUser.user.id);
 		}
 		return data;
 	}
 
-	async createFakeUser() {
-		const username: string = Math.random().toString(36).substring(2, 9);
+	async createFakeUser(allUserIds: number[]) {
+		const user: User = await this.initUser();
+		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
-		const user: User = await this.initUser(username);
-		const stats = await this.initStats(user);
-		const allUserIds: number[] = await this.getUsersIds(user.id);
-		const matchs = await this.initMatchHistory(user, allUserIds);
-		await this.initNewFriendship(user, allUserIds);
+		const stats: UserStats = await this.initStats(user);
+		const matchs: MatchHistory = await this.initMatchHistory(user, allUserIdsExceptUser);
+	
+		this.initNewFriendship(user, allUserIdsExceptUser);
 		return ({ user, stats, matchs });
 	}
 
-	async initUser(username: string): Promise<User> {
+	async initUser(): Promise<User> {
 		let user: User = new User;
-		user.username = username;
-		user.login_42 = username;
+		user.username = Math.random().toString(36).substring(2, 9);
+		user.login_42 = Math.random().toString(36).substring(2, 9);
 		/*
 		user.avatar = await fetch('https://picsum.photos/200').then(function(response) {
 			return response.url;
@@ -79,8 +82,8 @@ export class TestFakeService {
 		matchHistory.user_id2 = randomElement(userIds);
 		matchHistory.user_id1 = user.id;
 
-		let scoreWinner: number = this.randomMaxScoreGame;
-		let scoreLoser: number = random(0, this.randomMaxScoreGame);
+		const scoreWinner: number = this.randomMaxScoreGame;
+		const scoreLoser: number = random(0, this.randomMaxScoreGame);
 		if (random(0, 2) === 1)
 			matchHistory.score = [scoreWinner, scoreLoser];
 		else
@@ -94,26 +97,23 @@ export class TestFakeService {
 			return;
 		}
 		const randomUserId: number = randomElement(userIds);
-		const randomUser: User = await this.usersService.findOne(randomUserId);
+		const randomUser: UserSelectDTO = new UserSelectDTO();
+		randomUser.id = randomUserId;
+		randomUser.username = "fakePlayer";
 		const randomNb: number = random(1, 4);
 
 		await this.friendsService.addFriendRequest(user, randomUser);
-		if (randomNb == 1)
+		if (randomNb == 2)
 			await this.friendsService.removeFriendship(randomUser, user);
-		else if (randomNb >= 2)
+		else if (randomNb >= 3)
 			await this.friendsService.acceptFriendRequest(randomUser, user);
 	}
 
-	private async getUsersIds(except: number): Promise<number[]> {
+	private async getUsersIds(): Promise<number[]> {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersService.getRepo().createQueryBuilder("user").select(["user.id"]);
 
 		return await sqlStatement.getMany().then((users: User[]) => {
-			let ids: number[] = new Array();
-			users.forEach(u => {
-				if (u.id !== except)
-					ids.push(u.id);
-			});
-			return ids;
+			return users.map(u => u.id);
 		}, this.usersService.lambdaDatabaseUnvailable);
 	}
 }
