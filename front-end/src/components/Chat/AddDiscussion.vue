@@ -32,8 +32,4 @@ function showUsers() {
 			</button>
 		</div>
 	</form>
-	<
-		
 </template>
-
-			

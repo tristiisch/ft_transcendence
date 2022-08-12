@@ -1,31 +1,32 @@
 <script setup lang="ts">
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
-import { ref } from 'vue';
-import { stringify } from 'querystring';
-
-const count = ref(0)
+import baseButton from '@/components/BaseButton.vue'
 
 defineProps<{
-	inChatWith: User | null;
-	inChannel: Channel | null;
+	inChatWith?: User | null;
+	inChannel?: Channel | null;
+}>();
+
+const emit = defineEmits<{
+	(event: 'clickOnChannelSettings'): void;
 }>();
 </script>
 
 <template>
-	<div v-if="inChatWith" class="flex justify-center items-center gap-4 -mt-5 pb-2 w-full border-b-[1px] border-red-400">
-		<img class="h-12 w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=inChatWith.avatar>
+	<base-button v-if="inChatWith" link :to="{ name: 'Profile', params: { username: inChatWith.username }}" class="flex justify-center items-center gap-4 -mt-7 py-2 w-full border-b-[1px] border-red-400">
+		<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=inChatWith.avatar>
 		<label class="text-red-100">{{ inChatWith.username }}</label>
-	</div>
-	<div v-else-if="inChannel" class="flex justify-center items-center gap-4 -mt-5 pb-2 w-full border-b-[1px] border-red-400">
-		<div class="flex -space-x-5">
-			<div v-for="user in inChannel.users" class="flex">
-				<img class="h-12 w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=inChannel.avatar>
-			</div>
+	</base-button>
+	<div v-else-if="inChannel" class="flex justify-center items-center gap-4 -mt-7 py-2 w-full border-b-[1px] border-red-400">
+		<div class="flex -space-x-3 sm:-space-x-5">
+			<base-button  v-for="user in inChannel.users" link :to="{ name: 'Profile', params: { username: user.username }}" class="flex shrink-0">
+				<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=user.avatar>
+			</base-button>
 		</div>
-		<div class="flex items-center gap-2">
-			<img class="h-12 w-12 shrink-0 ml-4 rounded border-[1px] border-red-400" src='@/assets/ChannelDefault.png'>
+		<button @click="emit('clickOnChannelSettings')" class="flex items-center gap-2">
+			<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 ml-4 rounded border-[1px] border-red-400" src='@/assets/ChannelDefault.png'>
 			<label class="text-red-100">{{ inChannel.name }}</label>
-		</div>
+		</button>
 	</div>
 </template>

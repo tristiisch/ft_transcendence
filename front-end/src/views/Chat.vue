@@ -15,6 +15,7 @@ import { ref, onMounted } from 'vue';
 import socket from '@/plugin/socketInstance';
 import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
 import InChatTopImage from '@/components/Chat/InChatTopImage.vue';
+import ChannelSettings from '@/components/Chat/ChannelSettings.vue';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
@@ -84,17 +85,25 @@ function fetchChannels() {
 
 function setRightCardTitle(displayPart: string) {
 	if (displayPart === 'chat') rightCardTitle.value = 'CHAT';
-	else if (displayPart === 'addDiscussion') rightCardTitle.value = 'ADD DISCUSSION';
-	else rightCardTitle.value = 'CREATE CHANNEL';
+	else if (displayPart === 'addDiscussion') rightCardTitle.value = 'DISCUSSION';
+	else if (displayPart === 'channelSettings') rightCardTitle.value = 'SETTINGS';
+	else rightCardTitle.value = 'CHANNEL';
 }
 
-function setPartToDisplay() {
-	if (leftPartToDisplay.value === 'discussions')
-		rightPartToDisplay.value = 'addDiscussion'	
-	else if (leftPartToDisplay.value === 'channels')
-		rightPartToDisplay.value = 'createChannel'	
+function setPartToDisplay(name: string | null) {
+	if (name)
+	{
+		rightPartToDisplay.value = name
+	}
 	else
-		rightPartToDisplay.value = 'chat'
+	{
+		if (leftPartToDisplay.value === 'discussions')
+		rightPartToDisplay.value = 'addDiscussion'	
+		else if (leftPartToDisplay.value === 'channels')
+			rightPartToDisplay.value = 'createChannel'	
+		else
+			rightPartToDisplay.value = 'chat'
+	}
 	setRightCardTitle(rightPartToDisplay.value)
 }
 
@@ -175,7 +184,7 @@ onMounted(() => {
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full px-8">
-					<div class="flex w-full justify-around py-4 sm:pb-10 sm:border-b-[1px] sm:border-slate-700">
+					<div class="flex w-full justify-around sm:py-4 sm:pb-10 sm:border-b-[1px] sm:border-slate-700">
 						<button @click="showFriends" class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">DISCUSSIONS</button>
 						<button @click="showChannels" class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CHANNELS</button>
 					</div>
@@ -188,15 +197,15 @@ onMounted(() => {
 						</div>
 					</div>
 					<div class="flex self-start items-center gap-4 ml-2">
-						<button-plus @click="setPartToDisplay"></button-plus>
+						<button-plus @click="setPartToDisplay(null)"></button-plus>
 						<label class="text-white">{{ addButtonText() }}</label>
 					</div>
 				</div>
 			</card-left>
 			<card-right :title=rightCardTitle>
-				<div v-if="rightPartToDisplay === 'chat'" class="w-11/12 px-12 h-full">
+				<div v-if="rightPartToDisplay === 'chat'" class="w-11/12 px-6 3xl:px-10 h-full">
 					<div v-if="inChatWith || inChannel" class="flex flex-col justify-between items-center h-full">
-						<InChat-TopImage :inChatWith=inChatWith :inChannel=inChannel></InChat-TopImage>
+						<InChat-TopImage @clickOnChannelSettings="setPartToDisplay('channelSettings')" :inChatWith=inChatWith :inChannel=inChannel></InChat-TopImage>
 						<div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
 							<message @scroll="scrollToEnd" :messages="messages" :users="users"></message>
 						</div>
@@ -205,11 +214,14 @@ onMounted(() => {
 						</form>
 					</div>
 				</div>
-				<div v-else-if="rightPartToDisplay === 'addDiscussion'" class="flex flex-col justify-between items-center w-11/12 px-10 h-full">
-					<AddSearchPlayer @close="rightPartToDisplay = 'chat', setRightCardTitle('chat')" @validate="invitePlayer"></AddSearchPlayer>
+				<div v-else-if="rightPartToDisplay === 'channelSettings'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
+					<channel-settings @close="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></channel-settings>
 				</div>
-				<div v-else class="w-11/12 px-6 sm:px-12 h-full">
-					<Add-Channel @close="rightPartToDisplay = 'chat', setRightCardTitle('chat')" @validate="invitePlayer"></Add-Channel>
+				<div v-else-if="rightPartToDisplay === 'addDiscussion'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
+					<Add-Search-Player @close="setPartToDisplay('chat')" @validate="invitePlayer"></Add-Search-Player>
+				</div>
+				<div v-else class="w-11/12 px-6 3xl:px-10 h-full">
+					<Add-Channel @close="setPartToDisplay('chat')" @validate="invitePlayer"></Add-Channel>
 				</div>
 			</card-right>
 		</div>

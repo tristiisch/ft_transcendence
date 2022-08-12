@@ -1,8 +1,9 @@
 import type User from '@/types/User';
+import type status from '@/types/ChannelStatus';
 
 export default interface Channel {
 	name: string,
-	type: string,
+	type: status,
 	avatar: string,
 	users: User[],
 	password: (string | null)
