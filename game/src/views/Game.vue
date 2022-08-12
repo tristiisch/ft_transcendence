@@ -7,12 +7,12 @@ const stage_ratio = 3989/2976
 const ball_speed_quotient = 200 // the least, the faster
 const ball_size_quotient = 100 // the least, the bigger
 const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
-const ball_ypos_quotient = 2
+const ball_ypos_quotient = 2 // same
 
-const blocker_width_quotient = 50
-const blocker_height_quotient = 5
-const blocker_movements_delta = 30
-const blocker_xpos_quotient = 10
+const blocker_width_quotient = 50 // the least, the bigger
+const blocker_height_quotient = 5 // the least, the longer
+const blocker_movements_delta = 30 // the least, the slower (needs some kind of better way tho imo)
+const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
 onMounted(() => {
 	function computeStageHeight(): number { return window.innerHeight * (75 / 100) }
@@ -65,22 +65,6 @@ onMounted(() => {
 	var ball_speed = computeBallSpeed()
 	var dx = ball_speed
 	var dy = ball_speed
-	function check_stage_limits_collisions() {
-		if (ball.x() + dx < ball_radius || ball.x() + dx > stage_width - ball_radius) { dx = -dx; }
-		if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) { dy = -dy; }
-	}
-	function check_blockerp1_collisions() {
-		if (haveIntersection())
-			dx = -dx;
-	}
-	function haveIntersection() {
-		return !(
-			ball.x() + dx > p1_blocker.x() + p1_blocker.width() ||
-			ball.x() + dx < p1_blocker.x() ||
-			ball.y() + dy > p1_blocker.y() + p1_blocker.height() ||
-			ball.y() + dy < p1_blocker.y()
-		)
-	}
 	document.addEventListener("keydown", function(e) {
 		console.log(e.key)
 		if (e.key == 'ArrowDown') {
@@ -92,10 +76,22 @@ onMounted(() => {
 				p1_blocker.y(p1_blocker.y() - blocker_movements_delta)
 		}
 	})
-
+	function checkCollisionWithBlocker(blocker: Konva.Rect) {
+		if (!(ball.x() + dx > blocker.x() + blocker.width() ||
+			ball.x() + dx < blocker.x()||
+			ball.y() + dy > blocker.y() + blocker.height() ||
+			ball.y() + dy < blocker.y())) {
+				if (ball.y() > blocker.y() && ball.y() < blocker.y() + blocker.height())
+					dx = -dx
+				else
+					dy = -dy
+		}
+	}
 	var ball_animation = new Konva.Animation(function(frame) {
-		check_stage_limits_collisions()
-		check_blockerp1_collisions()
+		if (ball.x() + dx < ball_radius || ball.x() + dx > stage_width - ball_radius) { dx = -dx; }
+		if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) { dy = -dy; }
+		checkCollisionWithBlocker(p1_blocker)
+		checkCollisionWithBlocker(p2_blocker)
 		ball.x(ball.x() + dx);
 		ball.y(ball.y() + dy);
 	}, layer)
