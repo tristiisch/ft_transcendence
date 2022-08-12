@@ -26,8 +26,8 @@ export class MatchsHistoryService {
 
 	async findAll(userId: number) : Promise<MatchOwn[]> {
 		const sqlStatement: SelectQueryBuilder<MatchHistory> = this.matchsHistoryRepository.createQueryBuilder("matchHistory")
-			.where("matchHistory.winner_id = :id", { id: userId })
-			.orWhere("matchHistory.loser_id = :id")
+			.where('matchHistory.winner_id = :id', { id: userId })
+			.orWhere('matchHistory.loser_id = :id')
 			.addOrderBy('matchHistory.id', 'DESC', 'NULLS LAST');
 
 		try {
