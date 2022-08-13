@@ -9,6 +9,7 @@ const userStore = useUserStore();
 const router = useRouter();
 const newUsername = ref(userStore.userData.username);
 const image = ref(userStore.userData.avatar);
+const mode = ref('2FA');
 let isUpload = false;
 
 function uploadImage(imageData: string): void {
@@ -24,31 +25,59 @@ function submitProfileForm() {
 </script>
 
 <template>
-	<div class="flex flex-col items-center h-full w-full gap-5">
-		<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Activation 2FA</h1>
-		<q-r-code></q-r-code>
-		<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Edit Profile</h1>
-		<div class="flex flex-col justify-center w-3/4 sm:pt-8">
-			<h2 class="mb-4 text-red-800 text-lg">Change Username:</h2>
-			<div class="flex items-center w-full gap-2 mb-4">
-				<p>Username:</p>
-				<form class="w-full">
-					<input
-						class="placeholder-red-200 bg-red-400 w-full text-center font-medium text-xs py-1 px-3 text-red-200 sm:px-5 md:text-sm md:px-8"
-						type="text"
-						name="username"
-						v-model.trim="newUsername"
-						placeholder="username"
-					/>
-				</form>
-			</div>
-			<h2 class="mb-4 text-red-800 text-lg">Change Avatar:</h2>
-			<div class="flex items-center gap-2">
-				<upload-avatar @image-loaded="uploadImage"></upload-avatar>
-			</div>
+	<div class="flex flex-col items-center h-full w-full px-6 sm:px-8">
+		<div class="inline-flex shadow-sm w-full">
+			<button
+				@click="mode = '2FA'"
+				class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-200 rounded-l-lg border border-red-100 hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white"
+			>
+				2FA
+			</button>
+			<button
+				@click="mode = 'Edit'"
+				class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-200 border-t border-b border-red-100 hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white"
+			>
+				Edit
+			</button>
+			<button
+				@click="mode = 'Remove'"
+				class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-200 rounded-r-md border border-red-100 hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white"
+			>
+				Account
+			</button>
 		</div>
-		<base-button @click="submitProfileForm" class="self-end mr-6 bg-blue-600 py-1 px-5 text-white">Save</base-button>
-		<h1 class="text-center text-red-200 sm:text-xl mx-6 w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">Remove Profile</h1>
-		<base-button class="mr-6 bg-blue-600 py-1 px-5 text-white">Delete</base-button>
+		<div v-if="mode === '2FA'" class="flex flex-col justify-center items-center gap-8 h-full w-full">
+			<q-r-code></q-r-code>
+		</div>
+		<div v-else-if="mode === 'Edit'" class="flex flex-col items-center justify-between h-full w-full">
+			<div class="flex flex-col justify-center h-full w-full sm:w-fit gap-4 sm:gap-8">
+				<div>
+					<label class="block mb-2 text-sm font-medium text-red-200">Change Username:</label>
+					<div class="flex items-center w-full gap-2">
+						<form class="w-full">
+							<input
+								class="placeholder-red-200 bg-red-400 w-full rounded-md text-center font-medium text-xs py-1.5 text-red-600"
+								type="text"
+								name="username"
+								v-model.trim="newUsername"
+								placeholder="username"
+							/>
+						</form>
+					</div>
+				</div>
+				<div class="flex flex-col items-center w-full sm:flex-row sm:gap-4">
+					<img class="self-end -mb-4 sm:mb-0 shrink-0 w-10 h-10 sm:w-14 sm:h-14 rounded object-cover border-[1px] border-zinc-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
+					<div class="flex flex-col">
+						<label class="block mb-2 text-sm font-medium text-red-200">Change avatar:</label>
+						<upload-avatar @image-loaded="uploadImage"></upload-avatar>
+					</div>
+				</div>
+			</div>
+			<base-button @click="submitProfileForm" class="self-end bg-blue-600 py-1 px-5 text-white">Save</base-button>
+		</div>
+		<div v-else-if="mode === 'Remove'" class="flex flex-col items-center justify-center gap-8 h-full w-full">
+			<p class="text-center text-red-200 text-xs sm:text-sm">You can delete your account below. Profile deletion is irreversible and you will lost all your data.</p>
+			<base-button class="bg-blue-600 py-1 px-5 text-white">Delete</base-button>
+		</div>
 	</div>
 </template>

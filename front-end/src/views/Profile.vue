@@ -78,7 +78,7 @@ onBeforeMount(() => {
 				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">
 					<notifications></notifications>
 				</div>
-				<div v-else class=" w-11/12 overflow-y-auto h-full mr-3">
+				<div v-else class=" w-11/12 h-full mr-3">
 					<player-settings></player-settings>
 				</div>
 			</card-right>

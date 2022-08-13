@@ -19,23 +19,26 @@ function toogle2FA() {
 		AuthService.enable2FA()
 			.then((response) => {
 				qrCode.value = response.data;
+				isLoading.value = false
 			})
 			.catch((e: Error) => {
+				isLoading.value = false
 				console.log(e);
 			});
-		isLoading.value = false
+
 	}
 }
 </script>
 
 <template>
-	<div class="flex justify-center sm:py-8">
-		<span class="text-slate-600 pr-2">OFF</span>
+	<div class="flex justify-center w-full">
+		<span class="text-slate-600 text-bold pr-2">OFF</span>
 		<Toogle @switch-button="toogle2FA"></Toogle>
 		<span class="text-slate-600 pl-2">ON</span>
 	</div>
-	<div v-if="isActivated && !isLoading" class="flex flex-col items-center gap-10">
-		<img :src="qrCode" fluid alt="QR code" class="h-40 w-40"/>
-		<p class="text-center">Use QR code to register the app with Google Authenticator.</p>
+	<div v-if="isLoading" class="font-Arlon text-white text-center text-6xl w-full">Loading</div>
+	<div v-if="isActivated && !isLoading" class="flex flex-col items-center w-full">
+		<img :src="qrCode" fluid alt="QR code" class="w-28 md:w-32 lg:w-40"/>
 	</div>
+	<p class="text-center text-red-200 text-xs sm:text-sm">When 2FA is enable scan the QRCode in Google's Authenticator app.</p>
 </template>
