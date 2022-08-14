@@ -41,11 +41,13 @@ export const useUserStore = defineStore('userStore', {
 			localStorage.removeItem('userData');
 			location.reload();
 		},
-		async handleTwoFaAuthentification(twoFaCode: string) {
+		async handle2Fa(twoFaCode: string) {
 			try {
-				const response = await AuthService.login2FA(twoFaCode);
-				localStorage.setItem('userAuth', JSON.stringify(response.data));
-			} catch (error: unknown) {
+				const token = await AuthService.login2FA(twoFaCode);
+				this.userAuth.token = token;
+				this.userAuth.isAuthenticated = true;
+				localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
+			} catch (error: any) {
 				throw error;
 			}
 		},

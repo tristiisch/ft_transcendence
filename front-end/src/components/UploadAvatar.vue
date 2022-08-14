@@ -42,7 +42,7 @@ const changeAvatar = () => {
 	</div>
 	<div v-else>
 		<input
-			class="block w-full text-sm cursor-pointer focus:outline-none text-red-300 file:py-1 file:text-sm file:bg-red-700 file:border-0 file:text-red-200"
+			class="block w-full text-xs cursor-pointer rounded-md focus:outline-none text-red-200 file:rounded-md file:py-1.5 file:text-xs file:bg-red-600 file:border-0 file:text-red-200"
 			@change="createBase64Image"
 			type="file"
 			name="upload"

@@ -97,9 +97,9 @@ function setPartToDisplay(name: string | null) {
 	else
 	{
 		if (leftPartToDisplay.value === 'discussions')
-		rightPartToDisplay.value = 'addDiscussion'	
+		rightPartToDisplay.value = 'addDiscussion'
 		else if (leftPartToDisplay.value === 'channels')
-			rightPartToDisplay.value = 'createChannel'	
+			rightPartToDisplay.value = 'createChannel'
 		else
 			rightPartToDisplay.value = 'chat'
 	}
@@ -147,7 +147,7 @@ function invitePlayer() {
 
 function addButtonText() {
 	if (leftPartToDisplay.value === 'discussions')
-		return 'Add discussion'	
+		return 'Add discussion'
 	else
 		return 'Add channel'
 }

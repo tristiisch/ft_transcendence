@@ -49,6 +49,13 @@ function fetchUser(name: string) {
 		});
 }
 
+watch(
+	() => route.params.username,
+	() => {
+		if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
+	}
+)
+
 onBeforeMount(() => {
 	if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
 	else fetchUser(route.params.username as string);
@@ -56,9 +63,14 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
-	<base-ui v-else>
-		<div class="flex flex-col h-full w-full sm:flex-row">
+	<base-ui>
+		<div v-if="isLoading" class="flex flex-col h-full w-full sm:flex-row">
+			<card-left></card-left>
+			<card-right>
+				<div class="flex items-center justify-center font-Arlon text-white text-6xl w-full">Loading</div>
+			</card-right>
+		</div>
+		<div v-else class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
 					<player-profile :user="user"></player-profile>
@@ -78,7 +90,7 @@ onBeforeMount(() => {
 				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">
 					<notifications></notifications>
 				</div>
-				<div v-else class=" w-11/12 overflow-y-auto h-full mr-3">
+				<div v-else class="w-11/12 h-full mr-3">
 					<player-settings></player-settings>
 				</div>
 			</card-right>

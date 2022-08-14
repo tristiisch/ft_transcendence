@@ -2,7 +2,7 @@
 import Status from '@/types/Status';
 import type User from '@/types/User';
 import PlayerStatus from '@/components/PlayerStatus.vue';
-import UploadAvatar from '@/components/Login/UploadAvatar.vue';
+import UploadAvatar from '@/components/UploadAvatar.vue';
 import { useUserStore } from '@/stores/userStore';
 import { ref, watch } from 'vue';
 

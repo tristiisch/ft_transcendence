@@ -3,84 +3,76 @@ import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import { ref, computed, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
-import Toogle from '@/components/Leaderboard/ToogleButton.vue'
-import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue'
+import Toogle from '@/components/Leaderboard/ToogleButton.vue';
+import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
 const friends = ref([] as User[]);
 const type = ref<string>('All');
+const isLoading = ref(false);
 
 function rankOrder() {
-	if (type.value === 'All')
-	{
+	if (type.value === 'All') {
 		users.value.sort((a, b) => {
-		return a.rank - b.rank;
+			return a.rank - b.rank;
 		});
-	}
-	else
-	{
+	} else {
 		friends.value.sort((a, b) => {
-		return a.rank - b.rank;
+			return a.rank - b.rank;
 		});
 	}
 }
 
 function nameOrder() {
-	if (type.value === 'All')
-	{
+	if (type.value === 'All') {
 		users.value.sort((a, b) => {
-		let fa = a.username
-        let fb = b.username
-		if (fa < fb)
-			return -1;
-		if (fa > fb)
-			return 1;
-		return 0;
+			let fa = a.username;
+			let fb = b.username;
+			if (fa < fb) return -1;
+			if (fa > fb) return 1;
+			return 0;
 		});
-	}
-	else
-	{
+	} else {
 		friends.value.sort((a, b) => {
-		let fa = a.username
-        let fb = b.username
-		if (fa < fb)
-			return -1;
-		if (fa > fb)
-			return 1;
-		return 0;
+			let fa = a.username;
+			let fb = b.username;
+			if (fa < fb) return -1;
+			if (fa > fb) return 1;
+			return 0;
 		});
 	}
 }
 
 function statusOrder() {
-	if (type.value === 'All')
-	{
+	if (type.value === 'All') {
 		users.value.sort((a, b) => {
-		return b.current_status - a.current_status;
+			return b.current_status - a.current_status;
 		});
-	}
-	else
-	{
+	} else {
 		friends.value.sort((a, b) => {
-		return b.current_status - a.current_status;
+			return b.current_status - a.current_status;
 		});
 	}
 }
 
 function fetchUsers() {
+	isLoading.value = true
 	UsersService.getUsers()
 		.then((response) => {
 			users.value = response.data;
+			isLoading.value = false
 		})
 		.catch((e: Error) => {
+			isLoading.value = false
 			console.log(e);
 		});
-		rankOrder()
+	rankOrder();
 }
 
 function fetchfriends() {
+	isLoading.value = true
 	UsersService.getUserfriends(userStore.userData.username)
 		.then((response) => {
 			for (let i = 0; i < response.data.length; i++) {
@@ -88,8 +80,10 @@ function fetchfriends() {
 					if (user.username === response.data[i]) friends.value.push(user);
 				});
 			}
+			isLoading.value = false
 		})
 		.catch((e: Error) => {
+			isLoading.value = false
 			console.log(e);
 		});
 }
@@ -108,19 +102,22 @@ const displayUser = computed<User[]>(() => {
 });
 
 function changeUserStatus(data: string) {
-	console.log(data)
+	console.log(data);
 }
 
 onBeforeMount(() => {
 	fetchUsers();
 	fetchfriends();
-	socket.on('statusChange', (data) => { changeUserStatus(data)});
+	socket.on('statusChange', (data) => {
+		changeUserStatus(data);
+	});
 });
 
 onBeforeUnmount(() => {
-	socket.off('statusChange', (data) => { changeUserStatus(data)});
-})
-
+	socket.off('statusChange', (data) => {
+		changeUserStatus(data);
+	});
+});
 </script>
 
 <template>
@@ -152,7 +149,8 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">
-			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] pb-3 px-3">
+			<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
+			<div v-else v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] pb-3 px-3">
 				<CardLeaderboard :user="user"></CardLeaderboard>
 			</div>
 		</div>
