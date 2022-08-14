@@ -29,7 +29,7 @@ onUpdated(()=> {
 </script>
 
 <template>
-    <div v-for="message in messages" :key="message.date" class="flex gap-2 w-full mt-5">
+    <div v-for="message in messages" :key="message.date" class="flex gap-2 w-full mt-3 mb-1.5">
 		<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="searchPlayerAvatar(message.sender)">
 		<div class="flex flex-col gap-1 min-w-0">
 			<div class="flex flex-col sm:items-center sm:gap-2 pt-1 text-red-300 sm:flex-row">

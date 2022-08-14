@@ -36,9 +36,7 @@ function submitProfileForm() {
 					<input
 						class="placeholder-red-200 bg-red-400 w-full text-center font-medium text-xs py-1 px-3 text-red-200 sm:px-5 md:text-sm md:px-8"
 						type="text"
-						name="username"
 						v-model.trim="newUsername"
-						placeholder="username"
 					/>
 				</form>
 			</div>
