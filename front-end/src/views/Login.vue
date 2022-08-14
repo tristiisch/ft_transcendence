@@ -54,7 +54,7 @@ watch(
 
 function submit2faForm() {
 	userStore
-		.handleTwoFaAuthentification(TwoFACode.value)
+		.handle2Fa(TwoFACode.value)
 		.then(() => {
 			userStore.authenticateUser();
 			router.replace({ name: 'Home' });

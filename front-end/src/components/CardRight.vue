@@ -1,7 +1,7 @@
 <script setup lang="ts">
     import CardTitle from './CardTitle.vue'
     const props = defineProps<{
-    title: string
+    title?: string
 }>()
 </script>
 

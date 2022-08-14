@@ -25,7 +25,7 @@ function labelText(channel: Channel) {
 
 function statusText(channel: Channel)
 {
-	if ( ) 
+	//if ( )
 }
 
 </script>
@@ -54,7 +54,7 @@ function statusText(channel: Channel)
 			<input type="text" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
 		</div>
 	</div>
-	
+
 	<div class="overflow-y-auto h-full w-full">
 		<div v-for="user in inChannel?.users" :key="user.id" class="flex justify-between items-center h-[calc(100%_/_4) border-b-[1px] w-full border-red-400">
 			<div class="inline-flex items-center py-4">

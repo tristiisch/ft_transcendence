@@ -16,7 +16,7 @@ import socket from '@/plugin/socketInstance';
 import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
 import InChatTopImage from '@/components/Chat/InChatTopImage.vue';
 import ChannelSettings from '@/components/Chat/ChannelSettings.vue';
-import JoinChannelDiscussionRequestVue from '@/components/Chat/JoinChannelDiscussionRequest.vue';
+//import JoinChannelDiscussionRequestVue from '@/components/Chat/JoinChannelDiscussionRequest.vue';
 
 const userStore = useUserStore();
 const users = ref([] as User[]);
@@ -99,9 +99,9 @@ function setPartToDisplay(name: string | null) {
 	else
 	{
 		if (leftPartToDisplay.value === 'discussions')
-		rightPartToDisplay.value = 'addDiscussion'	
+		rightPartToDisplay.value = 'addDiscussion'
 		else if (leftPartToDisplay.value === 'channels')
-			rightPartToDisplay.value = 'createChannel'	
+			rightPartToDisplay.value = 'createChannel'
 		else
 			rightPartToDisplay.value = 'chat'
 	}
@@ -149,7 +149,7 @@ function invitePlayer() {
 
 function addButtonText() {
 	if (leftPartToDisplay.value === 'discussions')
-		return 'Add discussion'	
+		return 'Add discussion'
 	else
 		return 'Add channel'
 }

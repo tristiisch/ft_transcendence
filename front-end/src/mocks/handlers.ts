@@ -122,7 +122,7 @@ export default [
 				nbVictory: 0,
 				nbDefeat: 0,
 				avatar: userInfo.data.image_url,
-				'2fa': false,
+				'2fa': true,
 				current_status: Status.OFFLINE,
 			});
 			return res(
@@ -153,13 +153,20 @@ export default [
 			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
 	}),
 
-	rest.post('/auth/2fa/enable', (req, res, ctx) => {
+	rest.get('/auth/2fa/enable', (req, res, ctx) => {
 		const data = generateQRCode();
 		console.log(data);
 		return res(ctx.set('Content-Length', 'image/png'), ctx.json(data));
 	}),
 
-	rest.post('/auth/2fa/disable', (req, res, ctx) => {
+	rest.get('/auth/2fa/disable', (req, res, ctx) => {
 		return res(ctx.status(200));
 	}),
+
+	rest.get('/auth/2fa/qr-code', (req, res, ctx) => {
+		const data = generateQRCode();
+		console.log(data);
+		return res(ctx.set('Content-Length', 'image/png'), ctx.json(data));
+	}),
+
 ];
