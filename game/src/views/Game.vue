@@ -73,9 +73,9 @@ onMounted(() => {
 	}
 	var blob = new Konva.Line({
 		points: getBlobPointsArray(),
-		fill: 'rgba(0, 0, 0, 0.005)',
+		fill: 'rgba(0, 0, 0, 0.5)',
 		closed: true,
-		tension: 0.3,
+		tension: 0.,
 	});
 
 	layer.add(ball)
@@ -87,7 +87,7 @@ onMounted(() => {
 	var dx = ball_speed
 	var dy = ball_speed
 	document.addEventListener("keydown", function(e) {
-		console.log(e.key)
+		// console.log(e.key)
 		if (e.key == 'ArrowDown') {
 			if (p1_blocker.y() + p1_blocker.height() + blocker_movements_delta <= stage.height())
 				p1_blocker.y(p1_blocker.y() + blocker_movements_delta)
@@ -111,14 +111,17 @@ onMounted(() => {
 	// 	}
 	// }
 	function checkCollisions() {
-		console.log(layer.canvas.context.getImageData(ball.x(), ball.y(), 1, 1).data[0])
-		if (layer.canvas.context.getImageData(ball.x() + dx, ball.y(), 1, 1).data[0] != 254)
+		//console.log(layer.canvas.getContext().getImageData(ball.x(), ball.y(), 1, 1).data)
+		var ctx_x = layer.canvas.context.getImageData(ball.x() + dx, ball.y(), 1, 1).data 
+		if (ctx_x[0] != 0 || ctx_x[1] != 0 || ctx_x[2] != 0 || ctx_x[3] != 128)
 			dx = -dx
-		if (layer.canvas.context.getImageData(ball.x(), ball.y() + dy, 1, 1).data[0] != 254)
+		if (layer.canvas.context.getImageData(ball.x(), ball.y() + dy, 1, 1).data[3] != 128)
 			dy = -dy
 	}
 	var ball_animation = new Konva.Animation(function(frame) {
-		checkCollisions()
+		if (ball.x() + dx < ball_radius || ball.x() + dx > stage_width - ball_radius) { dx = -dx; }
+		if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) { dy = -dy; }
+		// checkCollisions()
 		ball.x(ball.x() + dx);
 		ball.y(ball.y() + dy);
 	}, layer)
