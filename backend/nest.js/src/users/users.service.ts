@@ -91,7 +91,7 @@ export class UsersService {
 		isNumberPositive(id, 'remove a user');
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) {
-				throw new NotFoundException("The user ${id} does not exist.");
+				throw new NotFoundException(`The user ${id} does not exist.`);
 			} else {
 				return { deleted : value.affected };
 			}

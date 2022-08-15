@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { of } from 'rxjs';
 import { FriendsService } from 'src/friends/friends.service';
 import { MatchHistory } from 'src/matchs-history/entity/matchstats.entity';
 import { MatchsHistoryService } from 'src/matchs-history/matchs-history.service';
@@ -36,7 +37,7 @@ export class TestFakeService {
 		return data;
 	}
 
-	async createFakeUser(allUserIds: number[]) {
+	async createFakeUser(allUserIds: number[]) : Promise<{ user: User, stats: UserStats, matchs: MatchHistory}> {
 		const user: User = await this.initUser();
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
@@ -45,6 +46,30 @@ export class TestFakeService {
 	
 		this.initNewFriendship(user, allUserIdsExceptUser);
 		return ({ user, stats, matchs });
+	}
+
+	async addFakeData(user: User): Promise<{ statusCode: number, message: string}> {
+		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
+
+		const stats: UserStats = await this.initStats(user);
+		let iMatchs = -1;
+		while (++iMatchs < allUserIdsExceptUser.length) {
+			const matchs: MatchHistory = await this.initMatchHistory(user, allUserIdsExceptUser);
+			if (matchs == null)
+				break;
+		}
+		const allFriendsOfUser: number[] = await this.friendsService.findFriendsIds(user.id);
+		for (let userToRemove of allFriendsOfUser) {
+			removeFromArray(allUserIdsExceptUser, userToRemove)
+		}
+		let iFriends = -1;
+		while (++iFriends < allUserIdsExceptUser.length) {
+			const target: UserSelectDTO = await this.initNewFriendship(user, allFriendsOfUser);
+			if (!target)
+				break;
+			removeFromArray(allUserIdsExceptUser, target.id);
+		}
+		return ({ statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` });
 	}
 
 	async initUser(): Promise<User> {
@@ -79,8 +104,13 @@ export class TestFakeService {
 		}
 		const matchHistory: MatchHistory = new MatchHistory();
 		
-		matchHistory.user_id2 = randomElement(userIds);
-		matchHistory.user_id1 = user.id;
+		if (random(0, 2) === 1) {
+			matchHistory.user_id2 = user.id;
+			matchHistory.user_id1 = randomElement(userIds);
+		} else {
+			matchHistory.user_id1 = user.id;
+			matchHistory.user_id2 = randomElement(userIds);
+		}
 
 		const scoreWinner: number = this.randomMaxScoreGame;
 		const scoreLoser: number = random(0, this.randomMaxScoreGame);
@@ -91,10 +121,10 @@ export class TestFakeService {
 		return this.matchHistoryService.add(matchHistory);
 	}
 
-	async initNewFriendship(user: User, userIds: number[]) {
+	async initNewFriendship(user: User, userIds: number[]): Promise<UserSelectDTO> {
 		if (userIds.length === 0) {
 			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
-			return;
+			return null;
 		}
 		const randomUserId: number = randomElement(userIds);
 		const randomUser: UserSelectDTO = new UserSelectDTO();
@@ -102,11 +132,13 @@ export class TestFakeService {
 		randomUser.username = "fakePlayer";
 		const randomNb: number = random(1, 4);
 
+		console.log('User', user, 'randomUser', randomUser);
 		await this.friendsService.addFriendRequest(user, randomUser);
 		if (randomNb == 2)
 			await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3)
 			await this.friendsService.acceptFriendRequest(randomUser, user);
+		return randomUser;
 	}
 
 	private async getUsersIds(): Promise<number[]> {

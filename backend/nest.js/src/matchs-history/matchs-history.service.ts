@@ -25,24 +25,27 @@ export class MatchsHistoryService {
 	}
 
 	async findAll(userId: number) : Promise<MatchOwn[]> {
-		const sqlStatement: SelectQueryBuilder<MatchHistory> = this.matchsHistoryRepository.createQueryBuilder("matchHistory")
-			.where('matchHistory.winner_id = :id', { id: userId })
-			.orWhere('matchHistory.loser_id = :id')
-			.addOrderBy('matchHistory.id', 'DESC', 'NULLS LAST');
-
+		const sqlStatement: SelectQueryBuilder<MatchHistory> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
+			.where('matchhistory.user_id1 = :id', { id: userId })
+			.orWhere('matchhistory.user_id2 = :id')
+			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
 		try {
-			return await sqlStatement.getMany().then(matchs => {
+			return await sqlStatement.getMany().then(async matchs => {
 				const matchsFormatted: MatchOwn[] = new Array()
-
-				matchs.forEach(async m => {
+				for (let m of matchs) {
 					let matchFormatted: MatchOwn = new MatchOwn();
 					let opponentId = m.getOpponent(userId);
 					matchFormatted.date = m.timestamp_started;
 					matchFormatted.score = m.score;
 					matchFormatted.opponent = (await this.userService.findOne(opponentId)).username;
 					matchFormatted.won = m.isWinner(userId);
+					if (matchFormatted.won ? matchFormatted.score[0] < matchFormatted.score[1] : matchFormatted.score[0] > matchFormatted.score[1]) {
+						let tmp = matchFormatted.score[0];
+						matchFormatted.score[0] = matchFormatted.score[1];
+						matchFormatted.score[1] = tmp;
+					}
 					matchsFormatted.push(matchFormatted);
-				});
+				}
 				return matchsFormatted;
 			});
 		} catch (err) {

@@ -39,7 +39,7 @@ class UserService {
 	}
 
 	getMatchsHistory(username: string) {
-		return axios.post(`matchs-history`, { username: username });
+		return axios.post(`matchs/history`, { username: username });
 	}
 }
 
