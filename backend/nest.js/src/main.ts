@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from "dotenv";
+import { createServer } from './socket/server';
+import { createClient } from './socket/client';
 
 dotenv.config();
 
@@ -17,6 +19,8 @@ async function bootstrap() {
 
 	await app.listen(port, () => {
 		console.log('[WEB]', `http://localhost:${port}/api`);
+		createServer(3001);
+		createClient('localhost', 3001);
 	});
 }
 bootstrap();

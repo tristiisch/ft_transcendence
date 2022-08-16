@@ -1,10 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { of } from 'rxjs';
 import { FriendsService } from 'src/friends/friends.service';
-import { MatchHistory } from 'src/matchs-history/entity/matchstats.entity';
-import { MatchsHistoryService } from 'src/matchs-history/matchs-history.service';
-import { UserStats } from 'src/stats/entity/userstats.entity';
-import { StatsService } from 'src/stats/stats.service';
+import { MatchStats } from 'src/game/matchs/entity/matchstats.entity';
+import { MatchStatsService } from 'src/game/matchs/matchs.service';
+import { UserStats } from 'src/game/stats/entity/userstats.entity';
+import { StatsService } from 'src/game/stats/stats.service';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -20,8 +19,8 @@ export class TestFakeService {
 	private readonly friendsService: FriendsService;
 	@Inject(StatsService)
 	private readonly statsService: StatsService;
-	@Inject(MatchsHistoryService)
-	private readonly matchHistoryService: MatchsHistoryService;
+	@Inject(MatchStatsService)
+	private readonly matchHistoryService: MatchStatsService;
 
 	private readonly randomMaxStats = 100;
 	private readonly randomMaxScoreGame = 5;
@@ -30,19 +29,19 @@ export class TestFakeService {
 		const data = new Array();
 		const allUserIds: number[] = await this.getUsersIds();
 		for (let i: number = 1; i <= nbUsers; ++i) {
-			let fakeUser: {user: User, stats: UserStats, matchs: MatchHistory} = await this.createFakeUser(allUserIds)
+			let fakeUser: {user: User, stats: UserStats, matchs: MatchStats} = await this.createFakeUser(allUserIds)
 			data.push(fakeUser);
 			allUserIds.push(fakeUser.user.id);
 		}
 		return data;
 	}
 
-	async createFakeUser(allUserIds: number[]) : Promise<{ user: User, stats: UserStats, matchs: MatchHistory}> {
+	async createFakeUser(allUserIds: number[]) : Promise<{ user: User, stats: UserStats, matchs: MatchStats}> {
 		const user: User = await this.initUser();
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
 		const stats: UserStats = await this.initStats(user);
-		const matchs: MatchHistory = await this.initMatchHistory(user, allUserIdsExceptUser);
+		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 	
 		this.initNewFriendship(user, allUserIdsExceptUser);
 		return ({ user, stats, matchs });
@@ -54,7 +53,7 @@ export class TestFakeService {
 		const stats: UserStats = await this.initStats(user);
 		let iMatchs = -1;
 		while (++iMatchs < allUserIdsExceptUser.length) {
-			const matchs: MatchHistory = await this.initMatchHistory(user, allUserIdsExceptUser);
+			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 			if (matchs == null)
 				break;
 		}
@@ -97,12 +96,12 @@ export class TestFakeService {
 		return this.statsService.add(userStats);
 	}
 
-	async initMatchHistory(user: User, userIds: number[]): Promise<MatchHistory> {
+	async initMatchHistory(user: User, userIds: number[]): Promise<MatchStats> {
 		if (userIds.length === 0) {
 			console.log(`Can't find a valid userId for matchHistory of ${JSON.stringify(user)}.`);
 			return null;
 		}
-		const matchHistory: MatchHistory = new MatchHistory();
+		const matchHistory: MatchStats = new MatchStats();
 		
 		if (random(0, 2) === 1) {
 			matchHistory.user_id2 = user.id;

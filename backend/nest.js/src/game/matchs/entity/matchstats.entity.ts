@@ -4,7 +4,7 @@ import { User } from "src/users/entity/user.entity";
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class MatchHistory extends BaseEntity {
+export class MatchStats extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	id: number;

@@ -22,14 +22,17 @@ interface SocketData {
 	age: number;
 }
 
-async function createServer() {
+export async function createServer(serverPort: number) {
+	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 
 	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>();
 
 	io.on("connection", (socket) => {
+		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', socket.id);
 		socket.emit("noArg");
 		socket.emit("basicEmit", 1, "2", Buffer.from([3]));
 		socket.emit("withAck", "4", (e) => {
+			console.log('[SOCKET.IO]', 'SERVER', 'connection1', 'withAck', e);
 			// e is inferred as number
 		});
 
@@ -38,25 +41,21 @@ async function createServer() {
 
 		// works when broadcasting to a room
 		io.to("room1").emit("basicEmit", 1, "2", Buffer.from([3]));
-	});
 
-	io.on("connection", (socket) => {
 		socket.on("hello", () => {
+			console.log('[SOCKET.IO]', 'SERVER',  'HELLO');
 			// ...
 		});
+		console.log('[SOCKET.IO]', 'SERVER', 'connection1');
 	});
 
-	io.serverSideEmit("ping");
+	// io.serverSideEmit("ping"); // 'this adapter does not support the serverSideEmit() functionality' => error msg on Windows & Linux setup (WSL Ubuntu)
 
 	io.on("ping", () => {
+		console.log('[SOCKET.IO]', 'SERVER', 'ping');
 		// ...
 	});
 
-	io.on("connection", (socket) => {
-		socket.data.name = "john";
-		socket.data.age = 42;
-	});
-
-
-	io.listen(3000);
+	io.listen(serverPort);
+	console.log('[SOCKET.IO]', 'SERVER', "Server socket.io is started !")
 }

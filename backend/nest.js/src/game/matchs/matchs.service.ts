@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { MatchHistory } from './entity/matchstats.entity';
+import { MatchStats } from './entity/matchstats.entity';
 import { MatchOwn } from './entity/own-match.entity';
 
 @Injectable()
-export class MatchsHistoryService {
+export class MatchStatsService {
 
 	constructor(
-		@InjectRepository(MatchHistory)
-		private matchsHistoryRepository: Repository<MatchHistory>,
+		@InjectRepository(MatchStats)
+		private matchsHistoryRepository: Repository<MatchStats>,
 	) {}
 
 	@Inject(UsersService)
@@ -20,12 +20,12 @@ export class MatchsHistoryService {
 		return this.matchsHistoryRepository;
 	}
 
-	async add(matchHistory: MatchHistory) {
+	async add(matchHistory: MatchStats) {
 		return this.matchsHistoryRepository.save(matchHistory);
 	}
 
 	async findAll(userId: number) : Promise<MatchOwn[]> {
-		const sqlStatement: SelectQueryBuilder<MatchHistory> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
+		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
 			.where('matchhistory.user_id1 = :id', { id: userId })
 			.orWhere('matchhistory.user_id2 = :id')
 			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');

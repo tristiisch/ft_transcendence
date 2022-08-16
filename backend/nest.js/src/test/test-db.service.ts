@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
-import { MatchsHistoryService } from 'src/matchs-history/matchs-history.service';
-import { StatsService } from 'src/stats/stats.service';
+import { MatchStatsService } from 'src/game/matchs/matchs.service';
+import { StatsService } from 'src/game/stats/stats.service';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -13,8 +13,8 @@ export class TestDbService {
 	private readonly friendsService: FriendsService;
 	@Inject(StatsService)
 	private readonly statsService: StatsService;
-	@Inject(MatchsHistoryService)
-	private readonly matchHistoryService: MatchsHistoryService;
+	@Inject(MatchStatsService)
+	private readonly matchHistoryService: MatchStatsService;
 
 	async clearAllTables() {
 		await this.clearTableUser();
