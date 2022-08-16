@@ -1,3 +1,4 @@
+/** @prettier */
 import { Inject, Injectable } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { MatchStatsService } from 'src/game/matchs/matchs.service';
@@ -6,7 +7,6 @@ import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class TestDbService {
-
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 	@Inject(FriendsService)
@@ -24,18 +24,18 @@ export class TestDbService {
 	}
 
 	async clearTableUser() {
-		await this.usersService.getRepo().clear()
+		await this.usersService.getRepo().clear();
 	}
 
 	async clearTableFriends() {
-		await this.friendsService.getRepo().clear()
+		await this.friendsService.getRepo().clear();
 	}
 
 	async clearTableStats() {
-		await this.statsService.getRepo().clear()
+		await this.statsService.getRepo().clear();
 	}
 
 	async clearTableMatchHistory() {
-		await this.matchHistoryService.getRepo().clear()
+		await this.matchHistoryService.getRepo().clear();
 	}
 }

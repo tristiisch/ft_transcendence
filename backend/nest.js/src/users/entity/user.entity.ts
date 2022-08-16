@@ -1,17 +1,17 @@
-import { IsEmail, IsInt, IsNotEmpty } from "class-validator";
-import { fromBase64 } from "src/utils/utils";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+/** @prettier */
+import { IsEmail, IsInt, IsNotEmpty } from 'class-validator';
+import { fromBase64 } from 'src/utils/utils';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum UserStatus {
 	OFFLINE,
 	ONLINE,
 	IN_GAME,
-	SPEC
+	SPEC,
 }
 
 @Entity()
 export class User extends BaseEntity {
-
 	@PrimaryGeneratedColumn()
 	// @IsInt()
 	id: number;
@@ -32,7 +32,7 @@ export class User extends BaseEntity {
 	// @Column("int", { nullable: true, array: true })
 	// friends?: number[];
 
-	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
+	@Column({ type: 'enum', enum: UserStatus, default: UserStatus.OFFLINE })
 	status: UserStatus;
 
 	public defineAvatar() {

@@ -1,3 +1,4 @@
+/** @prettier */
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -24,7 +25,7 @@ import { MatchStatsModule } from './game/matchs/matchs.module';
 		AuthModule,
 		MatchStatsModule,
 		TestModule,
-		NotificationModule
+		NotificationModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

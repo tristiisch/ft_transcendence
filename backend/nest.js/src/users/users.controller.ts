@@ -1,14 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res } from '@nestjs/common';
+/** @prettier */
+import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';
 import { UsersService } from './users.service';
 
-// localhost:3000/users
 @Controller('users')
 export class UsersController {
-
 	constructor(private readonly usersService: UsersService) {}
 
 	@Get()
@@ -66,7 +65,6 @@ export class UsersController {
 	deleteUser(@Param('id') id: number) {
 		return this.usersService.remove(id);
 	}
-
 
 	@Get('avatar/:id/id')
 	async getAvatarById(@Param('id') id: number, @Res() res: Response) {

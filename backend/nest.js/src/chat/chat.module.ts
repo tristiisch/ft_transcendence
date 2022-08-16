@@ -1,3 +1,4 @@
+/** @prettier */
 import { Module } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatController } from './chat.controller';
@@ -6,7 +7,7 @@ import { Channel } from './entity/channel.entity';
 
 @Module({
 	imports: [TypeOrmModule.forFeature([Channel])],
-  providers: [ChatService],
-  controllers: [ChatController]
+	providers: [ChatService],
+	controllers: [ChatController],
 })
 export class ChatModule {}

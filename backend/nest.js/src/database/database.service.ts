@@ -1,3 +1,4 @@
+/** @prettier */
 import { Injectable } from '@nestjs/common';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Channel } from 'src/chat/entity/channel.entity';
@@ -6,7 +7,6 @@ import { UserSubscriber } from 'src/users/entity/user.subscriber';
 
 @Injectable()
 export class DatabaseService implements TypeOrmOptionsFactory {
-  
 	public createTypeOrmOptions(): TypeOrmModuleOptions {
 		return {
 			type: 'postgres',
