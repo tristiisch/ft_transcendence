@@ -11,7 +11,7 @@ export class FriendsService {
 
 	constructor(
 		@InjectRepository(Friendship)
-		private friendsRepository: Repository<Friendship>,
+		private friendsRepository: Repository<Friendship>
 	) {}
 
     @Inject(UsersService)

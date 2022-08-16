@@ -1,16 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
+import { isNumberPositive } from 'src/utils/utils';
+import { Repository } from 'typeorm';
+import { UserAuth } from './entity/user-auth.entity';
 
 
 @Injectable()
 export class AuthService {
-	constructor(private jwtService: JwtService, private usersService: UsersService){
+	constructor(private jwtService: JwtService, private usersService: UsersService,
+		@InjectRepository(UserAuth)
+		private authRepository: Repository<UserAuth>){
 	}
 
 	async UserConnecting(userInfo42: any){
 		let user: User;
+		let userAuth: UserAuth;
 		try {
 			user = await this.usersService.findOneBy42Login(userInfo42.data.login);
 		} catch (err) {
@@ -24,6 +31,13 @@ export class AuthService {
 			} else {
 				throw err;
 			}
+		}
+		userAuth = await this.findOne(user.id);
+		if (!userAuth) {
+			userAuth = new UserAuth();
+			userAuth.token = 'fake-token';
+			userAuth.twofa = null;
+			this.save(userAuth);
 		}
 		return user;
 	}
@@ -43,5 +57,14 @@ export class AuthService {
 			expires_in: "2min"
 		};
 		return this.jwtService.signAsync(payload);
+	}
+
+	async save(userAuth: UserAuth): Promise<UserAuth> {
+		return this.authRepository.save(userAuth);
+	}
+
+	async findOne(userId: number): Promise<UserAuth> {
+		isNumberPositive(userId, 'get a auth user');
+		return this.authRepository.findOneBy({ user_id: userId });
 	}
 }
