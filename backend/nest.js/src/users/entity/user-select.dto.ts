@@ -28,4 +28,15 @@ export class UserSelectDTO {
 		}
 		throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
 	}
+
+	// async resolveUserAvatar64(usersService: UsersService) : Promise<User> {
+	// 	if (this.id != null) {
+	// 		// console.log("UserSelectDTO resolve with Id " + this.id);
+	// 		return await usersService.findOneAvatar(this.id);
+	// 	} else if (this.username != null) {
+	// 		// console.log("UserSelectDTO resolve with Username " + this.username);
+	// 		return await usersService.findOneAvatarByUsername(this.username);
+	// 	}
+	// 	throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
+	// }
 }

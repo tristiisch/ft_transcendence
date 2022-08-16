@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Channel } from 'src/chat/entity/channel.entity';
 import { User } from 'src/users/entity/user.entity';
+import { UserSubscriber } from 'src/users/entity/user.subscriber';
 
 @Injectable()
 export class DatabaseService implements TypeOrmOptionsFactory {
@@ -15,13 +16,14 @@ export class DatabaseService implements TypeOrmOptionsFactory {
 			username: process.env.DATABASE_USER,
 			password: process.env.DATABASE_PASSWORD,
 			// entities: ['dist/**/**/*.entity.{ts,js}'],
-			entities: [User, Channel],
+			// entities: [User, Channel],
 			// migrations: ['dist/migrations/*.{ts,js}'],
 			// migrationsTableName: 'typeorm_migrations',
 			logger: 'file',
 			autoLoadEntities: true,
 			// TypeORM should update any changes of your entities automatically ?
 			synchronize: true,
+			subscribers: [UserSubscriber],
 		};
 	}
 }

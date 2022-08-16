@@ -7,7 +7,7 @@ import { StatsService } from 'src/game/stats/stats.service';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { random, randomElement, randomEnum, removeFromArray } from 'src/utils/utils';
+import { random, randomElement, randomEnum, removeFromArray, toBase64 } from 'src/utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 
 @Injectable()
@@ -80,7 +80,7 @@ export class TestFakeService {
 			return response.url;
 		});
 		*/
-		user.avatar = "https://i.picsum.photos/id/54/200/200.jpg?hmac=-2_HX5umbAEVPP9CokmPW3Kc8V9iDplneKlS73LWdQQ";
+		user.avatar = await toBase64('https://picsum.photos/200')
 		user.status = randomEnum(UserStatus);
 		// user.status = UserStatus.IN_GAME;
 		return await this.usersService.add(user);

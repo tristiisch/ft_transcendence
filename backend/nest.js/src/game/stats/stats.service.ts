@@ -86,26 +86,27 @@ export class StatsService {
 		}, this.userService.lambdaDatabaseUnvailable);
     }
 
-    async leaderboardWithFriends(user: User) {
+    async leaderboardWithFriends(user: User): Promise<{ leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[] }> {
 		const friendsIds: number[] = await this.friendsService.findFriendsIds(user.id);
 		const userStats: UserStats[] = await this.leaderboard();
-		const leaderBoad: LeaderboardUser[] = new Array();
-		const leaderBoadFriends: LeaderboardUser[] = new Array();
+		const leaderBoard: LeaderboardUser[] = new Array();
+		const leaderBoardFriends: LeaderboardUser[] = new Array();
 
-		userStats.forEach(async (userStats: UserStats, index: number) => {
+		let index: number = 1;
+		for (let us of userStats) {
 			const leaderUser: LeaderboardUser = new LeaderboardUser();
-			const target: User = await this.userService.findOne(userStats.user_id);
+			const target: User = await this.userService.findOne(us.user_id);
 
-			leaderUser.rank = index + 1;
+			leaderUser.rank = index++;
 			leaderUser.username = target.username;
-			leaderUser.avatar = target.avatar;
+			leaderUser.avatar = target.getAvatarURL();
 			leaderUser.status = target.status;
 
-			if (user.id === userStats.user_id || friendsIds.length !== 0 && friendsIds.indexOf(userStats.user_id) !== -1)
-				leaderBoadFriends.push(leaderUser);
+			if (user.id === us.user_id || friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
+				leaderBoardFriends.push(leaderUser);
 
-			leaderBoad.push(leaderUser);
-		});
-		return {leaderBoad, leaderBoadFriends};
+			leaderBoard.push(leaderUser);
+		}
+		return {leaderBoard, leaderBoardFriends};
     }
 }

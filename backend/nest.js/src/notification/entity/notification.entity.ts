@@ -3,6 +3,7 @@ import { User } from "src/users/entity/user.entity";
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 export enum NotificationType {
+    UNKNOWN,
     FRIEND_REQUEST,
     MATCH_REQUEST,
 }
@@ -26,4 +27,7 @@ export class Notification extends BaseEntity {
 
 	@Column({ nullable: true, type: 'text', array: true })
     arguments: string[]
+
+	@Column({ type: "enum", enum: NotificationType, default: NotificationType.UNKNOWN})
+	status: NotificationType;
 }

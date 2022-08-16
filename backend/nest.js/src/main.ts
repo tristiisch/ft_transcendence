@@ -17,10 +17,10 @@ async function bootstrap() {
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-	await app.listen(port, () => {
+	await app.listen(port, async () => {
 		console.log('[WEB]', `http://localhost:${port}/api`);
-		createServer(3001);
-		createClient('localhost', 3001);
+		// createServer(3001);
+		// createClient('localhost', 3001);
 	});
 }
 bootstrap();
