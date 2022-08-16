@@ -89,7 +89,7 @@
             {{ friendButton }}
         </button-gradient1>
         <button-gradient1>
-            Message
+            Block
         </button-gradient1>
     </div>
     <div v-else class="flex flex-col gap-4 3xl:gap-6">
