@@ -1,0 +1,50 @@
+<script setup lang="ts">
+import status from '@/types/ChannelStatus';
+import type Channel from '@/types/Channel';
+import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue';
+import { ref } from 'vue'
+
+const newPassword = ref('');
+
+const props = defineProps<{
+	inChannel: Channel | null;
+}>();
+
+const newChatName = ref(props.inChannel?.name)
+
+const emit = defineEmits<{
+	(e: 'close'): void,
+	(e: 'validate'): void
+}>()
+
+function labelText(channel: Channel | null) {
+	if (channel)
+    {
+        if (channel.type === status.PROTECTED)
+		    return 'Choose new password'
+	    else
+		    return 'you can set a password'
+    }
+}
+</script>
+
+
+<template>
+    <div class="flex flex-col justify-between h-full">
+        <div class="flex flex-col justify-center items-center gap-6 h-full">
+            <div class="w-full sm:w-3/4">
+                <label class="block mb-2 text-sm font-medium text-red-200">Change channel name:</label>
+                <input type="text" v-model.trim="newChatName" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2">
+            </div>
+            <div class="w-full sm:w-3/4">
+                <label class="block mb-2 text-sm font-medium text-red-200">{{ labelText(inChannel) }}</label>
+                <input type="text" v-model.trim="newPassword" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
+            </div>
+            <div v-if="inChannel?.type === status.PROTECTED" class="w-full sm:w-3/4">
+                 <label class="block mb-2 text-sm font-medium text-red-200">Remove password:</label>
+                 <base-button class=" self-center mr-6 bg-blue-600 py-2 px-5 text-white">Remove</base-button>
+            </div>
+        </div>
+        <Button-CloseValidate @validate="emit('validate')" @close="emit('close')"></Button-CloseValidate>
+   </div>
+</template>

@@ -8,16 +8,15 @@ import CardRight from '@/components/CardRight.vue';
 import PlayerDiscussion from '@/components/Chat/PlayerDiscussion.vue';
 import Channels from '@/components/Chat/Channels.vue';
 import Message from '@/components/Chat/Message.vue';
-import AddSearchPlayerVue from '@/components/Chat/AddSearchPlayer.vue';
 import AddChannel from '@/components/Chat/AddChannel.vue';
 import ButtonPlus from '@/components/Chat/ButtonPlus.vue';
 import { ref, onMounted } from 'vue';
 import socket from '@/plugin/socketInstance';
 import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
 import InChatTopImage from '@/components/Chat/InChatTopImage.vue';
-import ChannelSettings from '@/components/Chat/ChannelSettings.vue';
 import { useRoute } from 'vue-router';
 //import JoinChannelDiscussionRequestVue from '@/components/Chat/JoinChannelDiscussionRequest.vue';
+import ChannelSettings from '@/components/Chat/ChannelSettings/ChannelSettings.vue';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -175,13 +174,14 @@ function addButtonText() {
 function loadDiscussion( user:User ) {
 	if (inChannel.value) inChannel.value = null;
 	inChatWith.value = user
+	rightPartToDisplay.value = 'chat'
 }
 
 function loadChannel( channel:Channel ) {
 	if (inChatWith.value) inChatWith.value = null;
 	inChannel.value = channel
-	// if ()
-	// 	rightPartToDisplay.value = 'joinRequest'
+	rightPartToDisplay.value = 'chat'
+
 
 }
 
@@ -223,7 +223,7 @@ onMounted(() => {
 			<card-right :title=rightCardTitle>
 				<div v-if="rightPartToDisplay === 'chat'" class="w-11/12 px-6 3xl:px-10 h-full">
 					<div v-if="inChatWith || inChannel" class="flex flex-col justify-between items-center h-full">
-						<InChat-TopImage @clickOnChannelSettings="setPartToDisplay('channelSettings')" :inChatWith=inChatWith :inChannel=inChannel></InChat-TopImage>
+						<InChatTopImage @clickOnChannelSettings="setPartToDisplay('channelSettings')" :inChatWith="inChatWith" :inChannel="inChannel"></InChatTopImage>
 						<div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
 							<message @scroll="scrollToEnd" :messages="messages" :users="users"></message>
 						</div>
@@ -232,17 +232,17 @@ onMounted(() => {
 						</form>
 					</div>
 				</div>
-				<div v-else-if="rightPartToDisplay === 'joinRequest'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
+				<!-- <div v-else-if="rightPartToDisplay === 'joinRequest'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
 					<join-request @close="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></join-request>
-				</div>
-				<div v-else-if="rightPartToDisplay === 'channelSettings'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
+				</div> -->
+				<div v-else-if="rightPartToDisplay === 'channelSettings' && inChannel" class="flex flex-col w-11/12 px-6 3xl:px-10">
 					<channel-settings @close="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></channel-settings>
 				</div>
 				<div v-else-if="rightPartToDisplay === 'addDiscussion'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
-					<Add-Search-Player @close="setPartToDisplay('chat')" @validate="invitePlayer"></Add-Search-Player>
+					<AddSearchPlayer @close="setPartToDisplay('chat')" @validate="invitePlayer"></AddSearchPlayer>
 				</div>
 				<div v-else class="w-11/12 px-6 3xl:px-10 h-full">
-					<Add-Channel @close="setPartToDisplay('chat')" @validate="invitePlayer"></Add-Channel>
+					<add-channel @close="setPartToDisplay('chat')" @validate="invitePlayer"></add-channel>
 				</div>
 			</card-right>
 		</div>

@@ -94,9 +94,7 @@ onBeforeMount(() => {
 					<input
 						class="placeholder-red-600 bg-red-400 w-full rounded-md text-center font-medium text-xs py-1.5 text-red-200"
 						type="text"
-						name="username"
 						v-model.trim="newUsername"
-						placeholder="username"
 					/>
 				</div>
 				<div class="flex flex-col items-center w-full sm:flex-row sm:gap-4">

@@ -7,7 +7,6 @@ const emit = defineEmits<{
 
 </script>
 
-
 <template>
 	<div class="self-end flex gap-3 mr-6">
 		<button @click="emit('close')" class="bg-red-600 text-red-200 border border-red-700 hover:text-white rounded-lg mt-4 focus:ring-2 focus:ring-gray-300 p-1 sm:p-2 inline-flex h-6 w-6 sm:h-9 sm:w-9">
