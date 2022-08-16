@@ -12,6 +12,8 @@ import ButtonPlus from '@/components/Chat/ButtonPlus.vue';
 import ButtonDelete from '@/components/Chat/ButtonDelete.vue';
 import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
 import InChatTopImage from '@/components/Chat/InChatTopImage.vue';
+import { useRoute } from 'vue-router';
+//import JoinChannelDiscussionRequestVue from '@/components/Chat/JoinChannelDiscussionRequest.vue';
 import ChannelSettings from '@/components/Chat/ChannelSettings/ChannelSettings.vue';
 import PlayerDiscussion from '@/components/Chat/PlayerDiscussion.vue';
 import { ref, onMounted } from 'vue';
@@ -19,6 +21,7 @@ import socket from '@/plugin/socketInstance';
 
 
 const userStore = useUserStore();
+const route = useRoute();
 const users = ref([] as User[]);
 const channels = ref([] as Channel[]);
 const friends = ref([] as User[]);
@@ -51,10 +54,24 @@ function showChannels () {
 	setRightCardTitle(rightPartToDisplay.value)
 }
 
+function getUser(name: string): User | null {
+	for (const user of users.value)
+	{
+		if(user.username === name)
+			return user
+	}
+	return null
+}
+
 function fetchUsers() {
 	UsersService.getUsers()
 		.then((response) => {
 			users.value = response.data;
+			if (route.query.discussion)
+			{
+				const user = getUser(route.query.discussion as string)
+				if (user) loadDiscussion(user)
+			}
 		})
 		.catch((e: Error) => {
 			console.log(e);
