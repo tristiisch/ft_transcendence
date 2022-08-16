@@ -11,6 +11,7 @@ import { StatsModule } from './stats/stats.module';
 import { AuthModule } from './auth/auth.module';
 import { MatchsHistoryModule } from './matchs-history/matchs-history.module';
 import { TestModule } from './test/test.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
 	imports: [
@@ -22,7 +23,8 @@ import { TestModule } from './test/test.module';
 		StatsModule,
 		AuthModule,
 		MatchsHistoryModule,
-		TestModule
+		TestModule,
+		NotificationModule
 	],
 	controllers: [AppController],
 	providers: [AppService],
