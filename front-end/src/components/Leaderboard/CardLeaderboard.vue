@@ -22,13 +22,13 @@ const userStatus = computed(() => {
 
 <template>
     <div
-        class="relative grid grid-flow-col auto-cols-fr place-content-center h-full myshadow2 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
+        class="relative grid [grid-template-columns:_2fr_1fr_1fr] auto-cols-min place-content-center h-full text-slate-800 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
     >
         <img class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover" ref="sizeAvatar" :src="user.avatar" alt="Rounded avatar" />
-        <div class="flex items-center pl-[50px] sm:pl-[130px] 3xl:pl-[calc(0.14_*_100vh)]">
+        <div class="flex items-center pl-[50px] sm:pl-[130px] 3xl:pl-[calc(0.14_*_100vh)] pr-4">
             <base-button link :to="{ name: 'Profile', params: { username: user.username } }">{{ user.username }}</base-button>
         </div>
-        <div class="flex flex-col justify-center gap-3 items-center sm:flex-row">
+        <div class="flex gap-3">
             <player-status :user="user"></player-status>
             <span>{{ userStatus }}</span>
         </div>

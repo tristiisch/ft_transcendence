@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type Channel from '@/types/Channel';
 import Status from '@/types/ChannelStatus';
-import InChatTopImage from '@/components/Chat/InChatTopImage.vue'
+import ChatTopImage from '@/components/Chat/ChatTopImage.vue'
 import ButtonReturn from '@/components/Chat/ButtonReturn.vue';
 import ChannelPasswordName from '@/components/Chat/ChannelSettings/ChannelPasswordName.vue';
 import PlayerDisplayList from '@/components/Chat/PlayerDisplayList.vue';
@@ -88,7 +88,7 @@ function updateMuteBan()
 
 <template>
 	<div class="flex flex-col justify-between h-full">
-		<InChatTopImage :inChatWith="null" :inChannel="inChannel"></InChatTopImage>
+		<chatTopImage :inChatWith="null" :inChannel="inChannel"></chatTopImage>
 		<div v-if="displayButton()" class="flex flex-col justify-around h-full">
 			<div class="flex flex-col justify-center items-center gap-5">
 				<div class="text-center">
@@ -96,7 +96,7 @@ function updateMuteBan()
 					<p class="text-red-200 text-xs sm:text-sm">The channel is <span class="text-red-800">{{ passwordStatusText(inChannel.type) }}</span>.</p>
 					<p class="text-red-200 text-xs sm:text-sm">The channel has <span class="text-red-800">{{ administratorStatusText() }}</span> admin, <span span class="text-red-800">{{ muteStatusText() }}</span> mutted member and <span span class="text-red-800">{{ banStatusText() }}</span> banned</p>
 				</div>
-				<div class="grid grid-cols-2 gap-2 items-center w-3/4">
+				<div class="grid grid-cols-2 gap-2 items-center w-full lg:w-3/4">
 					<button  @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Password/Name
 					</button>

@@ -79,11 +79,9 @@ onBeforeMount(() => {
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
-				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-around items-center w-11/12">
-					<div class="w-4/5">
-						<player-stats :user="user"></player-stats>
-					</div>
-					<div class="w-4/5">
+				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-center gap-4 sm:gap-6 h-full w-11/12 px-8 3xl:px-10">
+					<player-stats :user="user"></player-stats>
+					<div class="flex justify-center overflow-y-auto w-full">
 						<player-history></player-history>
 					</div>
 				</div>

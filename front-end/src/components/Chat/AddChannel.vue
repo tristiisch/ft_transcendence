@@ -34,11 +34,11 @@ const emit = defineEmits<{
 <template>
 	<div v-if="!selectPlayer" class="flex flex-col justify-between items-center h-full w-full">
 		<div class="flex flex-col justify-center items-center gap-6 h-full w-full">
-			<div class="mb-2 w-full sm:w-4/5">
+			<div class="mb-2 w-full lg:w-4/5">
 				<label class="block mb-2 text-sm font-medium text-red-200">Channel name:</label>
 				<input type="text" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose name">
 			</div>
-			<div class="inline-flex shadow-sm w-full sm:w-4/5">
+			<div class="inline-flex shadow-sm w-full lg:w-4/5">
 				<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded-l-lg border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Public
 				</button>
@@ -59,7 +59,7 @@ const emit = defineEmits<{
 				<input type="text" id="error" class="bg-red-50 border border-red-500 text-red-900 placeholder-red-700 text-sm rounded-lg focus:ring-red-500 dark:bg-gray-700 focus:border-red-500 block w-full p-2.5 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500" placeholder="Error input">
 				<p class="mt-2 text-sm text-red-600 dark:text-red-500"><span class="font-medium">Oh, snapp!</span> Some error message.</p>
 			</div> -->
-			<div v-if="protectedChannel" class="w-full sm:w-4/5">
+			<div v-if="protectedChannel" class="w-full lg:w-4/5">
 				<label class="block mb-2 text-sm font-medium text-red-200">Password:</label>
 				<input type="text" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
 			</div>

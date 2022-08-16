@@ -23,6 +23,17 @@ const users = [
 		owner: 'nlaronch',
 		mute: [Users[3]],
 		banned: [Users[4]]
+	},
+	{
+		name: '42',
+		type: Status.PRIVATE,
+		avatar: 'https://avatarfiles.alphacoders.com/290/290739.jpg',
+		users: Users,
+		password: null,
+		admin: Users,
+		owner: 'nlaronch',
+		mute: [Users[3]],
+		banned: [Users[4]]
 	}
 ];
 

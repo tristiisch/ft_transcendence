@@ -132,28 +132,22 @@ onBeforeUnmount(() => {
 					<form>
 						<div class="relative">
 							<div class="flex absolute inset-y-0 left-0 items-center pl-2 pointer-events-none">
-								<svg aria-hidden="true" class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+								<svg aria-hidden="true" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 							</div>
-							<input type="search" class="block p-0.5 pl-8 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search User" required>
+							<input type="search" class="block p-0.5 pl-8 w-full text-sm text-white placeholder:text-slate-600 bg-slate-800 rounded-lg border border-slate-500 focus:ring-blue-500 focus:border-blue-500" placeholder="Search User" required>
 						</div>
 					</form>
 					<div class="flex items-center">
-						<span class="text-slate-600 pr-2">All</span>
+						<span class="text-slate-700 pr-2">All</span>
 						<Toogle @switchButton="switchDysplayUsers"></Toogle>
-						<span class="text-slate-600 pl-2">Friends</span>
+						<span class="text-slate-700 pl-2">Friends</span>
 					</div>
 				</div>
 			</div>
-			<div class="flex justify-center items-center text-base sm:text-lg text-zinc-400 h-full sm:pb-3">
-				<div class="text-center flex-1">
+			<div class="grid [grid-template-columns:_2fr_1fr_1fr] items-end text-base sm:text-lg text-slate-700 h-full sm:pb-3 px-3">
 					<base-button @click="nameOrder()">Player</base-button>
-				</div>
-				<div class="text-center flex-1">
-					<base-button @click="statusOrder()">Status</base-button>
-				</div>
-				<div class="text-center flex-1">
+					<base-button @click="statusOrder()" class="flex">Status</base-button>
 					<base-button @click="rankOrder()">Rank</base-button>
-				</div>
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">
