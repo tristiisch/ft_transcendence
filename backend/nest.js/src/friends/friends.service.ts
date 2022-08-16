@@ -108,7 +108,7 @@ export class FriendsService {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
-		return await this.friendsRepository.delete(friendship).then((value: DeleteResult) => {
+		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0)
 				throw new InternalServerErrorException("Can't remove friendship of ${friendship.user_id1} and ${friendship.user_id1}.");
 			else

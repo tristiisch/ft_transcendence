@@ -1,8 +1,8 @@
 import { IsInt } from "class-validator";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Channel {
+export class Channel extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	@IsInt()

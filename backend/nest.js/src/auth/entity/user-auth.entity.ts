@@ -1,10 +1,12 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
-export class UserAuth {
+export class UserAuth extends BaseEntity {
 
-    constructor() {
-        this.has_2fa = !this.twofa && this.twofa.length != 0;
+    constructor(user_id: number) {
+        super();
+        this.has_2fa = this.twofa != null && this.twofa.length != 0;
+        this.user_id = user_id;
     }
 
 	@PrimaryColumn()

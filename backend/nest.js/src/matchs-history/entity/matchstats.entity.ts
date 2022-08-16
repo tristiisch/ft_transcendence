@@ -1,10 +1,10 @@
 import { NotAcceptableException, UnprocessableEntityException } from "@nestjs/common";
 import { IsInt } from "class-validator";
 import { User } from "src/users/entity/user.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class MatchHistory {
+export class MatchHistory extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	id: number;

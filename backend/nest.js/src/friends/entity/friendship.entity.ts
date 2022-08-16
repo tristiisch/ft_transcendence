@@ -1,5 +1,5 @@
 import { IsEmail, IsInt, IsNotEmpty } from "class-validator";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 export enum FriendshipStatus {
 	PENDING,
@@ -7,7 +7,7 @@ export enum FriendshipStatus {
 }
 
 @Entity()
-export class Friendship {
+export class Friendship extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	id: number;
