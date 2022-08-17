@@ -3,6 +3,7 @@ import axios from 'axios';
 import users from '@/data/users';
 import matchs from '@/data/matchs';
 import matchsHistory from '@/data/matchsHistory';
+import notifications from '@/data/notifications'
 import friends from '@/data/friends';
 import channels from '@/data/Channels';
 import Status from '@/types/Status';
@@ -72,6 +73,10 @@ export default [
 		return res(ctx.json(channels));
 	}),
 
+	rest.get('/users/:username/notifications', (req, res, ctx) => {
+		return res(ctx.json(notifications.get(req.params.username as string)));
+	}),
+
 	rest.get('/users/:username/matchsHistory', (req, res, ctx) => {
 		return res(ctx.json(matchsHistory.get(req.params.username as string)));
 	}),
@@ -82,6 +87,18 @@ export default [
 		if (tab) tab.push(data.target);
 		else friends.set(req.params.username as string, [data.target]);
 		console.log(friends);
+		return res(ctx.status(200));
+	}),
+
+	rest.post('/accept/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		console.log(data);
+		return res(ctx.status(200));
+	}),
+
+	rest.post('/remove/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		console.log(data);
 		return res(ctx.status(200));
 	}),
 
@@ -168,5 +185,4 @@ export default [
 		console.log(data);
 		return res(ctx.set('Content-Length', 'image/png'), ctx.json(data));
 	}),
-
 ];

@@ -50,6 +50,20 @@ class UserService {
 	getMatchsHistory(username: string) {
 		return axios.get(`users/${username}/matchsHistory`);
 	}
+
+	getNotifications(username: string) {
+		return axios.get(`users/${username}/notifications`);
+	}
+
+	acceptFriendRequest(id: number, target: string) {
+		return axios.post(`accept/:id`, { target });
+	}
+
+	declineFriendRequest(id: number, target: string) {
+		return axios.post(`remove/:id`, { target });
+	}
+
+
 }
 
 export default new UserService();
