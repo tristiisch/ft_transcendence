@@ -2,9 +2,9 @@ import { Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPi
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
-import { FtAuthguard } from './guard';
+import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
-import { FtPayload } from './interfaces/42user.interface';
+
 
 
 
