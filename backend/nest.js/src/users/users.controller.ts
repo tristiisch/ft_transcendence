@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, NotImplementedException, Param, Patch, Post } from '@nestjs/common';
+/** @prettier */
+import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
+import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';
 import { UsersService } from './users.service';
 
-// localhost:3000/users
 @Controller('users')
 export class UsersController {
-
 	constructor(private readonly usersService: UsersService) {}
 
 	@Get()
@@ -65,4 +66,19 @@ export class UsersController {
 		return this.usersService.remove(id);
 	}
 
+	@Get('avatar/:id/id')
+	async getAvatarById(@Param('id') id: number, @Res() res: Response) {
+		const selectUser: UserSelectDTO = new UserSelectDTO();
+
+		selectUser.id = id;
+		return this.usersService.findAvatar(selectUser, res);
+	}
+
+	@Get('avatar/:username/username')
+	async getAvatarByName(@Param('username') username: string, @Res() res: Response) {
+		const selectUser: UserSelectDTO = new UserSelectDTO();
+
+		selectUser.username = username;
+		return this.usersService.findAvatar(selectUser, res);
+	}
 }

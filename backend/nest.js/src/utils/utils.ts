@@ -1,4 +1,6 @@
 import { PreconditionFailedException } from "@nestjs/common";
+import axios from 'axios';
+import * as fs from 'fs';
 
 export function isEquals(entity1: any, entity2: any) : boolean {
 	if (!entity1 && !entity2)
@@ -57,6 +59,26 @@ export function randomEnum<T>(enumeration: T) {
 export function removeFromArray<T>(array: Array<T>, key: T): Array<T> {
 	const index = array.indexOf(key, 0);
 	if (index > -1)
-		return array.splice(index, 1);
+		array.splice(index, 1);
 	return array;
+}
+
+export async function toBase64(url: string) {
+	let imageBase64: string;
+	const response: any = await axios.get(url, {
+		responseType: 'arraybuffer'
+	});
+	const header = response.headers['content-type'];
+	const dataBase64 = Buffer.from(response.data, 'binary').toString('base64');
+	// data:image/jpeg;base64,
+	imageBase64 = `data:${header};base64,${dataBase64}`;
+
+	return imageBase64;
+}
+
+export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: any; } {
+	const imgType: string = imageBase64.substring('data:'.length, imageBase64.indexOf(';'))
+	const imgBase64: string = imageBase64.substring(imageBase64.indexOf(',') + 1, imageBase64.length)
+	const imgRaw = Buffer.from(imgBase64, 'base64')
+	return {imageType: imgType, imageBuffer : imgRaw };
 }

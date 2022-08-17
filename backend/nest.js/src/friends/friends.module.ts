@@ -1,3 +1,4 @@
+/** @prettier */
 import { forwardRef, Module } from '@nestjs/common';
 import { FriendsService } from './friends.service';
 import { FriendsController } from './friends.controller';
@@ -9,6 +10,6 @@ import { Friendship } from './entity/friendship.entity';
 	imports: [UsersModule, TypeOrmModule.forFeature([Friendship])],
 	providers: [FriendsService],
 	controllers: [FriendsController],
-	exports: [FriendsService]
+	exports: [FriendsService],
 })
 export class FriendsModule {}

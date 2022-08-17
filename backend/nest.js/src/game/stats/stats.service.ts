@@ -1,10 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException, PreconditionFailedException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from 'src/friends/friends.service';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { isEquals, isNumberPositive } from 'src/utils/utils';
-import { InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { InsertResult, Repository, SelectQueryBuilder, UpdateResult } from 'typeorm';
 import { LeaderboardUser } from './entity/leaderboard.entity';
 import { UserStats } from './entity/userstats.entity';
 
@@ -29,6 +29,8 @@ export class StatsService {
 		isNumberPositive(userId, 'get a user');
         await this.userService.findOne(userId);
 		return await this.statsRepository.findOneBy({ user_id: userId }).then((stats: UserStats) => {
+			if (!stats)
+				throw new PreconditionFailedException('You\'ve never played, start a game!');
             return stats;
         }, this.userService.lambdaDatabaseUnvailable);
     }
@@ -37,13 +39,8 @@ export class StatsService {
 	 * @deprecated Only for test
 	 */
     async add(stats: UserStats) {
-		return await this.statsRepository.insert(stats).then((insertResult: InsertResult) => {
-			if (insertResult.identifiers.length < 1) {
-				throw new InternalServerErrorException(`Can't add stats of user ${stats.user_id}.`);
-			} else if (insertResult.identifiers.length > 1) {
-				throw new InternalServerErrorException(`${insertResult.identifiers.length} rows was modify instead of one.`);
-			}
-			return stats;
+		return await this.statsRepository.save(stats).then((us: UserStats) => {
+			return us;
 		}, this.userService.lambdaDatabaseUnvailable);
     }
 
@@ -89,26 +86,27 @@ export class StatsService {
 		}, this.userService.lambdaDatabaseUnvailable);
     }
 
-    async leaderboardWithFriends(user: User) {
+    async leaderboardWithFriends(user: User): Promise<{ leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[] }> {
 		const friendsIds: number[] = await this.friendsService.findFriendsIds(user.id);
 		const userStats: UserStats[] = await this.leaderboard();
-		const leaderBoad: LeaderboardUser[] = new Array();
-		const leaderBoadFriends: LeaderboardUser[] = new Array();
+		const leaderBoard: LeaderboardUser[] = new Array();
+		const leaderBoardFriends: LeaderboardUser[] = new Array();
 
-		userStats.forEach(async (userStats: UserStats, index: number) => {
+		let index: number = 1;
+		for (let us of userStats) {
 			const leaderUser: LeaderboardUser = new LeaderboardUser();
-			const target: User = await this.userService.findOne(userStats.user_id);
+			const target: User = await this.userService.findOne(us.user_id);
 
-			leaderUser.rank = index + 1;
+			leaderUser.rank = index++;
 			leaderUser.username = target.username;
-			leaderUser.avatar = target.avatar;
+			leaderUser.avatar = target.getAvatarURL();
 			leaderUser.status = target.status;
 
-			if (user.id === userStats.user_id || friendsIds.length !== 0 && friendsIds.indexOf(userStats.user_id) !== -1)
-				leaderBoadFriends.push(leaderUser);
+			if (user.id === us.user_id || friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
+				leaderBoardFriends.push(leaderUser);
 
-			leaderBoad.push(leaderUser);
-		});
-		return {leaderBoad, leaderBoadFriends};
+			leaderBoard.push(leaderUser);
+		}
+		return {leaderBoard, leaderBoardFriends};
     }
 }
