@@ -30,4 +30,8 @@ export class Notification extends BaseEntity {
 
 	@Column({ type: 'enum', enum: NotificationType, default: NotificationType.UNKNOWN })
 	status: NotificationType;
+
+	@Column({ type: 'timestamptz', precision: null, nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+	date: Date;
+
 }
