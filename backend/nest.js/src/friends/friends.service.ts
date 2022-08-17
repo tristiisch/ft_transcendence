@@ -42,12 +42,12 @@ export class FriendsService {
 		}
 		const friendship: Friendship = new Friendship();
 
-		friendship.user_id1 = user.id;
-		friendship.user_id2 = target.id;
+		friendship.user1_id = user.id;
+		friendship.user2_id = target.id;
 
 		return await this.friendsRepository.insert(friendship).then((insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
-				throw new InternalServerErrorException(`Can't add friendship of ${friendship.user_id1} and ${friendship.user_id1}.`);
+				throw new InternalServerErrorException(`Can't add friendship of ${friendship.user1_id} and ${friendship.user1_id}.`);
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + ' rows was modify instead of one.');
 			}
@@ -101,7 +101,7 @@ export class FriendsService {
 		}
 
 		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {
-			if (!value.affected || value.affected == 0) throw new InternalServerErrorException("Can't remove friendship of ${friendship.user_id1} and ${friendship.user_id1}.");
+			if (!value.affected || value.affected == 0) throw new InternalServerErrorException(`Can't remove friendship of ${friendship.user1_id} and ${friendship.user2_id}.`);
 			else return { statusCode: 200, message: `You are no longer friends with ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
@@ -119,9 +119,9 @@ export class FriendsService {
 	private async findOne(user1: number, user2: number, strict: boolean): Promise<Friendship> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
-		sqlStatement.where('friendship.user_id1 = :id1', { id1: user1 }).andWhere('friendship.user_id2 = :id2', { id2: user2 });
+		sqlStatement.where('friendship.user1_id = :id1', { id1: user1 }).andWhere('friendship.user2_id = :id2', { id2: user2 });
 		if (!strict) {
-			sqlStatement.orWhere('friendship.user_id1 = :id2').andWhere('friendship.user_id2 = :id1');
+			sqlStatement.orWhere('friendship.user1_id = :id2').andWhere('friendship.user2_id = :id1');
 		}
 		// console.log("SQL friendship", sqlStatement.getQueryAndParameters());
 
@@ -139,14 +139,14 @@ export class FriendsService {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
 		// await this.userService.findOne(userId);
-		sqlStatement.where('friendship.user_id1 = :id', { id: userId }).andWhere('friendship.status = :status', { status: FriendshipStatus.PENDING });
+		sqlStatement.where('friendship.user_1id = :id', { id: userId }).andWhere('friendship.status = :status', { status: FriendshipStatus.PENDING });
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();
 
 			friendships.forEach((fs) => {
-				if (fs.user_id1 != userId) friends.push(fs.user_id1);
-				else friends.push(fs.user_id2);
+				if (fs.user1_id != userId) friends.push(fs.user1_id);
+				else friends.push(fs.user2_id);
 			});
 			return friends;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -173,14 +173,14 @@ export class FriendsService {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
 		// await this.userService.findOne(userId);
-		sqlStatement.where('friendship.user_id2 = :id', { id: userId }).andWhere('friendship.status = :status', { status: FriendshipStatus.PENDING });
+		sqlStatement.where('friendship.user2_id = :id', { id: userId }).andWhere('friendship.status = :status', { status: FriendshipStatus.PENDING });
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();
 
 			friendships.forEach((fs) => {
-				if (fs.user_id1 != userId) friends.push(fs.user_id1);
-				else friends.push(fs.user_id2);
+				if (fs.user1_id != userId) friends.push(fs.user1_id);
+				else friends.push(fs.user2_id);
 			});
 			return friends;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -208,14 +208,14 @@ export class FriendsService {
 
 		// await this.userService.findOne(userId);
 		sqlStatement.where('friendship.status = :status', { status: FriendshipStatus.ACCEPTED });
-		sqlStatement.where('friendship.user_id1 = :id', { id: userId }).orWhere('friendship.user_id2 = :id');
+		sqlStatement.where('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();
 
 			friendships.forEach((fs) => {
-				if (fs.user_id1 != userId) friends.push(fs.user_id1);
-				else friends.push(fs.user_id2);
+				if (fs.user1_id != userId) friends.push(fs.user1_id);
+				else friends.push(fs.user2_id);
 			});
 			return friends;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -239,7 +239,7 @@ export class FriendsService {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
 		// await this.userService.findOne(userId);
-		sqlStatement.where('friendship.user_id1 = :id', { id: userId }).orWhere('friendship.user_id2 = :id');
+		sqlStatement.where('friendship.user_1id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			return friendships;

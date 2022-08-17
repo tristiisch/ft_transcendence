@@ -14,11 +14,11 @@ export class Friendship extends BaseEntity {
 
 	@Column()
 	@IsInt()
-	user_id1: number;
+	user1_id: number;
 
 	@Column()
 	@IsInt()
-	user_id2: number;
+	user2_id: number;
 
 	@Column({ type: 'enum', enum: FriendshipStatus, default: FriendshipStatus.PENDING })
 	status: FriendshipStatus;
