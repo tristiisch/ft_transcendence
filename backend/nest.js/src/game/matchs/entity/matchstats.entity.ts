@@ -26,10 +26,10 @@ export class MatchStats extends BaseEntity {
 	@Column("int", { nullable: true, array: true })
 	score: number[];
 
-	@Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+	@Column({ type: 'timestamptz', precision: null, default: () => 'CURRENT_TIMESTAMP' })
 	timestamp_started: Date;
 
-	@Column({ type: 'timestamptz', precision: 0, nullable: true })
+	@Column({ type: 'timestamptz', precision: null, nullable: true })
 	timestamp_ended: Date;
 
 	public getWinner(): number {

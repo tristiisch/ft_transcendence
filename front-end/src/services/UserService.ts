@@ -19,7 +19,7 @@ class UserService {
 	}
 
 	getCurrentMatchs() {
-		return axios.get('matchs/in-progress');
+		return axios.get('matchs/current');
 	}
 
 	sendFriendRequest(id: number, targetUsername: string) {

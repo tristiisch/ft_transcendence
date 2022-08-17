@@ -59,8 +59,8 @@ export class MatchStatsService {
 			.where('matchhistory.timestamp_ended IS NULL')
 			.andWhere('matchhistory.score IS NOT NULL')
 			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
-		return await sqlStatement.getMany().then((matchsStats: MatchStats[]) => {
-			matchsStats.forEach(async (ms: MatchStats) => {
+		return await sqlStatement.getMany().then(async (matchsStats: MatchStats[]) => {
+			for (let ms of matchsStats) {
 				const user1: User = await this.userService.findOne(ms.user1_id);
 				const user2: User = await this.userService.findOne(ms.user2_id);
 
@@ -69,7 +69,7 @@ export class MatchStatsService {
 
 				ms.user2_avatar = user2.getAvatarURL();
 				ms.user2_username = user2.username;
-			})
+			}
 			return matchsStats;
 		});
 	}

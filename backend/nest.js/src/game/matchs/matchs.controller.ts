@@ -41,8 +41,8 @@ export class MatchsStatsController {
 		return this.matchsHistoryService.save(match);
 	}
 
-	@Get('in-progress')
-	async getMatchInProgress() {
+	@Get('current')
+	async getCurrentMatchs() {
 		return await this.matchsHistoryService.findOnlineMatchs();
 	}
 }
