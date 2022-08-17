@@ -29,6 +29,12 @@ export class User extends BaseEntity {
 	// @Column("int", { nullable: true, array: true })
 	// friends?: number[];
 
+	//@Column({ default: false })
+	//public isTwoFactorAuthenticationEnabled: boolean;
+
+	@Column({ nullable: true })
+  	public twoFactorSecret?: string;
+
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
 	status: UserStatus;
 }
