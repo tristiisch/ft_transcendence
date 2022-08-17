@@ -1,10 +1,12 @@
 <script setup lang="ts">
-   import type User from '@/types/User';
-   import Status from '@/types/Status';
-   import PlayerStatus from '@/components/PlayerStatus.vue'
-   import { computed, ref, onUpdated} from 'vue';
+    import type User from '@/types/User';
+    import Status from '@/types/Status';
+    import PlayerStatus from '@/components/PlayerStatus.vue'
+    import { computed, ref, onMounted, onUnmounted} from 'vue';
+    import { Console } from 'console';
 
     const sizeAvatar = ref<HTMLInputElement | null>(null)
+    const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
     const props = defineProps<{
     user: User
 }>()
@@ -18,14 +20,33 @@ const userStatus = computed(() => {
         return 'Online'
 })
 
+onMounted(() => {
+    handleResize()
+});
+
+function handleResize() {
+    if (sizeAvatar.value)
+    {
+        let size = (sizeAvatar.value?.width + 20).toString()
+        avatarWidth.value = 'padding-left: '+ size + 'px'
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('resize', handleResize)
+  });
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <template>
     <div
         class="relative grid [grid-template-columns:_2fr_1fr_1fr] auto-cols-min place-content-center h-full text-slate-800 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
     >
-        <img class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover" ref="sizeAvatar" :src="user.avatar" alt="Rounded avatar" />
-        <div class="flex items-center pl-[50px] sm:pl-[130px] 3xl:pl-[calc(0.14_*_100vh)] pr-4">
+        <img ref="sizeAvatar" class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover" :src="user.avatar" alt="Rounded avatar" />
+        <div class="flex items-center pr-4" :style="avatarWidth">
             <base-button link :to="{ name: 'Profile', params: { username: user.username } }">{{ user.username }}</base-button>
         </div>
         <div class="flex gap-3">
