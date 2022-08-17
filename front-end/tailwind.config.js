@@ -8,6 +8,7 @@ module.exports = {
         'brick': "url(@/assets/brick.jpg)",
         'TvScreen-texture': "url('@/assets/checkered-pattern.png')",
         'TvScreen': "url('@/assets/TV_screen2.png')",
+        'TvScreenPixel': "url('@/assets/grid.png')"
       },
       fontFamily: {
         Noir: ["Noir", "sans-serif"],

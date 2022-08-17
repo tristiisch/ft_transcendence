@@ -1,34 +1,97 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted, } from 'vue'
+const windowHeight = ref(window.innerHeight);
+const windowWidth = ref(window.innerWidth);
+
+function tvSize() {
+	console.log(windowHeight.value)
+	console.log(windowWidth.value)
+	if (windowHeight.value > windowWidth.value)
+		return 'w-[calc(0.6_*_100vw)]'
+	return 'h-[calc(0.5_*_100vh)]'
+}	
+
+function titleSize()
+{
+	if (windowHeight.value > windowWidth.value)
+		return '[font-size:_calc(0.1_*_100vw)] top-[calc(0.15_*_100vh)]'
+	return '[font-size:_calc(0.08_*_100vh)] top-[calc(0.15_*_100vh)]'
+}
+
+function screenTitleSize()
+{
+	if (windowHeight.value > windowWidth.value)
+		return '[font-size:_calc(0.09_*_100vw)] pb-[calc(0.1_*_100vw)]'
+	return '[font-size:_calc(0.08_*_100vh)] pb-[calc(0.1_*_100vh)]'
+}
+
+function screenSize()
+{
+	if (windowHeight.value > windowWidth.value)
+		return 'w-[calc(0.5_*_100vw)]'
+	return 'w-[calc(0.5_*_100vh)]'	
+}
+
+function smallScreen() {
+	if( windowWidth.value < 640)
+		return true
+	else 
+		return false
+}
+
+function handleResize() {
+windowWidth.value = window.innerWidth;
+windowHeight.value = window.innerHeight;
+}
+
+onMounted(() => {
+    window.addEventListener('resize', handleResize)
+  });
+
+onUnmounted(() => {
+window.removeEventListener('resize', handleResize)
+})
 
 </script>
 
+
+
 <template>
-	<div class="flex flex-col justify-between h-full mx-[8vw]">
+	<div class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
-		<div class="relative flex justify-center h-4/6">
-			<img src="../assets/TV2.png" class="absolute w-[280px] sm:w-[500px] lg:w-[600px] xl:w-[650px] -bottom-10" />
-			<div
-				class="absolute -z-10 bottom-[50px] w-[210px] h-[160px] sm:bottom-[120px] sm:w-[360px] sm:h-[280px] lg:bottom-[150px] lg:w-[420px] lg:h-[330px] xl:bottom-[140px] xl:w-[500px] xl:h-[360px] overflow-hidden bg-[rgb(32, 32, 32)] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] [animation:_flicker_0.15s_infinite alternate]"
-			>
-				<div
-					class="absolute w-full h-[80px] opacity-10 [background:_linear-gradient(0deg,#00ff00,rgba(255, 255, 255, 0.25)_10%,rgba(0,_0,_0,_0.1)_100%)] [animation:_refresh_8s_linear_infinite]"
-				></div>
-			</div>
-			<base-button
-				link
-				:to="{ name: 'Game' }"
-				class="absolute text-white font-BPNeon brightness-200 text-[3rem] bottom-[85px] sm:text-[5rem] sm:bottom-[180px] lg:text-[6rem] lg:bottom-[210px] xl:text-[8rem] xl:bottom-[210px] hover:text-yellow-300 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"
-			>
-				PLAY
-			</base-button>
+		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
+			<the-footer v-if="smallScreen()" class=""></the-footer>
 		</div>
-		<the-footer></the-footer>
+		<div :class="titleSize()" class="absolute m-auto left-0 right-0 top-40 text-center font-Arlon text-white">
+            <span class="px-[2vw]">W</span>
+            <span class="px-[2vw]">E</span>
+            <span class="px-[2vw]">L</span>
+            <span class="px-[2vw]">C</span>
+            <span class="px-[2vw]">O</span>
+            <span class="px-[2vw]">M</span>
+            <span class="px-[2vw]">E</span>
+        </div>
+		<div class="absolute m-auto left-0 right-0 bottom-[calc(0.15_*_100vh)]">
+			<img src="../assets/TV2.png" :class="tvSize()" class="relative m-auto left-0 right-0 z-10"/>
+			<base-button link :to="{ name: 'Game' }" class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+				<div class="flex justify-center items-center h-full">
+					<h1 :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</h1>
+				</div>
+			</base-button>
+			<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-3 h-3/4 bg-stone-800"></div>
+			<div :class="screenSize()" class="animationFlicker absolute m-auto left-0 right-0 top-3 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+				<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
+			</div>
+			<div :class="screenSize()" class="absolute opacity-10 m-auto left-0 right-0 top-3 h-3/4 bg-TvScreenPixel"></div>
+			
+		</div>
+		<the-footer v-if="!smallScreen()" class="absolute m-auto left-0 right-0 min-h-0 bottom-0 text-xs"></the-footer>
 	</div>
-	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]"></div>
+	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
+	
 </template>
 
 <style scoped>
-
 
 @keyframes refresh {
 	0% {
@@ -50,4 +113,15 @@
 		opacity: 0.95;
 	}
 }
+
+.animationFlicker {
+	animation: flicker 0.15s infinite alternate;
+}
+
+.animationRefresh {
+	animation: refresh 8s linear infinite;
+}
+
 </style>
+
+<!-- [text-shadow:_-8px_0_black,_0_8px_black,_8px_0_black,_0_-8px_black] -->

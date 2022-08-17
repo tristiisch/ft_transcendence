@@ -43,7 +43,7 @@ const users = [
 	},
 	{
 		id: '42login4',
-		username: 'Frodoniohuhiuhihuihihiuhihuihihiuhu',
+		username: 'Frodon',
 		rank: 5,
 		nbVictory: 4,
 		nbDefeat: 100,
