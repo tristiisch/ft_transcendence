@@ -4,8 +4,6 @@ const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 
 function tvSize() {
-	console.log(windowHeight.value)
-	console.log(windowWidth.value)
 	if (windowHeight.value > windowWidth.value)
 		return 'w-[calc(0.6_*_100vw)]'
 	return 'h-[calc(0.5_*_100vh)]'
