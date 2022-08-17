@@ -22,7 +22,7 @@ const isHomePage = computed(() => {
     <div  class="relative flex items-center h-[10%] min-h-[100px] sm:min-h-[140px] sm:pt-8" :class="{'justify-end': isProfilePage, 'justify-between': !isProfilePage}">
         <div v-show="!isProfilePage">
             <base-button link :to="{ name: 'Profile', params: { username: userStore.userData.username }}">
-                <img class="w-16 h-16 md:w-20 md:h-20 xl:w-28 xl:h-28 rounded-full border-2 object-cover hover:border-[#f1cf3b]" :src="userStore.userData.avatar" alt="Rounded avatar">
+                <img class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 object-cover hover:border-[#f1cf3b]" :src="userStore.userData.avatar" alt="Rounded avatar">
             </base-button>
         </div>
         <div>

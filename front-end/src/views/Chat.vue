@@ -281,6 +281,9 @@ onMounted(() => {
 							</div>
 						</div>
 					</div>
+					<div v-else class="flex justify-center items-center h-full">
+						<img src="@/assets/42.png"/>
+					</div>
 				</div>
 				<div v-else-if="rightPartToDisplay === 'channelSettings' && inChannel" class="flex flex-col w-11/12 px-6 3xl:px-10">
 					<channel-settings @return="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></channel-settings>
@@ -288,7 +291,7 @@ onMounted(() => {
 				<div v-else-if="rightPartToDisplay === 'addDiscussion'" class="flex flex-col justify-between items-center w-11/12 px-6 3xl:px-10 h-full">
 					<AddSearchPlayer @close="setPartToDisplay('chat')" @validate="invitePlayer"></AddSearchPlayer>
 				</div>
-				<div v-else class="w-11/12 px-6 3xl:px-10 h-full">
+				<div v-else-if="rightPartToDisplay === 'createChannel'" class="w-11/12 px-6 3xl:px-10 h-full">
 					<add-channel @close="setPartToDisplay('chat')" @validate="invitePlayer"></add-channel>
 				</div>
 			</card-right>
