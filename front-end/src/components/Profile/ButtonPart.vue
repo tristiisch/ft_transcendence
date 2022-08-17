@@ -84,7 +84,7 @@
 </script>
 
 <template>
-    <div v-if="!isUser()" class="flex flex-col gap-4 3xl:gap-6">
+    <div v-if="!isUser()" class="flex flex-col gap-4">
         <button-gradient1 @click="treatFriendRequest()">
             {{ friendButton }}
         </button-gradient1>
@@ -92,7 +92,7 @@
             Block
         </button-gradient1>
     </div>
-    <div v-else class="flex flex-col gap-4 3xl:gap-6">
+    <div v-else class="flex flex-col gap-4">
         <button-gradient1  @click="setDisplayedPart(1)">
             {{ button1Name }}
         </button-gradient1>

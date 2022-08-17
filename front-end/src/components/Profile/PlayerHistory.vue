@@ -54,13 +54,13 @@ onMounted(() => {
 <template>
     <div class="flex flex-col justify-center items-center gap-4 max-h-full w-full overflow-y-auto">
         <h1 class="text-red-200 sm:text-xl text-center w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">MATCH HISTORY</h1>
-        <div v-if="matchsHistory.length" class="flex flex-col items-center gap-2 w-full overflow-y-auto">
+        <div v-if="matchsHistory.length" class="flex flex-col items-center gap-1 w-full overflow-y-auto">
             <div v-for="match in matchsHistory" :key="match.date" class="flex w-full">
-                <p class="w-2/5 text-right text-sm sm:text-base md:text-lg" :class="colorText(match, 'player')">{{ createString(match, 'player') }}</p>
+                <p class="w-2/5 text-right text-xs sm:text-sm" :class="colorText(match, 'player')">{{ createString(match, 'player') }}</p>
                 <p class="w-1/5 text-center"> ⚔️ </p>
-                <p class="w-2/5 text-left text-sm sm:text-base md:text-lg" :class="colorText(match, 'opponent')">{{ createString(match, 'opponent') }}</p>
+                <p class="w-2/5 text-left text-xs sm:text-sm" :class="colorText(match, 'opponent')">{{ createString(match, 'opponent') }}</p>
             </div>
         </div>
-        <p v-else class="flex items-center text-base sm:text-xl h-full text-red-300"> NO DATA</p> 
+        <p v-else class="flex items-center text-base sm:text-xl h-full text-red-300"> NO DATA</p>
     </div>
 </template>

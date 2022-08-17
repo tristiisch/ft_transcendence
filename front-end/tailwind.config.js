@@ -14,6 +14,7 @@ module.exports = {
         Noir: ["Noir", "sans-serif"],
         BPNeon:["Neon", "ns-serif"],
         Arlon:["Arlon", "sans-serif"],
+		Vibur:["Vibur", "sans-serif"]
       },
       screens: {
         'tvxs': { 'raw': '(max-height: 375px)' },

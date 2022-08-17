@@ -78,13 +78,13 @@ onBeforeMount(() => {
 		</p>
 		<div class="w-full overflow-y-auto">
 			<div v-for="notification in notifications" :key="notification.date" class="flex flex-col w-full text-red-100">
-				<p class="text-xs text-red-700">{{ notification.date }}</p>
-				<div class="flex justify-between items-center w-full p-2.5 mb-3 sm:mb-5 text-red-100 bg-red-400 rounded">
-					<p class="pl-3 text-xs">
-						Friend request <span class="text-red-300">from</span> <span class="text-red-800">{{ notification.from }}</span>
+				<p class="text-xs text-red-200">{{ notification.date }}</p>
+				<div class="flex justify-between items-center w-full p-2.5 mb-3 sm:mb-5 text-red-100 bg-blue-600 rounded">
+					<p class="pl-3 text-xs text-white">
+						Friend request from {{ notification.from }}
 					</p>
 					<div class="flex gap-1">
-						<button @click="acceptInvitation(notification)" class="bg-green-600 text-green-200 hover:text-white rounded-md focus:ring-2 focus:ring-gray-300 p-1 inline-flex h-4 w-4 sm:h-4 sm:w-4">
+						<button @click="acceptInvitation(notification)" class="bg-blue-500 text-green-200 hover:text-white rounded-md focus:ring-2 focus:ring-gray-300 p-1 inline-flex h-4 w-4">
 							<svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 								<path
 									fill-rule="evenodd"
@@ -93,7 +93,7 @@ onBeforeMount(() => {
 								></path>
 							</svg>
 						</button>
-						<button @click="declineInvitation(notification)" class="bg-red-600 text-red-200 hover:text-white rounded-md focus:ring-2 focus:ring-gray-300 p-1 inline-flex h-4 w-4 sm:h-4 sm:w-4">
+						<button @click="declineInvitation(notification)" class="bg-red-600 text-red-200 hover:text-white rounded-md focus:ring-2 focus:ring-gray-300 p-1 inline-flex h-4 w-4">
 							<svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 								<path
 									fill-rule="evenodd"

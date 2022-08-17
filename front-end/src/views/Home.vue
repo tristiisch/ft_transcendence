@@ -9,7 +9,7 @@ function tvSize() {
 	if (windowHeight.value > windowWidth.value)
 		return 'w-[calc(0.6_*_100vw)]'
 	return 'h-[calc(0.5_*_100vh)]'
-}	
+}
 
 function titleSize()
 {
@@ -29,13 +29,13 @@ function screenSize()
 {
 	if (windowHeight.value > windowWidth.value)
 		return 'w-[calc(0.5_*_100vw)]'
-	return 'w-[calc(0.5_*_100vh)]'	
+	return 'w-[calc(0.5_*_100vh)]'
 }
 
 function smallScreen() {
 	if( windowWidth.value < 640)
 		return true
-	else 
+	else
 		return false
 }
 
@@ -62,7 +62,7 @@ window.removeEventListener('resize', handleResize)
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
 			<the-footer v-if="smallScreen()" class=""></the-footer>
 		</div>
-		<div :class="titleSize()" class="absolute m-auto left-0 right-0 top-40 text-center font-Arlon text-white">
+		<div :class="titleSize()" class="absolute m-auto left-0 right-0 top-40 text-center font-Vibur neon-text">
             <span class="px-[2vw]">W</span>
             <span class="px-[2vw]">E</span>
             <span class="px-[2vw]">L</span>
@@ -83,12 +83,12 @@ window.removeEventListener('resize', handleResize)
 				<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 			</div>
 			<div :class="screenSize()" class="absolute opacity-10 m-auto left-0 right-0 top-3 h-3/4 bg-TvScreenPixel"></div>
-			
+
 		</div>
 		<the-footer v-if="!smallScreen()" class="absolute m-auto left-0 right-0 min-h-0 bottom-0 text-xs"></the-footer>
 	</div>
 	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
-	
+
 </template>
 
 <style scoped>
@@ -122,6 +122,18 @@ window.removeEventListener('resize', handleResize)
 	animation: refresh 8s linear infinite;
 }
 
+.neon-text {
+  color: #fff;
+  text-shadow:
+      0 0 7px #fff,
+      0 0 10px #fff,
+      0 0 21px #fff,
+      0 0 42px #5271ff,
+      0 0 82px #5271ff,
+      0 0 92px #5271ff,
+      0 0 102px #5271ff,
+      0 0 151px #5271ff;
+}
 </style>
 
 <!-- [text-shadow:_-8px_0_black,_0_8px_black,_8px_0_black,_0_-8px_black] -->
