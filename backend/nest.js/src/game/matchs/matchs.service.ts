@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { MatchStats } from './entity/matchstats.entity';
 import { MatchOwn } from './entity/own-match.entity';
 
@@ -51,5 +52,29 @@ export class MatchStatsService {
 		} catch (err) {
 			this.userService.lambdaDatabaseUnvailable(err);
 		}
+	}
+
+	async findOnlineMatchs() : Promise<MatchStats[]> {
+		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
+			.where('matchhistory.timestamp_ended IS NULL')
+			.andWhere('matchhistory.score IS NOT NULL')
+			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
+		return await sqlStatement.getMany().then((matchsStats: MatchStats[]) => {
+			matchsStats.forEach(async (ms: MatchStats) => {
+				const user1: User = await this.userService.findOne(ms.user1_id);
+				const user2: User = await this.userService.findOne(ms.user2_id);
+
+				ms.user1_avatar = user1.getAvatarURL();
+				ms.user1_username = user1.username;
+
+				ms.user2_avatar = user2.getAvatarURL();
+				ms.user2_username = user2.username;
+			})
+			return matchsStats;
+		});
+	}
+
+	async save(match: MatchStats) {
+		return this.matchsHistoryRepository.save(match)
 	}
 }

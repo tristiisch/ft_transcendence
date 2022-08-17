@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post } from '@nestjs/common';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -17,12 +17,12 @@ export class MatchsStatsController {
 	 * @deprecated Only for test
 	 */
 	@Post('start')
-	async startMatch(@Body() usersSelected: UserSelectDTO[]) {
+	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<MatchStats> {
 		const user: User = await usersSelected[0].resolveUser(this.usersService);
 		const target: User = await usersSelected[1].resolveUser(this.usersService);
 		const match: MatchStats = new MatchStats();
-		match.user_id1 = user.id;
-		match.user_id2 = target.id;
+		match.user1_id = user.id;
+		match.user2_id = target.id;
 		return await this.matchsHistoryService.add(match);
 	}
 
@@ -31,5 +31,18 @@ export class MatchsStatsController {
 		const user: User = await userSelected.resolveUser(this.usersService);
 
 		return await this.matchsHistoryService.findAll(user.id);
+	}
+
+	/**
+	 * @deprecated only for test
+	 */
+	@Patch(':id')
+	async updateMatch(@Body() match: MatchStats) {
+		return this.matchsHistoryService.save(match);
+	}
+
+	@Get('in-progress')
+	async getMatchInProgress() {
+		return await this.matchsHistoryService.findOnlineMatchs();
 	}
 }

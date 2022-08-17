@@ -102,17 +102,27 @@ export class TestFakeService {
 		const matchHistory: MatchStats = new MatchStats();
 
 		if (random(0, 2) === 1) {
-			matchHistory.user_id2 = user.id;
-			matchHistory.user_id1 = randomElement(userIds);
+			matchHistory.user2_id = user.id;
+			matchHistory.user1_id = randomElement(userIds);
 		} else {
-			matchHistory.user_id1 = user.id;
-			matchHistory.user_id2 = randomElement(userIds);
+			matchHistory.user1_id = user.id;
+			matchHistory.user2_id = randomElement(userIds);
 		}
 
-		const scoreWinner: number = this.randomMaxScoreGame;
-		const scoreLoser: number = random(0, this.randomMaxScoreGame);
-		if (random(0, 2) === 1) matchHistory.score = [scoreWinner, scoreLoser];
-		else matchHistory.score = [scoreLoser, scoreWinner];
+		if (random(0, 4) >= 1) {
+			const scoreWinner: number = this.randomMaxScoreGame;
+			const scoreLoser: number = random(0, this.randomMaxScoreGame);
+			if (random(0, 2) === 1)
+				matchHistory.score = [scoreWinner, scoreLoser];
+			else
+				matchHistory.score = [scoreLoser, scoreWinner];
+			matchHistory.timestamp_ended = new Date();
+			matchHistory.timestamp_ended.setMinutes(matchHistory.timestamp_ended.getMinutes() + random(5, 60));
+		} else {
+			const scoreUser1: number = random(0, this.randomMaxScoreGame);;
+			const scoreUser2: number = random(0, this.randomMaxScoreGame);
+			matchHistory.score = [scoreUser1, scoreUser2];
+		}
 		return this.matchHistoryService.add(matchHistory);
 	}
 
@@ -127,7 +137,7 @@ export class TestFakeService {
 		randomUser.username = 'fakePlayer';
 		const randomNb: number = random(1, 4);
 
-		console.log('User', user, 'randomUser', randomUser);
+		// console.log('User', user, 'randomUser', randomUser);
 		await this.friendsService.addFriendRequest(user, randomUser);
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);

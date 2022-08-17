@@ -11,11 +11,17 @@ export class MatchStats extends BaseEntity {
 
 	@Column()
 	@IsInt()
-	user_id1: number;
+	user1_id: number;
+
+	user1_username: string;
+	user1_avatar: string;
 
 	@Column()
 	@IsInt()
-	user_id2: number;
+	user2_id: number;
+
+	user2_username: string;
+	user2_avatar: string;
 
 	@Column("int", { nullable: true, array: true })
 	score: number[];
@@ -23,7 +29,7 @@ export class MatchStats extends BaseEntity {
 	@Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
 	timestamp_started: Date;
 
-	@Column({ type: 'timestamptz', nullable: true })
+	@Column({ type: 'timestamptz', precision: 0, nullable: true })
 	timestamp_ended: Date;
 
 	public getWinner(): number {
@@ -31,9 +37,9 @@ export class MatchStats extends BaseEntity {
 		const score_user2 = this.score[1];
 		
 		if (score_user1 > score_user2)
-			return this.user_id1;
+			return this.user1_id;
 		else if (score_user2 > score_user1)
-			return this.user_id2;
+			return this.user2_id;
 		throw new UnprocessableEntityException('There was no winner, the match ended in a tie.');
 	}
 
@@ -42,17 +48,17 @@ export class MatchStats extends BaseEntity {
 		const score_user2 = this.score[1];
 		
 		if (score_user1 < score_user2)
-			return this.user_id1;
+			return this.user1_id;
 		else if (score_user2 < score_user1)
-			return this.user_id2;
+			return this.user2_id;
 		throw new UnprocessableEntityException('They is no looser, the match finish by an equality.');
 	}
 
 	public getOpponent(userId: number): number {
-		if (userId === this.user_id1)
-			return this.user_id2;
-		else if (userId === this.user_id2)
-			return this.user_id1;
+		if (userId === this.user1_id)
+			return this.user2_id;
+		else if (userId === this.user2_id)
+			return this.user1_id;
 		throw new UnprocessableEntityException(`${userId} didn't play in this match.`);
 	}
 
