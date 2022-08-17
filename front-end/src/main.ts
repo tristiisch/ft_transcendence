@@ -12,6 +12,7 @@ import TheHeader from '@/components/TheHeader.vue';
 import BaseUi from '@/components/BaseUi.vue';
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+import { createClient } from './client';
 
 /*if (process.env.NODE_ENV === 'development') {
 	const { worker } = await import('./mocks/browser');
@@ -39,3 +40,4 @@ app.component('the-header', TheHeader);
 app.component('base-ui', BaseUi);
 
 app.mount('#app');
+createClient('localhost', 3001);

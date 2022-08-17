@@ -2,7 +2,7 @@
 // TEST socket.io server <-> client
 
 import { io, Socket } from "socket.io-client";
-import { Buffer } from "buffer";
+import type { Buffer } from "buffer";
 
 interface ServerToClientEvents {
 	noArg: () => void;
@@ -34,7 +34,7 @@ export async function createClient(serverHost: string, serverPort: number) {
 	socket.on("withAck", (d, callback) => {
 		console.log('[SOCKET.IO]', 'CLIENT', 'withAck', d);
 		// d is inferred as string and callback as a function that takes a number as argument
-		callback.call(null, 64);
+		callback.call(null, 10);
 	});
 
 	socket.on("connect", () => {

@@ -22,17 +22,18 @@ interface SocketData {
 	age: number;
 }
 
-export async function createServer(serverPort: number) {
+export async function createSocketServer(serverPort: number) {
 	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 
-	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>();
+	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>({ cors: { origin: 'http://localhost:8000' } });
 
 	io.on("connection", (socket) => {
+		
 		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', socket.id);
 		socket.emit("noArg");
 		socket.emit("basicEmit", 1, "2", Buffer.from([3]));
 		socket.emit("withAck", "4", (e) => {
-			console.log('[SOCKET.IO]', 'SERVER', 'connection1', 'withAck', e);
+			console.log('[SOCKET.IO]', 'SERVER', socket.id, 'withAck', e);
 			// e is inferred as number
 		});
 
@@ -43,10 +44,9 @@ export async function createServer(serverPort: number) {
 		io.to("room1").emit("basicEmit", 1, "2", Buffer.from([3]));
 
 		socket.on("hello", () => {
-			console.log('[SOCKET.IO]', 'SERVER',  'HELLO');
+			console.log('[SOCKET.IO]', 'SERVER',  "receive 'HELLO'");
 			// ...
 		});
-		console.log('[SOCKET.IO]', 'SERVER', 'connection1');
 	});
 
 	// io.serverSideEmit("ping"); // 'this adapter does not support the serverSideEmit() functionality' => error msg on Windows & Linux setup (WSL Ubuntu)
