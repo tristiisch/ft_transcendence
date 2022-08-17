@@ -3,7 +3,7 @@ import { NotificationType } from '@/types/Notification';
 
 const notifications = new Map<string, Notification[]>([
 	[
-		'jlaronch',
+		'nlaronch',
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',
