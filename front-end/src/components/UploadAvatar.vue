@@ -37,16 +37,21 @@ const changeAvatar = () => {
 
 <template>
 	<div v-if="login" class="shrink-0">
-		<img @click="changeAvatar" class="w-20 h-20 rounded-full object-cover border-2 sm:w-36 sm:h-36" :src="image" alt="Rounded avatar" />
+		<img @click="changeAvatar" class="w-20 h-20 rounded-full object-cover border-2 sm:w-36 sm:h-36 cursor-pointer" :src="image" alt="Rounded avatar" />
 		<input style="display: none" ref="inputEvent" @change="createBase64Image" type="file" name="upload" accept="image/*" />
 	</div>
 	<div v-else>
-		<input
-			class="block w-full text-xs cursor-pointer rounded-md focus:outline-none text-red-200 file:rounded-md file:py-1.5 file:text-xs file:bg-red-600 file:border-0 file:text-red-200"
-			@change="createBase64Image"
-			type="file"
-			name="upload"
-			accept="image/*"
-		/>
+		<div class="flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 bg-neutral-100 text-blue-600 rounded-lg shadow-lg border border-blue-600 cursor-pointer hover:bg-blue-600 hover:text-neutral-100">
+			<svg class="w-4 h-4" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+				<path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z" />
+			</svg>
+			<input
+				style="display: none"
+				@change="createBase64Image"
+				type="file"
+				name="upload"
+				accept="image/*"
+			/>
+		</div>
 	</div>
 </template>
