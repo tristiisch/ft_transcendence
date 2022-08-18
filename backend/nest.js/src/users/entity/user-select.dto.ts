@@ -18,7 +18,7 @@ export class UserSelectDTO {
 	/**
 	 * @throws {NotAcceptableException} UserSelectDTO must have a id or username
 	 */
-	async resolveUser(usersService: UsersService): Promise<User> {
+	async resolveUser?(usersService: UsersService): Promise<User> {
 		if (this.id != null) {
 			// console.log("UserSelectDTO resolve with Id " + this.id);
 			return await usersService.findOne(this.id);

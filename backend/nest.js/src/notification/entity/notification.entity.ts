@@ -26,12 +26,12 @@ export class Notification extends BaseEntity {
 	is_deleted: boolean;
 
 	@Column({ nullable: true, type: 'text', array: true })
-	arguments: string[];
+	arguments?: string[];
 
 	@Column({ type: 'enum', enum: NotificationType, default: NotificationType.UNKNOWN })
-	status: NotificationType;
+	type: NotificationType;
 
 	@Column({ type: 'timestamptz', precision: null, nullable: true, default: () => 'CURRENT_TIMESTAMP' })
-	date: Date;
+	date?: Date;
 
 }

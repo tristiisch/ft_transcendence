@@ -1,6 +1,8 @@
 /** @prettier */
-import { forwardRef, Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Notification, NotificationType } from 'src/notification/entity/notification.entity';
+import { NotificationService } from 'src/notification/notification.service';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -16,6 +18,8 @@ export class FriendsService {
 
 	@Inject(UsersService)
 	private readonly userService: UsersService;
+	@Inject(NotificationService)
+	private readonly notifService: NotificationService;
 
 	public getRepo() {
 		return this.friendsRepository;
@@ -51,6 +55,12 @@ export class FriendsService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + ' rows was modify instead of one.');
 			}
+			const notif: Notification = new Notification();
+			notif.user_id = friendship.user2_id;
+			notif.from_user_id= friendship.user1_id
+			notif.is_deleted = false;
+			notif.type = NotificationType.FRIEND_REQUEST
+			this.notifService.addNotif(notif);
 			return { statusCode: 200, message: `You asked as a friend ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
