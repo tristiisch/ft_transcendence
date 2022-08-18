@@ -28,11 +28,12 @@ export function isEquals(entity1: any, entity2: any) : boolean {
 /**
  * @throws {PreconditionFailedException} If {@link nb} is negative or not a number
  */
-export function isNumberPositive(nb: number, actionMsg: string) {
+export function isNumberPositive(nb: number, actionMsg: string): boolean {
 	if (Number.isNaN(nb))
 		throw new PreconditionFailedException(`Can't ${actionMsg} with a non-numeric variable.`);
 	else if (nb < 0)
 		throw new PreconditionFailedException(`Can't ${actionMsg} with negative number ${nb}.`);
+	return true;
 }
 
 /**
