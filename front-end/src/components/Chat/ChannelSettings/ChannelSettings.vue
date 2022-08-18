@@ -2,13 +2,12 @@
 <script setup lang="ts">
 import type Channel from '@/types/Channel';
 import Status from '@/types/ChannelStatus';
-import ChatTopImage from '@/components/Chat/ChatTopImage.vue'
-import ButtonReturn from '@/components/Chat/ButtonReturn.vue';
+import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import ChannelPasswordName from '@/components/Chat/ChannelSettings/ChannelPasswordName.vue';
 import PlayerDisplayList from '@/components/Chat/PlayerDisplayList.vue';
-import ChannelAdmin from '@/components/Chat/ChannelSettings/ChannelAdmin.vue'
 import { useUserStore } from '@/stores/userStore';
 import { ref, computed } from 'vue';
+
 
 const userStore = useUserStore();
 const displayPasswordPage = ref(false);
@@ -115,7 +114,7 @@ function updateMuteBan()
 		</div>
 		<ChannelPasswordName v-else-if="displayPasswordPage" @close="displayPasswordPage = !displayPasswordPage" @validate="changeNamePassword" :inChannel="inChannel"></ChannelPasswordName>
 		<PlayerDisplayList v-else @close="setDisplayPage" @validate="updateMuteBan" :users="ChannelUsers"></PlayerDisplayList>
-		<button-return v-if="displayButton()" @click="emit('return')" class="self-end"></button-return>
+		<ButtonReturnNext v-if="displayButton()" :side="'previous'" @click="emit('return')" class="self-end"></ButtonReturnNext>
 	</div>
 	
 	<!-- <div class="overflow-y-auto h-full w-full">
