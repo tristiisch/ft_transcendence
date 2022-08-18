@@ -72,34 +72,26 @@ onBeforeMount(() => {
 
 <template>
 	<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
-	<div v-else class="flex flex-col items-center justify-center pb-3 sm:px-3 sm:pt-3 h-full w-full">
+	<div v-else class="flex flex-col items-center justify-center h-full w-full">
 		<p class="text-red-200 text-sm pb-3 sm:pb-5">
-			You have <span class="text-lime-400">{{ size }}</span> notifications
+			You have <span class="text-red-700">{{ size }}</span> notifications
 		</p>
-		<div class="w-full overflow-y-auto">
-			<div v-for="notification in notifications" :key="notification.date" class="flex flex-col w-full text-red-100">
-				<p class="text-xs text-red-200">{{ notification.date }}</p>
-				<div class="flex justify-between items-center w-full p-2.5 mb-3 sm:mb-5 text-red-100 bg-blue-600 rounded">
-					<p class="pl-3 text-xs text-white">
+		<div class="flex flex-col w-full overflow-y-auto gap-3 pr-4">
+			<div v-for="notification in notifications" :key="notification.date" class="">
+				<p class="text-xs text-red-400">{{ notification.date }}</p>
+				<div class="flex justify-between items-center w-full p-4 text-red-200 drop-shadow-md bg-red-500 border border-red-200 rounded">
+					<p class="pl-1 text-xs">
 						Friend request from {{ notification.from }}
 					</p>
 					<div class="flex gap-1">
-						<button @click="acceptInvitation(notification)" class="bg-blue-500 text-green-200 hover:text-white rounded-md focus:ring-2 focus:ring-gray-300 p-1 inline-flex h-4 w-4">
-							<svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-								<path
-									fill-rule="evenodd"
-									d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-									clip-rule="evenodd"
-								></path>
+						<button @click="acceptInvitation(notification)" class="bg-blue-600 border border-red-200 text-red-200 hover:text-white p-1">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
+  								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 							</svg>
 						</button>
-						<button @click="declineInvitation(notification)" class="bg-red-600 text-red-200 hover:text-white rounded-md focus:ring-2 focus:ring-gray-300 p-1 inline-flex h-4 w-4">
-							<svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-								<path
-									fill-rule="evenodd"
-									d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-									clip-rule="evenodd"
-								></path>
+						<button @click="declineInvitation(notification)" class="bg-red-600 border border-red-200 text-red-200 hover:text-white p-1">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
+								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
 							</svg>
 						</button>
 					</div>

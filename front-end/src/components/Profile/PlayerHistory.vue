@@ -53,7 +53,7 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col justify-center items-center gap-4 max-h-full w-full overflow-y-auto">
-        <h1 class="text-red-200 sm:text-xl text-center w-3/4 md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">MATCH HISTORY</h1>
+        <h1 class="text-red-200 sm:text-xl text-center w-3/4 py-2.5 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">MATCH HISTORY</h1>
         <div v-if="matchsHistory.length" class="flex flex-col items-center gap-1 w-full overflow-y-auto">
             <div v-for="match in matchsHistory" :key="match.date" class="flex w-full">
                 <p class="w-2/5 text-right text-xs sm:text-sm" :class="colorText(match, 'player')">{{ createString(match, 'player') }}</p>
