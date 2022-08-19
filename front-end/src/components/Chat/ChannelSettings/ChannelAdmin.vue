@@ -2,9 +2,7 @@
 import type Channel from '@/types/Channel';
 import type User from '@/types/User';
 import PlayerDisplayList from '@/components/Chat/PlayerDisplayList.vue'
-import ButtonReturn from '@/components/Chat/ButtonReturn.vue';
 import { ref, onMounted } from 'vue';
-import UsersService from '@/services/UserService';
 
 const props = defineProps<{
 	inChannel: Channel;

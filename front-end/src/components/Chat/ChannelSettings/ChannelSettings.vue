@@ -2,13 +2,12 @@
 <script setup lang="ts">
 import type Channel from '@/types/Channel';
 import Status from '@/types/ChannelStatus';
-import ChatTopImage from '@/components/Chat/ChatTopImage.vue'
-import ButtonReturn from '@/components/Chat/ButtonReturn.vue';
+import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import ChannelPasswordName from '@/components/Chat/ChannelSettings/ChannelPasswordName.vue';
 import PlayerDisplayList from '@/components/Chat/PlayerDisplayList.vue';
-import ChannelAdmin from '@/components/Chat/ChannelSettings/ChannelAdmin.vue'
 import { useUserStore } from '@/stores/userStore';
 import { ref, computed } from 'vue';
+
 
 const userStore = useUserStore();
 const displayPasswordPage = ref(false);
@@ -97,25 +96,25 @@ function updateMuteBan()
 					<p class="text-red-200 text-xs sm:text-sm">The channel has <span class="text-red-800">{{ administratorStatusText() }}</span> admin, <span span class="text-red-800">{{ muteStatusText() }}</span> mutted member and <span span class="text-red-800">{{ banStatusText() }}</span> banned</p>
 				</div>
 				<div class="grid grid-cols-2 gap-2 items-center w-full lg:w-3/4">
-					<button  @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button  @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Password/Name
 					</button>
-					<button v-if="isAdmin()" @click="displayAdminPage = !displayAdminPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button v-if="isAdmin()" @click="displayAdminPage = !displayAdminPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Administrator
 					</button>
-					<button v-if="isAdmin()" @click="displayMutePage = !displayMutePage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button v-if="isAdmin()" @click="displayMutePage = !displayMutePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Mute
 					</button>
-					<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Ban
 					</button>
-					<button :class="setColSpan()" class="bg-red-600 text-white py-2 px-4 text-xs rounded border border-red-700 sm:text-sm">Leave channel</button>
+					<button :class="setColSpan()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 sm:text-sm">Leave channel</button>
 				</div>
 			</div>
 		</div>
 		<ChannelPasswordName v-else-if="displayPasswordPage" @close="displayPasswordPage = !displayPasswordPage" @validate="changeNamePassword" :inChannel="inChannel"></ChannelPasswordName>
 		<PlayerDisplayList v-else @close="setDisplayPage" @validate="updateMuteBan" :users="ChannelUsers"></PlayerDisplayList>
-		<button-return v-if="displayButton()" @click="emit('return')" class="self-end"></button-return>
+		<ButtonReturnNext v-if="displayButton()" :side="'previous'" @click="emit('return')" class="self-end"></ButtonReturnNext>
 	</div>
 	
 	<!-- <div class="overflow-y-auto h-full w-full">

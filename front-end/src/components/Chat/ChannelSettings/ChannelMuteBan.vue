@@ -2,7 +2,7 @@
 import type Channel from '@/types/Channel';
 import type User from '@/types/User';
 import PlayerDisplayList from '@/components/Chat/PlayerDisplayList.vue'
-import ButtonReturn from '@/components/Chat/ButtonReturn.vue';
+import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -50,7 +50,7 @@ function update() {
                 </button>
             </div>
         </div>
-         <button-return @click="emit('return')" class="self-end"></button-return>
+         <ButtonReturnNext :side="'previous'" @click="emit('return')" class="self-end"></ButtonReturnNext>
     </div>
     <PlayerDisplayList v-else @validate="update()" @close="close" :users="users"></PlayerDisplayList>
 </template>

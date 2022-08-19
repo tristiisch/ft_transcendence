@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">
-			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] pb-3 px-3">
+			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] 3xl:h-[calc(100%_/_5)] pb-3 px-3">
 				<CardLeaderboard :user="user"></CardLeaderboard>
 			</div>
 		</div>

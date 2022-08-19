@@ -240,7 +240,7 @@ onBeforeMount(() => {
 							<div>
 								<p class="text-red-200 pb-4">This channel is <span class="text-red-800">PROTECTED</span></p>
 								<form @submit.prevent="sendMessage()">
-									<input v-model="newMessage" placeholder="Enter password" class="text-sm w-full p-2 bg-red-100 rounded-lg text-white" />
+									<input v-model="newMessage" placeholder="Enter password" class="text-sm w-full p-2 bg-neutral-100 border border-blue-600 rounded-lg text-blue-600 placeholder:text-slate-300 placeholder:text-center">
 								</form>
 							</div>
 						</div>

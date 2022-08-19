@@ -5,11 +5,24 @@ import { ref, onMounted } from 'vue';
 import CardLeft from '@/components/CardLeft.vue';
 import CardRight from '@/components/CardRight.vue';
 import CurrentGame from '@/components/Lobby/CurrentGame.vue';
-import ButtonGradient2 from '@/components/ButtonGradient2.vue';
-import RankCard from '@/components/Profile/RankCard.vue';
+import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
+import GameSettings from '@/components/Lobby/GameSettings.vue';
+import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
+import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
 
 const matchs = ref([] as Match[]);
 const isLoading = ref(false);
+const rightPartToDisplay = ref('gameSettings');
+const invitation = ref(false)
+
+function setRightPartToDisplay()
+{
+	if (rightPartToDisplay.value === 'selectPlayer')
+		rightPartToDisplay.value = 'gameSettings'
+	else
+		rightPartToDisplay.value = 'selectPlayer'
+
+}
 
 async function fetchUsers() {
 	isLoading.value = true;
@@ -25,6 +38,21 @@ async function fetchUsers() {
 		});
 }
 
+function side()
+{
+	if (rightPartToDisplay.value === 'gameSettings')
+		return 'next'
+	else
+		return 'previous'
+}
+
+function invitePlayer()
+{
+	rightPartToDisplay.value = 'selectPlayer'
+	invitation.value = true
+
+}
+
 onMounted(() => {
 	fetchUsers();
 });
@@ -35,31 +63,19 @@ onMounted(() => {
 	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
-				<div class="flex justify-around items-center h-full flex-wrap pb-2 sm:flex-col sm:justify-between sm:flex-nowrap">
-					<h1 class="font-Arlon tracking-tight text-2xl sm:text-3xl pb-10 sm:border-b-[1px] sm:border-slate-700 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CURRENT GAMES</h1>
-					<div class="flex flex-col justify-center items-center w-full sm:h-full">
-						<current-game :matchs="matchs"></current-game>
-					</div>
+				<div class="flex justify-between items-center h-full flex-wrap sm:flex-col sm:flex-nowrap px-8 ">
+					<h1 class="w-full text-center font-Arlon tracking-tight text-lg sm:text-xl pb-2 sm:pb-5 border-b-[1px] border-slate-700 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CURRENT GAMES</h1>
+					<current-game @next="rightPartToDisplay = 'invitePlayer'" :matchs="matchs"></current-game>
 				</div>
 			</card-left>
 			<card-right title="CUSTOM GAME">
-				<div class=" flex flex-col justify-evenly items-center gap-4 w-11/12">
-					<div class="flex flex-col justify-center gap-2 w-3/4 pt-3 sm:pt-0">
-						<p class="text-xs md:text-sm xl:text-base">BALL SPEED</p>
-						<input id="small-range" type="range" value="50" class="mb-3 sm:mb-5 w-full h-[3px] sm:h-1 rounded-lg appearance-none cursor-pointer range-SM bg-gray-700">
-						<p class="text-xs md:text-sm xl:text-base">RACKET SIZE</p>
-						<input id="small-range" type="range" value="50" class="mb-3 sm:mb-5 w-full h-[3px] sm:h-1 rounded-lg appearance-none cursor-pointer range-sm bg-gray-700">
+				<div class="flex flex-col justify-between items-center w-11/12 h-full px-8">
+					<div class="flex flex-col justify-center items-center w-full h-full">
+						<game-settings v-if="rightPartToDisplay === 'gameSettings'" @next="rightPartToDisplay = 'selectPlayer'"></game-settings>
+						<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
+						<add-search-player v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></add-search-player>
 					</div>
-					<div class="flex flex-col justify-around items-center w-full h-1/2">
-						<h1 class="text-center text-red-200 text-sm sm:text-base w-3/4 sm:mx-6 h-[50px] md:text-xl py-3 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">CHOOSE WORLD</h1>
-						<div class="flex justify-center w-full md:gap-4">
-							<div class="w-28 h-24 sm:w-32 sm:h-28 md:w-36 md:h-32  bg-sky-200"></div>
-							<div class="w-28 h-24 sm:w-32 sm:h-28 md:w-36 md:h-32  bg-black"></div>
-						</div>
-					</div>
-					<button-gradient2 class="flex justify-center mb-4 sm:mb-0 sm:mt-4 sm:w-3/4">
-						<span class="text-sm sm:text-base md:text-lg xl:text-xl">LAUNCH</span>
-					</button-gradient2>
+					<button-return-next v-if="rightPartToDisplay != 'invitePlayer'" @click="setRightPartToDisplay()" :side="side()" class="self-end mt-2"></button-return-next>
 				</div>
 			</card-right>
 		</div>
