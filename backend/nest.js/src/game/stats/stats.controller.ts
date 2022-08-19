@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guard';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -42,8 +43,12 @@ export class StatsController {
 		return this.statsService.update(stats);
 	}
 
-    @Get(':id')
-	getStats(@Param('id') id: number) {
-		return this.statsService.findOne(id);
+	// @UseGuards(JwtAuthGuard)
+    @Post()
+	async getStats(@Req() req, @Body() userSelected: UserSelectDTO) {
+		// const user: User = req.user;
+		const target: User = await userSelected.resolveUser(this.usersService);
+
+		return this.statsService.findOne(target);
 	}
 }
