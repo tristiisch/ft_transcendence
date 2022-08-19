@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
@@ -28,23 +28,26 @@ export class AuthController {
 			const result = await axios.post(url, postData);
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-			console.log(result.data.access_token);
+			console.log('Token 42', result.data.access_token);
 			//checker avec login si user existe
 			//Si (il existe, ne pas créer et verifier si 2fa ON ou OFF)\
 			//Si (2fa ON)
 			//	dire au front que que le 2fa est ON
 			//	(Créer token special 2fa)
 			const user = await this.authService.UserConnecting(userInfo);
-			if (user)
+			if (user) {
+				const tokenJwt: string = await this.authService.createToken(user.id);
+				console.log('Token JWT', tokenJwt);
 			res.json({
 					auth: {
 						user_id: user.id, // voir si on le garde ou pas
-						token: await this.authService.createToken(user.id),
+						token: tokenJwt,
 						has_2fa: false},
 					user: user
 				});
+			}
 		}catch(err42){
-			throw( new ForbiddenException("Unauthorized"))
+			throw( new UnauthorizedException("Unauthorized"))
 		}
 	}
 

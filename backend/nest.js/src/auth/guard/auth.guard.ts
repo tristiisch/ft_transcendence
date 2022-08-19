@@ -9,7 +9,7 @@ export class FtAuthGuard extends AuthGuard('ft'){
 }
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('ft'){
+export class JwtAuthGuard extends AuthGuard('jwt'){
 	constructor() {
 		super();
 	}

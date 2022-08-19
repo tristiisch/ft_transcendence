@@ -15,7 +15,7 @@ export class AuthService {
 		private authRepository: Repository<UserAuth>){
 	}
 
-	async UserConnecting(userInfo42: any){
+	async UserConnecting(userInfo42: any): Promise<User> {
 		let user: User;
 		let userAuth: UserAuth;
 		try {
@@ -47,15 +47,15 @@ export class AuthService {
 	public async createToken(id: number): Promise<string> {
 		const payload = {
 			id: id,
-			secret: process.env.JWT_PASS,
+			// secret: process.env.JWT_SECRET,
 		};
-		return this.jwtService.signAsync(payload);
+		return this.jwtService.signAsync(payload, { secret: process.env.JWT_SECRET });
 	}
 
 	public async create2FaToken(id: number): Promise<string> {
 		const payload = {
 			id: id,
-			secret: process.env.JWT_PASS,
+			secret: process.env.JWT_SECRET,
 			expires_in: "2min"
 		};
 		return this.jwtService.signAsync(payload);

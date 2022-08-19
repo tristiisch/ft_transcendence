@@ -12,7 +12,7 @@ dotenv.config();
 
 @Module({
 
-	imports: [JwtModule, JwtModule.register({secret: process.env.FT_SECRET,}), UsersModule, TypeOrmModule.forFeature([UserAuth])],
+	imports: [JwtModule, JwtModule.register({ secret: process.env.JWT_SECRET }), UsersModule, TypeOrmModule.forFeature([UserAuth])],
 	providers: [AuthService, FtStrategy],
 	controllers: [AuthController],
 })

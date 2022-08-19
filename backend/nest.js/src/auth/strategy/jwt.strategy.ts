@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, ExtractJwt} from "passport-jwt";
@@ -10,13 +10,19 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt"){
 		super({
 		  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 		  ignoreExpiration: false,
-		  secretOrKey: process.env.FT_PASS
+		  secretOrKey: process.env.JWT_SECRET
 		});
 	}
 
-	async validate(userId: number) {
-		const user = await this.usersService.findOne(userId);
-		return user;
+	async validate(jwtData: any) {
+		try {
+			return await this.usersService.findOne(jwtData.id);
+		} catch (err) {
+			if (err instanceof NotFoundException)
+				return null;
+			console.log("ERROR with validate jwt strategy of '", jwtData, "'", err);
+			return null;
+		}
 	}
 
 }
