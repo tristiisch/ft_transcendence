@@ -57,7 +57,7 @@ export const useUserStore = defineStore('userStore', {
 					this.userData.username = username;
 				if (image)
 					this.userData.avatar = image;
-				await AuthService.registerUser(this.userAuth.token, this.userData.username, this.userData.avatar);
+				await AuthService.registerUser(this.userData.username, this.userData.avatar);
 				localStorage.setItem('userData', JSON.stringify(this.userData));
 				this.userAuth.isRegistered = true;	
 				localStorage.setItem('userAuth', JSON.stringify(this.userAuth));

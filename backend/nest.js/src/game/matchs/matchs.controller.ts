@@ -27,7 +27,7 @@ export class MatchsStatsController {
 		return await this.matchsHistoryService.add(match);
 	}
 
-	// @UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard)
 	@Post('history')
 	async getUserHistory(@Req() req, @Body() userSelected: UserSelectDTO) {
 		// const user: User = req.user;
