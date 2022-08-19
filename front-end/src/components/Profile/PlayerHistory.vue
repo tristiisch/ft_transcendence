@@ -37,7 +37,7 @@ function colorText(value:MatchHistory, side:string) {
 
 
 async function fetchMatchsHistory() {
-	return await UsersService.getMatchsHistory(route.params.username as string)
+	return await UsersService.getMatchsHistory(userStore.userAuth.token, route.params.username as string)
         .then((response) => {
 			matchsHistory.value = response.data;
 		})

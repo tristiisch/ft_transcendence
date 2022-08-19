@@ -16,7 +16,9 @@ export class UserAuth extends BaseEntity {
 	token: string;
 
     @Column({ nullable: true })
-	twofa: string;
+	twofa?: string;
 
-	has_2fa: boolean;
+	has_2fa?: boolean;
+	isRegistered?: boolean;
+	isAuthenticated?: boolean;
 }

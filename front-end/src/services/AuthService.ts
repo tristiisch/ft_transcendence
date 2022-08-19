@@ -20,8 +20,8 @@ class AuthService {
 		});
 	}
 
-	registerUser(id: number, username: string, avatar: string) {
-		return axios.patch(`users/register/${id}`, { username, avatar });
+	registerUser(jwtToken: string, username: string, avatar: string) {
+		return axios.patch(`users/register`, { username, avatar }, { headers: { Authorization: `Bearer ${jwtToken}` } });
 	}
 
 	enable2FA() {

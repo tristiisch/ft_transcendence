@@ -38,8 +38,12 @@ class UserService {
 		return axios.post(`friends/remove/${id}`, { username: targetUsername });
 	}
 
-	getMatchsHistory(username: string) {
-		return axios.post(`matchs/history`, { username: username });
+	getMatchsHistory(jwtToken: string, username: string) {
+		return axios.post(`matchs/history`, { username: username }, { headers: { Authorization: `Bearer ${jwtToken}` } });
+	}
+
+	getUserStats(jwtToken: string, username: string) {
+		return axios.post(`stats`, { username: username }, { headers: { Authorization: `Bearer ${jwtToken}` } });
 	}
 }
 
