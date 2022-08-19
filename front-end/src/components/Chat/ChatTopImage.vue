@@ -14,20 +14,21 @@ const emit = defineEmits<{
 </script>
 
 <template>
-	<base-button v-if="inChatWith" link :to="{ name: 'Profile', params: { username: inChatWith.username }}" class="flex justify-center items-center gap-4 -mt-3 sm:-mt-5 pb-2 sm:pb-5 w-full border-b-[1px] border-red-400">
-		<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=inChatWith.avatar>
-		<label class="text-red-100">{{ inChatWith.username }}</label>
-	</base-button>
-	<div v-else-if="inChannel" class="flex flex-col items-center">
-		<div class="flex justify-between items-center -mt-5 gap-5 w-full">
-			<button @click="emit('clickOnChannelSettings')" class="pb-2 shrink-0">
-				<img class="h-8 w-8 sm:h-12 sm:w-12 rounded border-[1px] border-red-400" src='@/assets/ChannelDefault.png'>
-			</button>
-			<div class="flex -space-x-3 sm:-space-x-5 pb-2 overflow-x-auto">
-				<base-button  v-for="user in inChannel.users" link :to="{ name: 'Profile', params: { username: user.username }}" class="flex shrink-0">
-					<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=user.avatar>
-				</base-button>
-			</div>
+	<div v-if="inChatWith" class="flex flex-col items-center -mt-3 sm:-mt-5">
+		<base-button  link :to="{ name: 'Profile', params: { username: inChatWith.username }}" class="pb-2">
+			<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border border-red-400" :src=inChatWith.avatar>
+		</base-button>
+		<div class="flex items-center w-full">
+			<span class="border-b-[1px] border-red-400 w-full"></span>
+			<h1 class="shrink-0 text-red-200 px-3 max-w-[80%] truncate">{{ inChatWith.username }}</h1>
+			<span class="border-b-[1px] border-red-400 w-full"></span>
+		</div>
+	</div>
+	<div v-else-if="inChannel" class="flex flex-col items-center -mt-5">
+		<div class="flex justify-center -space-x-3 sm:-space-x-5 pb-2 overflow-x-auto">
+			<base-button  v-for="user in inChannel.users" link :to="{ name: 'Profile', params: { username: user.username }}" class="flex shrink-0">
+				<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border-[1px] border-red-400" :src=user.avatar>
+			</base-button>
 		</div>
 		<div class="flex items-center w-full">
 			<span class="border-b-[1px] border-red-400 w-full"></span>

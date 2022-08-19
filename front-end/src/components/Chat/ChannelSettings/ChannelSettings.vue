@@ -96,19 +96,19 @@ function updateMuteBan()
 					<p class="text-red-200 text-xs sm:text-sm">The channel has <span class="text-red-800">{{ administratorStatusText() }}</span> admin, <span span class="text-red-800">{{ muteStatusText() }}</span> mutted member and <span span class="text-red-800">{{ banStatusText() }}</span> banned</p>
 				</div>
 				<div class="grid grid-cols-2 gap-2 items-center w-full lg:w-3/4">
-					<button  @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button  @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Password/Name
 					</button>
-					<button v-if="isAdmin()" @click="displayAdminPage = !displayAdminPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button v-if="isAdmin()" @click="displayAdminPage = !displayAdminPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Administrator
 					</button>
-					<button v-if="isAdmin()" @click="displayMutePage = !displayMutePage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button v-if="isAdmin()" @click="displayMutePage = !displayMutePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Mute
 					</button>
-					<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs font-medium text-gray-800 bg-red-100 rounded border border-red-200 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Ban
 					</button>
-					<button :class="setColSpan()" class="bg-red-600 text-white py-2 px-4 text-xs rounded border border-red-700 sm:text-sm">Leave channel</button>
+					<button :class="setColSpan()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 sm:text-sm">Leave channel</button>
 				</div>
 			</div>
 		</div>

@@ -10,31 +10,10 @@ const route = useRoute();
 const userStore = useUserStore();
 const matchsHistory = ref([] as MatchHistory[]);
 
-function createString(value: MatchHistory, side:string)
-{
-    if (side === 'player')
-        return  route.params.username + ' - ' + value.score[0]
-    else
-        return  value.score[1] + ' -  ' + value.opponent
+function colorTextScore(value:MatchHistory, opponent:boolean) {
+    if ((value.result === 'won' && !opponent) || (value.result === 'lost' && opponent)) { return 'text-lime-400' }
+    else { return 'text-red-700' }
 }
-
-function colorText(value:MatchHistory, side:string) {
-    if (value.result === 'won')
-    {
-        if (side === 'player')
-            return 'text-lime-400'
-        else
-            return 'text-red-700'
-    }
-    else
-    {
-        if (side === 'player')
-            return 'text-red-700'
-        else
-            return 'text-lime-400'
-    }
-}
-
 
 async function fetchMatchsHistory() {
 	return await UsersService.getMatchsHistory(route.params.username as string)
@@ -52,13 +31,13 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="flex flex-col justify-center items-center gap-4 max-h-full w-full overflow-y-auto">
-        <h1 class="text-red-200 sm:text-xl text-center w-3/4 py-2.5 border-b-[1px] border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">MATCH HISTORY</h1>
-        <div v-if="matchsHistory.length" class="flex flex-col items-center gap-1 w-full overflow-y-auto">
+    <div class="flex flex-col justify-center items-center gap-4 sm:gap-7 min-h-[200px] max-h-full w-full overflow-y-auto">
+       <h1 class="flex justify-center items-center w-3/4 h-[40px] sm:h-[50px] text-sm sm:text-base text-red-200 border-b border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500 shrink-0">MATCH HISTORY</h1>
+        <div v-if="matchsHistory.length" class="flex flex-col items-center gap-1 sm:gap-1.5 w-full overflow-y-auto">
             <div v-for="match in matchsHistory" :key="match.date" class="flex w-full">
-                <p class="w-2/5 text-right text-xs sm:text-sm" :class="colorText(match, 'player')">{{ createString(match, 'player') }}</p>
-                <p class="w-1/5 text-center"> ⚔️ </p>
-                <p class="w-2/5 text-left text-xs sm:text-sm" :class="colorText(match, 'opponent')">{{ createString(match, 'opponent') }}</p>
+                <p class="w-2/5 text-right text-sm sm:text-lg" :class="colorTextScore(match, false)"><span class="text-xs sm:text-sm text-red-300">{{ route.params.username }}</span><span class="text-red-300"> - </span>{{ match.score[0] }}</p>
+                <p class="w-1/5 text-center grayscale"> ⚔️ </p>
+                <p class="w-2/5 text-left text-xs sm:text-sm text-red-300"><span class="text-sm sm:text-lg" :class="colorTextScore(match, true)">{{ match.score[1] }}</span><span class="text-red-300"> - </span>{{ match.opponent }}</p>
             </div>
         </div>
         <p v-else class="flex items-center text-base sm:text-xl h-full text-red-300"> NO DATA</p>

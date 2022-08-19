@@ -84,8 +84,8 @@ onBeforeMount(() => {
 	<div class="flex flex-col items-center h-full w-full px-6 sm:px-8">
 		<div class="inline-flex shadow-sm w-full">
 			<button @click="mode = '2FA'" class="btn-base rounded-l-md border" :class="mode === '2FA' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">2FA</button>
-			<button @click="mode = 'Edit'" class="btn-base border-t border-b" :class="mode === 'Edit' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">EDIT</button>
-			<button @click="mode = 'Remove'" class="btn-base rounded-r-md border" :class="mode === 'Remove' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">ACCOUNT</button>
+			<button @click="mode = 'Edit'" class="btn-base border-t border-b" :class="mode === 'Edit' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">Edit</button>
+			<button @click="mode = 'Remove'" class="btn-base rounded-r-md border" :class="mode === 'Remove' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">Account</button>
 		</div>
 		<div v-if="mode === '2FA'" class="flex flex-col justify-center items-center gap-8 h-full w-full">
 			<div class="flex justify-center w-full">
@@ -100,11 +100,11 @@ onBeforeMount(() => {
 			<p class="text-center text-red-200 text-xs sm:text-sm">When 2FA is enable scan the QRCode in Google's Authenticator app.</p>
 		</div>
 		<form v-else-if="mode === 'Edit'" class="flex flex-col items-center justify-between h-full w-full" @submit.prevent>
-			<div class="flex flex-col justify-center items-center h-full w-full px-10 gap-4 sm:gap-8">
+			<div class="flex flex-col justify-center items-center h-full w-full gap-4 sm:gap-8">
 				<div class="flex flex-col justify-center items-center w-full">
 					<label class="block mb-2 text-sm text-center text-red-200">Change username</label>
 					<input
-						class="placeholder-red-200 bg-neutral-100 border border-blue-600 w-32 rounded-lg text-center text-xs py-1 sm:py-1.5 text-blue-600"
+						class="placeholder-slate-300 bg-neutral-100 border border-blue-600 rounded-lg text-center w-[184px] text-xs py-1 sm:py-1.5 text-blue-600"
 						type="text"
 						v-model.trim="newUsername"
 						placeholder="Username"
@@ -112,14 +112,14 @@ onBeforeMount(() => {
 				</div>
 				<div class="flex flex-col justify-center w-full">
 					<label class="block mb-2 text-sm text-center text-red-200">Change avatar</label>
-					<div class="flex justify-center gap-2">
-						<img class="shrink-0 w-10 h-10 sm:w-14 sm:h-14 rounded object-cover border-[1px] border-neutral-100" :src="image" alt="Rounded avatar" />
+					<div class="flex justify-center gap-6">
+						<img class="shrink-0 w-10 h-10 sm:w-20 sm:h-20 rounded object-cover border border-neutral-100" :src="image" alt="Rounded avatar" />
 						<upload-avatar @image-loaded="uploadImage"></upload-avatar>
 					</div>
 				</div>
-				<div class="flex gap-2">
-					<base-button @click="submitProfileForm" class="text-sm w-14 py-2 mt-6 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Save</base-button>
-					<base-button @click="cancelProfileForm" class="text-sm w-14 py-2 mt-6 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Cancel</base-button>
+				<div class="flex gap-6">
+					<base-button @click="submitProfileForm" class="text-sm w-20 py-2 mt-6 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Save</base-button>
+					<base-button @click="cancelProfileForm" class="text-sm w-20 py-2 mt-6 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Cancel</base-button>
 				</div>
 			</div>
 		</form>
@@ -132,6 +132,6 @@ onBeforeMount(() => {
 
 <style scoped>
 .btn-base {
-	@apply w-1/3 py-1.5 sm:py-2.5 text-xs border-blue-600 hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white;
+	@apply w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 hover:bg-blue-600 hover:text-neutral-100 focus:bg-blue-600 focus:text-neutral-100;
 }
 </style>

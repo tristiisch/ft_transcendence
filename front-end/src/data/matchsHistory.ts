@@ -2,7 +2,7 @@ import type matchHistory from '@/types/MatchHistory';
 
 const matchsHistory = new Map<string, matchHistory[]>([
 	[
-		'nlaronch',
+		'jlaronch',
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',
@@ -20,7 +20,7 @@ const matchsHistory = new Map<string, matchHistory[]>([
 		],
 	],
 	[
-		'jlaronch',
+		'nlaronch',
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',
@@ -68,6 +68,18 @@ const matchsHistory = new Map<string, matchHistory[]>([
 				result: 'won',
 			},
 
+			{
+				date: 'Sep 1, 2018 12:33:23',
+				opponent: 'Frodon',
+				score: [2, 1],
+				result: 'won',
+			},
+			{
+				date: 'Sep 1, 2018 12:33:23',
+				opponent: 'Frodon',
+				score: [2, 1],
+				result: 'won',
+			},
 			{
 				date: 'Sep 1, 2018 12:33:23',
 				opponent: 'Frodon',

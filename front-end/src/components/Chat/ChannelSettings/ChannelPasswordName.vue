@@ -34,11 +34,11 @@ function labelText(channel: Channel | null) {
         <div class="flex flex-col justify-center items-center gap-6 h-full">
             <div class="w-full sm:w-3/4">
                 <label class="block mb-2 text-sm font-medium text-red-200">Change channel name:</label>
-                <input type="text" v-model.trim="newChatName" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2">
+                <input type="text" v-model.trim="newChatName" class="bg-neutral-100 text-blue-600 text-center border border-blue-600 placeholder:text-slate-300 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2">
             </div>
             <div class="w-full sm:w-3/4">
                 <label class="block mb-2 text-sm font-medium text-red-200">{{ labelText(inChannel) }}</label>
-                <input type="text" v-model.trim="newPassword" class="bg-red-100 border border-red-500 placeholder:text-gray-400 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
+                <input type="text" v-model.trim="newPassword" class="bg-neutral-100 border border-blue-600 placeholder:text-slate-300 placeholder:text-center text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
             </div>
             <div v-if="inChannel?.type === status.PROTECTED" class="w-full sm:w-3/4">
                  <label class="block mb-2 text-sm font-medium text-red-200">Remove password:</label>

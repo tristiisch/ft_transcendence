@@ -19,10 +19,10 @@ const emit = defineEmits<{
 
 <template>
     <div class="overflow-y-auto h-full w-full">
-		<div v-for="(user, index) in users" :key="user.id" class="flex justify-between items-center h-[calc(100%_/_4)] sm:h-[calc(100%_/_5)] border-b-[1px] w-full border-red-400">
+		<div v-for="(user, index) in users" :key="user.id" class="flex justify-between items-center h-[calc(100%_/_4)] sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)] border-b w-full border-red-400">
 			<div class="inline-flex items-center py-4">
-				<img class="shrink-0 w-12 h-12 rounded-full object-cover border-t-[1px] border-zinc-300" :src="user.avatar" alt="Rounded avatar">
-				<p class="px-4 text-sm">{{ user.username }}</p>
+				<img class="shrink-0 w-12 h-12 rounded-full object-cover border border-red-400" :src="user.avatar" alt="Rounded avatar">
+				<p class="px-4 text-sm text-red-200">{{ user.username }}</p>
 			</div>
 			<button v-if="!showCheckMark[index]" @click="showCheckMark[index] = true">
 				<svg class="h-10 w-10 mr-6">
