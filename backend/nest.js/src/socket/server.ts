@@ -25,7 +25,11 @@ interface SocketData {
 export async function createSocketServer(serverPort: number) {
 	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 
-	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>({ cors: { origin: 'http://localhost:8000' } });
+	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
+		{ 
+			cors: { origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}` }
+		}
+	);
 
 	io.on("connection", (socket) => {
 		

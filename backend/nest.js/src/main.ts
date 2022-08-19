@@ -12,8 +12,7 @@ dotenv.config();
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const port = process.env.PORT;
-
-	app.enableCors({ origin: 'http://localhost:8000' });
+	app.enableCors({ origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}` });
 	// setting localhost:3000 to localhost:3000/api
 	app.setGlobalPrefix('api');
 

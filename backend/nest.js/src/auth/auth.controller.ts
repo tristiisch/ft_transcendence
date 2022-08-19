@@ -22,7 +22,7 @@ export class AuthController {
 				client_id: process.env.FT_UID,
 				client_secret: process.env.FT_SECRET,
 				code: req.body.code,
-				redirect_uri: process.env.FRONT_URL
+				redirect_uri: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}/${process.env.FRONT_REDIRECT}`
 			};
 			const url = process.env.FT_API;
 			const result = await axios.post(url, postData);
