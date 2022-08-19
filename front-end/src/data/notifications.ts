@@ -1,9 +1,9 @@
 import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
 
-const notifications = new Map<string, Notification[]>([
+const notifications = new Map<number, Notification[]>([
 	[
-		'nlaronch',
+		1,
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',
@@ -58,7 +58,7 @@ const notifications = new Map<string, Notification[]>([
 		],
 	],
 	[
-		'jlaronch',
+		6,
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',

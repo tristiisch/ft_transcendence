@@ -8,16 +8,19 @@ import CurrentGame from '@/components/Lobby/CurrentGame.vue';
 import ButtonGradient2 from '@/components/ButtonGradient2.vue';
 import RankCard from '@/components/Profile/RankCard.vue';
 
-
 const matchs = ref([] as Match[]);
+const isLoading = ref(false);
 
 async function fetchUsers() {
+	isLoading.value = true;
 	return await UsersService.getCurrentMatchs()
 		.then((response) => {
 			matchs.value = response.data;
+			isLoading.value = false;
 			console.log(matchs.value);
 		})
 		.catch((e: Error) => {
+			isLoading.value = false;
 			console.log(e);
 		});
 }
@@ -29,7 +32,7 @@ onMounted(() => {
 
 
 <template>
-	<base-ui>
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full flex-wrap pb-2 sm:flex-col sm:justify-between sm:flex-nowrap">

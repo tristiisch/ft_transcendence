@@ -63,14 +63,8 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<base-ui>
-		<div v-if="isLoading" class="flex flex-col h-full w-full sm:flex-row">
-			<card-left></card-left>
-			<card-right>
-				<div class="flex items-center justify-center font-Arlon text-white text-6xl w-full">Loading</div>
-			</card-right>
-		</div>
-		<div v-else class="flex flex-col h-full w-full sm:flex-row">
+	<base-ui :isLoading="isLoading">
+		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
 					<player-profile :user="user"></player-profile>

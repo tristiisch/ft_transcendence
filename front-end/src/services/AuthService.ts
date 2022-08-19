@@ -1,10 +1,10 @@
 import axios from '@/plugin/axiosInstance';
 
 class AuthService {
-	login(code: string, state: string) {
-		return axios.post('auth/login', { code, state }).then((response) => {
-			if (response.data.accessToken) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
+	login(code: string) {
+		return axios.post('auth/login', { code }).then((response) => {
+			if (response.data.auth.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
 			}
 			return response.data;
 		});
@@ -12,8 +12,8 @@ class AuthService {
 
 	login2FA(otpToken: string) {
 		return axios.post('auth/2fa/login', { otpToken }).then((response) => {
-			if (response.data.accessToken) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
+			if (response.data.auth.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
 			}
 			return response.data;
 		});

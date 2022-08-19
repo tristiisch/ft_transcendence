@@ -1,25 +1,27 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type User from '@/types/User';
 import { ref, computed, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import Toogle from '@/components/Leaderboard/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 import socket from '@/plugin/socketInstance';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
-const users = ref([] as User[]);
-const friends = ref([] as User[]);
-const type = ref<string>('All');
-const isLoading = ref(false);
+const toast = useToast();
+const users = ref<User[] | null>(null);
+const friends = ref<User[] | null>(null);
+const error = ref('')
+const type = ref('All');
 
 function rankOrder() {
 	if (type.value === 'All') {
-		users.value.sort((a, b) => {
+		users.value?.sort((a, b) => {
 			return a.rank - b.rank;
 		});
 	} else {
-		friends.value.sort((a, b) => {
+		friends.value?.sort((a, b) => {
 			return a.rank - b.rank;
 		});
 	}
@@ -27,7 +29,7 @@ function rankOrder() {
 
 function nameOrder() {
 	if (type.value === 'All') {
-		users.value.sort((a, b) => {
+		users.value?.sort((a, b) => {
 			let fa = a.username;
 			let fb = b.username;
 			if (fa < fb) return -1;
@@ -35,7 +37,7 @@ function nameOrder() {
 			return 0;
 		});
 	} else {
-		friends.value.sort((a, b) => {
+		friends.value?.sort((a, b) => {
 			let fa = a.username;
 			let fb = b.username;
 			if (fa < fb) return -1;
@@ -47,44 +49,36 @@ function nameOrder() {
 
 function statusOrder() {
 	if (type.value === 'All') {
-		users.value.sort((a, b) => {
-			return b.current_status - a.current_status;
+		users.value?.sort((a, b) => {
+			return b.status - a.status;
 		});
 	} else {
-		friends.value.sort((a, b) => {
-			return b.current_status - a.current_status;
+		friends.value?.sort((a, b) => {
+			return b.status - a.status;
 		});
 	}
 }
 
 function fetchUsers() {
-	isLoading.value = true
-	UsersService.getUsers()
+	UserService.getUsers()
 		.then((response) => {
 			users.value = response.data;
-			isLoading.value = false
 		})
-		.catch((e: Error) => {
-			isLoading.value = false
-			console.log(e);
+		.catch((e) => {
+			error.value = e.response.data.message
+			toast.error(error.value);
 		});
 	rankOrder();
 }
 
 function fetchfriends() {
-	isLoading.value = true
-	UsersService.getUserfriends(userStore.userData.username)
+	UserService.getUserfriends(userStore.userData.id)
 		.then((response) => {
-			for (let i = 0; i < response.data.length; i++) {
-				users.value.find((user) => {
-					if (user.username === response.data[i]) friends.value.push(user);
-				});
-			}
-			isLoading.value = false
+				friends.value = response.data
 		})
-		.catch((e: Error) => {
-			isLoading.value = false
-			console.log(e);
+		.catch((e) => {
+			error.value = e.response.data.message
+			toast.error(error.value);
 		});
 }
 
@@ -96,7 +90,7 @@ function switchDysplayUsers() {
 	}
 }
 
-const displayUser = computed<User[]>(() => {
+const displayUser = computed(() => {
 	if (type.value === 'All') return users.value;
 	else return friends.value;
 });
@@ -104,6 +98,13 @@ const displayUser = computed<User[]>(() => {
 function changeUserStatus(data: string) {
 	console.log(data);
 }
+
+const isLoading = computed(() => {
+	console.log(friends.value)
+	if (friends.value && users.value || error.value !== '')
+		return false;
+	return true;
+});
 
 onBeforeMount(() => {
 	fetchUsers();
@@ -121,7 +122,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<base-ui>
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col justify-between bg-slate-900 w-full h-1/4">
 			<div class="flex flex-col w-full pt-3 px-3 sm:pt-5 sm:px-5 sm:flex-row h-full justify-between">
 				<div class="flex items-center">
@@ -151,8 +152,7 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">
-			<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
-			<div v-else v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] pb-3 px-3">
+			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] pb-3 px-3">
 				<CardLeaderboard :user="user"></CardLeaderboard>
 			</div>
 		</div>

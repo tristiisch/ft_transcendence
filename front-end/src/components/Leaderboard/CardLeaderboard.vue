@@ -3,7 +3,6 @@
     import Status from '@/types/Status';
     import PlayerStatus from '@/components/PlayerStatus.vue'
     import { computed, ref, onMounted, onUnmounted} from 'vue';
-    import { Console } from 'console';
 
     const sizeAvatar = ref<HTMLInputElement | null>(null)
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
@@ -12,11 +11,11 @@
 }>()
 
 const userStatus = computed(() => {
-    if (props.user.current_status === Status.INGAME)
+    if (props.user.status === Status.INGAME)
         return 'Ingame'
-    else if (props.user.current_status === Status.OFFLINE)
+    else if (props.user.status === Status.OFFLINE)
         return 'Offline'
-    else (props.user.current_status === Status.ONLINE)
+    else (props.user.status === Status.ONLINE)
         return 'Online'
 })
 
