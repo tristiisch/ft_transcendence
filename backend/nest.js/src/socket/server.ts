@@ -22,14 +22,22 @@ interface SocketData {
 	age: number;
 }
 
-async function createServer() {
+export async function createSocketServer(serverPort: number) {
+	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 
-	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>();
+	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
+		{ 
+			cors: { origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}` }
+		}
+	);
 
 	io.on("connection", (socket) => {
+		
+		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', socket.id);
 		socket.emit("noArg");
 		socket.emit("basicEmit", 1, "2", Buffer.from([3]));
 		socket.emit("withAck", "4", (e) => {
+			console.log('[SOCKET.IO]', 'SERVER', socket.id, 'withAck', e);
 			// e is inferred as number
 		});
 
@@ -38,25 +46,20 @@ async function createServer() {
 
 		// works when broadcasting to a room
 		io.to("room1").emit("basicEmit", 1, "2", Buffer.from([3]));
-	});
 
-	io.on("connection", (socket) => {
 		socket.on("hello", () => {
+			console.log('[SOCKET.IO]', 'SERVER',  "receive 'HELLO'");
 			// ...
 		});
 	});
 
-	io.serverSideEmit("ping");
+	// io.serverSideEmit("ping"); // 'this adapter does not support the serverSideEmit() functionality' => error msg on Windows & Linux setup (WSL Ubuntu)
 
 	io.on("ping", () => {
+		console.log('[SOCKET.IO]', 'SERVER', 'ping');
 		// ...
 	});
 
-	io.on("connection", (socket) => {
-		socket.data.name = "john";
-		socket.data.age = 42;
-	});
-
-
-	io.listen(3000);
+	io.listen(serverPort);
+	console.log('[SOCKET.IO]', 'SERVER', "Server socket.io is started !")
 }

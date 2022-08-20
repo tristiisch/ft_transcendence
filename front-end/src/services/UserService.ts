@@ -19,7 +19,7 @@ class UserService {
 	}
 
 	getCurrentMatchs() {
-		return axios.get('matchs');
+		return axios.get('matchs/current');
 	}
 
 	sendFriendRequest(id: number, targetUsername: string) {
@@ -39,7 +39,7 @@ class UserService {
 	}
 
 	getMatchsHistory(username: string) {
-		return axios.post(`matchs-history`, { username: username });
+		return axios.post(`matchs/history`, { username: username });
 	}
 }
 

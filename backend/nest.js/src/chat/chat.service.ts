@@ -1,3 +1,4 @@
+/** @prettier */
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

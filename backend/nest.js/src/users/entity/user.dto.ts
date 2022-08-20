@@ -1,9 +1,9 @@
-import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString } from "class-validator";
-import { UserStatus } from "./user.entity";
+/** @prettier */
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator';
+import { UserStatus } from './user.entity';
 
 // DTO = Data transfer object
 export class UserDTO {
-
 	@IsString()
 	@IsOptional()
 	@IsNotEmpty()

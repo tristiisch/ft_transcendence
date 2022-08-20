@@ -1,0 +1,67 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  build_backend:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/nest.js/package-lock.json
+    - name: Install node modules
+      run: |
+       cd backend/nest.js
+       npm ci
+    - name: Build project
+      run: |
+       cd backend/nest.js
+       npm run build --if-present
+    - name: Unit test
+      run: |
+       cd backend/nest.js
+       npm test
+      continue-on-error: true
+
+  build_frontend:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: front-end/package-lock.json
+    - name: Install node modules
+      run: |
+       cd front-end
+       npm ci
+    - name: Build project
+      run: |
+       cd front-end
+       npm run build --if-present
+      continue-on-error: true
