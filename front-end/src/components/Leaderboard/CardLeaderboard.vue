@@ -6,18 +6,15 @@
 
     const sizeAvatar = ref<HTMLInputElement | null>(null)
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
-
+    const windowHeight = ref(window.innerHeight);
     const props = defineProps<{ user: User }>()
-
-    import { getCurrentInstance } from 'vue'
-    const instance = getCurrentInstance();
     
     const userStatus = computed(() => {
-        if (props.user.current_status === Status.INGAME)
+        if (props.user.status === Status.INGAME)
             return 'Ingame'
-        else if (props.user.current_status === Status.OFFLINE)
+        else if (props.user.status === Status.OFFLINE)
             return 'Offline'
-        else (props.user.current_status === Status.ONLINE)
+        else (props.user.status === Status.ONLINE)
             return 'Online'
     })
 
@@ -31,7 +28,9 @@
 
     onMounted(() => {
         window.addEventListener('resize', handleResize)
+        windowHeight.value +=1
         handleResize()
+        windowHeight.value -=1
     });
 
     onUnmounted(() => {

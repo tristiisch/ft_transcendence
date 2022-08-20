@@ -10,7 +10,7 @@ const props = defineProps<{
     <div class="flex flex-col items-center w-full flex-wrap order-2 overflow-y-auto h-[75px] sm:h-full sm:flex-nowrap sm:order-none">
         <div v-for="match in matchs" :key="match.date" class="flex justify-evenly items-center w-full h-[60px] sm:mt-[14px]">
             <div class="flex flex-col justify-between items-center h-full shrink-0 text-slate-700">
-                <img class="w-10 h-10 rounded object-cover border-[1px] border-slate-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
+                <img class="w-10 h-10 rounded-full object-cover border-[1px] border-slate-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
                 <span class="text-xs sm:text-sm">Robert</span>
             </div>
             <div class="text-slate-500">
@@ -28,7 +28,7 @@ const props = defineProps<{
                 0
             </div>
             <div class="flex flex-col justify-between items-center h-full shrink-0 text-slate-700">
-                <img class="w-10 h-10 rounded object-cover border-[1px] border-slate-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
+                <img class="w-10 h-10 rounded-full object-cover border-[1px] border-slate-300" src="@/assets/obama.jpeg" alt="Rounded avatar">
                 <span class="text-xs sm:text-sm">Igor</span>
             </div>
         </div>

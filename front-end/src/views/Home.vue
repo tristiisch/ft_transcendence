@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useUserStore } from '@/stores/userStore';
+
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
+const userStore = useUserStore();
 
 function tvSize() {
 	if (windowHeight.value > windowWidth.value)
@@ -42,6 +45,12 @@ windowWidth.value = window.innerWidth;
 windowHeight.value = window.innerHeight;
 }
 
+const userDataLoading = computed(() => {
+	if (userStore.userData.avatar !== undefined && userStore.userData.username !== undefined)
+		return false;
+	return true;
+});
+
 onMounted(() => {
     window.addEventListener('resize', handleResize)
   });
@@ -53,7 +62,8 @@ window.removeEventListener('resize', handleResize)
 </script>
 
 <template>
-	<div class="relative flex flex-col h-full mx-[8vw]">
+	<base-spinner v-if="userDataLoading"></base-spinner>
+	<div v-else class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
 			<the-footer v-if="smallScreen()" class=""></the-footer>
@@ -121,14 +131,14 @@ window.removeEventListener('resize', handleResize)
 .neon-text {
   color: #fff;
   text-shadow:
-      0 0 7px #fff,
-      0 0 10px #fff,
-      0 0 21px #fff,
-      0 0 42px #5271ff,
-      0 0 82px #5271ff,
-      0 0 92px #5271ff,
-      0 0 102px #5271ff,
-      0 0 151px #5271ff;
+	0 0 7px #fff,
+	0 0 10px #fff,
+	0 0 21px #fff,
+	0 0 42px #5271ff,
+	0 0 82px #5271ff,
+	0 0 92px #5271ff,
+	0 0 102px #5271ff,
+	0 0 151px #5271ff;
 }
 </style>
 

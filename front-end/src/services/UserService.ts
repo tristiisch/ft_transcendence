@@ -4,65 +4,66 @@ import type Match from '@/types/MatchHistory';
 
 class UserService {
 
-	getMyData(id: string) {
-		return axios.get(`users/me/${id}`).then((response) => {
-			return response.data;
-		});
-	}
-
-	setUsername(id: string, username: string) {
-		return axios.post(`users/me/${id}/set-username`, { username });
-	}
-
-	setAvatar(id: string, avatar: string) {
-		return axios.post(`users/me/${id}/set-avatar`, { avatar });
-	}
-
 	getUsers() {
 		return axios.get('users');
 	}
 
+	getMe(id: number) {
+		return axios.get(`users/me/${id}`);
+	}
+
 	getUser(username: string) {
-		console.log('getUserData')
 		return axios.get(`users/${username}`);
 	}
 
-	getChannels() {
-		return axios.get('channels');
+	registerUser(id: number, username: string, avatar: string) {
+		return axios.patch(`users/register/${id}`, { username, avatar });
 	}
 
-	getUserfriends(username: string) {
-		return axios.get(`users/${username}/friends`);
+	updateUsename(id: number, username: string) {
+		return axios.patch(`users/me/${id}/set-username`, { username });
 	}
 
-	getCurrentMatchs(username: string) {
-		return axios.get(`users/${username}/matchs`);
+	updateAvatar(id: number, avatar: string) {
+		return axios.patch(`users/me/${id}/set-avatar`, { avatar });
 	}
 
-	sendFriendRequest(username: string, target: string) {
-		return axios.post(`users/${username}/friend-request`, { target });
+	getUserfriends(id: number) {
+		console.log(id)
+		return axios.get(`friends/names/${id}`);
 	}
 
-	sendUnfriendRequest(username: string, target: string) {
-		return axios.post(`users/${username}/unfriend-request`, { target });
+	sendFriendRequest(id: number, targetUsername: string) {
+		return axios.post(`friends/request/add/${id}`, { username: targetUsername });
+	}
+
+	acceptFriendRequest(id: number, targetUsername: string) {
+		return axios.post(`friends/accept/${id}`, { username: targetUsername });
+	}
+
+	refuseFriendRequest(id: number, targetUsername: string) {
+		return axios.post(`friends/request/remove/${id}`, { username: targetUsername });
+	}
+
+	removeFriend(id: number, targetUsername: string) {
+		return axios.post(`friends/remove/${id}`, { username: targetUsername });
 	}
 
 	getMatchsHistory(username: string) {
-		return axios.get(`users/${username}/matchsHistory`);
+		return axios.post(`matchs/history`, { username: username });
 	}
 
-	getNotifications(username: string) {
-		return axios.get(`users/${username}/notifications`);
+	getCurrentMatchs() {
+		return axios.get('matchs/current');
 	}
 
-	acceptFriendRequest(id: number, target: string) {
-		return axios.post(`accept/:id`, { target });
+	getNotifications(id: number) {
+		return axios.get(`notifications/${id}`);
 	}
 
-	declineFriendRequest(id: number, target: string) {
-		return axios.post(`remove/:id`, { target });
+	getChannels() {
+		return axios.get('chat/channels');
 	}
-
 
 }
 

@@ -5,9 +5,9 @@ import Status from '@/types/ChannelStatus';
 import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import ChannelPasswordName from '@/components/Chat/ChannelSettings/ChannelPasswordName.vue';
 import PlayerDisplayList from '@/components/Chat/PlayerDisplayList.vue';
+import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
 import { useUserStore } from '@/stores/userStore';
 import { ref, computed } from 'vue';
-
 
 const userStore = useUserStore();
 const displayPasswordPage = ref(false);
@@ -35,6 +35,7 @@ function playerStatusText(channel: Channel)
 }
 
 function isOwner() { return props.inChannel.owner === userStore.userData.username}
+
 function isAdmin() { 
 	for(const user of props.inChannel.admin)
 		if (user.username === userStore.userData.username)
@@ -86,8 +87,8 @@ function updateMuteBan()
 </script>
 
 <template>
-	<div class="flex flex-col justify-between h-full">
-		<chatTopImage :inChatWith="null" :inChannel="inChannel"></chatTopImage>
+	<div class="flex flex-col justify-between h-full w-full px-8 3xl:px-10">
+		<ChatTopImage :inChatWith="null" :inChannel="inChannel"></ChatTopImage>
 		<div v-if="displayButton()" class="flex flex-col justify-around h-full">
 			<div class="flex flex-col justify-center items-center gap-5">
 				<div class="text-center">
@@ -108,7 +109,7 @@ function updateMuteBan()
 					<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Ban
 					</button>
-					<button :class="setColSpan()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 sm:text-sm">Leave channel</button>
+					<button :class="setColSpan()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">Leave channel</button>
 				</div>
 			</div>
 		</div>

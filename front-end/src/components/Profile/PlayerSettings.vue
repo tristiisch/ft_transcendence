@@ -4,42 +4,64 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import UploadAvatar from '@/components/UploadAvatar.vue';
 import Toogle from '@/components/Leaderboard/ToogleButton.vue';
+import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
 
 const userStore = useUserStore();
 const router = useRouter();
+const toast = useToast();
 
 const newUsername = ref(userStore.userData.username);
-const image = ref(userStore.userData.avatar);
+const newAvatar = ref(userStore.userData.avatar);
 const mode = ref('2FA');
 let isUpload = false;
 
 function uploadImage(imageData: string): void {
-	image.value = imageData;
+	newAvatar.value = imageData;
 	isUpload = true;
 }
 
 function submitProfileForm() {
-	if (newUsername.value !== userStore.userData.username) userStore.updateUsername(newUsername.value);
-	if (isUpload) userStore.updateAvatar(image.value);
-	router.push({ name: 'Profile', params: { username: userStore.userData.username } });
+	if (userStore.userData.avatar !== newAvatar.value)
+	{
+		userStore
+		.updateAvatar(newAvatar.value)
+		.catch((e) => {
+			toast.error(e.response.data.message);
+		});
+	}
+	if (userStore.userData.username !== newUsername.value)
+	{
+		userStore
+		.updateUsername(newUsername.value)
+		.then(() => {
+			router.push({ name: 'Profile', params: { username: userStore.userData.username } });
+		})
+		.catch((e) => {
+			toast.error(e.response.data.message);
+		});
+	}
 }
 
 const qrCode = ref<null | string>(null);
 const isLoading = ref(false);
 
 function toogle2FA() {
-	if (userStore.userData['2fa']) {
-		userStore.userData['2fa'] = false;
-		AuthService.disable2FA().catch((e: Error) => {
-			console.log(e);
-		});
+	if (userStore.userAuth.has_2fa) {
+		userStore.userAuth.has_2fa = false;
+		AuthService.disable2FA()
+			.then(() => {
+				userStore.update2FA(false);
+			})
+			.catch((e: Error) => {
+				console.log(e);
+			});
 	} else {
-		userStore.userData['2fa'] = true;
 		isLoading.value = true;
 		AuthService.enable2FA()
 			.then((response) => {
 				qrCode.value = response.data;
+				userStore.update2FA(true);
 				isLoading.value = false;
 			})
 			.catch((e: Error) => {
@@ -63,20 +85,20 @@ function fetchQrCode() {
 }
 
 function cancelProfileForm() {
-	newUsername.value = userStore.userData.username
-	image.value = userStore.userData.avatar
+	newUsername.value = userStore.userData.username;
+	newAvatar.value = userStore.userData.avatar;
 }
 
 watch(
 	() => userStore.userData.avatar,
 	() => {
-		image.value = userStore.userData.avatar;
+		newAvatar.value = userStore.userData.avatar;
 	}
 );
 
 onBeforeMount(() => {
 	console.log(qrCode.value);
-	if (userStore.userData['2fa'] && !qrCode.value) fetchQrCode();
+	if (userStore.userAuth.has_2fa && !qrCode.value) fetchQrCode();
 });
 </script>
 
@@ -94,7 +116,7 @@ onBeforeMount(() => {
 				<span class="text-red-200 pl-2">ON</span>
 			</div>
 			<div v-if="isLoading" class="font-Arlon text-white text-center text-6xl w-full">Loading</div>
-			<div v-if="qrCode && userStore.userData['2fa'] && !isLoading" class="flex flex-col items-center w-full">
+			<div v-if="qrCode && userStore.userAuth.has_2fa && !isLoading" class="flex flex-col items-center w-full">
 				<img :src="qrCode" fluid alt="QR code" class="w-24 sm:w-36" />
 			</div>
 			<p class="text-center text-red-200 text-xs sm:text-sm">When 2FA is enable scan the QRCode in Google's Authenticator app.</p>
@@ -113,7 +135,7 @@ onBeforeMount(() => {
 				<div class="flex flex-col justify-center w-full">
 					<label class="block mb-2 text-sm text-center text-red-200">Change avatar</label>
 					<div class="flex justify-center gap-6">
-						<img class="shrink-0 w-10 h-10 sm:w-20 sm:h-20 rounded object-cover border border-neutral-100" :src="image" alt="Rounded avatar" />
+						<img class="shrink-0 w-10 h-10 sm:w-20 sm:h-20 rounded object-cover border border-neutral-100" :src="newAvatar" alt="Rounded avatar" />
 						<upload-avatar @image-loaded="uploadImage"></upload-avatar>
 					</div>
 				</div>
@@ -132,6 +154,6 @@ onBeforeMount(() => {
 
 <style scoped>
 .btn-base {
-	@apply w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 hover:bg-blue-600 hover:text-neutral-100 focus:bg-blue-600 focus:text-neutral-100;
+	@apply w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 focus:bg-blue-600 focus:text-neutral-100;
 }
 </style>

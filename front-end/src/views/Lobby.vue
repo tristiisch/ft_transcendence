@@ -11,6 +11,7 @@ import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
 
 const matchs = ref([] as Match[]);
+const isLoading = ref(false);
 const rightPartToDisplay = ref('gameSettings');
 const invitation = ref(false)
 
@@ -18,18 +19,21 @@ function setRightPartToDisplay()
 {
 	if (rightPartToDisplay.value === 'selectPlayer')
 		rightPartToDisplay.value = 'gameSettings'
-	else 
+	else
 		rightPartToDisplay.value = 'selectPlayer'
 
 }
 
 async function fetchUsers() {
+	isLoading.value = true;
 	return await UsersService.getCurrentMatchs()
 		.then((response) => {
 			matchs.value = response.data;
+			isLoading.value = false;
 			console.log(matchs.value);
 		})
 		.catch((e: Error) => {
+			isLoading.value = false;
 			console.log(e);
 		});
 }
@@ -46,7 +50,7 @@ function invitePlayer()
 {
 	rightPartToDisplay.value = 'selectPlayer'
 	invitation.value = true
-	
+
 }
 
 onMounted(() => {
@@ -56,7 +60,7 @@ onMounted(() => {
 
 
 <template>
-	<base-ui>
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-between items-center h-full flex-wrap sm:flex-col sm:flex-nowrap px-8 ">

@@ -8,9 +8,6 @@ defineProps<{
 	inChannel: Channel | null;
 }>();
 
-const emit = defineEmits<{
-	(event: 'clickOnChannelSettings'): void;
-}>();
 </script>
 
 <template>

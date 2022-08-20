@@ -13,7 +13,7 @@ const toast = useToast();
 
 function fetchNotifications() {
 	isLoading.value = true;
-	UsersService.getNotifications(userStore.userData.username)
+	UsersService.getNotifications(userStore.userData.id)
 		.then((response) => {
 			notifications.value = response.data;
 			isLoading.value = false;
@@ -51,7 +51,7 @@ function declineInvitation(notification: Notification) {
 	console.log('decline');
 	if (notification.Request === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.declineFriendRequest(userStore.userData.id, notification.from)
+		UsersService.refuseFriendRequest(userStore.userData.id, notification.from)
 		.then(() => {
 			if (notifications.value) {
 				for (let i = 0; i < notifications.value.length; i++) {

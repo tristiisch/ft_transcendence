@@ -32,20 +32,20 @@ const emit = defineEmits<{
 
 
 <template>
-	<div v-if="!selectPlayer" class="flex flex-col justify-between items-center h-full w-full">
+	<div v-if="!selectPlayer" class="flex flex-col justify-between items-center h-full w-full px-6 3xl:px-10">
 		<div class="flex flex-col justify-center items-center gap-6 h-full w-full">
 			<div class="mb-2 w-full lg:w-4/5">
 				<label class="block mb-2 text-sm font-medium text-red-200">Channel name:</label>
 				<input type="text" class="bg-neutral-100 border border-blue-600 placeholder:text-slate-300 placeholder:text-center text-center text-blue-600 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose name">
 			</div>
 			<div class="inline-flex shadow-sm w-full lg:w-4/5">
-				<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-l-lg border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+				<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-l-lg border border-blue-600 sm:text-sm focus:bg-blue-600 focus:text-white">
 					Public
 				</button>
-				<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 border-t border-b border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+				<button @click="protectedChannel = false" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 border-t border-b border-blue-600 sm:text-sm focus:bg-blue-600 focus:text-white">
 					Private
 				</button>
-				<button @click="protectedChannel = true" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-r-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+				<button @click="protectedChannel = true" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-r-md border border-blue-600 sm:text-sm focus:bg-blue-600 focus:text-white">
 					Protected
 				</button>
 			</div>
@@ -73,7 +73,6 @@ const emit = defineEmits<{
 		</div>
 		<button-close-validate @click="selectPlayer = !selectPlayer" @close="emit('close')"></button-close-validate>
 	</div>
-	<div v-if="selectPlayer" class="flex flex-col justify-between h-full">
-		<add-search-player @close="emit('close')" @validate="emit('validate')"></add-search-player>
-	</div>
+	<add-search-player v-if="selectPlayer"  @close="emit('close')" @validate="emit('validate')"></add-search-player>
+	
 </template>
