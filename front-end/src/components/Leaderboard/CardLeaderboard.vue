@@ -2,43 +2,41 @@
     import type User from '@/types/User';
     import Status from '@/types/Status';
     import PlayerStatus from '@/components/PlayerStatus.vue'
-    import { computed, ref, onMounted, onUnmounted} from 'vue';
-    import { Console } from 'console';
+    import { computed, ref, onMounted, onUnmounted, onBeforeUpdate } from 'vue';
 
     const sizeAvatar = ref<HTMLInputElement | null>(null)
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
-    const props = defineProps<{
-    user: User
-}>()
 
-const userStatus = computed(() => {
-    if (props.user.current_status === Status.INGAME)
-        return 'Ingame'
-    else if (props.user.current_status === Status.OFFLINE)
-        return 'Offline'
-    else (props.user.current_status === Status.ONLINE)
-        return 'Online'
-})
+    const props = defineProps<{ user: User }>()
 
-onMounted(() => {
-    handleResize()
-});
+    import { getCurrentInstance } from 'vue'
+    const instance = getCurrentInstance();
+    
+    const userStatus = computed(() => {
+        if (props.user.current_status === Status.INGAME)
+            return 'Ingame'
+        else if (props.user.current_status === Status.OFFLINE)
+            return 'Offline'
+        else (props.user.current_status === Status.ONLINE)
+            return 'Online'
+    })
 
-function handleResize() {
-    if (sizeAvatar.value)
-    {
-        let size = (sizeAvatar.value?.width + 20).toString()
-        avatarWidth.value = 'padding-left: '+ size + 'px'
+    function handleResize() {
+        if (sizeAvatar.value)
+        {
+            let size = (sizeAvatar.value?.width + 20).toString()
+            avatarWidth.value = 'padding-left: '+ size + 'px'
+        }
     }
-}
 
-onMounted(() => {
-    window.addEventListener('resize', handleResize)
-  });
+    onMounted(() => {
+        window.addEventListener('resize', handleResize)
+        handleResize()
+    });
 
-onUnmounted(() => {
-    window.removeEventListener('resize', handleResize)
-})
+    onUnmounted(() => {
+        window.removeEventListener('resize', handleResize)
+    })
 </script>
 
 <template>
