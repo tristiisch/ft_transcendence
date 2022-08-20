@@ -11,11 +11,6 @@ const isProfilePage = computed(() => {
     return route.params.username === userStore.userData.username
 })
 
-const isHomePage = computed(() => {
-    console.log(route.name)
-    return route.name === 'Home'
-})
-
 </script>
 
 <template>
@@ -26,7 +21,7 @@ const isHomePage = computed(() => {
             </base-button>
         </div>
         <div>
-            <base-button  class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 shadow-lg shadow-red-500/50 font-medium rounded-lg text-xs sm:text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center" @click="userStore.handleLogout"> Logout </base-button>
+            <base-button  class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-1 focus:outline-none focus:ring-red-300 shadow-lg shadow-red-500/50 font-medium rounded-lg text-xs sm:text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center" @click="userStore.handleLogout"> Logout </base-button>
         </div>
     </div>
 </template>

@@ -12,7 +12,7 @@ if (authString && userStore.isLoggedIn) {
 	console.log(authString)
 	console.log(userStore.userData.username)
 	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token}`;
-	UserService.getMe( JSON.parse(authString).user_id)
+	UserService.getMe(JSON.parse(authString).user_id)
 		.then((response) => {
 			userStore.userData = response.data;
 		})

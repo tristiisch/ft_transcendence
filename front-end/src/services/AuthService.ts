@@ -12,8 +12,9 @@ class AuthService {
 
 	login2FA(otpToken: string) {
 		return axios.post('auth/2fa/login', { otpToken }).then((response) => {
-			if (response.data.auth.token) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
+			console.log(response.data)
+			if (response.data.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 			}
 			return response.data;
 		});

@@ -100,33 +100,34 @@ export default [
 	rest.post('/friends/request/add/:id', async (req, res, ctx) => {
 		const data = await req.json();
 		console.log(data)
-		console.log(req.params.id)
+		return res(ctx.status(200));
+	}),
+
+	rest.post('/friends/accept/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		console.log(data);
 		const tab = friends.get(parseInt(req.params.id as string)) as User[];
+		console.log(tab)
 		if (tab) tab.push(users.find((user) => user.username === data.username) as User);
 		else friends.set(parseInt(req.params.id as string), [users.find((user) => user.username === data.username) as User]);
-		console.log(friends);
 		return res(ctx.status(200));
 	}),
 
-	rest.post('friends/accept/:id', async (req, res, ctx) => {
+	rest.post('/friends/remove/:id', async (req, res, ctx) => {
 		const data = await req.json();
 		console.log(data);
-		return res(ctx.status(200));
-	}),
-
-	rest.post('friends/remove:id', async (req, res, ctx) => {
-		const data = await req.json();
-		console.log(data);
+		const tab = friends.get(parseInt(req.params.id as string)) as User[];
+		console.log(tab)
+		console.log(data.username)
+		for (let i = 0; i < tab.length; i++) {
+			if (tab[i].username === data.username) tab.splice(i, 1);
+		}
 		return res(ctx.status(200));
 	}),
 
 	rest.post('/friends/request/remove/:id', async (req, res, ctx) => {
 		const data = await req.json();
-		const tab = friends.get(parseInt(req.params.id as string)) as User[];
-		for (let i = 0; i < tab.length; i++) {
-			if (tab[i] === data.targetUsername) tab.splice(i, 1);
-		}
-		console.log(friends);
+		console.log(data);
 		return res(ctx.status(200));
 	}),
 
@@ -155,11 +156,11 @@ export default [
 					auth: {
 						user_id: 6, // voir si on le garde ou pas
 						token:'fake-jwt-token',
-						has_2fa: false},
+						has_2fa: true},
 					user: {
 						id: 6,
 						login_42: userInfo.data.login,
-						username: '',
+						username: 'jlaronch',
 						rank: 0,
 						nbVictory: 0,
 						nbDefeat: 0,
@@ -175,6 +176,7 @@ export default [
 
 	rest.post('/auth/2fa/login', async (req, res, ctx) => {
 		const data = await req.json();
+		console.log(data)
 		const otpToken = data.otpToken;
 		/*const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
 		const token = totp.generate(secret);
@@ -185,7 +187,7 @@ export default [
 			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
 		}*/
 		if (otpToken)
-			return res(ctx.status(200), ctx.json({ accessToken: 'fake-jwt-token' }));
+			return res(ctx.status(200), ctx.json({ token: 'fake-jwt-token' }));
 		else
 			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
 	}),

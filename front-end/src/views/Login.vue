@@ -130,7 +130,7 @@ onBeforeMount(() => {
 					<div class="flex flex-col gap-4 items-center">
 						<p class="text-slate-500 text-center w-full">Please choose an username and avatar</p>
 						<input
-							class="placeholder-slate-600 w-full rounded bg-slate-800 text-center text-white font-medium text-xs px-3 py-2 sm:px-5 sm:py-2.5"
+							class="text-center text-neutral-100 text-xs px-3 py-2 sm:px-5 sm:py-2.5 w-full rounded bg-slate-800 placeholder-slate-600 placeholder:text-center "
 							type="text"
 							name="username"
 							v-model.trim="username"
@@ -142,11 +142,11 @@ onBeforeMount(() => {
 				</form>
 			</BaseCard>
 			<BaseCard v-else-if="userStore.userAuth.has_2fa">
-				<form class="flex flex-col justify-center items-center gap-4">
+				<form class="flex flex-col justify-center items-center gap-4" @submit.prevent>
 					<h1 class="text-lime-400">⚠️ Two Factor Authentification enabled</h1>
 					<p class="text-slate-500">Please enter your 2FA code below</p>
-					<div class="flex justify-center gap-4" @submit.prevent>
-						<input type="password" name="twoFaCode" v-model="twoFaCode" placeholder="2FA code" class="bg-slate-800 rounded placeholder:text-center placeholder:text-slate-600 text-natural-100" />
+					<div class="flex justify-center gap-4">
+						<input type="password" name="twoFaCode" v-model="twoFaCode" placeholder="2FA code" class="text-center text-neutral-100 placeholder:text-slate-600 bg-slate-800 rounded placeholder:text-center" />
 						<button-gradient1 @click="submit2faForm">Send</button-gradient1>
 					</div>
 				</form>
