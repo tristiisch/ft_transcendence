@@ -53,6 +53,16 @@ const users = [
 	},
 	{
 		id: 6,
+		login_42: 'jlaronch',
+		username: 'jlaronch',
+		rank: 0,
+		nbVictory: 0,
+		nbDefeat: 0,
+		avatar: 'https://cdn.intra.42.fr/users/jlaronch.jpg',
+		status: Status.OFFLINE,
+	},
+	{
+		id: 7,
 		login_42: 'nlaronch',
 		username: 'nlaronch',
 		rank: 0,

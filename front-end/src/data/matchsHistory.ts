@@ -1,8 +1,8 @@
 import type matchHistory from '@/types/MatchHistory';
 
-const matchsHistory = new Map<string, matchHistory[]>([
+const matchsHistory = new Map<number, matchHistory[]>([
 	[
-		'jlaronch',
+		6,
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',
@@ -20,7 +20,7 @@ const matchsHistory = new Map<string, matchHistory[]>([
 		],
 	],
 	[
-		'nlaronch',
+		2,
 		[
 			{
 				date: 'Sep 5, 2018 12:32:28',

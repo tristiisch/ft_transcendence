@@ -12,7 +12,7 @@ const props = defineProps<{
 const userStore = useUserStore();
 
 function isUser() {
-	if (props.user.username === userStore.userData.username) return true;
+	if (props.user.id === userStore.userData.id) return true;
 	return false;
 }
 
@@ -24,7 +24,7 @@ function isUser() {
 		<div class="flex gap-2 sm:gap-5">
 			<player-status :user="user"></player-status>
 			<span class="text-slate-700 text-xl sm:text-3xl">{{ user.username }}</span>
-			 <base-button link :to="{ name: 'Chat', query: { discussion: user.username }} ">
+			 <base-button link :to="{ name: 'Chat', query: { discussion: user.id }} ">
 				<svg v-if="!isUser()" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 					<path
 						stroke-linecap="round"

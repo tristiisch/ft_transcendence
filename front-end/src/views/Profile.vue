@@ -34,9 +34,9 @@ function setPartToDisplay(displayPart: string) {
 	setRightCardTitle(displayPart);
 }
 
-function fetchUser(name: string) {
+function fetchUser(id: number) {
 	isLoading.value = true;
-	UsersService.getUser(name)
+	UsersService.getUser(id)
 		.then((response) => {
 			user.value = response.data;
 			isLoading.value = false;
@@ -50,15 +50,15 @@ function fetchUser(name: string) {
 }
 
 watch(
-	() => route.params.username,
+	() => route.params.id,
 	() => {
-		if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
+		if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
 	}
 )
 
 onBeforeMount(() => {
-	if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
-	else fetchUser(route.params.username as string);
+	if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
+	else fetchUser(parseInt(route.params.id as string));
 });
 </script>
 
@@ -76,7 +76,7 @@ onBeforeMount(() => {
 				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-center gap-4 sm:gap-6 h-full w-11/12 px-8 3xl:px-10">
 					<player-stats :user="user"></player-stats>
 					<div class="flex justify-center overflow-y-auto w-full">
-						<player-history></player-history>
+						<player-history :user="user"></player-history>
 					</div>
 				</div>
 				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">

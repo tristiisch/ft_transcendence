@@ -5,10 +5,15 @@ import { useRoute } from 'vue-router';
 import { ref, onMounted, computed } from 'vue';
 import type MatchHistory from '@/types/MatchHistory';
 import { useUserStore } from '@/stores/userStore';
+import type User from '@/types/User';
 
 const route = useRoute();
 const userStore = useUserStore();
 const matchsHistory = ref([] as MatchHistory[]);
+
+defineProps<{
+	user: User
+}>()
 
 function colorTextScore(value:MatchHistory, opponent:boolean) {
     if ((value.result === 'won' && !opponent) || (value.result === 'lost' && opponent)) { return 'text-lime-400' }
@@ -16,7 +21,7 @@ function colorTextScore(value:MatchHistory, opponent:boolean) {
 }
 
 async function fetchMatchsHistory() {
-	return await UsersService.getMatchsHistory(route.params.username as string)
+	return await UsersService.getMatchsHistory(parseInt(route.params.id as string))
         .then((response) => {
 			matchsHistory.value = response.data;
 		})
@@ -35,7 +40,7 @@ onMounted(() => {
        <h1 class="flex justify-center items-center w-3/4 h-[40px] sm:h-[50px] text-sm sm:text-base text-red-200 border-b border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500 shrink-0">MATCH HISTORY</h1>
         <div v-if="matchsHistory.length" class="flex flex-col items-center gap-1 sm:gap-1.5 w-full overflow-y-auto">
             <div v-for="match in matchsHistory" :key="match.date" class="flex w-full">
-                <p class="w-2/5 text-right text-sm sm:text-lg" :class="colorTextScore(match, false)"><span class="text-xs sm:text-sm text-red-300">{{ route.params.username }}</span><span class="text-red-300"> - </span>{{ match.score[0] }}</p>
+                <p class="w-2/5 text-right text-sm sm:text-lg" :class="colorTextScore(match, false)"><span class="text-xs sm:text-sm text-red-300">{{ user.username }}</span><span class="text-red-300"> - </span>{{ match.score[0] }}</p>
                 <p class="w-1/5 text-center grayscale"> ⚔️ </p>
                 <p class="w-2/5 text-left text-xs sm:text-sm text-red-300"><span class="text-sm sm:text-lg" :class="colorTextScore(match, true)">{{ match.score[1] }}</span><span class="text-red-300"> - </span>{{ match.opponent }}</p>
             </div>

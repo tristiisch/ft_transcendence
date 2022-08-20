@@ -9,7 +9,7 @@ const users = [
 		users: Users,
 		password: null,
 		admin: Users,
-		owner: 'nlaronch',
+		owner: 'jlaronch',
 		mute: [Users[3]],
 		banned: [Users[4]]
 	},
@@ -20,7 +20,7 @@ const users = [
 		users: [Users[3], Users[4]],
 		password: 'password',
 		admin: Users,
-		owner: 'nlaronch',
+		owner: 'jlaronch',
 		mute: [Users[3]],
 		banned: [Users[4]]
 	},
@@ -31,7 +31,7 @@ const users = [
 		users: Users,
 		password: null,
 		admin: Users,
-		owner: 'nlaronch',
+		owner: 'jlaronch',
 		mute: [Users[3]],
 		banned: [Users[4]]
 	}

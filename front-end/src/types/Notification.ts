@@ -1,3 +1,5 @@
+import type User from '@/types/User';
+
 export enum NotificationType {
 	UNKNOWN,
 	FRIEND_REQUEST,
@@ -6,7 +8,7 @@ export enum NotificationType {
 
 export default interface Notification {
 	date: string,
-	from: string,
+	from: User,
 	Request: NotificationType,
 }
 

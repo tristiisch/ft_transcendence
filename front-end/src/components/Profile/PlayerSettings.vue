@@ -35,7 +35,7 @@ function submitProfileForm() {
 		userStore
 		.updateUsername(newUsername.value)
 		.then(() => {
-			router.push({ name: 'Profile', params: { username: userStore.userData.username } });
+			//router.push({ name: 'Profile', params: { username: userStore.userData.username } });
 		})
 		.catch((e) => {
 			toast.error(e.response.data.message);

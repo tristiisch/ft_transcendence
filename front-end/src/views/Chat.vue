@@ -50,10 +50,10 @@ function showChannels() {
 	setRightCardTitle(rightPartToDisplay.value);
 }
 
-function getUser(name: string) {
+function searchUser(id: number) {
 	if (users.value) {
 		for (const user of users.value) {
-			if (user.username === name) return user;
+			if (user.id === id) return user;
 		}
 	}
 	return null;
@@ -64,7 +64,8 @@ function fetchUsers() {
 		.then((response) => {
 			users.value = response.data;
 			if (route.query.discussion) {
-				const user = getUser(route.query.discussion as string);
+				const user = searchUser(parseInt(route.query.discussion as string));
+				console.log(user)
 				if (user) loadDiscussion(user);
 			}
 		})
@@ -135,8 +136,8 @@ function loadChannel(channel: Channel) {
 	inChannel.value = channel;
 	rightPartToDisplay.value = 'chat';
 	if (inChannel.value.type === ChannelStatus.PROTECTED) {
-		for (const user of inChannel.value.users) 
-			if (user.username === userStore.userData.username) 
+		for (const user of inChannel.value.users)
+			if (user.id === userStore.userData.id)
 				isRegistered.value = true;
 	}
 }
@@ -156,7 +157,7 @@ const isLoading = computed(() => {
 function registration()
 {
 	isRegistered.value = true
-	
+
 
 }
 

@@ -12,8 +12,8 @@ class UserService {
 		return axios.get(`users/me/${id}`);
 	}
 
-	getUser(username: string) {
-		return axios.get(`users/${username}`);
+	getUser(id: number) {
+		return axios.get(`users/${id}`);
 	}
 
 	registerUser(id: number, username: string, avatar: string) {
@@ -33,24 +33,24 @@ class UserService {
 		return axios.get(`friends/names/${id}`);
 	}
 
-	sendFriendRequest(id: number, targetUsername: string) {
-		return axios.post(`friends/request/add/${id}`, { username: targetUsername });
+	sendFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/request/add/${id}`, { id: targetId });
 	}
 
-	acceptFriendRequest(id: number, targetUsername: string) {
-		return axios.post(`friends/accept/${id}`, { username: targetUsername });
+	acceptFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/accept/${id}`, { id: targetId });
 	}
 
-	refuseFriendRequest(id: number, targetUsername: string) {
-		return axios.post(`friends/request/remove/${id}`, { username: targetUsername });
+	refuseFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/request/remove/${id}`, { id: targetId });
 	}
 
-	removeFriend(id: number, targetUsername: string) {
-		return axios.post(`friends/remove/${id}`, { username: targetUsername });
+	removeFriend(id: number, targetId: number) {
+		return axios.post(`friends/remove/${id}`, { id: targetId });
 	}
 
-	getMatchsHistory(username: string) {
-		return axios.post(`matchs/history`, { username: username });
+	getMatchsHistory(id: number) {
+		return axios.post(`matchs/history/${id}`);
 	}
 
 	getCurrentMatchs() {

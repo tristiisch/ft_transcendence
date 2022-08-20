@@ -68,9 +68,9 @@ export default [
 		else return res(ctx.status(403), ctx.json({ message: `user don't exist` }));
 	}),
 
-	rest.get('/users/:username', (req, res, ctx) => {
-		console.log(req.params.username);
-		const user = users.find((user) => user.username === req.params.username)
+	rest.get('/users/:id', (req, res, ctx) => {
+		console.log(req.params.id);
+		const user = users.find((user) => user.id === parseInt(req.params.id as string))
 		console.log(user)
 		if (user) return res(ctx.json(user));
 		else return res(ctx.status(403), ctx.json({ message: `user don't exist` }));
@@ -92,9 +92,8 @@ export default [
 		return res(ctx.json(notifications.get(parseInt(req.params.id as string))));
 	}),
 
-	rest.post('/matchs/history', async (req, res, ctx) => {
-		const data = await req.json();
-		return res(ctx.json(matchsHistory.get(data.username)));
+	rest.post('/matchs/history/:id', async (req, res, ctx) => {
+		return res(ctx.json(matchsHistory.get(parseInt(req.params.id as string))));
 	}),
 
 	rest.post('/friends/request/add/:id', async (req, res, ctx) => {
@@ -108,8 +107,8 @@ export default [
 		console.log(data);
 		const tab = friends.get(parseInt(req.params.id as string)) as User[];
 		console.log(tab)
-		if (tab) tab.push(users.find((user) => user.username === data.username) as User);
-		else friends.set(parseInt(req.params.id as string), [users.find((user) => user.username === data.username) as User]);
+		if (tab) tab.push(users.find((user) => user.id === data.id) as User);
+		else friends.set(parseInt(req.params.id as string), [users.find((user) => user.id === data.id) as User]);
 		return res(ctx.status(200));
 	}),
 
@@ -120,7 +119,7 @@ export default [
 		console.log(tab)
 		console.log(data.username)
 		for (let i = 0; i < tab.length; i++) {
-			if (tab[i].username === data.username) tab.splice(i, 1);
+			if (tab[i].id === data.id) tab.splice(i, 1);
 		}
 		return res(ctx.status(200));
 	}),
@@ -156,7 +155,7 @@ export default [
 					auth: {
 						user_id: 6, // voir si on le garde ou pas
 						token:'fake-jwt-token',
-						has_2fa: true},
+						has_2fa: false},
 					user: {
 						id: 6,
 						login_42: userInfo.data.login,

@@ -8,7 +8,7 @@
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
     const windowHeight = ref(window.innerHeight);
     const props = defineProps<{ user: User }>()
-    
+
     const userStatus = computed(() => {
         if (props.user.status === Status.INGAME)
             return 'Ingame'
@@ -44,7 +44,7 @@
     >
         <img ref="sizeAvatar" class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover" :src="user.avatar" alt="Rounded avatar" />
         <div class="flex items-center pr-4" :style="avatarWidth">
-            <base-button link :to="{ name: 'Profile', params: { username: user.username } }">{{ user.username }}</base-button>
+            <base-button link :to="{ name: 'Profile', params: { id: user.id } }">{{ user.username }}</base-button>
         </div>
         <div class="flex gap-3">
             <player-status :user="user"></player-status>

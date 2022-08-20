@@ -12,7 +12,7 @@ const friends = ref([] as User[]);
 const displayPart = ref('Player Stats');
 
 function isUser() {
-	if (route.params.username === userStore.userData.username) return true;
+	if (parseInt(route.params.id as string) === userStore.userData.id) return true;
 	return false;
 }
 
@@ -28,11 +28,11 @@ function setDisplayedPart(button: number) {
 
 function treatFriendRequest() {
 	if (friendButton.value === 'Add friend')
-		UsersService.sendFriendRequest(userStore.userData.id, route.params.username as string).catch((e) => {
+		UsersService.sendFriendRequest(userStore.userData.id, parseInt(route.params.id as string)).catch((e) => {
 			console.log(e);
 		});
 	else
-		UsersService.removeFriend(userStore.userData.id, route.params.username as string)
+		UsersService.removeFriend(userStore.userData.id, parseInt(route.params.id as string))
 			.then(() => {
 				fetchfriends();
 			})
@@ -43,7 +43,7 @@ function treatFriendRequest() {
 
 const friendButton = computed(() => {
 	for (const friend of friends.value) {
-			if (friend.username === route.params.username) return 'Remove friend';
+			if (friend.id === parseInt(route.params.id as string)) return 'Remove friend';
 	}
 	return 'Add friend';
 });
@@ -74,7 +74,7 @@ const emit = defineEmits<{
 }>();
 
 onMounted(() => {
-	if (route.params.username != userStore.userData.username) fetchfriends();
+	if (parseInt(route.params.id as string) !== userStore.userData.id) fetchfriends();
 });
 </script>
 
