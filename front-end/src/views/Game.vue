@@ -3,6 +3,39 @@
 import { onMounted } from 'vue';
 import Konva from 'konva'
 
+import { io, Socket } from "socket.io-client";
+
+interface ServerToClientEvents {
+	ball: (x: number, y: number) => void;
+}
+
+interface ClientToServerEvents {
+	start_match: () => void;
+}
+
+const serverHost = "localhost"
+const serverPort = "3001"
+
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://${serverHost}:${serverPort}`);
+
+console.log('[SOCKET.IO]', 'CLIENT', "Starting client socket.io ...")
+
+socket.on("connect", () => {
+	console.log('[SOCKET.IO]', 'CLIENT', "connected to server !")
+});
+
+socket.on("disconnect", (reason) => {
+	if (reason === "io server disconnect") {
+		console.log('[SOCKET.IO]', 'CLIENT', "server close connection.", reason)
+		// the disconnection was initiated by the server, you need to reconnect manually
+		socket.connect();
+	} else {
+		console.log('[SOCKET.IO]', 'CLIENT', "lost connection to server.", reason)
+	}
+});
+
+console.log('[SOCKET.IO]', 'CLIENT', "Client socket.io is started !")
+
 const stage_ratio = 3989/2976
 const ball_speed_quotient = 200 // the least, the faster
 const ball_size_quotient = 100 // the least, the bigger
@@ -15,6 +48,8 @@ const blocker_movements_delta = 20 // the least, the slower (needs some kind of 
 const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
 onMounted(() => {
+
+
 	function computeStageHeight(): number { return window.innerHeight * (75 / 100) }
 	function computeBallSize(): number { return stage.width() / ball_size_quotient }
 	function computeBallSpeed(): number { return stage.width() / ball_speed_quotient }
@@ -41,91 +76,91 @@ onMounted(() => {
 		fill: 'red'
 	})
 
-	var blockers_width = computeBlockerWidth()
-	var blockers_height = computeBlockerHeight()
-	var p1_blocker: Konva.Rect = new Konva.Rect({
-		width: blockers_width,
-		height: blockers_height,
-		x: stage.width() / blocker_xpos_quotient,
-		y: stage.height() / 2 - blockers_height / 2,
-		fill: 'purple'
-	})
-	var p2_blocker = new Konva.Rect({
-		width: blockers_width,
-		height: blockers_height,
-		x: stage.width() - stage.width() / blocker_xpos_quotient,
-		y: stage.height() / 2 - blockers_height / 2,
-		fill: 'purple'
-	})
+	// var blockers_width = computeBlockerWidth()
+	// var blockers_height = computeBlockerHeight()
+	// var p1_blocker: Konva.Rect = new Konva.Rect({
+	// 	width: blockers_width,
+	// 	height: blockers_height,
+	// 	x: stage.width() / blocker_xpos_quotient,
+	// 	y: stage.height() / 2 - blockers_height / 2,
+	// 	fill: 'purple'
+	// })
+	// var p2_blocker = new Konva.Rect({
+	// 	width: blockers_width,
+	// 	height: blockers_height,
+	// 	x: stage.width() - stage.width() / blocker_xpos_quotient,
+	// 	y: stage.height() / 2 - blockers_height / 2,
+	// 	fill: 'purple'
+	// })
 
-	function getBlobPointsArray(): Array<number>
-	{
-		return ([
-			stage.width() / 2, stage.height() / 40, // 0 1
-			stage.width() / 1.09, stage.height() / 10.5, // 2 3
-			stage.width() / 1.02, stage.height() / 2, // 4 5
-			stage.width() / 1.09, stage.height() / 1.111, // 6 7
-			stage.width() / 2, stage.height() / 1.023, // 8 9
-			stage.width() / 12.7, stage.height() / 1.11, // 10 11
-			stage.width() / 55, stage.height() / 2, // 12 13
-			stage.width() / 14, stage.height() / 10 // 14 15
-		])
-	}
-	var blob = new Konva.Line({
-		points: getBlobPointsArray(),
-		fill: 'rgba(0, 0, 0, 0.5)',
-		closed: true,
-		tension: 0.,
-	});
+	// function getBlobPointsArray(): Array<number>
+	// {
+	// 	return ([
+	// 		stage.width() / 2, stage.height() / 40, // 0 1
+	// 		stage.width() / 1.09, stage.height() / 10.5, // 2 3
+	// 		stage.width() / 1.02, stage.height() / 2, // 4 5
+	// 		stage.width() / 1.09, stage.height() / 1.111, // 6 7
+	// 		stage.width() / 2, stage.height() / 1.023, // 8 9
+	// 		stage.width() / 12.7, stage.height() / 1.11, // 10 11
+	// 		stage.width() / 55, stage.height() / 2, // 12 13
+	// 		stage.width() / 14, stage.height() / 10 // 14 15
+	// 	])
+	// }
+	// var blob = new Konva.Line({
+	// 	points: getBlobPointsArray(),
+	// 	fill: 'rgba(0, 0, 0, 0.5)',
+	// 	closed: true,
+	// 	tension: 0.,
+	// });
 
 	layer.add(ball)
-	layer.add(p1_blocker)
-	layer.add(p2_blocker)
-	layer.add(blob)
+	// layer.add(p1_blocker)
+	// layer.add(p2_blocker)
+	// layer.add(blob)
 
-	var ball_speed = computeBallSpeed()
-	var dx = ball_speed
-	var dy = ball_speed
-	document.addEventListener("keydown", function(e) {
-		// console.log(e.key)
-		if (e.key == 'ArrowDown') {
-			if (p1_blocker.y() + p1_blocker.height() + blocker_movements_delta <= stage.height())
-				p1_blocker.y(p1_blocker.y() + blocker_movements_delta)
-		}
-		else if (e.key == 'ArrowUp') {
-			if (p1_blocker.y() - blocker_movements_delta >= 0)
-				p1_blocker.y(p1_blocker.y() - blocker_movements_delta)
-		}
-	})
-	// --- old way of checking blocker's collisions
-	//
-	// function checkCollisionWithBlocker(blocker: Konva.Rect) {
-	// 	if (!(ball.x() + dx > blocker.x() + blocker.width() ||
-	// 		ball.x() + dx < blocker.x() ||
-	// 		ball.y() + dy > blocker.y() + blocker.height()||
-	// 		ball.y() + dy < blocker.y() )) {
-	// 			if (ball.y() > blocker.y() && ball.y() < blocker.y() + blocker.height())
-	// 				dx = -dx
-	// 			else
-	// 				dy = -dy
+	// var ball_speed = computeBallSpeed()
+	// var dx = ball_speed
+	// var dy = ball_speed
+	// document.addEventListener("keydown", function(e) {
+	// 	// console.log(e.key)
+	// 	if (e.key == 'ArrowDown') {
+	// 		if (p1_blocker.y() + p1_blocker.height() + blocker_movements_delta <= stage.height())
+	// 			p1_blocker.y(p1_blocker.y() + blocker_movements_delta)
 	// 	}
+	// 	else if (e.key == 'ArrowUp') {
+	// 		if (p1_blocker.y() - blocker_movements_delta >= 0)
+	// 			p1_blocker.y(p1_blocker.y() - blocker_movements_delta)
+	// 	}
+	// })
+	// // --- old way of checking blocker's collisions
+	// //
+	// // function checkCollisionWithBlocker(blocker: Konva.Rect) {
+	// // 	if (!(ball.x() + dx > blocker.x() + blocker.width() ||
+	// // 		ball.x() + dx < blocker.x() ||
+	// // 		ball.y() + dy > blocker.y() + blocker.height()||
+	// // 		ball.y() + dy < blocker.y() )) {
+	// // 			if (ball.y() > blocker.y() && ball.y() < blocker.y() + blocker.height())
+	// // 				dx = -dx
+	// // 			else
+	// // 				dy = -dy
+	// // 	}
+	// // }
+	// function checkCollisions() {
+	// 	//console.log(layer.canvas.getContext().getImageData(ball.x(), ball.y(), 1, 1).data)
+	// 	var ctx_x = layer.canvas.context.getImageData(ball.x() + dx, ball.y(), 1, 1).data 
+	// 	if (ctx_x[0] != 0 || ctx_x[1] != 0 || ctx_x[2] != 0 || ctx_x[3] != 128)
+	// 		dx = -dx
+	// 	if (layer.canvas.context.getImageData(ball.x(), ball.y() + dy, 1, 1).data[3] != 128)
+	// 		dy = -dy
 	// }
-	function checkCollisions() {
-		//console.log(layer.canvas.getContext().getImageData(ball.x(), ball.y(), 1, 1).data)
-		var ctx_x = layer.canvas.context.getImageData(ball.x() + dx, ball.y(), 1, 1).data 
-		if (ctx_x[0] != 0 || ctx_x[1] != 0 || ctx_x[2] != 0 || ctx_x[3] != 128)
-			dx = -dx
-		if (layer.canvas.context.getImageData(ball.x(), ball.y() + dy, 1, 1).data[3] != 128)
-			dy = -dy
-	}
-	var ball_animation = new Konva.Animation(function(frame) {
-		if (ball.x() + dx < ball_radius || ball.x() + dx > stage_width - ball_radius) { dx = -dx; }
-		if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) { dy = -dy; }
-		// checkCollisions()
-		ball.x(ball.x() + dx);
-		ball.y(ball.y() + dy);
-	}, layer)
-	ball_animation.start();
+	// var ball_animation = new Konva.Animation(function(frame) {
+	// 	if (ball.x() + dx < ball_radius || ball.x() + dx > stage_width - ball_radius) { dx = -dx; }
+	// 	if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) { dy = -dy; }
+	// 	// checkCollisions()
+	// 	ball.x(ball.x() + dx);
+	// 	ball.y(ball.y() + dy);
+	// }, layer)
+	// ball_animation.start();
 
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
@@ -133,34 +168,40 @@ onMounted(() => {
 		stage.height(computeStageHeight())
 		stage.width(stage.height() * stage_ratio)
 
-		blob.points(getBlobPointsArray())
-		var ratio = stage.height() / stage_height
-		ball.x(ball.x() * ratio)
-		ball.y(ball.y() * ratio)
-		ball_speed = computeBallSpeed()
-		dx = dx > 0 ? ball_speed : -ball_speed
-		dy = dy > 0 ? ball_speed : -ball_speed
+		// blob.points(getBlobPointsArray())
+		// var ratio = stage.height() / stage_height
+		// ball.x(ball.x() * ratio)
+		// ball.y(ball.y() * ratio)
+		// ball_speed = computeBallSpeed()
+		// dx = dx > 0 ? ball_speed : -ball_speed
+		// dy = dy > 0 ? ball_speed : -ball_speed
 		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
 
-		blockers_width = computeBlockerWidth()
-		blockers_height = computeBlockerHeight()
-		p1_blocker.width(blockers_width)
-		p1_blocker.height(blockers_height)
-		p1_blocker.x(p1_blocker.x() * ratio)
-		p1_blocker.y(p1_blocker.y() * ratio)
-		p2_blocker.width(blockers_width)
-		p2_blocker.height(blockers_height)
-		p2_blocker.x(p2_blocker.x() * ratio)
-		p2_blocker.y(p2_blocker.y() * ratio)
+		// blockers_width = computeBlockerWidth()
+		// blockers_height = computeBlockerHeight()
+		// p1_blocker.width(blockers_width)
+		// p1_blocker.height(blockers_height)
+		// p1_blocker.x(p1_blocker.x() * ratio)
+		// p1_blocker.y(p1_blocker.y() * ratio)
+		// p2_blocker.width(blockers_width)
+		// p2_blocker.height(blockers_height)
+		// p2_blocker.x(p2_blocker.x() * ratio)
+		// p2_blocker.y(p2_blocker.y() * ratio)
 
 		stage_height = stage.height()
 		stage_width = stage.width()
 	}
 	window.onresize = resizeStage
-	//-------------------------------------------------
+	// -------------------------------------------------
 
 	stage.add(layer)
+	socket.on("ball", (x, y) => {
+		//console.log('[SOCKET.IO]', 'CLIENT', 'ball', x, y);
+		ball.x(x * stage.width())
+		ball.y(y * stage.width())
+	});
+	socket.emit("start_match");
 })
 
 </script>

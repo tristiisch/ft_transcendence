@@ -2,15 +2,14 @@
 // TEST socket.io server <-> client
 
 import { Server } from "socket.io";
+import { startMatch } from "../game/matchs/matchs.sockets"
 
 interface ServerToClientEvents {
-	noArg: () => void;
-	basicEmit: (a: number, b: string, c: Buffer) => void;
-	withAck: (d: string, callback: (e: number) => void) => void;
+	ball: (x: number, y: number) => void;
 }
 
 interface ClientToServerEvents {
-	hello: () => void;
+	start_match: () => void;
 }
 
 interface InterServerEvents {
@@ -31,25 +30,18 @@ export async function createSocketServer(serverPort: number) {
 		}
 	);
 
+	var started = false // temporary thing, just because it's making a new startMatch on each page reload
+	
 	io.on("connection", (socket) => {
-		
 		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', socket.id);
-		socket.emit("noArg");
-		socket.emit("basicEmit", 1, "2", Buffer.from([3]));
-		socket.emit("withAck", "4", (e) => {
-			console.log('[SOCKET.IO]', 'SERVER', socket.id, 'withAck', e);
-			// e is inferred as number
-		});
-
-		// works when broadcast to all
-		io.emit("noArg");
-
-		// works when broadcasting to a room
-		io.to("room1").emit("basicEmit", 1, "2", Buffer.from([3]));
-
-		socket.on("hello", () => {
-			console.log('[SOCKET.IO]', 'SERVER',  "receive 'HELLO'");
-			// ...
+		socket.on("start_match", () => {
+			if (started === false)
+			{
+				console.log('[SOCKET.IO]', 'SERVER',  "receive 'START_MATCH'");
+				startMatch(io)
+				// setInterval(function() { io.emit("ball", 50, 50) }, 1000)
+				started = true
+			}
 		});
 	});
 

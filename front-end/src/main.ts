@@ -40,4 +40,4 @@ app.component('the-header', TheHeader);
 app.component('base-ui', BaseUi);
 
 app.mount('#app');
-createClient('localhost', 3001);
+//createClient('localhost', 3001);
