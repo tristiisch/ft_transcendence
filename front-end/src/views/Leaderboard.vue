@@ -72,6 +72,14 @@ function fetchUsers() {
 	rankOrder();
 }
 
+function switchDysplayUsers() {
+    if (type.value === 'All') {
+        type.value = 'Friends';
+    } else {
+        type.value = 'All';
+    }
+}
+
 function fetchfriends() {
 	UserService.getUserfriends(userStore.userData.id)
 		.then((response) => {
@@ -81,10 +89,6 @@ function fetchfriends() {
 			error.value = e.response.data.message
 			toast.error(error.value);
 		});
-}
-		type.value = 'Friends';
-		type.value = 'All';
-	}
 }
 
 const displayUser = computed(() => {

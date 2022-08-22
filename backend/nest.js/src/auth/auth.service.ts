@@ -10,7 +10,6 @@ import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { Response } from 'express';
 
-
 @Injectable()
 export class AuthService {
 	constructor(private jwtService: JwtService, private usersService: UsersService,
@@ -74,14 +73,14 @@ export class AuthService {
 	public async createToken(id: number): Promise<string> {
 		const payload = { id: id };
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_PASS,
+			secret: process.env.JWT_SECRET,
 		});
 	}
 
 	public async createTempToken(id: number): Promise<string> {
 		const payload = { id: id };
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_PASS,
+			secret: process.env.JWT_SECRET,
 			expiresIn: "2min" // prévoir une variable pour l'expiration du token
 		});
 	}
@@ -92,7 +91,7 @@ export class AuthService {
 			TFA_auth: true
 		};
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_PASS,
+			secret: process.env.JWT_SECRET,
 		});
 	}
 

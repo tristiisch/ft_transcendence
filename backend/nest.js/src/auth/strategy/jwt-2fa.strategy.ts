@@ -1,9 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport"
-import { Strategy, Profile } from "passport-42";
-import { ExtractJwt } from "passport-jwt";
+import { ExtractJwt, Strategy } from "passport-jwt";
 import { UsersService } from "src/users/users.service";
-
 
 @Injectable()
 export class JwtTFAStrategy extends PassportStrategy(Strategy, "jwt-2fa"){
@@ -11,7 +9,7 @@ export class JwtTFAStrategy extends PassportStrategy(Strategy, "jwt-2fa"){
 		super({
 		  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 		  ignoreExpiration: false,
-		  secretOrKey: process.env.FT_PASS
+		  secretOrKey: process.env.JWT_SECRET
 		});
 	}
 
