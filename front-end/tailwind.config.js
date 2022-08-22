@@ -7,7 +7,7 @@ module.exports = {
       backgroundImage: {
         'brick': "url(@/assets/brick.jpg)",
         'TvScreen-texture': "url('@/assets/checkered-pattern.png')",
-        'TvScreen': "url('@/assets/TV_screen2.png')",
+        'TvScreen': "url('@/assets/TV_screen.png')",
         'TvScreenPixel': "url('@/assets/grid.png')"
       },
       fontFamily: {

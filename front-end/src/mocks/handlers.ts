@@ -159,7 +159,7 @@ export default [
 					user: {
 						id: 6,
 						login_42: userInfo.data.login,
-						username: 'jlaronch',
+						username: 'nlaronch',
 						rank: 0,
 						nbVictory: 0,
 						nbDefeat: 0,

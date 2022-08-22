@@ -78,7 +78,7 @@ window.removeEventListener('resize', handleResize)
             <span class="px-[2vw]">E</span>
         </div>
 		<div class="absolute m-auto left-0 right-0 bottom-[calc(0.15_*_100vh)]">
-			<img src="../assets/TV2.png" :class="tvSize()" class="relative m-auto left-0 right-0 z-10"/>
+			<img src="../assets/TV.png" :class="tvSize()" class="relative m-auto left-0 right-0 z-10"/>
 			<base-button link :to="{ name: 'Game' }" class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 				<div class="flex justify-center items-center h-full">
 					<h1 :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</h1>
@@ -141,5 +141,3 @@ window.removeEventListener('resize', handleResize)
 	0 0 151px #5271ff;
 }
 </style>
-
-<!-- [text-shadow:_-8px_0_black,_0_8px_black,_8px_0_black,_0_-8px_black] -->

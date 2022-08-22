@@ -6,6 +6,5 @@
                 <img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
             </div>
     </div>
-    
 </template>
  
