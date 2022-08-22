@@ -2,39 +2,7 @@
 
 import { onMounted } from 'vue';
 import Konva from 'konva'
-
-import { io, Socket } from "socket.io-client";
-
-interface ServerToClientEvents {
-	ball: (x: number, y: number) => void;
-}
-
-interface ClientToServerEvents {
-	start_match: () => void;
-}
-
-const serverHost = "localhost"
-const serverPort = "3001"
-
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://${serverHost}:${serverPort}`);
-
-console.log('[SOCKET.IO]', 'CLIENT', "Starting client socket.io ...")
-
-socket.on("connect", () => {
-	console.log('[SOCKET.IO]', 'CLIENT', "connected to server !")
-});
-
-socket.on("disconnect", (reason) => {
-	if (reason === "io server disconnect") {
-		console.log('[SOCKET.IO]', 'CLIENT', "server close connection.", reason)
-		// the disconnection was initiated by the server, you need to reconnect manually
-		socket.connect();
-	} else {
-		console.log('[SOCKET.IO]', 'CLIENT', "lost connection to server.", reason)
-	}
-});
-
-console.log('[SOCKET.IO]', 'CLIENT', "Client socket.io is started !")
+import { socket  } from '@/main'
 
 const stage_ratio = 3989/2976
 const ball_speed_quotient = 200 // the least, the faster
@@ -48,8 +16,6 @@ const blocker_movements_delta = 20 // the least, the slower (needs some kind of 
 const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
 onMounted(() => {
-
-
 	function computeStageHeight(): number { return window.innerHeight * (75 / 100) }
 	function computeBallSize(): number { return stage.width() / ball_size_quotient }
 	function computeBallSpeed(): number { return stage.width() / ball_speed_quotient }
@@ -64,7 +30,7 @@ onMounted(() => {
 		height: computeStageHeight(),
 		width: stage_width
 	})
-	//stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
+	stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
 	var layer = new Konva.Layer()
 
@@ -197,11 +163,13 @@ onMounted(() => {
 
 	stage.add(layer)
 	socket.on("ball", (x, y) => {
-		//console.log('[SOCKET.IO]', 'CLIENT', 'ball', x, y);
-		ball.x(x * stage.width())
-		ball.y(y * stage.width())
+		// console.log('[SOCKET.IO]', 'CLIENT', 'ball', x, y);
+		ball.x(x * (stage.width() / 3989))
+		ball.y(y * (stage.width() / 3989))
 	});
 	socket.emit("start_match");
+
+
 })
 
 </script>

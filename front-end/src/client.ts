@@ -3,25 +3,24 @@
 
 import { io, Socket } from "socket.io-client";
 
-interface ServerToClientEvents {
+export interface ServerToClientEvents {
 	ball: (x: number, y: number) => void;
 }
 
-interface ClientToServerEvents {
+export interface ClientToServerEvents {
 	start_match: () => void;
 }
 
-export async function createClient(serverHost: string, serverPort: number) {
+export function createClient(serverHost: string, serverPort: number) {
 
 	const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://${serverHost}:${serverPort}`);
+	configureClient(socket)
+	return socket
+}
 
+async function configureClient(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
 	console.log('[SOCKET.IO]', 'CLIENT', "Starting client socket.io ...")
 	socket.emit("start_match");
-	
-	socket.on("ball", (x, y) => {
-		console.log('[SOCKET.IO]', 'CLIENT', 'ball', x, y);
-		// a is inferred as number, b as string and c as buffer
-	});
 	
 	socket.on("connect", () => {
 		console.log('[SOCKET.IO]', 'CLIENT', "connected to server !")
