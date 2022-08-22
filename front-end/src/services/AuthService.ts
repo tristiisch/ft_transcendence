@@ -3,9 +3,9 @@ import type { AxiosResponse } from 'axios';
 
 class AuthService {
 	login(code: string) {
-		return axios.post('auth/42/redirect', { code }).then((response) => {
-			if (response.data.token) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+		return axios.post('auth/login', { code }).then((response) => {
+			if (response.data.auth.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
 			}
 			return response.data;
 		})
@@ -13,6 +13,7 @@ class AuthService {
 
 	login2FA(otpToken: string) {
 		return axios.post('auth/2fa/login', { otpToken }).then((response) => {
+			console.log(response.data)
 			if (response.data.token) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 			}
@@ -25,11 +26,15 @@ class AuthService {
 	}
 
 	enable2FA() {
-		return axios.post('auth/2fa/enable');
+		return axios.get('auth/2fa/enable');
 	}
 
 	disable2FA() {
-		return axios.post('auth/2fa/disable');
+		return axios.get('auth/2fa/disable');
+	}
+
+	getQrCode2FA() {
+		return axios.get('auth/2fa/qr-code');
 	}
 }
 

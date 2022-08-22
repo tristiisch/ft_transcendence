@@ -2,7 +2,7 @@ export enum Status {
 	OFFLINE,
 	ONLINE,
 	INGAME,
-	INCHAT,
-  }
+	SPEC,
+}
 
-  export default Status
+export default Status;
