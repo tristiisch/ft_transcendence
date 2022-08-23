@@ -49,12 +49,4 @@ export async function startMatch(socket)
 			socket.emit("ball", x, y)
 		}, 1)
 	})
-
-	var a = "benjamin ";
-	var b = "je ";
-	var c = "t'aime ";
-	var d = "<3";
-	console.log(a+b+c+d);
-	
-	
 }
