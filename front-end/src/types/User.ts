@@ -3,9 +3,9 @@ import type Status from '@/types/Status'
 export default interface User {
 	id: number
 	login_42: string
-	rank: number
-	nbVictory: number
-	nbDefeat: number
+	//rank: number
+	//nbVictory: number
+	//nbDefeat: number
 	avatar: string
 	username: string
 	status: Status

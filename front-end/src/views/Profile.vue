@@ -49,6 +49,19 @@ function fetchUser(id: number) {
 		});
 }
 
+/*function fetchStats(id: number) {
+	isLoading.value = true;
+	UsersService.getStats(id)
+		.then((response) => {
+			const stats = response.data;
+			console.log(stats)
+			isLoading.value = false;
+		})
+		.catch((e) => {
+			console.log(e)
+		});
+}*/
+
 watch(
 	() => route.params.id,
 	() => {
@@ -59,6 +72,7 @@ watch(
 onBeforeMount(() => {
 	if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
 	else fetchUser(parseInt(route.params.id as string));
+	//fetchStats(parseInt(route.params.id as string))
 });
 </script>
 

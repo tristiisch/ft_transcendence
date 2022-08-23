@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
 import type Match from '@/types/MatchHistory';
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import CardLeft from '@/components/CardLeft.vue';
 import CardRight from '@/components/CardRight.vue';
 import CurrentGame from '@/components/Lobby/CurrentGame.vue';
@@ -24,7 +24,7 @@ function setRightPartToDisplay()
 
 }
 
-async function fetchUsers() {
+async function fetchCurrentMatchs() {
 	isLoading.value = true;
 	return await UsersService.getCurrentMatchs()
 		.then((response) => {
@@ -53,8 +53,8 @@ function invitePlayer()
 
 }
 
-onMounted(() => {
-	fetchUsers();
+onBeforeMount(() => {
+	fetchCurrentMatchs();
 });
 </script>
 

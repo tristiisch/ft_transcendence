@@ -59,19 +59,6 @@ function statusOrder() {
 	}
 }
 
-function fetchUsers() {
-	UserService.getUsers()
-		.then((response) => {
-			console.log(response.data)
-			users.value = response.data;
-		})
-		.catch((e) => {
-			error.value = e.response.data.message
-			toast.error(error.value);
-		});
-	rankOrder();
-}
-
 function switchDysplayUsers() {
     if (type.value === 'All') {
         type.value = 'Friends';
@@ -80,10 +67,12 @@ function switchDysplayUsers() {
     }
 }
 
-function fetchfriends() {
-	UserService.getUserfriends(userStore.userData.id)
+function fetchLeaderboard() {
+	UserService.getLeaderboard(userStore.userData.id)
 		.then((response) => {
-				friends.value = response.data
+				console.log(response.data)
+				users.value = response.data.leaderBoard
+				friends.value = response.data.leaderBoardFriends
 		})
 		.catch((e) => {
 			error.value = e.response.data.message
@@ -108,8 +97,7 @@ const isLoading = computed(() => {
 });
 
 onBeforeMount(() => {
-	fetchUsers();
-	fetchfriends();
+	fetchLeaderboard();
 	socket.on('statusChange', (data) => {
 		changeUserStatus(data);
 	});

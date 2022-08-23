@@ -8,10 +8,6 @@ class UserService {
 		return axios.get('users');
 	}
 
-	getMe(id: number) {
-		return axios.get(`users/me/${id}`);
-	}
-
 	getUser(id: number) {
 		return axios.get(`users/${id}`);
 	}
@@ -49,6 +45,10 @@ class UserService {
 		return axios.post(`friends/remove/${id}`, { id: targetId });
 	}
 
+	getLeaderboard(id: number) {
+		return axios.post(`stats/leaderboard-with-friends`, {id});
+	}
+
 	getMatchsHistory(id: number) {
 		return axios.post(`matchs/history/${id}`);
 	}
@@ -58,7 +58,11 @@ class UserService {
 	}
 
 	getNotifications(id: number) {
-		return axios.get(`notifications/${id}`);
+		return axios.get(`notification/${id}`);
+	}
+
+	getStats(id: number) {
+		return axios.get(`stats/${id}`);
 	}
 
 	getChannels() {
