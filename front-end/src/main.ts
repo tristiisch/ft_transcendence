@@ -43,4 +43,3 @@ app.component('base-ui', BaseUi);
 
 
 app.mount('#app');
-createClient('localhost', 3001);

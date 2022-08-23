@@ -6,6 +6,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, watch, onBeforeMount } from 'vue';
+import socket from '@/plugin/socketInstance';
 
 const router = useRouter();
 const route = useRoute();
@@ -58,6 +59,7 @@ function submit2faForm() {
 	userStore
 		.handleLogin2Fa(twoFaCode.value)
 		.then(() => {
+			socket.connect()
 			router.replace({ name: 'Home' });
 		})
 		.catch((e) => {
@@ -77,6 +79,7 @@ function submitRegistrationForm() {
 		userStore
 			.registerUser(username.value, image.value)
 			.then(() => {
+				socket.connect()
 				router.replace({ name: 'Home' });
 			})
 			.catch((e) => {
