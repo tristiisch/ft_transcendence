@@ -9,6 +9,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
 	start_match: () => void;
+	p1_dy: (dy: number) => void; 
 }
 
 export function createClient(serverHost: string, serverPort: number) {
