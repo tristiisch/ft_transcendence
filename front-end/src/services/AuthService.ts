@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios';
 
 class AuthService {
 	login(code: string) {
-		return axios.post('auth/login', { code }).then((response) => {
+		return axios.post('auth/42/redirect', { code }).then((response) => {
 			if (response.data.auth.token) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
 			}
@@ -26,7 +26,7 @@ class AuthService {
 	}
 
 	enable2FA() {
-		return axios.get('auth/2fa/enable');
+		return axios.post('auth/2fa/enable');
 	}
 
 	disable2FA() {
@@ -34,7 +34,7 @@ class AuthService {
 	}
 
 	getQrCode2FA() {
-		return axios.get('auth/2fa/qr-code');
+		return axios.get('auth/2fa/generate');
 	}
 }
 
