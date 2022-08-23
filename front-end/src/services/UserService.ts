@@ -8,9 +8,20 @@ class UserService {
 		return axios.get('users');
 	}
 
-	getUser(username: string) {
-		console.log('getUserData')
-		return axios.get(`users/${username}`);
+	getUser(id: number) {
+		return axios.get(`users/${id}`);
+	}
+
+	registerUser(id: number, username: string, avatar: string) {
+		return axios.patch(`users/register/${id}`, { username, avatar });
+	}
+
+	updateUsename(id: number, username: string) {
+		return axios.patch(`users/me/${id}/set-username`, { username });
+	}
+
+	updateAvatar(id: number, avatar: string) {
+		return axios.patch(`users/me/${id}/set-avatar`, { avatar });
 	}
 
 	getUserfriends(id: number) {
@@ -18,29 +29,46 @@ class UserService {
 		return axios.get(`friends/names/${id}`);
 	}
 
+	sendFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/request/add/${id}`, { id: targetId });
+	}
+
+	acceptFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/accept/${id}`, { id: targetId });
+	}
+
+	refuseFriendRequest(id: number, targetId: number) {
+		return axios.post(`friends/request/remove/${id}`, { id: targetId });
+	}
+
+	removeFriend(id: number, targetId: number) {
+		return axios.post(`friends/remove/${id}`, { id: targetId });
+	}
+
+	getLeaderboard(id: number) {
+		return axios.post(`stats/leaderboard-with-friends`, {id});
+	}
+
+	getMatchsHistory(id: number) {
+		return axios.post(`matchs/history/${id}`);
+	}
+
 	getCurrentMatchs() {
 		return axios.get('matchs/current');
 	}
 
-	sendFriendRequest(id: number, targetUsername: string) {
-		return axios.post(`friends/request/add/${id}`, { username: targetUsername });
+	getNotifications(id: number) {
+		return axios.get(`notification/${id}`);
 	}
 
-	AcceptFriendRequest(id: number, targetId: number) {
-		return axios.post(`friends/accept/${id}`, { id: targetId });
+	getStats(id: number) {
+		return axios.get(`stats/${id}`);
 	}
 
-	RefuseFriendRequest(id: number, targetId: number) {
-		return axios.post(`friends/request/remove/${id}`, { id: targetId });
+	getChannels() {
+		return axios.get('chat/channels');
 	}
 
-	removeFriend(id: number, targetUsername: string) {
-		return axios.post(`friends/remove/${id}`, { username: targetUsername });
-	}
-
-	getMatchsHistory(username: string) {
-		return axios.post(`matchs/history`, { username: username });
-	}
 }
 
 export default new UserService();

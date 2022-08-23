@@ -16,3 +16,8 @@
     font-family: Arlon;
     src: url(@/assets/font/Arlon-UltraBold.ttf);
   }
+
+  @font-face {
+    font-family: Vibur;
+    src: url(@/assets/font/Vibur-Regular.ttf);
+  }
