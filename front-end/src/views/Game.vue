@@ -66,23 +66,23 @@ onMounted(() => {
 		y: stage.height() / 2 - blockers_height / 2,
 		fill: 'red'
 	})
-	document.addEventListener("keydown", function(e) {
-		// console.log(e.key)
-		if (e.key == 'ArrowDown') {
-			if (p1_blocker.y() + p1_blocker.height() + blocker_movements_delta * fullstage_ratio <= stage.height() - stage.height() / 11.5)
-			{
-				socket.emit("p1_dy", blocker_movements_delta)
-				p1_blocker.y(p1_blocker.y() + blocker_movements_delta * fullstage_ratio)
-			}
-		}
-		else if (e.key == 'ArrowUp') {
-			if (p1_blocker.y() - blocker_movements_delta * fullstage_ratio >= stage.height() / 11.5)
-			{
-				socket.emit("p1_dy", -blocker_movements_delta)
-				p1_blocker.y(p1_blocker.y() - blocker_movements_delta * fullstage_ratio)
-			}
-		}
-	})
+	// document.addEventListener("keydown", function(e) {
+	// 	// console.log(e.key)
+	// 	if (e.key == 'ArrowDown') {
+	// 		if (p1_blocker.y() + p1_blocker.height() + blocker_movements_delta * fullstage_ratio <= stage.height() - stage.height() / 11.5)
+	// 		{
+	// 			socket.emit("p1_dy", blocker_movements_delta)
+	// 			p1_blocker.y(p1_blocker.y() + blocker_movements_delta * fullstage_ratio)
+	// 		}
+	// 	}
+	// 	else if (e.key == 'ArrowUp') {
+	// 		if (p1_blocker.y() - blocker_movements_delta * fullstage_ratio >= stage.height() / 11.5)
+	// 		{
+	// 			socket.emit("p1_dy", -blocker_movements_delta)
+	// 			p1_blocker.y(p1_blocker.y() - blocker_movements_delta * fullstage_ratio)
+	// 		}
+	// 	}
+	// })
 
 	layer.add(ball)
 	layer.add(p1_blocker)
