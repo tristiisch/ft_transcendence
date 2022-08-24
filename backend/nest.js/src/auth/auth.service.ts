@@ -37,7 +37,7 @@ export class AuthService {
 		userAuth = await this.findOne(user.id);
 		if (!userAuth) {
 			userAuth = new UserAuth(user.id);
-			userAuth.token = 'fake-token';
+			userAuth.token = await this.createToken(user.id);
 			userAuth.twofa = null;
 			this.save(userAuth);
 		}

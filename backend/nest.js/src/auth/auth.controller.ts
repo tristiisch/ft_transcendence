@@ -33,14 +33,12 @@ export class AuthController {
 			const user = await this.authService.UserConnecting(userInfo);
 			const auth = await this.authService.findOne(user.id);
 			if (user && auth.has_2fa === true)
-				res.json({auth: auth,
-						token: this.authService.createTempToken(user.id)
+				res.json({auth: auth
 				}); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
 				res.json({
 					auth: auth, //il faut encore créer le token
-					user: user,
-					token: this.authService.createToken(user.id)
+					user: user
 				});
 		}catch(err42){
 			throw( new ForbiddenException("Unauthorized"))
@@ -50,7 +48,7 @@ export class AuthController {
 
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
-export class TwoFactorAuthenticationController {
+export class TFAController {
 	constructor(	private readonly authService: AuthService,) {}
 
 	@Post('generate')
