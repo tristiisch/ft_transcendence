@@ -54,14 +54,14 @@ export async function createSocketServer(serverPort: number) {
 
 				const blocker_width = width / 50
 				const blocker_height = height / 5
+				console.log("blocker height", blocker_height)
 				const p1_xpos = width / 10
 				const p2_xpos = width - width / 10
 				var p1_ypos = height / 2 - blocker_height / 2
 				var p2_ypos = height / 2 - blocker_height / 2
 
 				socket.on('p1_dy', function(dy: number) {
-					p1_ypos += dy
-					console.log(p1_ypos)
+					p1_ypos = dy
 				})
 				// socket.on('p2_dy', function(dy: number) {
 				// 	p2_ypos += dy
@@ -77,12 +77,12 @@ export async function createSocketServer(serverPort: number) {
 						// console.log(context.getImageData(x, y, 1, 1).data)
 						if (x + dx < 0 || x + dx > width) { dx = -dx }
 						if (y + dy < 0 || y + dy > height) { dy = -dy }
-						let rgba = context.getImageData(x + dx, y, 1, 1).data
-						let rgba2 = context.getImageData(x, y + dy, 1, 1).data
-						if (y > 300 && y < 2700 && !(rgba[0] === 255 && rgba[1] === 255 && rgba[2] === 255 && rgba[2] === 255))
-							dx = -dx
-						if (x > 200 && x < 3800 && !(rgba2[0] === 255 && rgba2[1] === 255 && rgba2[2] === 255 && rgba2[2] === 255))
-							dy = -dy
+						// let rgba = context.getImageData(x + dx, y, 1, 1).data
+						// let rgba2 = context.getImageData(x, y + dy, 1, 1).data
+						// if (y > 300 && y < 2700 && !(rgba[0] === 255 && rgba[1] === 255 && rgba[2] === 255 && rgba[2] === 255))
+						// 	dx = -dx
+						// if (x > 200 && x < 3800 && !(rgba2[0] === 255 && rgba2[1] === 255 && rgba2[2] === 255 && rgba2[2] === 255))
+						// 	dy = -dy
 						if (x > p1_xpos && x < p1_xpos + blocker_width && x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > p1_ypos && y + dy < p1_ypos + blocker_height)
 							dy = -dy
 						else if (x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > p1_ypos && y + dy < p1_ypos + blocker_height)
@@ -91,7 +91,7 @@ export async function createSocketServer(serverPort: number) {
 						y += dy
 						socket.emit("ball", x, y)
 
-						dx += dx < 0 ? -0.0001 : 0.0001
+						//dx += dx < 0 ? -0.0001 : 0.0001
 					}, 1)
 				})
 				started = true

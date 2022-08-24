@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import Konva from 'konva'
-import { socket  } from '@/main'
+import socket from '@/plugin/socketInstance'
 
 const stage_ratio = 3989/2976
 const ball_speed_quotient = 200 // the least, the faster
@@ -49,7 +49,15 @@ onMounted(() => {
 		height: blockers_height,
 		x: stage.width() / blocker_xpos_quotient,
 		y: stage.height() / 2 - blockers_height / 2,
-		fill: 'red'
+		fill: 'red',
+		draggable: true,
+		dragBoundFunc: function (pos) {
+			socket.emit("p1_dy", pos.y / fullstage_ratio)
+			return {
+				x: this.absolutePosition().x,
+				y: pos.y
+			};
+		}
 	})
 	var p2_blocker = new Konva.Rect({
 		width: blockers_width,
@@ -118,11 +126,27 @@ onMounted(() => {
 	socket.emit("start_match");
 })
 
+const windowHeight = ref(window.innerHeight);
+const windowWidth = ref(window.innerWidth);
+
+function screenSize()
+{
+	if (windowHeight.value > windowWidth.value)
+		return 'w-[calc(1_*_100vw)]'
+	return 'w-[calc(1_*_100vh)]'
+}
+
 </script>
 
 <template>
 	<div class="h-full w-full bg-[#9f9e89] bg-TvScreen-texture">
-		<div id="stage-container" class="bg-contain bg-TvScreen bg-no-repeat bg-center"></div>
+		<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div>
+		<div :class="screenSize()" class="animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
+		</div>
+		<div :class="screenSize()" class="absolute opacity-10 m-auto left-0 right-0 top-3 h-3/4 bg-TvScreenPixel"></div>
+		<div id="stage-container"></div>
+		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
 	</div>
 	<!-- <div class="relative flex flex-col h-full w-full justify-center bg-[#9f9e89] bg-TvScreen-texture">
 		<div class="h-full w-full bg-contain bg-TvScreen bg-no-repeat bg-center z-10 xl:my-6 flex">
@@ -138,8 +162,8 @@ onMounted(() => {
 
 #stage-container {
 	height: 75%;
-	max-width: 3989px;
-	max-height: 2976px;
+	/* max-width: 3989px;
+	max-height: 2976px; */
 	aspect-ratio: 3989/2976;
 	position: absolute;
 	margin-right: auto;
@@ -151,6 +175,48 @@ onMounted(() => {
 	bottom: 0;
 	top: 0;
 	/* background-color:rgba(1,255,1,1); */
+}
+
+@keyframes refresh {
+	0% {
+		bottom: 100%;
+	}
+	80% {
+		bottom: 100%;
+	}
+	100% {
+		bottom: 0%;
+	}
+}
+
+@keyframes flicker {
+	0% {
+		opacity: 0.98;
+	}
+	1% {
+		opacity: 0.95;
+	}
+}
+
+.animationFlicker {
+	animation: flicker 0.15s infinite alternate;
+}
+
+.animationRefresh {
+	animation: refresh 8s linear infinite;
+}
+
+.neon-text {
+  color: #fff;
+  text-shadow:
+	0 0 7px #fff,
+	0 0 10px #fff,
+	0 0 21px #fff,
+	0 0 42px #5271ff,
+	0 0 82px #5271ff,
+	0 0 92px #5271ff,
+	0 0 102px #5271ff,
+	0 0 151px #5271ff;
 }
 
 </style>
