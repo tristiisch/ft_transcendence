@@ -13,7 +13,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const toast = useToast();
 
-const username = ref(userStore.userData.username);
+const username = ref(userStore.userData.login_42);
 const image = ref(userStore.userData.avatar);
 let isUpload = false;
 const twoFaCode = ref('');
@@ -42,9 +42,9 @@ function uploadImage(imageData: string): void {
 }
 
 watch(
-	() => userStore.userData.username,
+	() => userStore.userData.login_42,
 	() => {
-		username.value = userStore.userData.username;
+		username.value = userStore.userData.login_42;
 	}
 );
 

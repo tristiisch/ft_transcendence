@@ -9,7 +9,7 @@ const userStore = useUserStore();
 const toast = useToast();
 const authString = localStorage.getItem('userAuth');
 
-if (authString && userStore.isLoggedIn) {
+if (authString) {
 	console.log(authString)
 	console.log(userStore.userData.username)
 	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token}`;

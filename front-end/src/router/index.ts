@@ -61,11 +61,14 @@ router.beforeEach((to, _) => {
 	const userStore = useUserStore();
 	if (to.name !== 'Login' && !userStore.isLoggedIn) {
 		return { name: 'Login' };
-	} else if (to.name !== 'Login' && userStore.isLoggedIn && !userStore.isRegistered) {
-		return { name: 'Login' };
-	} else if (to.name !== 'Login' && userStore.isLoggedIn && userStore.isRegistered && !userStore.isAuthenticated) {
-		return { name: 'Login' };
-	} else if (to.name === 'Login' && userStore.isLoggedIn && userStore.isRegistered && userStore.isAuthenticated) {
+	//} else if (to.name !== 'Login' && userStore.isLoggedIn && !userStore.isRegistered) {
+		//return { name: 'Login' };
+	//} else if (to.name !== 'Login' && userStore.isLoggedIn && userStore.isRegistered && !userStore.isAuthenticated) {
+		//return { name: 'Login' };
+	//} else if (to.name === 'Login' && userStore.isLoggedIn && userStore.isRegistered && userStore.isAuthenticated) {
+		//return { name: 'Home' };
+	//}
+	} else if (to.name === 'Login' && userStore.isLoggedIn) {
 		return { name: 'Home' };
 	}
 });
