@@ -1,5 +1,6 @@
 /** @prettier */
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { AuthService } from 'src/auth/auth.service';
 import { FriendsService } from 'src/friends/friends.service';
 import { MatchStats } from 'src/game/matchs/entity/matchstats.entity';
 import { MatchStatsService } from 'src/game/matchs/matchs.service';
@@ -21,6 +22,8 @@ export class TestFakeService {
 	private readonly statsService: StatsService;
 	@Inject(MatchStatsService)
 	private readonly matchHistoryService: MatchStatsService;
+	@Inject(AuthService)
+	private readonly authService: AuthService;
 
 	private readonly randomMaxStats = 100;
 	private readonly randomMaxScoreGame = 5;

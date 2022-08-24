@@ -7,9 +7,10 @@ import { TestController } from './test.controller';
 import { TestFakeService } from './test-fake.service';
 import { TestDbService } from './test-db.service';
 import { MatchStatsModule } from 'src/game/matchs/matchs.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-	imports: [UsersModule, StatsModule, MatchStatsModule, FriendsModule],
+	imports: [UsersModule, StatsModule, MatchStatsModule, FriendsModule, AuthModule],
 	controllers: [TestController],
 	providers: [TestFakeService, TestDbService],
 })

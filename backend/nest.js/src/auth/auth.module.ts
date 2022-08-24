@@ -15,5 +15,6 @@ dotenv.config();
 	imports: [JwtModule, JwtModule.register({secret: process.env.JWT_SECRET,}), UsersModule, TypeOrmModule.forFeature([UserAuth])],
 	providers: [AuthService, JwtStrategy, JwtTFAStrategy],
 	controllers: [AuthController, TFAController],
+	exports: [AuthService]
 })
 export class AuthModule {}

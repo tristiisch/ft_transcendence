@@ -12,9 +12,14 @@ import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
+
 	constructor(private jwtService: JwtService, private usersService: UsersService,
 		@InjectRepository(UserAuth)
 		private authRepository: Repository<UserAuth>){
+	}
+
+	getRepo() {
+		return this.authRepository;
 	}
 
 	async UserConnecting(userInfo42: any): Promise<User> {
