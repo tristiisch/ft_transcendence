@@ -13,7 +13,7 @@ class UserService {
 	}
 
 	registerUser(id: number, username: string, avatar: string) {
-		return axios.patch(`users/register/${id}`, { username, avatar });
+		return axios.patch(`users/register`, { username, avatar });
 	}
 
 	updateUsename(id: number, username: string) {
@@ -50,7 +50,7 @@ class UserService {
 	}
 
 	getMatchsHistory(id: number) {
-		return axios.post(`matchs/history/${id}`);
+		return axios.post(`matchs/history`);
 	}
 
 	getCurrentMatchs() {
