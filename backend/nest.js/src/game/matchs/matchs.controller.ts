@@ -30,9 +30,14 @@ export class MatchsStatsController {
 	@UseGuards(JwtAuthGuard)
 	@Post('history')
 	async getUserHistory(@Req() req, @Body() userSelected: UserSelectDTO) {
-		// const user: User = req.user;
-		const target: User = await userSelected.resolveUser(this.usersService);
+		let target: User;
+		const user: User = req.user;
 
+		if (userSelected.isEmpty()) {
+			target = user;
+		} else {
+			target = await userSelected.resolveUser(this.usersService);
+		}
 		return await this.matchsHistoryService.findHistory(target.id);
 	}
 

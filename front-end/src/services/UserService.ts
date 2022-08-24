@@ -45,12 +45,15 @@ class UserService {
 		return axios.post(`friends/remove/${id}`, { id: targetId });
 	}
 
-	getLeaderboard(id: number) {
-		return axios.post(`stats/leaderboard-with-friends`, {id});
+	getLeaderboard() {
+		return axios.get(`stats/leaderboard-with-friends`);
 	}
 
+	/**
+	 * @param id Should be defined only if you need the history of other user
+	 */
 	getMatchsHistory(id: number) {
-		return axios.post(`matchs/history`);
+		return axios.post(`matchs/history`, { id: id });
 	}
 
 	getCurrentMatchs() {

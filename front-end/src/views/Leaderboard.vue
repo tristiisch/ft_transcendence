@@ -68,7 +68,7 @@ function switchDysplayUsers() {
 }
 
 function fetchLeaderboard() {
-	UserService.getLeaderboard(userStore.userData.id)
+	UserService.getLeaderboard()
 		.then((response) => {
 				console.log(response.data)
 				users.value = response.data.leaderBoard

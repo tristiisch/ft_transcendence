@@ -20,10 +20,11 @@ export class StatsController {
 		return this.statsService.leaderboard();
 	}
 
-    @Post('leaderboard-with-friends')
-	async getLeaderboardWithFriends(@Body() userSelected: UserSelectDTO) {
-		const user: User = await userSelected.resolveUser(this.usersService);
-	
+	@UseGuards(JwtAuthGuard)
+    @Get('leaderboard-with-friends')
+	async getLeaderboardWithFriends(@Req() req) {
+		const user: User = req.user;
+
 		return this.statsService.leaderboardWithFriends(user);
 	}
 
