@@ -109,6 +109,7 @@ export class StatsService {
 
 			leaderUser.rank = index++;
 			leaderUser.username = target.username;
+			leaderUser.id = target.id;
 			leaderUser.avatar = target.getAvatarURL();
 			leaderUser.status = target.status;
 
