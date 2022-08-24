@@ -1,6 +1,8 @@
 /** @prettier */
-import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { UserAuth } from 'src/auth/entity/user-auth.entity';
+import { JwtAuthGuard } from 'src/auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';
@@ -30,9 +32,11 @@ export class UsersController {
 		return this.usersService.findOneBy42Login(login);
 	}
 
-	@Patch('register/:id')
-	registerUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		return this.usersService.register(id, userToUpdate);
+	@UseGuards(JwtAuthGuard)
+	@Patch('register')
+	registerUser(@Req() req, @Body() userToUpdate: UserDTO) {
+		const user: User = req.user;
+		return this.usersService.register(user.id, userToUpdate);
 	}
 
 	@Patch('me/:id/set-username')

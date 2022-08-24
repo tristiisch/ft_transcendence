@@ -29,7 +29,7 @@ export class AuthController {
 			const result = await axios.post(url, postData);
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-			console.log(result.data.access_token);
+			console.log('Token 42', result.data.access_token);
 			const user = await this.authService.UserConnecting(userInfo);
 			const auth = await this.authService.findOne(user.id);
 			delete auth.twofa;

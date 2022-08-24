@@ -17,7 +17,7 @@ export class AuthService {
 		private authRepository: Repository<UserAuth>){
 	}
 
-	async UserConnecting(userInfo42: any){
+	async UserConnecting(userInfo42: any): Promise<User> {
 		let user: User;
 		let userAuth: UserAuth;
 		try {
