@@ -1,8 +1,16 @@
 import { IsInt, Min } from "class-validator";
+import { User } from "src/users/entity/user.entity";
 import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class UserStats extends BaseEntity {
+
+	constructor(userId: number) {
+		super();
+		this.user_id = userId;
+		this.victories = 0;
+		this.defeats = 0;
+	}
 
 	@PrimaryColumn()
 	user_id: number;

@@ -37,12 +37,39 @@ export class StatsService {
         }, this.userService.lambdaDatabaseUnvailable);
     }
 
-    async findOne(target: User): Promise<UserStats> {
-		return await this.statsRepository.findOneBy({ user_id: target.id }).then((stats: UserStats) => {
+    async findOne(user: User): Promise<UserStats> {
+		return await this.statsRepository.findOneBy({ user_id: user.id }).then((stats: UserStats) => {
 			if (!stats)
-				throw new PreconditionFailedException(`${target.username} never played.`);
+				throw new PreconditionFailedException(`${user.username} never played.`);
             return stats;
         }, this.userService.lambdaDatabaseUnvailable);
+    }
+
+    async findOrCreate(userId: number): Promise<UserStats> {
+		let userStats: UserStats;
+
+		try {
+			userStats = await this.findOneById(userId);
+		} catch (err) {
+			if (!(err instanceof PreconditionFailedException))
+				throw err;
+			userStats = new UserStats(userId);
+		}
+		return userStats;
+    }
+
+    async addDefeat(userId: number) {
+		const userStats: UserStats = await this.findOrCreate(userId);
+
+		++userStats.defeats;
+		return await this.statsRepository.save(userStats);
+    }
+
+    async addVictory(userId: number) {
+		const userStats: UserStats = await this.findOrCreate(userId);
+
+		++userStats.victories;
+		return await this.statsRepository.save(userStats);
     }
 
 	/**
