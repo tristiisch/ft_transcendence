@@ -18,7 +18,7 @@ const channels = [
 								id:1
 							},
 {
-								date: 'Sep 5, 2018 12:33:27',
+								date: 'Sep 5, 2018 12:33:17',
 								message: 'hello',
 								id:2
 							},
@@ -46,8 +46,8 @@ const channels = [
 	{
 		name: 'TSV',
 		type: Status.PROTECTED,
-		avatar: null,
-		users: Users,
+		avatar: 'src/assets/ChannelDefaultProtected.png',
+		users: [Users[0], Users[3], Users[4]],
 		password: 'password',
 		admin: Users,
 		owner: 'jlaronch',

@@ -75,7 +75,7 @@ const discussions = new Map<number, Discussion[]>([
 							},
 							{
 								date: 'Sep 5, 2018 12:35:27',
-								message: 'i am at Nice now?',
+								message: 'i am at Nice',
 								id:6
 							}]
 			},

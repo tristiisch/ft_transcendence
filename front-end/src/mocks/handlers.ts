@@ -8,6 +8,7 @@ import notifications from '@/data/notifications'
 import friends from '@/data/friends';
 import channels from '@/data/Channels';
 import Status from '@/types/Status';
+import type Message from '@/types/Message';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import type User from '@/types/User';
@@ -95,6 +96,18 @@ export default [
 
 	rest.get('/chat/discussionsHistoric/:id', (req, res, ctx) => {
 		return res(ctx.json(discussions.get(parseInt(req.params.id as string))));
+	}),
+
+	rest.post('/chat/addDiscussion/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		// discussions.set(parseInt(req.params.id as string), [{ user: users.find((user) => user.id === data.id) as User, messages: [] as Message[] }]);
+		return res(ctx.status(200));
+	}),
+
+	rest.post('/chat/addChannel/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		// discussions.set(parseInt(req.params.id as string), [{ user: users.find((user) => user.id === data.id) as User, messages: [] as Message[] }]);
+		return res(ctx.status(200));
 	}),
 
 	rest.post('/matchs/history/:id', async (req, res, ctx) => {

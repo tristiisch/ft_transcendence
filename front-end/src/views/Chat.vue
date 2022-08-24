@@ -3,8 +3,8 @@ import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, computed } from 'vue';
 import UserService from '@/services/UserService';
-import type User from '@/types/User';
 import type Channel from '@/types/Channel';
+import type User from '@/types/User';
 import ChannelStatus from '@/types/ChannelStatus';
 import CardLeft from '@/components/CardLeft.vue';
 import CardRight from '@/components/CardRight.vue';
@@ -34,9 +34,6 @@ const rightClick = ref([] as boolean[]);
 const isRegistered = ref(false);
 const error = ref('');
 
-//socket.auth = [userStore.userData.username];
-//socket.connect();
-
 function showFriends() {
 	if (leftPartToDisplay.value != 'discussions') leftPartToDisplay.value = 'discussions';
 	if (rightPartToDisplay.value != 'chat') rightPartToDisplay.value = 'chat';
@@ -53,16 +50,16 @@ function fetchDiscussions() {
 	UserService.getDiscussion(userStore.userData.id)
 		.then((response) => {
 			discussions.value = response.data;
-			if (route.query.discussion) {
-				if(discussions.value)
-				{
-					const discussion = discussions.value.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string))
-					if (discussion)
-						loadDiscussion(discussion)
-					else
-						invitePlayer()
-				}
-            }
+			// if (route.query.discussion) {
+			// 	if(discussions.value)
+			// 	{
+			// 		const discussion = discussions.value.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string))
+			// 		if (discussion)
+			// 			loadDiscussion(discussion)
+			// 		else
+			// 			invitePlayer(parseInt(route.query.discussion as string))
+			// 	}
+            // }
 		})
 		.catch((e) => {
 			error.value = e.response.data.message
@@ -93,7 +90,7 @@ function setPartToDisplay(name: string | null) {
 		rightPartToDisplay.value = name;
 	} else {
 		if (leftPartToDisplay.value === 'discussions') rightPartToDisplay.value = 'addDiscussion';
-		else if (leftPartToDisplay.value === 'channels') rightPartToDisplay.value = 'createChannel';
+		else if (leftPartToDisplay.value === 'channels') rightPartToDisplay.value = 'addChannel';
 		else rightPartToDisplay.value = 'chat';
 	}
 	setRightCardTitle(rightPartToDisplay.value);
@@ -126,6 +123,49 @@ function loadChannel(channel: Channel) {
 	}
 }
 
+function addDiscussion(user: User)
+{
+	if (discussions.value) 
+	{
+		for(const discussion of discussions.value)
+		{
+			if (discussion.user.id === user.id)
+			{
+				loadDiscussion(discussion)
+				return 
+			}
+		}
+		UserService.addDiscussion(userStore.userData.id, user.id)
+		.then(() => {	
+			if (discussions.value)
+			{
+				discussions.value.push( { user: user, messages: []})
+				loadDiscussion(discussions.value[discussions.value.length - 1])
+			}
+		})
+		.catch((e) => {
+				error.value = e.response.data.message
+				toast.error(error.value);
+		});
+	}
+}
+
+function addChannel2(usersId: number[], newChannel: Channel)
+{
+	UserService.addChannel(userStore.userData.id, usersId)
+		.then(() => {	
+				if (channels.value)
+				{
+					channels.value.push(newChannel)
+					loadChannel(channels.value[channels.value.length - 1])
+				}
+		})
+		.catch((e) => {
+				error.value = e.response.data.message
+				toast.error(error.value);
+		});
+}
+
 function deleteChannelDiscussion(index: number) {
 	// let index = channels.value.findIndex(channel)
 	// channels.value.splice(index, 1)
@@ -146,10 +186,6 @@ onBeforeMount(() => {
 	fetchChannels();
 	fetchDiscussions();
 });
-
-// onbeforeunload = () => {
-// 	socket.emit("leave", username);
-// 	};
 </script>
 
 <template>
@@ -187,9 +223,9 @@ onBeforeMount(() => {
 					</div>
 					<img v-else class="flex justify-center items-center h-full" src="@/assets/42.png" />
 				</div>
-				<channel-settings v-else-if="rightPartToDisplay === 'channelSettings' && inChannel" @return="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></channel-settings>
-				<AddSearchPlayer v-else-if="rightPartToDisplay === 'addDiscussion'" @close="setPartToDisplay('chat')" @validate="invitePlayer" :singleSelection="true"></AddSearchPlayer>
-				<add-channel v-else-if="rightPartToDisplay === 'createChannel'" @close="setPartToDisplay('chat')" @validate="invitePlayer"></add-channel>
+				<channel-settings v-else-if="rightPartToDisplay === 'channelSettings' && inChannel" @return="setPartToDisplay('chat')" @validate="invitePlayer()" :inChannel="inChannel"></channel-settings>
+				<AddSearchPlayer v-else-if="rightPartToDisplay === 'addDiscussion'" @close="setPartToDisplay('chat')" @validateAddDiscussion="addDiscussion" :singleSelection="true"></AddSearchPlayer>
+				<add-channel v-else-if="rightPartToDisplay === 'addChannel'" @close="setPartToDisplay('chat')" @validateAddChannel="addChannel2"></add-channel>
 			</card-right>
 		</div>
 	</base-ui>

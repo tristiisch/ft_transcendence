@@ -34,8 +34,6 @@ function channelAvatar()
 {
 	if(props.channel.avatar)
 		return props.channel.avatar
-	else
-		return "src/assets/ChannelDefault.png"
 }
 </script>
 

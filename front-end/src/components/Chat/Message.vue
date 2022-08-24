@@ -10,7 +10,7 @@ import BaseButton from '../BaseButton.vue';
 const userStore = useUserStore();
 
 const props = defineProps<{
-	messages: Message[]
+	messages: Message[] | null
 	inChannel: Channel | null
 	inDiscussion: Discussion | null
 }>();
@@ -55,7 +55,7 @@ onUpdated(()=> {
 </script>
 
 <template>
-    <div v-for="message in messages" :key="message.date" class="flex gap-2 w-full mt-3 mb-1.5 pl-8">
+    <div v-if="messages" v-for="message in messages" :key="message.date" class="flex gap-2 w-full mt-3 mb-1.5 pl-8">
 		<BaseButton link :to="redirectTo(message.id)">
 			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="searchPlayerAvatar(message.id)">
 		</BaseButton>

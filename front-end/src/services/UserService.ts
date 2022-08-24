@@ -68,6 +68,14 @@ class UserService {
 	getDiscussion(id: number) {
 		return axios.get(`chat/discussionsHistoric/${id}`);
 	}
+
+	addDiscussion(id: number, targetId: number) {
+		return axios.post(`chat/addDiscussion/${id}`, { id: targetId })
+	}
+
+	addChannel(id: number, targetId: number[]) {
+		return axios.post(`chat/addChannel/${id}`, { id: targetId })
+	}
 }
 
 export default new UserService();

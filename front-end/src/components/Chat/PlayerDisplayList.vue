@@ -4,7 +4,8 @@ import type User from '@/types/User';
 import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue';
 
 const showCheckMark = ref([] as boolean[])
-
+const selectedUsers = ref<User[]>([])
+const selectedUser = ref<User | null>(null)
 const props = defineProps<{ 
 users: User[]; 
 singleSelection: boolean
@@ -15,17 +16,26 @@ function checkMarkActivation(index: number)
 	if (props.singleSelection === false)
 	{
 		showCheckMark.value[index] = true
+		selectedUsers.value.push(props.users[index])
 		return
 	}
 	for (const value of showCheckMark.value)
 		if (value === true && props.singleSelection === true)
 			return
 	showCheckMark.value[index] = true
+	selectedUser.value = props.users[index]
+}
+
+function emitSelectedUsers()
+{
+	if (selectedUser.value) emit('validateAddPlayer', selectedUser.value)
+	else if (selectedUsers.value != []) emit('validateAddPlayers', selectedUsers.value)
 }
 
 const emit = defineEmits<{
 	(e: 'close'): void,
-	(e: 'validate'): void
+	(e: 'validateAddPlayers', users: User[]): void,
+	(e: 'validateAddPlayer', user: User): void
 }>()
 
 watch(() => props.users, () => {
@@ -51,5 +61,5 @@ watch(() => props.users, () => {
 			</button>
 		</div>
 	</div>
-	<ButtonCloseValidate @validate="emit('validate')" @close="emit('close')"></ButtonCloseValidate>
+	<ButtonCloseValidate @validate="emitSelectedUsers()" @close="emit('close')"></ButtonCloseValidate>
 </template>

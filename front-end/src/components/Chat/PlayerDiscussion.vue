@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue'
+import { ref, watch } from 'vue'
 import type Discussion from '@/types/Discussion'
-import type Message from '@/types/Message'
 
 const props = defineProps<{
 	discussion: Discussion;
 }>();
 
 const lastMessage = ref(props.discussion.messages[props.discussion.messages.length - 1]);
+
+watch(props.discussion.messages, () => {
+	lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1]
+});
 </script>
 
 <template>

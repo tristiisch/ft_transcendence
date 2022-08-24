@@ -5,9 +5,9 @@ import type status from '@/types/ChannelStatus';
 export default interface Channel {
 	name: string,
 	type: status,
-	avatar: string | null,
+	avatar: string,
 	users: User[],
-	password: (string | null)
+	password: string | null
 	admin: User[],
 	owner: string,
 	mute: User[],
