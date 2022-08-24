@@ -32,6 +32,7 @@ export class AuthController {
 			console.log(result.data.access_token);
 			const user = await this.authService.UserConnecting(userInfo);
 			const auth = await this.authService.findOne(user.id);
+			delete auth.twofa;
 			if (user && auth.has_2fa === true)
 				res.json({auth: auth
 				}); // il est aussi de basculer sur le bon controller depuis le back
