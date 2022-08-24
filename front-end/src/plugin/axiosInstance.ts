@@ -1,6 +1,13 @@
 import axios from 'axios';
 import { useUserStore } from '@/stores/userStore';
 
+const authString = localStorage.getItem('userAuth');
+
+if (authString) {
+	const token = JSON.parse(authString).accessToken;
+	axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
 const instance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
 });

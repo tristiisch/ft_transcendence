@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { TestModule } from './test/test.module';
 import { NotificationModule } from './notification/notification.module';
 import { MatchStatsModule } from './game/matchs/matchs.module';
+import { JwtStrategy } from './auth/strategy/jwt.strategy';
 
 @Module({
 	imports: [
@@ -28,6 +29,6 @@ import { MatchStatsModule } from './game/matchs/matchs.module';
 		NotificationModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService, JwtStrategy],
 })
 export class AppModule {}

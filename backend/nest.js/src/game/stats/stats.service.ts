@@ -25,12 +25,22 @@ export class StatsService {
     @Inject(FriendsService)
     private readonly friendsService: FriendsService;
 
-    async findOne(userId: number): Promise<UserStats> {
+	/**
+	 * @param userId UNSAFE: this function didn't check if user id exist or not
+	 */
+    async findOneById(userId: number): Promise<UserStats> {
 		isNumberPositive(userId, 'get a user');
-        await this.userService.findOne(userId);
 		return await this.statsRepository.findOneBy({ user_id: userId }).then((stats: UserStats) => {
 			if (!stats)
-				throw new PreconditionFailedException('You\'ve never played, start a game!');
+				throw new PreconditionFailedException(`This user never played.`);
+            return stats;
+        }, this.userService.lambdaDatabaseUnvailable);
+    }
+
+    async findOne(target: User): Promise<UserStats> {
+		return await this.statsRepository.findOneBy({ user_id: target.id }).then((stats: UserStats) => {
+			if (!stats)
+				throw new PreconditionFailedException(`${target.username} never played.`);
             return stats;
         }, this.userService.lambdaDatabaseUnvailable);
     }
@@ -49,9 +59,9 @@ export class StatsService {
 	 */
     async update(stats: UserStats) {
         await this.userService.findOne(stats.user_id);
-		const statsBefore: UserStats = await this.findOne(stats.user_id);
+		const statsBefore: UserStats = await this.findOneById(stats.user_id);
 		await this.statsRepository.update(stats.user_id, stats);
-		const statsAfter: UserStats = await this.findOne(stats.user_id);
+		const statsAfter: UserStats = await this.findOneById(stats.user_id);
 
 		if (isEquals(statsBefore, statsAfter)) {
 			return { statusCode: 200, message: 'Nothing change.'}

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { MatchStats } from './entity/matchstats.entity';
 import { MatchOwn } from './entity/own-match.entity';
 
@@ -25,22 +25,26 @@ export class MatchStatsService {
 		return this.matchsHistoryRepository.save(matchHistory);
 	}
 
-	async findAll(userId: number) : Promise<MatchOwn[]> {
+	async findHistory(userId: number) : Promise<MatchOwn[]> {
 		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
-			.where('matchhistory.user1_id = :id', { id: userId })
-			.orWhere('matchhistory.user2_id = :id')
+			.where('matchhistory.timestamp_ended is NOT NULL')
+			.andWhere(new Brackets(web => {
+				web.where('matchhistory.user1_id = :id', { id: userId }),
+				web.orWhere('matchhistory.user2_id = :id')
+			}))
 			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
 		try {
-			return await sqlStatement.getMany().then(async matchs => {
+			return await sqlStatement.getMany().then(async (matchs: MatchStats[]) => {
 				const matchsFormatted: MatchOwn[] = new Array()
 				for (let m of matchs) {
 					let matchFormatted: MatchOwn = new MatchOwn();
 					let opponentId = m.getOpponent(userId);
 					matchFormatted.date = m.timestamp_started;
+					matchFormatted.end = m.timestamp_ended;
 					matchFormatted.score = m.score;
 					matchFormatted.opponent = (await this.userService.findOne(opponentId)).username;
 					matchFormatted.won = m.isWinner(userId);
-					if (matchFormatted.won ? matchFormatted.score[0] < matchFormatted.score[1] : matchFormatted.score[0] > matchFormatted.score[1]) {
+					if (m.user1_id !== userId) {
 						let tmp = matchFormatted.score[0];
 						matchFormatted.score[0] = matchFormatted.score[1];
 						matchFormatted.score[1] = tmp;

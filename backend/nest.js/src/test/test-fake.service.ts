@@ -8,7 +8,7 @@ import { StatsService } from 'src/game/stats/stats.service';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { random, randomElement, randomEnum, removeFromArray, toBase64 } from 'src/utils/utils';
+import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from 'src/utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 
 @Injectable()
@@ -42,8 +42,9 @@ export class TestFakeService {
 
 		const stats: UserStats = await this.initStats(user);
 		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
+		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, await this.friendsService.findAllRelationsId(user.id));
 
-		this.initNewFriendship(user, allUserIdsExceptUser);
+		this.initNewFriendship(user, usersWithoutRelation);
 		return { user, stats, matchs };
 	}
 
@@ -56,13 +57,12 @@ export class TestFakeService {
 			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 			if (matchs == null) break;
 		}
-		const allFriendsOfUser: number[] = await this.friendsService.findFriendsIds(user.id);
-		for (let userToRemove of allFriendsOfUser) {
-			removeFromArray(allUserIdsExceptUser, userToRemove);
-		}
+		const userWithRealationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
+		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, userWithRealationsIds);
+
 		let iFriends = -1;
-		while (++iFriends < allUserIdsExceptUser.length) {
-			const target: UserSelectDTO = await this.initNewFriendship(user, allFriendsOfUser);
+		while (++iFriends < usersWithoutRelation.length) {
+			const target: UserSelectDTO = await this.initNewFriendship(user, usersWithoutRelation);
 			if (!target) break;
 			removeFromArray(allUserIdsExceptUser, target.id);
 		}
@@ -131,14 +131,14 @@ export class TestFakeService {
 			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
 			return null;
 		}
-		const randomUserId: number = randomElement(userIds);
 		const randomUser: UserSelectDTO = new UserSelectDTO();
-		randomUser.id = randomUserId;
-		randomUser.username = 'fakePlayer';
+		randomUser.id = randomElement(userIds);
+		randomUser.username = randomUser.id.toString();
+
+		await this.friendsService.addFriendRequest(user, randomUser);
+	
 		const randomNb: number = random(1, 4);
 
-		// console.log('User', user, 'randomUser', randomUser);
-		await this.friendsService.addFriendRequest(user, randomUser);
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);
 		return randomUser;
