@@ -1,9 +1,10 @@
-import { Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
+import { UserRequest } from './interfaces/UserRequest.interface';
 
 
 
@@ -29,32 +30,58 @@ export class AuthController {
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
 			console.log('Token 42', result.data.access_token);
-			//checker avec login si user existe
-			//Si (il existe, ne pas créer et verifier si 2fa ON ou OFF)\
-			//Si (2fa ON)
-			//	dire au front que que le 2fa est ON
-			//	(Créer token special 2fa)
 			const user = await this.authService.UserConnecting(userInfo);
-			if (user) {
-				const tokenJwt: string = await this.authService.createToken(user.id);
-				console.log('Token JWT', tokenJwt);
-			res.json({
-					auth: {
-						user_id: user.id, // voir si on le garde ou pas
-						token: tokenJwt,
-						has_2fa: false},
+			const auth = await this.authService.findOne(user.id);
+			delete auth.twofa;
+			if (user && auth.has_2fa === true)
+				res.json({auth: auth
+				}); // il est aussi de basculer sur le bon controller depuis le back
+			else if (user)
+				res.json({
+					auth: auth, //il faut encore créer le token
 					user: user
 				});
-			}
 		}catch(err42){
-			throw( new UnauthorizedException("Unauthorized"))
+			throw( new ForbiddenException("Unauthorized"))
 		}
 	}
-
-	//inL:@Post('2fa')
-	//async TwoFactorAuth(@Res() res: Response, @Req() req: Request){
-	//
-	//}
 }
 
+@Controller('2fa')
+@UseInterceptors(ClassSerializerInterceptor)
+export class TFAController {
+	constructor(	private readonly authService: AuthService,) {}
 
+	@Post('generate')
+	@UseGuards(JwtAuthGuard)
+	async register(@Res() response: Response, @Req() request: Request) {
+		const { otpauthUrl } = await this.authService.generateTFASecret(request.body.user_id);
+		return this.authService.QrCodeStream(response, otpauthUrl);
+	}
+
+	@Post('enable')
+	@UseGuards(JwtAuthGuard)
+	async enableTFA(@Req() req: UserRequest) {
+		const valid_code = this.authService.TFACodeValidation(
+			req.user.twofa, req.user);
+		if (!valid_code)
+			throw new UnauthorizedException('Wrong authentification code');
+		await this.authService.enableTFA(req.user.user_id)
+	}
+
+	@Post('authenticate')
+	@HttpCode(200)
+	@UseGuards(JwtAuthGuard)
+	async authenticate(@Req() req: UserRequest, @Res() res: Response) {
+	  const isCodeValid = this.authService.TFACodeValidation(
+		req.user.twofa, req.user);
+	  if (!isCodeValid) {
+		throw new UnauthorizedException('Wrong authentication code');
+	  }
+	  res.json({
+		auth: this.authService.findOne(req.user.user_id),
+		user: this.authService.UserConnectingTFA(req.user.user_id),
+		token: this.authService.createTFAToken(req.user.user_id)
+	  });
+	}
+}

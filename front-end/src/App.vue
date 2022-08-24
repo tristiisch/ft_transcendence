@@ -1,4 +1,28 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import axios from '@/plugin/axiosInstance';
+import UserService from '@/services/UserService';
+import { useUserStore } from '@/stores/userStore';
+import { useToast } from 'vue-toastification';
+import socket from './plugin/socketInstance';
+
+const userStore = useUserStore();
+const toast = useToast();
+const authString = localStorage.getItem('userAuth');
+
+if (authString) {
+	console.log(authString)
+	console.log(userStore.userData.username)
+	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token}`;
+	UserService.getUser(JSON.parse(authString).user_id)
+		.then((response) => {
+			socket.connect()
+			userStore.userData = response.data;
+		})
+		.catch((e) => {
+			toast.error(e.response.data.message)
+		});
+}
+</script>
 
 <template>
     <router-view></router-view>

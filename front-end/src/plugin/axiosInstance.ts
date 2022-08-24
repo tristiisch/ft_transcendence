@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/userStore';
 const authString = localStorage.getItem('userAuth');
 
 if (authString) {
-	const token = JSON.parse(authString).token;
+	const token = JSON.parse(authString).accessToken;
 	axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 }
 

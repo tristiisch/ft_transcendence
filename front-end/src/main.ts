@@ -10,6 +10,7 @@ import BaseCard from '@/components/BaseCard.vue';
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from '@/components/TheHeader.vue';
 import BaseUi from '@/components/BaseUi.vue';
+import BaseSpinner from './components/BaseSpinner.vue';
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import { createClient } from './client';
@@ -35,9 +36,10 @@ app.provide('axios', app.config.globalProperties.axios);
 
 app.component('base-button', BaseButton);
 app.component('base-card', BaseCard);
+app.component('base-spinner', BaseSpinner);
 app.component('the-footer', TheFooter);
 app.component('the-header', TheHeader);
 app.component('base-ui', BaseUi);
 
+
 app.mount('#app');
-createClient('localhost', 3001);
