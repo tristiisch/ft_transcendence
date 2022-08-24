@@ -4,8 +4,8 @@ import type { AxiosResponse } from 'axios';
 class AuthService {
 	login(code: string) {
 		return axios.post('auth/42/redirect', { code }).then((response) => {
-			if (response.data.auth.auth.token) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.auth.token}`;
+			if (response.data.auth.token) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
 			}
 			return response.data;
 		})
