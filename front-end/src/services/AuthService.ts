@@ -26,15 +26,15 @@ class AuthService {
 	}
 
 	enable2FA() {
-		return axios.post('auth/2fa/enable');
+		return axios.post('2fa/enable');
 	}
 
 	disable2FA() {
-		return axios.get('auth/2fa/disable');
+		return axios.get('2fa/disable');
 	}
 
 	getQrCode2FA() {
-		return axios.get('auth/2fa/generate');
+		return axios.post('2fa/generate');
 	}
 }
 

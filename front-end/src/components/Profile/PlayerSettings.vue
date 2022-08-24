@@ -58,7 +58,7 @@ function toogle2FA() {
 			});
 	} else {
 		isLoading.value = true;
-		AuthService.enable2FA()
+		AuthService.getQrCode2FA()
 			.then((response) => {
 				qrCode.value = response.data;
 				userStore.update2FA(true);
