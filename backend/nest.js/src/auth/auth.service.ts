@@ -27,6 +27,7 @@ export class AuthService {
 				user = new User;
 				// user.username = userInfo42.data.login; Est définie a null tant que l'user n'est pas register
 				user.login_42 = userInfo42.data.login;
+				user.username = null;
 				user.avatar = await toBase64(userInfo42.data.image_url);
 				user.status = UserStatus.ONLINE;
 				user = await this.usersService.add(user);
