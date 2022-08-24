@@ -104,9 +104,6 @@ export class TestFakeService {
 		const targetId: number = randomElement(userIds);
 		const matchHistory: MatchStats = new MatchStats();
 
-		const userStat: UserStats = await this.statsService.addDefeat(user.id);
-		const targetStat: UserStats = await this.statsService.findOneById(targetId);
-
 		if (random(0, 2) === 1) {
 			matchHistory.user2_id = user.id;
 			matchHistory.user1_id = targetId;
@@ -133,7 +130,7 @@ export class TestFakeService {
 				await this.statsService.addVictory(targetId)
 				await this.statsService.addDefeat(user.id)
 			} else {
-				throw new InternalServerErrorException(`They is no winner in this match.`);
+				throw new InternalServerErrorException(`They is no winner in the match ${JSON.stringify(matchHistory)}.`);
 			}
 		} else {
 			const scoreUser1: number = random(0, this.randomMaxScoreGame);;
