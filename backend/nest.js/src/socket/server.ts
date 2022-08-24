@@ -3,7 +3,7 @@
 
 import { Server } from "socket.io";
 //import { startMatch } from "../game/matchs/matchs.sockets"
-import { createCanvas, loadImage } from 'canvas'
+//import { createCanvas, loadImage } from 'canvas'
 
 interface ServerToClientEvents {
 	ball: (x: number, y: number) => void;
@@ -67,12 +67,12 @@ export async function createSocketServer(serverPort: number) {
 				// 	p2_ypos += dy
 				// })
 
-				let canvas = createCanvas(3989, 2976)
-				canvas.width = 3989
-				canvas.height = 2976
-				var context = canvas.getContext('2d')
-				loadImage("https://i.ibb.co/9ZrtvT4/stage.png").then((img) => {
-					context.drawImage(img, 0, 0, 3989, 2976)
+				// let canvas = createCanvas(3989, 2976)
+				// canvas.width = 3989
+				// canvas.height = 2976
+				// var context = canvas.getContext('2d')
+				// loadImage("https://i.ibb.co/9ZrtvT4/stage.png").then((img) => {
+				// 	context.drawImage(img, 0, 0, 3989, 2976)
 					setInterval(function() {
 						// console.log(context.getImageData(x, y, 1, 1).data)
 						if (x + dx < 0 || x + dx > width) { dx = -dx }
@@ -93,7 +93,7 @@ export async function createSocketServer(serverPort: number) {
 
 						//dx += dx < 0 ? -0.0001 : 0.0001
 					}, 1)
-				})
+				// })
 				started = true
 			// }
 		});

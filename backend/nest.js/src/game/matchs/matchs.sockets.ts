@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from 'canvas'
+//import { createCanvas, loadImage } from 'canvas'
 import { Console } from 'console'
 
 export async function startMatch(socket)
@@ -28,25 +28,25 @@ export async function startMatch(socket)
 	// 	p2_ypos += dy
 	// })
 
-	let canvas = createCanvas(3989, 2976)
-	canvas.width = 3989
-	canvas.height = 2976
-	var context = canvas.getContext('2d')
-	loadImage("https://i.ibb.co/9ZrtvT4/stage.png").then((img) => {
-		context.drawImage(img, 0, 0, 3989, 2976)
+	// let canvas = createCanvas(3989, 2976)
+	// canvas.width = 3989
+	// canvas.height = 2976
+	// var context = canvas.getContext('2d')
+	// loadImage("https://i.ibb.co/9ZrtvT4/stage.png").then((img) => {
+	// 	context.drawImage(img, 0, 0, 3989, 2976)
 		setInterval(function() {
 			// console.log(context.getImageData(x, y, 1, 1).data)
-			// if (x + dx < 0 || x + dx > width) { dx = -dx }
-			// if (y + dy < 0 || y + dy > height) { dy = -dy }
-			let rgba = context.getImageData(x + dx, y, 1, 1).data
-			let rgba2 = context.getImageData(x, y + dy, 1, 1).data
-			if (y > 300 && y < 2700 && !(rgba[0] === 255 && rgba[1] === 255 && rgba[2] === 255 && rgba[2] === 255))
-				dx = -dx
-			if (x > 200 && x < 3800 && !(rgba2[0] === 255 && rgba2[1] === 255 && rgba2[2] === 255 && rgba2[2] === 255))
-				dy = -dy
+			if (x + dx < 0 || x + dx > width) { dx = -dx }
+			if (y + dy < 0 || y + dy > height) { dy = -dy }
+			// let rgba = context.getImageData(x + dx, y, 1, 1).data
+			// let rgba2 = context.getImageData(x, y + dy, 1, 1).data
+			// if (y > 300 && y < 2700 && !(rgba[0] === 255 && rgba[1] === 255 && rgba[2] === 255 && rgba[2] === 255))
+			// 	dx = -dx
+			// if (x > 200 && x < 3800 && !(rgba2[0] === 255 && rgba2[1] === 255 && rgba2[2] === 255 && rgba2[2] === 255))
+			// 	dy = -dy
 			x += dx
 			y += dy
 			socket.emit("ball", x, y)
 		}, 1)
-	})
+	// })
 }
