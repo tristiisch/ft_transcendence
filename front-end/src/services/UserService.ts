@@ -65,6 +65,9 @@ class UserService {
 		return axios.get('chat/channels');
 	}
 
+	getDiscussion(id: number) {
+		return axios.get(`chat/discussionsHistoric/${id}`);
+	}
 }
 
 export default new UserService();

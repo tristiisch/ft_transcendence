@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ButtonGradient1 from '@/components/ButtonGradient1.vue';
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
@@ -28,11 +28,11 @@ function setDisplayedPart(button: number) {
 
 function treatFriendRequest() {
 	if (friendButton.value === 'Add friend')
-		UsersService.sendFriendRequest(userStore.userData.id, parseInt(route.params.id as string)).catch((e) => {
+		UserService.sendFriendRequest(userStore.userData.id, parseInt(route.params.id as string)).catch((e) => {
 			console.log(e);
 		});
 	else
-		UsersService.removeFriend(userStore.userData.id, parseInt(route.params.id as string))
+		UserService.removeFriend(userStore.userData.id, parseInt(route.params.id as string))
 			.then(() => {
 				fetchfriends();
 			})
@@ -59,7 +59,7 @@ const button2Name = computed(() => {
 });
 
 async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.userData.id)
+	await UserService.getUserfriends(userStore.userData.id)
 		.then((response) => {
 			friends.value = response.data;
 			console.log(response.data);

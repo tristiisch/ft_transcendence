@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type  Match from '@/types/MatchHistory';
 import { useRoute } from 'vue-router';
 import { ref, onMounted, computed } from 'vue';
@@ -21,7 +21,7 @@ function colorTextScore(value:MatchHistory, opponent:boolean) {
 }
 
 async function fetchMatchsHistory() {
-	return await UsersService.getMatchsHistory(parseInt(route.params.id as string))
+	return await UserService.getMatchsHistory(parseInt(route.params.id as string))
         .then((response) => {
 			matchsHistory.value = response.data;
 		})

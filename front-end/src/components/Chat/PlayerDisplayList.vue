@@ -1,19 +1,36 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue'
+import { ref, watch } from 'vue'
 import type User from '@/types/User';
-import type Channel from '@/types/Channel';
 import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue';
 
 const showCheckMark = ref([] as boolean[])
 
-const props = defineProps<{
-	users: User[];
+const props = defineProps<{ 
+users: User[]; 
+singleSelection: boolean
 }>();
+
+function checkMarkActivation(index: number)
+{
+	if (props.singleSelection === false)
+	{
+		showCheckMark.value[index] = true
+		return
+	}
+	for (const value of showCheckMark.value)
+		if (value === true && props.singleSelection === true)
+			return
+	showCheckMark.value[index] = true
+}
 
 const emit = defineEmits<{
 	(e: 'close'): void,
 	(e: 'validate'): void
 }>()
+
+watch(() => props.users, () => {
+	showCheckMark.value = []
+});
 
 </script>
 
@@ -24,7 +41,7 @@ const emit = defineEmits<{
 				<img class="shrink-0 w-12 h-12 rounded-full object-cover border border-red-400" :src="user.avatar" alt="Rounded avatar">
 				<p class="px-4 text-sm text-red-200">{{ user.username }}</p>
 			</div>
-			<button v-if="!showCheckMark[index]" @click="showCheckMark[index] = true">
+			<button v-if="!showCheckMark[index]" @click="checkMarkActivation(index)">
 				<svg class="h-10 w-10 mr-6">
 					<circle cx="20" cy="20" r="8"  fill="none" stroke="#f87171" stroke-width="1" />
 				</svg>

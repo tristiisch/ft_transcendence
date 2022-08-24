@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type Channel from '@/types/Channel';
 import Status from '@/types/ChannelStatus';
+
 const props = defineProps<{ channel: Channel; }>();
 
 function colorPublic() { 
@@ -29,12 +30,19 @@ function colorProtected() {
 
 function isPrivate() { return props.channel.type === Status.PRIVATE}
 
+function channelAvatar()
+{
+	if(props.channel.avatar)
+		return props.channel.avatar
+	else
+		return "src/assets/ChannelDefault.png"
+}
 </script>
 
 <template>
      <button class="flex justify-between items-center w-full h-[60px] border-b-[1px] border-slate-600 pr-2">
         <div class="shrink-0 flex items-center h-full">
-            <img class="w-8 h-8 sm:h-12 sm:w-12 rounded object-cover border-[1px] border-slate-400" :src="channel.avatar" alt="Rounded avatar">
+            <img class="w-8 h-8 sm:h-12 sm:w-12 rounded object-cover border-[1px] border-slate-400" :src="channelAvatar()" alt="Rounded avatar">
         </div>
         <p class="px-2 break-words truncate text-slate-700">{{ channel.name }}</p>
         <div class="flex flex-col justify-around items-center">

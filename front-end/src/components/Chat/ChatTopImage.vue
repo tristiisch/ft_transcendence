@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import type User from '@/types/User';
+import type Discussion from '@/types/Discussion';
 import type Channel from '@/types/Channel';
 import baseButton from '@/components/BaseButton.vue'
 
 defineProps<{
-	inChatWith: User | null;
+	inDiscussion: Discussion | null;
 	inChannel: Channel | null;
 }>();
 
 </script>
 
 <template>
-	<div v-if="inChatWith" class="flex flex-col items-center -mt-3 sm:-mt-5">
-		<base-button  link :to="{ name: 'Profile', params: { id: inChatWith.id }}" class="pb-2">
-			<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border border-red-400" :src=inChatWith.avatar>
+	<div v-if="inDiscussion" class="flex flex-col items-center -mt-3 sm:-mt-5">
+		<base-button  link :to="{ name: 'Profile', params: { id: inDiscussion.user.id }}" class="pb-2">
+			<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full border border-red-400" :src=inDiscussion.user.avatar>
 		</base-button>
 		<div class="flex items-center w-full">
 			<span class="border-b-[1px] border-red-400 w-full"></span>
-			<h1 class="shrink-0 text-red-200 px-3 max-w-[80%] truncate">{{ inChatWith.username }}</h1>
+			<h1 class="shrink-0 text-red-200 px-3 max-w-[80%] truncate">{{ inDiscussion.user.username }}</h1>
 			<span class="border-b-[1px] border-red-400 w-full"></span>
 		</div>
 	</div>

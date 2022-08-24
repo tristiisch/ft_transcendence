@@ -73,6 +73,6 @@ const emit = defineEmits<{
 		</div>
 		<button-close-validate @click="selectPlayer = !selectPlayer" @close="emit('close')"></button-close-validate>
 	</div>
-	<add-search-player v-if="selectPlayer"  @close="emit('close')" @validate="emit('validate')"></add-search-player>
+	<add-search-player v-if="selectPlayer"  @close="emit('close')" @validate="emit('validate')" :singleSelection="false"></add-search-player>
 	
 </template>

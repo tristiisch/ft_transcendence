@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type Match from '@/types/MatchHistory';
 import { ref, onMounted } from 'vue';
 import CardLeft from '@/components/CardLeft.vue';
@@ -26,7 +26,7 @@ function setRightPartToDisplay()
 
 async function fetchUsers() {
 	isLoading.value = true;
-	return await UsersService.getCurrentMatchs()
+	return await UserService.getCurrentMatchs()
 		.then((response) => {
 			matchs.value = response.data;
 			isLoading.value = false;
@@ -73,7 +73,7 @@ onMounted(() => {
 					<div class="flex flex-col justify-center items-center w-full h-full">
 						<game-settings v-if="rightPartToDisplay === 'gameSettings'" @next="rightPartToDisplay = 'selectPlayer'"></game-settings>
 						<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
-						<add-search-player v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></add-search-player>
+						<add-search-player v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'" :singleSelection="true"></add-search-player>
 					</div>
 					<button-return-next v-if="rightPartToDisplay != 'invitePlayer'" @click="setRightPartToDisplay()" :side="side()" class="self-end mt-2"></button-return-next>
 				</div>

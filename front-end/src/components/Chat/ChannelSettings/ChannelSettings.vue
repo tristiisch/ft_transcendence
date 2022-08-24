@@ -26,9 +26,8 @@ function playerStatusText(channel: Channel)
 		if (channel.owner === userStore.userData.username) return 'OWNER'
 		else 
 		{
-			let i = 0;
-			while (i < channel.admin.length)
-				if (channel.admin[i].username === userStore.userData.username)
+			for (const member of channel.admin)
+				if (member.username === userStore.userData.username)
 					return 'ADMINISTRATOR'
 			return 'MEMBER'
 		}
@@ -42,9 +41,11 @@ function isAdmin() {
 			return true
 	return false
 }
+
 function setColSpan() {
 	if (isOwner() || (!isOwner() && !isAdmin()))
 		return 'col-span-2'
+	return 'col-span-auto'
 }
 
 function passwordStatusText(status: Status)
@@ -88,7 +89,7 @@ function updateMuteBan()
 
 <template>
 	<div class="flex flex-col justify-between h-full w-full px-8 3xl:px-10">
-		<ChatTopImage :inChatWith="null" :inChannel="inChannel"></ChatTopImage>
+		<ChatTopImage :inDiscussion="null" :inChannel="inChannel"></ChatTopImage>
 		<div v-if="displayButton()" class="flex flex-col justify-around h-full">
 			<div class="flex flex-col justify-center items-center gap-5">
 				<div class="text-center">
@@ -97,7 +98,7 @@ function updateMuteBan()
 					<p class="text-red-200 text-xs sm:text-sm">The channel has <span class="text-red-800">{{ administratorStatusText() }}</span> admin, <span span class="text-red-800">{{ muteStatusText() }}</span> mutted member and <span span class="text-red-800">{{ banStatusText() }}</span> banned</p>
 				</div>
 				<div class="grid grid-cols-2 gap-2 items-center w-full lg:w-3/4">
-					<button  @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					<button  v-if="isOwner()" @click="displayPasswordPage = !displayPasswordPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 						Password/Name
 					</button>
 					<button v-if="isAdmin()" @click="displayAdminPage = !displayAdminPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
@@ -114,20 +115,7 @@ function updateMuteBan()
 			</div>
 		</div>
 		<ChannelPasswordName v-else-if="displayPasswordPage" @close="displayPasswordPage = !displayPasswordPage" @validate="changeNamePassword" :inChannel="inChannel"></ChannelPasswordName>
-		<PlayerDisplayList v-else @close="setDisplayPage" @validate="updateMuteBan" :users="ChannelUsers"></PlayerDisplayList>
+		<PlayerDisplayList v-else @close="setDisplayPage" @validate="updateMuteBan" :users="ChannelUsers" :singleSelection="false"></PlayerDisplayList>
 		<ButtonReturnNext v-if="displayButton()" :side="'previous'" @click="emit('return')" class="self-end"></ButtonReturnNext>
 	</div>
-	
-	<!-- <div class="overflow-y-auto h-full w-full">
-		<div v-for="user in inChannel?.users" :key="user.id" class="flex justify-between items-center h-[calc(100%_/_4) border-b-[1px] w-full border-red-400">
-			<div class="inline-flex items-center py-4">
-				<img class="shrink-0 w-12 h-12 rounded-full object-cover border-t-[1px] border-zinc-300" :src="user.avatar" alt="Rounded avatar">
-				<p class="px-4 text-sm">{{ user.username }}</p>
-			</div>
-			<svg class="h-10 w-10 mr-6">
-				<circle cx="20" cy="20" r="8"  fill="none" stroke="#f87171" stroke-width="1" />
-			</svg>
-		</div>
-	</div>
-	<Button-CloseValidate @validate="emit('validate')" @close="emit('close')"></Button-CloseValidate> -->
 </template>

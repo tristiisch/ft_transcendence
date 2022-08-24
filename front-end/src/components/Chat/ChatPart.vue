@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
-import type User from '@/types/User';
+import type Message from '@/types/Message';
 import type Channel from '@/types/Channel';
+import type User from '@/types/User';
 import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
-import Message from '@/components/Chat/Message.vue';
+import message from '@/components/Chat/Message.vue';
 import socket from '@/plugin/socketInstance';
-import { ref } from 'vue';
+import { onBeforeMount, watch, ref } from 'vue';
+import type Discussion from '@/types/Discussion';
 
 const userStore = useUserStore();
-const messages = ref([] as { message: string; sender: string; date: string }[]);
 const scroll = ref<HTMLInputElement | null>(null);
 const newMessage = ref('');
+const messages = ref<Message[]>([])
 
 const props = defineProps<{
-  inChatWith: User | null
+  inDiscussion: Discussion | null
   inChannel: Channel | null
-  users: User[] | null
 }>()
 
 const emit = defineEmits<{
@@ -23,27 +24,30 @@ const emit = defineEmits<{
 }>()
 
 function sendMessage() {
-	const now = new Date();
-	messages.value.push({
-		message: newMessage.value,
-		sender: userStore.userData.username,
-		date: '2022/09/8',
-	});
-	socket.emit('chat-message', {
-		message: newMessage.value,
-		sender: userStore.userData.username,
-		date: '2022/09/8',
-	});
-	newMessage.value = '';
-	scrollToEnd();
+	if (newMessage.value != '')
+	{
+		const now = (new Date()).toLocaleString();
+		messages.value.push({
+			date: now,
+			message: newMessage.value,
+			id: userStore.userData.id
+		});
+		socket.emit('chat-message', {
+			date: now,
+			message: newMessage.value,
+			id: userStore.userData.id
+		});
+		newMessage.value = '';
+		scrollToEnd();
+	}
 }
 
 socket.on('chat-message', (data) => {
 	console.log(data.sender);
 	messages.value.push({
-		message: data.message,
-		sender: data.sender,
 		date: data.date,
+		message: data.message,
+		id: data.id,
 	});
 	console.log(data);
 	console.log(messages.value);
@@ -54,19 +58,36 @@ function scrollToEnd() {
 		scroll.value.scrollTop = scroll.value.scrollHeight;
 	}
 }
+
+onBeforeMount(() => {
+	if (props.inDiscussion)
+		messages.value = props.inDiscussion.messages
+	else if (props.inChannel)
+		messages.value = props.inChannel.messages
+});
+
+watch(() => props.inDiscussion, () => {
+	if (props.inDiscussion)
+		messages.value = props.inDiscussion.messages
+});
+
+watch(() => props.inChannel, () => {
+	if (props.inChannel)
+		messages.value = props.inChannel.messages
+});
 </script>
 
 <template>
     <div class="flex flex-col justify-between h-full">
-        <ChatTopImage :inChatWith="inChatWith" :inChannel="inChannel"></ChatTopImage>
+        <ChatTopImage :inDiscussion="inDiscussion" :inChannel="inChannel"></ChatTopImage>
         <div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
-            <message v-if="users" @scroll="scrollToEnd" :messages="messages" :users="users"></message>
+            <message @scroll="scrollToEnd" :messages="messages" :inDiscussion="inDiscussion" :inChannel="inChannel"></message>
         </div>
         <div class="w-full flex justify-between gap-3">
             <form @submit.prevent="sendMessage()" class="w-full">
                 <input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white" />
             </form>
-            <button v-if="inChatWith" class="bg-lime-400 rounded-lg px-2">
+            <button v-if="inDiscussion" class="bg-lime-400 rounded-lg px-2">
                 <img src="@/assets/inGame.png" class="w-10" />
             </button>
             <button v-if="inChannel" @click="emit('channelSettings')">

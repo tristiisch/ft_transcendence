@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
 import { ref, onBeforeMount, computed } from 'vue';
@@ -13,7 +13,7 @@ const toast = useToast();
 
 function fetchNotifications() {
 	isLoading.value = true;
-	UsersService.getNotifications(userStore.userData.id)
+	UserService.getNotifications(userStore.userData.id)
 		.then((response) => {
 			notifications.value = response.data;
 			isLoading.value = false;
@@ -33,7 +33,7 @@ function acceptInvitation(notification: Notification) {
 	console.log('accept');
 	if (notification.Request === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.acceptFriendRequest(userStore.userData.id, notification.from.id)
+		UserService.acceptFriendRequest(userStore.userData.id, notification.from.id)
 		.then(() => {
 			if (notifications.value) {
 				for (let i = 0; i < notifications.value.length; i++) {
@@ -51,7 +51,7 @@ function declineInvitation(notification: Notification) {
 	console.log('decline');
 	if (notification.Request === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.refuseFriendRequest(userStore.userData.id, notification.from.id)
+		UserService.refuseFriendRequest(userStore.userData.id, notification.from.id)
 		.then(() => {
 			if (notifications.value) {
 				for (let i = 0; i < notifications.value.length; i++) {

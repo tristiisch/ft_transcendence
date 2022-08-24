@@ -3,6 +3,7 @@ import axios from 'axios';
 import users from '@/data/users';
 import matchs from '@/data/matchs';
 import matchsHistory from '@/data/matchsHistory';
+import discussions from '@/data/discussions';
 import notifications from '@/data/notifications'
 import friends from '@/data/friends';
 import channels from '@/data/Channels';
@@ -90,6 +91,10 @@ export default [
 
 	rest.get('/notifications/:id', (req, res, ctx) => {
 		return res(ctx.json(notifications.get(parseInt(req.params.id as string))));
+	}),
+
+	rest.get('/chat/discussionsHistoric/:id', (req, res, ctx) => {
+		return res(ctx.json(discussions.get(parseInt(req.params.id as string))));
 	}),
 
 	rest.post('/matchs/history/:id', async (req, res, ctx) => {

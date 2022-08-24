@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type User from '@/types/User';
 import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch } from 'vue';
@@ -36,7 +36,7 @@ function setPartToDisplay(displayPart: string) {
 
 function fetchUser(id: number) {
 	isLoading.value = true;
-	UsersService.getUser(id)
+	UserService.getUser(id)
 		.then((response) => {
 			user.value = response.data;
 			isLoading.value = false;
