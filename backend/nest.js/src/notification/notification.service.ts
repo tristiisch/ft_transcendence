@@ -53,6 +53,7 @@ export class NotificationService {
 	public async findMany(userId: number): Promise<NotificationFront[]> {
 		const sqlStatement: SelectQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notif');
 
+		sqlStatement.where('notif.user_id = :user_id', { user_id: userId});
 		sqlStatement.orderBy('notif.id', 'DESC', 'NULLS LAST');
 		return await sqlStatement.getMany().then(async (notifs: Notification[]) => {
 			const allNotifsFront: NotificationFront[] = new Array();

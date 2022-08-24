@@ -60,8 +60,8 @@ class UserService {
 		return axios.get('matchs/current');
 	}
 
-	getNotifications(id: number) {
-		return axios.get(`notification/${id}`);
+	getNotifications() {
+		return axios.get(`notification`);
 	}
 
 	getStats(id: number) {

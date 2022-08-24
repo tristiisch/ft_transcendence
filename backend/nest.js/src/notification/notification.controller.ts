@@ -10,10 +10,9 @@ export class NotificationController {
 	constructor(private readonly notifService: NotificationService) {}
 
 	@UseGuards(JwtAuthGuard)
-	@Get(':id')
-	getNotification(@Param('id') id: number) {
-		isNumberPositive(id, 'get notifications');
-		return this.notifService.findMany(id);
+	@Get()
+	getNotification(@Req() req) {
+		return this.notifService.findMany(req.user.id);
 	}
 
 	@UseGuards(JwtAuthGuard)

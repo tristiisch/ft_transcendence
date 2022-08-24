@@ -13,7 +13,7 @@ const toast = useToast();
 
 function fetchNotifications() {
 	isLoading.value = true;
-	UsersService.getNotifications(userStore.userData.id)
+	UsersService.getNotifications()
 		.then((response) => {
 			notifications.value = response.data;
 			isLoading.value = false;
