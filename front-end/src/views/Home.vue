@@ -79,11 +79,11 @@ window.removeEventListener('resize', handleResize)
         </div>
 		<div class="absolute m-auto left-0 right-0 bottom-[calc(0.15_*_100vh)]">
 			<img src="../assets/TV.png" :class="tvSize()" class="relative m-auto left-0 right-0 z-10"/>
-			<!-- <base-button link :to="{ name: 'Game' }" class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+			<base-button link :to="{ name: 'Game' }" class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 				<div class="flex justify-center items-center h-full">
 					<h1 :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</h1>
 				</div>
-			</base-button> -->
+			</base-button>
 			<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-3 h-3/4 bg-stone-800"></div>
 			<div :class="screenSize()" class="animationFlicker absolute m-auto left-0 right-0 top-3 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 				<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>

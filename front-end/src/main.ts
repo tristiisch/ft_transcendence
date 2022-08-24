@@ -41,4 +41,5 @@ app.component('the-footer', TheFooter);
 app.component('the-header', TheHeader);
 app.component('base-ui', BaseUi);
 
+
 app.mount('#app');

@@ -2,27 +2,41 @@
 // TEST socket.io server <-> client
 
 import { io, Socket } from "socket.io-client";
+import type { Buffer } from "buffer";
 
-export interface ServerToClientEvents {
-	ball: (x: number, y: number) => void;
+interface ServerToClientEvents {
+	noArg: () => void;
+	basicEmit: (a: number, b: string, c: Buffer) => void;
+	withAck: (d: string, callback: (e: number) => void) => void;
 }
 
-export interface ClientToServerEvents {
-	start_match: () => void;
-	p1_dy: (dy: number) => void; 
+interface ClientToServerEvents {
+	hello: () => void;
 }
 
-export function createClient(serverHost: string, serverPort: number) {
+export async function createClient(serverHost: string, serverPort: number) {
 
 	const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://${serverHost}:${serverPort}`);
-	configureClient(socket)
-	return socket
-}
 
-async function configureClient(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
 	console.log('[SOCKET.IO]', 'CLIENT', "Starting client socket.io ...")
-	socket.emit("start_match");
+	socket.emit("hello");
 	
+	socket.on("noArg", () => {
+		console.log('[SOCKET.IO]', 'CLIENT', 'noArg');
+		// ...
+	});
+	
+	socket.on("basicEmit", (a, b, c) => {
+		console.log('[SOCKET.IO]', 'CLIENT', 'basicEmit', a, b, c);
+		// a is inferred as number, b as string and c as buffer
+	});
+	
+	socket.on("withAck", (d, callback) => {
+		console.log('[SOCKET.IO]', 'CLIENT', 'withAck', d);
+		// d is inferred as string and callback as a function that takes a number as argument
+		callback.call(null, 10);
+	});
+
 	socket.on("connect", () => {
 		console.log('[SOCKET.IO]', 'CLIENT', "connected to server !")
 	});
