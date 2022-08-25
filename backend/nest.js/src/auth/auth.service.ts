@@ -33,7 +33,8 @@ export class AuthService {
 				// user.username = userInfo42.data.login; Est définie a null tant que l'user n'est pas register
 				user.login_42 = userInfo42.data.login;
 				user.username = null;
-				user.avatar = await toBase64(userInfo42.data.image_url);
+				user.avatar_64 = await toBase64(userInfo42.data.image_url);
+				user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 				user.status = UserStatus.ONLINE;
 				user = await this.usersService.add(user);
 			} else {
@@ -47,7 +48,6 @@ export class AuthService {
 			userAuth.twofa = null;
 			this.save(userAuth);
 		}
-		user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 		return user;
 	}
 

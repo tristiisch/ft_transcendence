@@ -81,7 +81,7 @@ export class TestFakeService {
 			return response.url;
 		});
 		*/
-		user.avatar = await toBase64('https://picsum.photos/200');
+		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
 		// user.status = UserStatus.IN_GAME;
 		return await this.usersService.add(user);

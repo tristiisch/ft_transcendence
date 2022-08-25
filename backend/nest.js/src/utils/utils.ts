@@ -90,5 +90,5 @@ export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: 
 	const imgType: string = imageBase64.substring('data:'.length, imageBase64.indexOf(';'))
 	const imgBase64: string = imageBase64.substring(imageBase64.indexOf(',') + 1, imageBase64.length)
 	const imgRaw = Buffer.from(imgBase64, 'base64')
-	return {imageType: imgType, imageBuffer : imgRaw };
+	return { imageType: imgType, imageBuffer : imgRaw };
 }

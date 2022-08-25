@@ -51,7 +51,7 @@ export class UsersController {
 	async updateAvatar(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
 		const user: User = await this.usersService.findOne(id);
 
-		user.avatar = userToUpdate.avatar;
+		user.avatar_64 = userToUpdate.avatar_64;
 		return await this.usersService.update(id, user);
 	}
 
