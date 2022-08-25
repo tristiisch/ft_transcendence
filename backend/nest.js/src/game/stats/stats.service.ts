@@ -39,8 +39,6 @@ export class StatsService {
 
     async findOne(user: User): Promise<UserStats> {
 		return await this.statsRepository.findOneBy({ user_id: user.id }).then((stats: UserStats) => {
-			if (!stats)
-				throw new PreconditionFailedException(`${user.username} never played.`);
             return stats;
         }, this.userService.lambdaDatabaseUnvailable);
     }

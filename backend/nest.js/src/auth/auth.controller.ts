@@ -34,7 +34,7 @@ export class AuthController {
 			const user: User = await this.authService.UserConnecting(userInfo);
 			const auth: UserAuth = await this.authService.findOne(user.id);
 			delete auth.twoFactorSecret; // TODO Verif this method
-			console.log('DEBUG LOGIN', 'auth:', auth, 'user:', user);
+			console.log('DEBUG LOGIN', 'auth:', auth);
 			if (user && auth.has_2fa === true)
 				res.json({ auth: auth }); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
@@ -53,7 +53,7 @@ export class TFAController {
 	@Get('generate')
 	@UseGuards(JwtAuthGuard)
 	async register(@Res() response: Response, @Req() request: Request) {
-		const { otpauthUrl } = await this.authService.generateTFASecret(1);
+		const otpauthUrl = await this.authService.generateTFASecret(1);
 		const qrCode = await this.authService.QrCodeStream(response, otpauthUrl);
 		response.json(qrCode)
 	}

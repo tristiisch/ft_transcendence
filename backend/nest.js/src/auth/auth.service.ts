@@ -34,9 +34,9 @@ export class AuthService {
 				user.login_42 = userInfo42.data.login;
 				user.username = null;
 				user.avatar_64 = await toBase64(userInfo42.data.image_url);
-				user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 				user.status = UserStatus.ONLINE;
 				user = await this.usersService.add(user);
+				user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 			} else {
 				throw err;
 			}

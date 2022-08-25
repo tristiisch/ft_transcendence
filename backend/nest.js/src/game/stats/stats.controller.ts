@@ -49,7 +49,9 @@ export class StatsController {
 	async getStats(@Req() req, @Body() userSelected: UserSelectDTO) {
 		// const user: User = req.user;
 		const target: User = await userSelected.resolveUser(this.usersService);
-
-		return this.statsService.findOne(target);
+		const userStats: UserStats = await this.statsService.findOne(target);
+		if (!userStats)
+			return userStats;
+		return { user_id: target.id, victories: 0, defeats: 0, score: 0 };
 	}
 }
