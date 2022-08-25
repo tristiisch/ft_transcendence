@@ -50,7 +50,7 @@ export class StatsController {
 		// const user: User = req.user;
 		const target: User = await userSelected.resolveUser(this.usersService);
 		const userStats: UserStats = await this.statsService.findOne(target);
-		if (!userStats)
+		if (userStats != null)
 			return userStats;
 		return { user_id: target.id, victories: 0, defeats: 0, score: 0 };
 	}
