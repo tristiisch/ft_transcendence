@@ -31,9 +31,6 @@ export class User extends BaseEntity {
 	@Column({ nullable: true })
 	avatar_64: string;
 
-	@Column({ nullable: true })
-  	public twoFactorSecret?: string;
-
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
 
 	status: UserStatus;

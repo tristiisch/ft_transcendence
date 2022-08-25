@@ -69,6 +69,7 @@ export class NotificationService {
 				}
 				allNotifsFront.push(notifFront);
 				notifFront.date = notif.date.toDateString();
+				notifFront.type = notif.type;
 			}
 			return allNotifsFront;
 		}, this.userService.lambdaDatabaseUnvailable);

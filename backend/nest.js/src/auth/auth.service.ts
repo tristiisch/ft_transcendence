@@ -44,8 +44,7 @@ export class AuthService {
 		userAuth = await this.findOne(user.id);
 		if (!userAuth) {
 			userAuth = new UserAuth(user.id);
-			userAuth.token = await this.createToken(user.id);
-			userAuth.twofa = null;
+			userAuth.token_jwt = await this.createToken(user.id);
 			this.save(userAuth);
 		}
 		return user;
@@ -86,7 +85,7 @@ export class AuthService {
 	public async createTempToken(id: number): Promise<string> {
 		const payload = { id: id };
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_SECRET,
+			secret: process.env.JWT_SECRET_2FA,
 			expiresIn: "2min" // prévoir une variable pour l'expiration du token
 		});
 	}
@@ -97,7 +96,7 @@ export class AuthService {
 			TFA_auth: true
 		};
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_SECRET,
+			secret: process.env.JWT_SECRET_2FA,
 		});
 	}
 
@@ -107,19 +106,24 @@ export class AuthService {
 
 	async findOne(userId: number): Promise<UserAuth> {
 		isNumberPositive(userId, 'get a auth user');
-		return this.authRepository.findOneBy({ user_id: userId });
+		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
+		if (userAuth.twoFactorSecret != null)
+			userAuth.has_2fa = true;
+		else
+			userAuth.has_2fa = false;
+		return userAuth;
 	}
 
 	async setTFASecret(secret: string, userId: number) {
 		return this.authRepository.update(userId, {
-		  twofa: secret
+			twoFactorSecret: secret
 		});
 	}
 
-	public async TFACodeValidation(code: string, user: UserAuth){
+	public async TFACodeValidation(code: string, userAuth: UserAuth){
 		return authenticator.verify({
 			token: code,
-			secret: user.twofa
+			secret: userAuth.twoFactorSecret
 		})
 	}
 

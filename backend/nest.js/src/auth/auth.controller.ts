@@ -5,6 +5,8 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
 import { UserRequest } from './interfaces/UserRequest.interface';
+import { User } from 'src/users/entity/user.entity';
+import { UserAuth } from './entity/user-auth.entity';
 
 
 
@@ -32,17 +34,13 @@ export class AuthController {
 			console.log('Token 42', result.data.access_token);
 			const user = await this.authService.UserConnecting(userInfo);
 			const auth = await this.authService.findOne(user.id);
-			delete auth.twofa;
+			//delete auth.twofa;
 			if (user && auth.has_2fa === true)
-				res.json({auth: auth
-				}); // il est aussi de basculer sur le bon controller depuis le back
+				res.json({ auth: auth }); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
-				res.json({
-					auth: auth, //il faut encore créer le token
-					user: user
-				});
-		}catch(err42){
-			throw( new ForbiddenException("Unauthorized"))
+				res.json({ auth: auth, user: user });
+		} catch(err42) {
+			throw new ForbiddenException("Unauthorized");
 		}
 	}
 }
@@ -62,10 +60,10 @@ export class TFAController {
 
 	@Post('enable')
 	@UseGuards(JwtAuthGuard)
-	async enableTFA(@Req() req: UserRequest, @Body() twoFaCode: any) {
-		console.log(twoFaCode.code)
-		const valid_code = this.authService.TFACodeValidation(
-			req.user.twofa, req.user);
+	async enableTFA(@Req() req, @Body() data) {
+		const user: User = req.user;
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		const valid_code = this.authService.TFACodeValidation(data.code, userAuth);
 		if (!valid_code)
 			throw new UnauthorizedException('Wrong authentification code');
 		await this.authService.enableTFA(req.user.user_id)
@@ -74,16 +72,16 @@ export class TFAController {
 	@Post('authenticate')
 	@HttpCode(200)
 	@UseGuards(JwtAuthGuard)
-	async authenticate(@Req() req: UserRequest, @Res() res: Response) {
-	  const isCodeValid = this.authService.TFACodeValidation(
-		req.user.twofa, req.user);
-	  if (!isCodeValid) {
-		throw new UnauthorizedException('Wrong authentication code');
-	  }
-	  res.json({
-		auth: this.authService.findOne(req.user.user_id),
-		user: this.authService.UserConnectingTFA(req.user.user_id),
-		token: this.authService.createTFAToken(req.user.user_id)
-	  });
+	async authenticate(@Req() req, @Body() data) {
+		const user: User = req.user;
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		const isCodeValid = this.authService.TFACodeValidation(data.code, userAuth);
+		if (!isCodeValid) {
+			throw new UnauthorizedException('Wrong authentication code');
+		}
+		return {
+			auth: userAuth,
+			user: user
+		};
 	}
 }
