@@ -31,10 +31,10 @@ export class AuthController {
 			const result = await axios.post(url, postData);
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-			console.log('Token 42', result.data.access_token);
-			const user = await this.authService.UserConnecting(userInfo);
-			const auth = await this.authService.findOne(user.id);
-			//delete auth.twofa;
+			const user: User = await this.authService.UserConnecting(userInfo);
+			const auth: UserAuth = await this.authService.findOne(user.id);
+			delete auth.twoFactorSecret; // TODO Verif this method
+			console.log('DEBUG LOGIN', 'auth:', auth, 'user:', user);
 			if (user && auth.has_2fa === true)
 				res.json({ auth: auth }); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
