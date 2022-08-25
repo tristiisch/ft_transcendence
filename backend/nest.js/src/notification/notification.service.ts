@@ -61,13 +61,14 @@ export class NotificationService {
 				const notifFront: NotificationFront = new NotificationFront();
 				const target: User = await this.userService.findOne(notif.from_user_id);
 				notifFront.id = notif.id;
-				notifFront.user_id = notif.user_id;
+				notifFront.from_user_id = notif.from_user_id;
 				if (notif.type === NotificationType.FRIEND_REQUEST) {
-					notifFront.message = `${notif.from_user_id} sent you a friend request.`;
+					notifFront.message = `Friend request from ${target.username}.`;
 				} else if (notif.type === NotificationType.MATCH_REQUEST) {
-					notifFront.message = `${notif.from_user_id} wants to play Pong with you.`;
+					notifFront.message = `Game request from ${target.username}.`;
 				}
 				allNotifsFront.push(notifFront);
+				notifFront.date = notif.date.toDateString();
 			}
 			return allNotifsFront;
 		}, this.userService.lambdaDatabaseUnvailable);
