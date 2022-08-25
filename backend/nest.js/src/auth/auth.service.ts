@@ -119,17 +119,15 @@ export class AuthService {
 		});
 	}
 
-	public async TFACodeValidation(code: string, userAuth: UserAuth){
+	public TFACodeValidation(code: string, userAuth: UserAuth){
 		return authenticator.verify({
 			token: code,
 			secret: userAuth.twoFactorSecret
 		})
 	}
 
-	async enableTFA(userId: number) {
-		return this.authRepository.update(userId, {
-			has_2fa: true
-		});
+	async enableTFA(userId: number, twoFactorSecret: string ) {
+		return this.authRepository.update(userId, { twoFactorSecret: twoFactorSecret });
 	}
 
 	public async QrCodeStream(stream: Response, otpauthUrl: string) {

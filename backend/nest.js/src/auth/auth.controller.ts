@@ -64,10 +64,14 @@ export class TFAController {
 	async enableTFA(@Req() req, @Body() data) {
 		const user: User = req.user;
 		const userAuth: UserAuth = await this.authService.findOne(user.id);
-		const valid_code = this.authService.TFACodeValidation(data.code, userAuth);
+		const valid_code: boolean = this.authService.TFACodeValidation(data.code, userAuth);
 		if (!valid_code)
 			throw new UnauthorizedException('Wrong authentification code');
-		await this.authService.enableTFA(req.user.user_id)
+		
+		// Besoin de revoir cette function. Il faut sauvegarder le secret 2fa maintenant et pas avant.
+		// Il faut donc sauvegarder les QRCode et secret 2fa (ceux generer dans register) PAS DANS LA BASE DE DONNEE mais en variable global dans ce
+		// fichier dans une Map ou truc du genre.
+		//await this.authService.enableTFA(req.user.user_id)
 	}
 
 	@Post('authenticate')
