@@ -64,16 +64,13 @@ export class AuthService {
 
 	public async generateTFASecret(userId: number) {
 		const secret = authenticator.generateSecret();
+		console.log(secret)
 		const user = await this.usersService.findOne(userId);
 		const otpauthUrl = authenticator.keyuri(
 			user.login_42, process.env.TFA_APP, secret);
 		await this.setTFASecret(secret, userId);
-		return {
-			secret,
-			otpauthUrl
-		}
+		return otpauthUrl
 	}
-
 
 	public async createToken(id: number): Promise<string> {
 		const payload = { id: id };
@@ -106,7 +103,7 @@ export class AuthService {
 
 	async findOne(userId: number): Promise<UserAuth> {
 		isNumberPositive(userId, 'get a auth user');
-		const userAuth: UserAuth | null = await this.authRepository.findOneBy({ user_id: userId });
+		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
 		if (!userAuth)
 			return null;
 		if (userAuth.twoFactorSecret != null)

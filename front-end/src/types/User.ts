@@ -9,7 +9,7 @@ export default interface User {
   }
 
 export interface Auth {
-	token: string;
+	token_jwt: string;
 	has_2fa: boolean;
 }
 

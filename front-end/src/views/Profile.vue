@@ -14,10 +14,12 @@ import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 const user = ref({} as User);
 const userStats = ref({} as Stats)
@@ -60,7 +62,8 @@ function fetchStats(id: number) {
 			isLoading.value = false;
 		})
 		.catch((e) => {
-			console.log(e)
+			toast.error(e.response.data.message);
+			isLoading.value = false;
 		});
 }
 

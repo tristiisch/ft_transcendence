@@ -10,10 +10,10 @@ export class UserAuth extends BaseEntity {
     }
 
 	@PrimaryColumn()
-	user_id: number;
+	user_id?: number;
 
     @Column({ nullable: true })
-	token_jwt: string;
+	token_jwt?: string;
 
     @Exclude()
 	@Column({ nullable: true })
