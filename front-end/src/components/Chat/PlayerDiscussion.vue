@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type Discussion from '@/types/Discussion'
+import { useUserStore } from '@/stores/userStore'
 
+const userStore = useUserStore();
 const props = defineProps<{
 	discussion: Discussion;
 }>();
 
 const lastMessage = ref(props.discussion.messages[props.discussion.messages.length - 1]);
 
+function prefix()
+{
+	if (lastMessage.value)
+		if(lastMessage.value.idSender === userStore.userData.id)
+			return 'you: '
+}
+
 watch(props.discussion.messages, () => {
 	lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1]
 });
+
 </script>
 
 <template>
@@ -23,7 +33,7 @@ watch(props.discussion.messages, () => {
                 <span class="text-slate-700">{{ discussion.user.username }}</span>
                 <span class="text-xs pr-4 text-slate-700">{{ lastMessage?.date }}</span>
             </div>
-            <p v-if="lastMessage?.message != ''" class="w-full text-left truncate text-xs text-slate-700">{{ lastMessage?.message }}</p>
+            <p v-if="lastMessage?.message != ''" class="w-full text-left truncate text-xs text-slate-700"><span>{{ prefix() }}</span>{{ lastMessage?.message }}</p>
 			<p v-else class="w-full text-left truncate text-xs text-slate-700">NO MESSAGES</p>
         </div>
     </button>

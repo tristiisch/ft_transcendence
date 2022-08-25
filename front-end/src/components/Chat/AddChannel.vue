@@ -8,7 +8,7 @@ import UserService from '@/services/UserService';
 import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue'
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
-import channelStatus from '@/types/ChannelStatus'
+import channelStatus from '@/types/ChatStatus'
 
 const userStore = useUserStore();
 const selectPlayer = ref(false);
@@ -38,7 +38,7 @@ function treatNewChannelData(users: User[])
 		users: users,
 		password: newPassword.value,
 		admin: [userStore.userData],
-		owner: userStore.userData.username,
+		owner: userStore.userData,
 		mute: [],
 		banned: [],
 		messages: []
@@ -62,7 +62,7 @@ function clickOnButtonPrivate()
 
 function clickOnButtonProtected()
 {
-	protectedChannel.value = false
+	protectedChannel.value = true
 	newChannelType.value=channelStatus.PROTECTED
 	newAvatar.value = 'src/assets/ChannelDefaultProtected.png'
 }

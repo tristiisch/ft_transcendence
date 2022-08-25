@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type Channel from '@/types/Channel';
-import Status from '@/types/ChannelStatus';
+import Status from '@/types/ChatStatus';
 
 const props = defineProps<{ channel: Channel; }>();
 

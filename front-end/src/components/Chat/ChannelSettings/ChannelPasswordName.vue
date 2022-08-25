@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import status from '@/types/ChannelStatus';
+import status from '@/types/ChatStatus';
 import type Channel from '@/types/Channel';
 import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue';
 import { ref } from 'vue'
@@ -45,6 +45,6 @@ function labelText(channel: Channel | null) {
                  <base-button class=" self-center mr-6 bg-blue-600 py-2 px-5 text-white">Remove</base-button>
             </div>
         </div>
-        <Button-CloseValidate @validate="emit('validate')" @close="emit('close')"></Button-CloseValidate>
+        <ButtonCloseValidate @validate="emit('validate')" @close="emit('close')"></ButtonCloseValidate>
    </div>
 </template>

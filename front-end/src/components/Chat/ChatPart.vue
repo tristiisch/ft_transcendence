@@ -2,10 +2,10 @@
 import { useUserStore } from '@/stores/userStore';
 import type Message from '@/types/Message';
 import type Channel from '@/types/Channel';
-import type User from '@/types/User';
 import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
 import message from '@/components/Chat/Message.vue';
 import socket from '@/plugin/socketInstance';
+import type User from '@/types/User';
 import { onBeforeMount, watch, ref } from 'vue';
 import type Discussion from '@/types/Discussion';
 
@@ -15,8 +15,9 @@ const newMessage = ref('');
 const messages = ref<Message[]>([])
 
 const props = defineProps<{
-  inDiscussion: Discussion | null
-  inChannel: Channel | null
+	inDiscussion: Discussion | null
+	inChannel: Channel | null
+	users: User[]
 }>()
 
 const emit = defineEmits<{
@@ -30,7 +31,7 @@ function sendMessage() {
 		messages.value.push({
 			date: now,
 			message: newMessage.value,
-			id: userStore.userData.id
+			idSender: userStore.userData.id
 		});
 		socket.emit('chat-message', {
 			date: now,
@@ -45,9 +46,11 @@ function sendMessage() {
 socket.on('chat-message', (data) => {
 	console.log(data.sender);
 	messages.value.push({
+		idMessage: -1,
+		idChat: -1,
 		date: data.date,
 		message: data.message,
-		id: data.id,
+		idSender: data.id,
 	});
 	console.log(data);
 	console.log(messages.value);
@@ -75,13 +78,14 @@ watch(() => props.inChannel, () => {
 	if (props.inChannel)
 		messages.value = props.inChannel.messages
 });
+
 </script>
 
 <template>
     <div class="flex flex-col justify-between h-full">
         <ChatTopImage :inDiscussion="inDiscussion" :inChannel="inChannel"></ChatTopImage>
         <div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
-            <message @scroll="scrollToEnd" :messages="messages" :inDiscussion="inDiscussion" :inChannel="inChannel"></message>
+            <message @scroll="scrollToEnd" :messages="messages" :inDiscussion="inDiscussion" :inChannel="inChannel" :users="users"></message>
         </div>
         <div class="w-full flex justify-between gap-3">
             <form @submit.prevent="sendMessage()" class="w-full">

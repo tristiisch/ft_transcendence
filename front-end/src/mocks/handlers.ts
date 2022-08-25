@@ -100,14 +100,32 @@ export default [
 
 	rest.post('/chat/addDiscussion/:id', async (req, res, ctx) => {
 		const data = await req.json();
-		// discussions.set(parseInt(req.params.id as string), [{ user: users.find((user) => user.id === data.id) as User, messages: [] as Message[] }]);
-		return res(ctx.status(200));
+		return res(ctx.json(200));
 	}),
 
 	rest.post('/chat/addChannel/:id', async (req, res, ctx) => {
 		const data = await req.json();
-		// discussions.set(parseInt(req.params.id as string), [{ user: users.find((user) => user.id === data.id) as User, messages: [] as Message[] }]);
-		return res(ctx.status(200));
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/channelAddAdmins/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/channelBanPlayers/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/channelMutePlayers/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/addChannel/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
 	}),
 
 	rest.post('/matchs/history/:id', async (req, res, ctx) => {

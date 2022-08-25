@@ -89,6 +89,6 @@ onBeforeMount(() => {
 				<input type="search" v-model="playerName" class="block p-2 w-full text-sm placeholder:text-gray-400 bg-neutral-100 border border-blue-600 rounded-r-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Search Player" required>
 			</div>
 		</form>
-		<player-display-list @validateAddPlayer="(user) => emit('validateAddDiscussion', user)" @validateAddPlayers="(users) => emit('validateAddChannel', users)" @close="emit('close')" :users="searchPlayer()" :singleSelection="singleSelection"></player-display-list>
+		<player-display-list @validateAddPlayer="(user) => emit('validateAddDiscussion', user)" @validateAddPlayers="(users) => emit('validateAddChannel', users)" @close="emit('close')" :users="searchPlayer()" :singleSelection="singleSelection" :banOrMuteOrAdminUsers="null"></player-display-list>
 	</div>
 </template>
