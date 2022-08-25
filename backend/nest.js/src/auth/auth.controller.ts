@@ -48,13 +48,14 @@ export class AuthController {
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
 export class TFAController {
-	constructor(	private readonly authService: AuthService,) {}
+	constructor(private readonly authService: AuthService,) {}
 
-	@Post('generate')
+	@Get('generate')
 	@UseGuards(JwtAuthGuard)
 	async register(@Res() response: Response, @Req() request: Request) {
 		const { otpauthUrl } = await this.authService.generateTFASecret(1);
-		return this.authService.QrCodeStream(response, otpauthUrl);
+		const qrCode = await this.authService.QrCodeStream(response, otpauthUrl);
+		response.json(qrCode)
 	}
 
 	@Post('enable')

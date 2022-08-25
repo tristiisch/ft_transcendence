@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Status from '@/types/Status';
-import type User from '@/types/User';
+import type Leaderboard from '@/types/Leaderboard';
 const props = defineProps<{
-  user: User
+  user: Leaderboard
 }>()
 
 const isInGame = computed(() => {

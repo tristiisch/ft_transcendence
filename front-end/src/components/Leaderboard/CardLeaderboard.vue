@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import type User from '@/types/User';
+    import type Leaderboard from '@/types/Leaderboard';
     import Status from '@/types/Status';
     import PlayerStatus from '@/components/PlayerStatus.vue'
     import { computed, ref, onMounted, onUnmounted, onBeforeUpdate } from 'vue';
@@ -7,7 +7,7 @@
     const sizeAvatar = ref<HTMLInputElement | null>(null)
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
     const windowHeight = ref(window.innerHeight);
-    const props = defineProps<{ user: User }>()
+    const props = defineProps<{ user: Leaderboard }>()
 
     const userStatus = computed(() => {
         if (props.user.status === Status.INGAME)

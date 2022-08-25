@@ -1,19 +1,40 @@
 <script setup lang="ts">
 import UserService from '@/services/UserService';
-import type User from '@/types/User';
-import { ref, computed, onBeforeMount, onBeforeUnmount } from 'vue';
+import type Leaderboard from '@/types/Leaderboard';
+import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import Toogle from '@/components/Leaderboard/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 import socket from '@/plugin/socketInstance';
 import { useToast } from 'vue-toastification';
+import PlayerSettingsVue from '@/components/Profile/PlayerSettings.vue';
 
 const userStore = useUserStore();
 const toast = useToast();
-const users = ref<User[] | null>(null);
-const friends = ref<User[] | null>(null);
+const users = ref<Leaderboard[] | null>(null);
+const friends = ref<Leaderboard[] | null>(null);
+const playerToDisplay = ref<Leaderboard[] | null>(null);
 const error = ref('')
+const playerName = ref('')
 const type = ref('All');
+
+function searchPlayer()
+{
+    if (playerName.value != '' && playerToDisplay.value)
+    {
+        return playerToDisplay.value.filter((player) =>
+        player.username.toLowerCase().includes(playerName.value.toLowerCase()))
+    }
+    else
+        return playerToDisplay.value
+}
+
+watch(
+	() => playerName.value,
+	() => {
+		searchPlayer();
+	}
+);
 
 function rankOrder() {
 	if (type.value === 'All') {
@@ -71,7 +92,7 @@ function fetchLeaderboard() {
 	UserService.getLeaderboard()
 		.then((response) => {
 				console.log(response.data)
-				users.value = response.data.leaderBoard
+				playerToDisplay.value = users.value = response.data.leaderBoard
 				friends.value = response.data.leaderBoardFriends
 		})
 		.catch((e) => {
@@ -81,7 +102,8 @@ function fetchLeaderboard() {
 }
 
 const displayUser = computed(() => {
-	if (type.value === 'All') return users.value;
+	if (playerName.value != '') return searchPlayer();
+	else if (type.value === 'All') return users.value;
 	else return friends.value;
 });
 
@@ -124,7 +146,7 @@ onBeforeUnmount(() => {
 							<div class="flex absolute inset-y-0 left-0 items-center pl-2 pointer-events-none">
 								<svg aria-hidden="true" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 							</div>
-							<input type="search" class="block p-0.5 pl-8 w-full text-sm text-white placeholder:text-slate-600 bg-slate-800 rounded-lg border border-slate-500 focus:ring-blue-500 focus:border-blue-500" placeholder="Search User" required>
+							<input type="search" v-model="playerName" class="block p-0.5 pl-8 w-full text-sm text-white placeholder:text-slate-600 bg-slate-800 rounded-lg border border-slate-500 focus:ring-blue-500 focus:border-blue-500" placeholder="Search User" required>
 						</div>
 					</form>
 					<div class="flex items-center">
