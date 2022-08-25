@@ -16,7 +16,7 @@ defineProps<{
 }>()
 
 function colorTextScore(value:MatchHistory, opponent:boolean) {
-    if ((value.result === 'won' && !opponent) || (value.result === 'lost' && opponent)) { return 'text-lime-400' }
+    if (value.won === true) { return 'text-lime-400' }
     else { return 'text-red-700' }
 }
 
