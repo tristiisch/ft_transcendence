@@ -52,8 +52,9 @@ export class TFAController {
 
 	@Get('generate')
 	@UseGuards(JwtAuthGuard)
-	async register(@Res() response: Response, @Req() request: Request) {
-		const otpauthUrl = await this.authService.generateTFASecret(1);
+	async register(@Req() req, @Res() response: Response) {
+		const user: User = req.user;
+		const otpauthUrl = await this.authService.generateTFASecret(user.id);
 		const qrCode = await this.authService.QrCodeStream(response, otpauthUrl);
 		response.json(qrCode)
 	}
