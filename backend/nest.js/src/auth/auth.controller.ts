@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
@@ -50,18 +50,20 @@ export class AuthController {
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
 export class TFAController {
-	constructor(	private readonly authService: AuthService,) {}
+	constructor(private readonly authService: AuthService,) {}
 
-	@Post('generate')
+	@Get('generate')
 	@UseGuards(JwtAuthGuard)
 	async register(@Res() response: Response, @Req() request: Request) {
 		const { otpauthUrl } = await this.authService.generateTFASecret(1);
-		return this.authService.QrCodeStream(response, otpauthUrl);
+		const qrCode = await this.authService.QrCodeStream(response, otpauthUrl);
+		response.json(qrCode)
 	}
 
 	@Post('enable')
 	@UseGuards(JwtAuthGuard)
-	async enableTFA(@Req() req: UserRequest) {
+	async enableTFA(@Req() req: UserRequest, @Body() twoFaCode: any) {
+		console.log(twoFaCode.code)
 		const valid_code = this.authService.TFACodeValidation(
 			req.user.twofa, req.user);
 		if (!valid_code)

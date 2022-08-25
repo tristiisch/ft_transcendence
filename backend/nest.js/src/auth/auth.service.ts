@@ -7,7 +7,7 @@ import { isNumberPositive, toBase64 } from 'src/utils/utils';
 import { Repository } from 'typeorm';
 import { UserAuth } from './entity/user-auth.entity';
 import { authenticator } from 'otplib';
-import { toFileStream } from 'qrcode';
+import { toDataURL } from 'qrcode';
 import { Response } from 'express';
 
 @Injectable()
@@ -130,7 +130,7 @@ export class AuthService {
 	}
 
 	public async QrCodeStream(stream: Response, otpauthUrl: string) {
-		return toFileStream(stream, otpauthUrl);
+		const imagePath = await toDataURL(otpauthUrl);
+		return imagePath;
 	}
-
 }

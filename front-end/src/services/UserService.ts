@@ -12,16 +12,16 @@ class UserService {
 		return axios.get(`users/${id}`);
 	}
 
-	registerUser(id: number, username: string, avatar: string) {
-		return axios.patch(`users/register`, { username, avatar });
+	registerUser(id: number, username: string, avatar_64: string) {
+		return axios.patch(`users/register`, { username, avatar_64 });
 	}
 
-	updateUsename(id: number, username: string) {
-		return axios.patch(`users/me/${id}/set-username`, { username });
+	updateUsename(username: string) {
+		return axios.patch(`users/set-username`, { username });
 	}
 
-	updateAvatar(id: number, avatar: string) {
-		return axios.patch(`users/me/${id}/set-avatar`, { avatar });
+	updateAvatar(avatar_64: string) {
+		return axios.patch(`users/set-avatar`, { avatar_64 });
 	}
 
 	getUserfriends(id: number) {
@@ -65,7 +65,7 @@ class UserService {
 	}
 
 	getStats(id: number) {
-		return axios.get(`stats/${id}`);
+		return axios.post('stats', { id: id });
 	}
 
 	getChannels() {

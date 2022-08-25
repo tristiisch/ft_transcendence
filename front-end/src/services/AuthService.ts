@@ -25,8 +25,8 @@ class AuthService {
 		return axios.patch(`users/register`, { username, avatar });
 	}
 
-	enable2FA() {
-		return axios.post('2fa/enable');
+	enable2FA(twoFacode: number) {
+		return axios.post('2fa/enable', { twoFacode });
 	}
 
 	disable2FA() {
@@ -34,7 +34,7 @@ class AuthService {
 	}
 
 	getQrCode2FA() {
-		return axios.post('2fa/generate');
+		return axios.get('2fa/generate');
 	}
 }
 

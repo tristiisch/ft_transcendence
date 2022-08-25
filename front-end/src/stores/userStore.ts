@@ -56,11 +56,11 @@ export const useUserStore = defineStore('userStore', {
 		},
 		update2FA(value: boolean) {
 			this.userAuth.has_2fa = value;
-			localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
+			//localStorage.setItem('userAuth', JSON.stringify(this.userAuth));
 		},
 		async updateUsername(newUsername: string) {
 			try {
-				await UserService.updateUsename(this.userAuth.user_id, newUsername);
+				await UserService.updateUsename(newUsername);
 				this.userData.username = newUsername;
 			} catch (error: any) {
 				throw error;
@@ -68,7 +68,7 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async updateAvatar(newAvatar: string) {
 			try {
-				await UserService.updateAvatar(this.userAuth.user_id, newAvatar);
+				await UserService.updateAvatar(newAvatar);
 				this.userData.avatar = newAvatar;
 			} catch (error: any) {
 				throw error;

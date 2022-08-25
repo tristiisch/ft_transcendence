@@ -6,6 +6,7 @@ import UploadAvatar from '@/components/UploadAvatar.vue';
 import Toogle from '@/components/Leaderboard/ToogleButton.vue';
 import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
+import UserService from '@/services/UserService';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -14,6 +15,9 @@ const toast = useToast();
 const newUsername = ref(userStore.userData.username);
 const newAvatar = ref(userStore.userData.avatar);
 const mode = ref('2FA');
+const twoFaCode = ref(-1);
+const qrCode = ref<null | string>(null);
+const isLoading = ref(false);
 let isUpload = false;
 
 function uploadImage(imageData: string): void {
@@ -43,25 +47,24 @@ function submitProfileForm() {
 	}
 }
 
-const qrCode = ref<null | string>(null);
-const isLoading = ref(false);
-
 function toogle2FA() {
-	if (userStore.userAuth.has_2fa) {
-		userStore.userAuth.has_2fa = false;
-		AuthService.disable2FA()
+	if (qrCode.value || userStore.userAuth.has_2fa) {
+		userStore.update2FA(false);
+		qrCode.value = null
+		/*AuthService.disable2FA()
 			.then(() => {
 				userStore.update2FA(false);
+				qrCode.value = ''
+				console.log(qrCode.value)
 			})
 			.catch((e: Error) => {
 				console.log(e);
-			});
+			});*/
 	} else {
 		isLoading.value = true;
 		AuthService.getQrCode2FA()
 			.then((response) => {
-				qrCode.value = response.data;
-				userStore.update2FA(true);
+				qrCode.value = response.data
 				isLoading.value = false;
 			})
 			.catch((e: Error) => {
@@ -70,17 +73,15 @@ function toogle2FA() {
 			});
 	}
 }
-
-function fetchQrCode() {
-	isLoading.value = true;
-	AuthService.getQrCode2FA()
+function validate2FA() {
+	AuthService.enable2FA(twoFaCode.value)
 		.then((response) => {
-			qrCode.value = response.data;
-			isLoading.value = false;
+			userStore.update2FA(true);
+			qrCode.value = null
+			console.log(response)
 		})
-		.catch((e: Error) => {
-			isLoading.value = false;
-			console.log(e);
+		.catch((e) => {
+			toast.error(e.response.data.message);
 		});
 }
 
@@ -95,19 +96,14 @@ watch(
 		newAvatar.value = userStore.userData.avatar;
 	}
 );
-
-onBeforeMount(() => {
-	console.log(qrCode.value);
-	if (userStore.userAuth.has_2fa && !qrCode.value) fetchQrCode();
-});
 </script>
 
 <template>
 	<div class="flex flex-col items-center h-full w-full px-6 sm:px-8">
 		<div class="inline-flex shadow-sm w-full">
-			<button @click="mode = '2FA'" class="btn-base rounded-l-md border" :class="mode === '2FA' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">2FA</button>
-			<button @click="mode = 'Edit'" class="btn-base border-t border-b" :class="mode === 'Edit' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">Edit</button>
-			<button @click="mode = 'Remove'" class="btn-base rounded-r-md border" :class="mode === 'Remove' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">Account</button>
+			<button @click="mode = '2FA'" class="w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 focus:bg-blue-600 focus:text-neutral-100 rounded-l-md border" :class="mode === '2FA' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">2FA</button>
+			<button @click="mode = 'Edit'" class="w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 focus:bg-blue-600 focus:text-neutral-100 border-t border-b" :class="mode === 'Edit' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">Edit</button>
+			<button @click="mode = 'Remove'" class="w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 focus:bg-blue-600 focus:text-neutral-100 rounded-r-md border" :class="mode === 'Remove' ? 'bg-blue-600 text-neutral-100' : 'bg-neutral-100 text-blue-600'">Account</button>
 		</div>
 		<div v-if="mode === '2FA'" class="flex flex-col justify-center items-center gap-8 h-full w-full">
 			<div class="flex justify-center w-full">
@@ -116,10 +112,19 @@ onBeforeMount(() => {
 				<span class="text-red-200 pl-2">ON</span>
 			</div>
 			<div v-if="isLoading" class="font-Arlon text-white text-center text-6xl w-full">Loading</div>
-			<div v-if="qrCode && userStore.userAuth.has_2fa && !isLoading" class="flex flex-col items-center w-full">
-				<img :src="qrCode" fluid alt="QR code" class="w-24 sm:w-36" />
+			<div v-if="qrCode && !isLoading" class="flex flex-col items-center w-full gap-6">
+				<img :src="qrCode" alt="QR code" class="w-24 sm:w-36" />
 			</div>
-			<p class="text-center text-red-200 text-xs sm:text-sm">When 2FA is enable scan the QRCode in Google's Authenticator app.</p>
+			<form v-if="qrCode" class="flex flex-col justify-center items-center text-center text-xs sm:text-sm gap-4" @submit.prevent>
+				<h1 class="text-lime-400">⚠️ 2FA activation is not complete</h1>
+				<p class="text-red-100">Please scan the QRCode in Google's Authenticator app and enter your 2FA code below</p>
+				<div class="flex justify-center gap-4 mt-3">
+					<input type="password" name="twoFaCode" v-model="twoFaCode" placeholder="2FA code" class="text-center text-blue-600 placeholder:text-slate-300 bg-neutral-100 border border-blue-600 rounded placeholder:text-center" />
+					<base-button @click="validate2FA" class="text-sm w-20 py-2 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Send</base-button>
+				</div>
+			</form>
+			<p v-if="!qrCode && !userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is disable</p>
+			<p v-if="!qrCode && userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is Enable</p>
 		</div>
 		<form v-else-if="mode === 'Edit'" class="flex flex-col items-center justify-between h-full w-full" @submit.prevent>
 			<div class="flex flex-col justify-center items-center h-full w-full gap-4 sm:gap-8">
@@ -152,8 +157,3 @@ onBeforeMount(() => {
 	</div>
 </template>
 
-<style scoped>
-.btn-base {
-	@apply w-1/3 py-1.5 sm:py-2.5 text-xs sm:text-sm border-blue-600 focus:bg-blue-600 focus:text-neutral-100;
-}
-</style>

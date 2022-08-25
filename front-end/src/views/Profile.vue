@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
+import type Stats from '@/types/Stats';
 import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -19,6 +20,7 @@ const route = useRoute();
 const router = useRouter();
 
 const user = ref({} as User);
+const userStats = ref({} as Stats)
 const isLoading = ref(false);
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
@@ -49,18 +51,18 @@ function fetchUser(id: number) {
 		});
 }
 
-/*function fetchStats(id: number) {
+function fetchStats(id: number) {
 	isLoading.value = true;
 	UsersService.getStats(id)
 		.then((response) => {
-			const stats = response.data;
-			console.log(stats)
+			userStats.value = response.data;
+			console.log(userStats.value)
 			isLoading.value = false;
 		})
 		.catch((e) => {
 			console.log(e)
 		});
-}*/
+}
 
 watch(
 	() => route.params.id,
@@ -72,7 +74,7 @@ watch(
 onBeforeMount(() => {
 	if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
 	else fetchUser(parseInt(route.params.id as string));
-	//fetchStats(parseInt(route.params.id as string))
+	fetchStats(parseInt(route.params.id as string))
 });
 </script>
 
@@ -83,12 +85,12 @@ onBeforeMount(() => {
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
 					<player-profile :user="user"></player-profile>
 					<button-part @change-display="setPartToDisplay"></button-part>
-					<rank-card :rank="user.rank"></rank-card>
+					<rank-card :rank="userStats.rank"></rank-card>
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
 				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-center gap-4 sm:gap-6 h-full w-11/12 px-8 3xl:px-10">
-					<player-stats :user="user"></player-stats>
+					<player-stats :userStats="userStats"></player-stats>
 					<div class="flex justify-center overflow-y-auto w-full">
 						<player-history :user="user"></player-history>
 					</div>
