@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
+import type Stats from '@/types/Stats';
 import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -13,12 +14,15 @@ import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 const user = ref({} as User);
+const userStats = ref({} as Stats)
 const isLoading = ref(false);
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
@@ -34,9 +38,9 @@ function setPartToDisplay(displayPart: string) {
 	setRightCardTitle(displayPart);
 }
 
-function fetchUser(name: string) {
+function fetchUser(id: number) {
 	isLoading.value = true;
-	UsersService.getUser(name)
+	UsersService.getUser(id)
 		.then((response) => {
 			user.value = response.data;
 			isLoading.value = false;
@@ -49,36 +53,55 @@ function fetchUser(name: string) {
 		});
 }
 
+function fetchStats(id: number) {
+	isLoading.value = true;
+	UsersService.getStats(id)
+		.then((response) => {
+			userStats.value = response.data;
+			console.log(userStats.value)
+			isLoading.value = false;
+		})
+		.catch((e) => {
+			toast.error(e.response.data.message);
+			isLoading.value = false;
+		});
+}
+
+watch(
+	() => route.params.id,
+	() => {
+		if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
+	}
+)
+
 onBeforeMount(() => {
-	if ((route.params.username as string) === userStore.userData.username) user.value = userStore.userData;
-	else fetchUser(route.params.username as string);
+	if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
+	else fetchUser(parseInt(route.params.id as string));
+	fetchStats(parseInt(route.params.id as string))
 });
 </script>
 
 <template>
-	<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
-	<base-ui v-else>
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
 					<player-profile :user="user"></player-profile>
 					<button-part @change-display="setPartToDisplay"></button-part>
-					<rank-card :rank="user.rank"></rank-card>
+					<rank-card :rank="userStats.rank"></rank-card>
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
-				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-around items-center w-11/12">
-					<div class="w-4/5">
-						<player-stats :user="user"></player-stats>
-					</div>
-					<div class="w-4/5">
-						<player-history></player-history>
+				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-center gap-4 sm:gap-6 h-full w-11/12 px-8 3xl:px-10">
+					<player-stats :userStats="userStats"></player-stats>
+					<div class="flex justify-center overflow-y-auto w-full">
+						<player-history :user="user"></player-history>
 					</div>
 				</div>
 				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">
 					<notifications></notifications>
 				</div>
-				<div v-else class=" w-11/12 overflow-y-auto h-full mr-3">
+				<div v-else class="w-11/12 h-full mr-3">
 					<player-settings></player-settings>
 				</div>
 			</card-right>

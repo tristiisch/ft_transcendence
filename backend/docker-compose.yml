@@ -26,7 +26,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-foobar}
       PGADMIN_LISTEN_PORT: 8080
       PGADMIN_CONFIG_SERVER_MODE: "False" # Required to have more permission in containers, but remove connection with email & password to pgAdmin
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False" # If this is set to false, no one needs a "master password" to log in 
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False" # If this is set to false, no one needs a "master password" to log in
     volumes:
     - db_pgadmin:/var/lib/pgadmin
     - ./pgAdmin/servers.json:/pgadmin4/servers.json

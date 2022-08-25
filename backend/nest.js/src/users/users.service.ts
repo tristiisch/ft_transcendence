@@ -1,9 +1,11 @@
-import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException } from "@nestjs/common";
+import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { isEquals, isNumberPositive } from "src/utils/utils";
+import { toBase64, isNumberPositive, fromBase64 } from "src/utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
+import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
+import { Response } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +23,7 @@ export class UsersService {
 	lambdaGetUser = (user: User, identifier: any) => {
 		if (!user)
 			throw new NotFoundException(`The user '${identifier}' does not exist.`);
+		user.defineAvatar();
 		return user;
 	};
 
@@ -69,14 +72,36 @@ export class UsersService {
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
+	// async findOneAvatar(id: number): Promise<User> {
+	// 	isNumberPositive(id, "get a user's avatar");
+	// 	return await this.usersRepository.findOneBy({ id }).then((user: User) => {
+	// 		if (!user)
+	// 			throw new NotFoundException(`The user '${id}' does not exist.`);
+	// 		// user.setAvatar();
+	// 		return user;
+	// 	}, this.lambdaDatabaseUnvailable);
+	// }
+
 	async findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty name.");
 		}
-		return await this.usersRepository.findOne({ where: {username : name } }).then((user: User) => {
+		return await this.usersRepository.findOne({ where: {username : name }}).then((user: User) => {
 			return this.lambdaGetUser(user, name);
 		}, this.lambdaDatabaseUnvailable);
 	}
+
+	// async findOneAvatarByUsername(name: string): Promise<User> {
+	// 	if (!name || name.length == 0) {
+	// 		throw new PreconditionFailedException("Can't get a user's avatar by an empty name.");
+	// 	}
+	// 	return await this.usersRepository.findOne({ where: {username : name }}).then((user: User) => {
+	// 		if (!user)
+	// 			throw new NotFoundException(`The user '${name}' does not exist.`);
+	// 		// user.setAvatar();
+	// 		return user;
+	// 	}, this.lambdaDatabaseUnvailable);
+	// }
 
 	async findOneBy42Login(login42: string): Promise<User> {
 		if (!login42 || login42.length == 0) {
@@ -91,7 +116,7 @@ export class UsersService {
 		isNumberPositive(id, 'remove a user');
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) {
-				throw new NotFoundException("The user ${id} does not exist.");
+				throw new NotFoundException(`The user ${id} does not exist.`);
 			} else {
 				return { deleted : value.affected };
 			}
@@ -153,8 +178,42 @@ export class UsersService {
 		const userBefore: User = await this.findOne(userId);
 		if (userBefore.username !== null)
 			throw new BadRequestException(`User ${userBefore.username} already register.`);
-		await this.usersRepository.update(userId, user);
-		const userAfter: User = await this.findOne(userId);
-		return userAfter;
+
+		// const succes = (imageBase64: string) => {
+		// 	console.log('YESSS', imageBase64);
+		// 	user.avatar = imageBase64;
+		// 	this.usersRepository.update(userId, user);
+		// }
+		// const error = (reason: string): Promise<void> => {
+		// 	console.log('update1');
+		// 	this.usersRepository.update(userId, user);
+		// 	return;
+		// }
+		// const onfinally = () => {
+		// 	console.log('update2');
+		// 	delete user.avatar;
+		// 	this.usersRepository.update(userId, user);
+		// 	return;
+		// }
+		if (user.avatar_64 != null) {
+			try {
+				user.avatar_64 = await toBase64(user.avatar_64);
+			} catch (err) {
+				console.log('DEBUG', 'user.service.ts avatar', err);
+			}
+		}
+
+		this.usersRepository.update(userId, user);
+		return await this.findOne(userId);
+	}
+
+	async findAvatar(selectUser: UserSelectDTO, @Res() res: Response) {
+		const target: User = await selectUser.resolveUser(this);
+		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);
+		res.writeHead(200, {
+			'Content-Type': avatar.imageType,
+			'Content-Length': avatar.imageBuffer.length
+		});
+		res.end(avatar.imageBuffer);
 	}
 }

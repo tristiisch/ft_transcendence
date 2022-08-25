@@ -1,3 +1,4 @@
+/** @prettier */
 import { Body, Controller, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post } from '@nestjs/common';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User } from 'src/users/entity/user.entity';
@@ -7,13 +8,12 @@ import { FriendsService } from './friends.service';
 
 @Controller('friends')
 export class FriendsController {
-
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 
 	constructor(private readonly friendsService: FriendsService) {}
 
-	async resolveUsers(func: { (user: User, target: User): any }, userId: number, targetSelect: UserSelectDTO){
+	async resolveUsers(func: { (user: User, target: User): any }, userId: number, targetSelect: UserSelectDTO) {
 		const user: User = await this.usersService.findOne(userId);
 		const target: User = await targetSelect.resolveUser(this.usersService);
 
@@ -27,7 +27,7 @@ export class FriendsController {
 	getAll() {
 		return this.friendsService.findAll();
 	}
- 
+
 	/**
 	 * @Debug request used for debug
 	 */

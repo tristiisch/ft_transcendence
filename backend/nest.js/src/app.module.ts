@@ -1,3 +1,4 @@
+/** @prettier */
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,10 +8,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseService } from './database/database.service';
 import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
-import { StatsModule } from './stats/stats.module';
+import { StatsModule } from './game/stats/stats.module';
 import { AuthModule } from './auth/auth.module';
-import { MatchsHistoryModule } from './matchs-history/matchs-history.module';
 import { TestModule } from './test/test.module';
+import { NotificationModule } from './notification/notification.module';
+import { MatchStatsModule } from './game/matchs/matchs.module';
+import { JwtStrategy } from './auth/strategy/jwt.strategy';
 
 @Module({
 	imports: [
@@ -21,10 +24,11 @@ import { TestModule } from './test/test.module';
 		FriendsModule,
 		StatsModule,
 		AuthModule,
-		MatchsHistoryModule,
-		TestModule
+		MatchStatsModule,
+		TestModule,
+		NotificationModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService, JwtStrategy],
 })
 export class AppModule {}

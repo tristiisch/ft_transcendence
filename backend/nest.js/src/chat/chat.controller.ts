@@ -1,3 +1,4 @@
+/** @prettier */
 import { Controller } from '@nestjs/common';
 
 @Controller('chat')

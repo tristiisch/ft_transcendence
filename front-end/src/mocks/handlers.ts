@@ -3,10 +3,13 @@ import axios from 'axios';
 import users from '@/data/users';
 import matchs from '@/data/matchs';
 import matchsHistory from '@/data/matchsHistory';
+import notifications from '@/data/notifications'
 import friends from '@/data/friends';
+import channels from '@/data/Channels';
 import Status from '@/types/Status';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
+import type User from '@/types/User';
 
 function generateQRCode(): string {
 	const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
@@ -31,68 +34,105 @@ export default [
 		return res(ctx.json(users));
 	}),
 
-	rest.get('/users/me/:id', (req, res, ctx) => {
-		return res(ctx.json(users.find((user) => user.id === req.params.id)));
+	rest.patch('/users/register/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		console.log(data);
+		return res(ctx.status(200));
 	}),
 
-	rest.post('/users/me/:id/set-username', async (req, res, ctx) => {
+	rest.patch('/users/me/:id/set-username', async (req, res, ctx) => {
 		const data = await req.json();
 		console.log(data);
 		if (users.find((user) => user.username === data.username)) return res(ctx.status(403), ctx.json({ message: `username ${data.username} already exist.` }));
-		const user = users.find((user) => user.id === req.params.id);
-		if (user) user.username = data.username;
+		const user = users.find((user) => user.id === parseInt(req.params.id as string))
+		if (user) {
+			user.username = data.username;
+		}
 		return res(ctx.status(200));
 	}),
 
-	rest.post('/users/me/:id/set-avatar', async (req, res, ctx) => {
+	rest.patch('/users/me/:id/set-avatar', async (req, res, ctx) => {
 		const data = await req.json();
 		console.log(data);
-		const user = users.find((user) => user.id === req.params.id);
-		if (user) user.avatar = data.avatar;
+		if (users.find((user) => user.username === data.username)) return res(ctx.status(403), ctx.json({ message: `username ${data.username} already exist.` }));
+		const user = users.find((user) => user.id === parseInt(req.params.id as string))
+		if (user) {
+			user.avatar = data.avatar;
+		}
 		return res(ctx.status(200));
 	}),
 
-	rest.get('/users/:username', (req, res, ctx) => {
-		console.log(req.params.username);
-		const user = users.find((user) => user.username === req.params.username)
+	rest.get('/users/me/:id', (req, res, ctx) => {
+		const user = users.find((user) => user.id === parseInt(req.params.id as string))
 		if (user) return res(ctx.json(user));
 		else return res(ctx.status(403), ctx.json({ message: `user don't exist` }));
 	}),
 
-	rest.get('/users/:username/friends', (req, res, ctx) => {
-		return res(ctx.json(friends.get(req.params.username as string)));
+	rest.get('/users/:id', (req, res, ctx) => {
+		console.log(req.params.id);
+		const user = users.find((user) => user.id === parseInt(req.params.id as string))
+		console.log(user)
+		if (user) return res(ctx.json(user));
+		else return res(ctx.status(403), ctx.json({ message: `user don't exist` }));
 	}),
 
-	rest.get('/users/:username/matchs', (req, res, ctx) => {
+	rest.get('/friends/names/:id', (req, res, ctx) => {
+		return res(ctx.json(friends.get(parseInt(req.params.id as string))))
+	}),
+
+	rest.get('/matchs/current', (req, res, ctx) => {
 		return res(ctx.json(matchs));
 	}),
 
-	rest.get('/users/:username/matchsHistory', (req, res, ctx) => {
-		return res(ctx.json(matchsHistory.get(req.params.username as string)));
+	rest.get('/chat/channels', (req, res, ctx) => {
+		return res(ctx.json(channels));
 	}),
 
-	rest.post('/users/:username/friend-request', async (req, res, ctx) => {
+	rest.get('/notifications/:id', (req, res, ctx) => {
+		return res(ctx.json(notifications.get(parseInt(req.params.id as string))));
+	}),
+
+	rest.post('/matchs/history/:id', async (req, res, ctx) => {
+		return res(ctx.json(matchsHistory.get(parseInt(req.params.id as string))));
+	}),
+
+	rest.post('/friends/request/add/:id', async (req, res, ctx) => {
 		const data = await req.json();
-		const tab = friends.get(req.params.username as string) as string[];
-		if (tab) tab.push(data.target);
-		else friends.set(req.params.username as string, [data.target]);
-		console.log(friends);
+		console.log(data)
 		return res(ctx.status(200));
 	}),
 
-	rest.post('/users/:username/unfriend-request', async (req, res, ctx) => {
+	rest.post('/friends/accept/:id', async (req, res, ctx) => {
 		const data = await req.json();
-		const tab = friends.get(req.params.username as string) as string[];
+		console.log(data);
+		const tab = friends.get(parseInt(req.params.id as string)) as User[];
+		console.log(tab)
+		if (tab) tab.push(users.find((user) => user.id === data.id) as User);
+		else friends.set(parseInt(req.params.id as string), [users.find((user) => user.id === data.id) as User]);
+		return res(ctx.status(200));
+	}),
+
+	rest.post('/friends/remove/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		console.log(data);
+		const tab = friends.get(parseInt(req.params.id as string)) as User[];
+		console.log(tab)
+		console.log(data.username)
 		for (let i = 0; i < tab.length; i++) {
-			if (tab[i] === data.target) tab.splice(i, 1);
+			if (tab[i].id === data.id) tab.splice(i, 1);
 		}
-		console.log(friends);
+		return res(ctx.status(200));
+	}),
+
+	rest.post('/friends/request/remove/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		console.log(data);
 		return res(ctx.status(200));
 	}),
 
 	rest.post('/auth/login', async (req, res, ctx) => {
 		const data = await req.json();
-		if (data.code == '' || data.state !== import.meta.env.VITE_CLIENT_STATE) return res(ctx.status(400));
+		if (data.code == '') return res(ctx.status(400));
 		console.log(data.code, data.state);
 		const url = import.meta.env.VITE_OAUTH_URL;
 		console.log(url);
@@ -110,20 +150,22 @@ export default [
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(import.meta.env.VITE_42_API_ME, { headers: headersRequest });
 			console.log(userInfo);
-			users.push({
-				id: userInfo.data.login,
-				username: '',
-				rank: 0,
-				nbVictory: 0,
-				nbDefeat: 0,
-				avatar: userInfo.data.image_url,
-				'2fa': false,
-				current_status: Status.OFFLINE,
-			});
 			return res(
 				ctx.json({
-					id: userInfo.data.login,
-					accessToken: 'fake-jwt-token',
+					auth: {
+						user_id: 6, // voir si on le garde ou pas
+						token:'fake-jwt-token',
+						has_2fa: false},
+					user: {
+						id: 6,
+						login_42: userInfo.data.login,
+						username: 'nlaronch',
+						rank: 0,
+						nbVictory: 0,
+						nbDefeat: 0,
+						avatar: userInfo.data.image_url,
+						status: Status.OFFLINE,
+					}
 				})
 			);
 		} catch {
@@ -133,6 +175,7 @@ export default [
 
 	rest.post('/auth/2fa/login', async (req, res, ctx) => {
 		const data = await req.json();
+		console.log(data)
 		const otpToken = data.otpToken;
 		/*const secret = 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD';
 		const token = totp.generate(secret);
@@ -143,18 +186,24 @@ export default [
 			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
 		}*/
 		if (otpToken)
-			return res(ctx.status(200), ctx.json({ accessToken: 'fake-jwt-token' }));
+			return res(ctx.status(200), ctx.json({ token: 'fake-jwt-token' }));
 		else
 			return res(ctx.status(403), ctx.json({ message: `code is not valid` }));
 	}),
 
-	rest.post('/auth/2fa/enable', (req, res, ctx) => {
+	rest.get('/auth/2fa/enable', (req, res, ctx) => {
 		const data = generateQRCode();
 		console.log(data);
 		return res(ctx.set('Content-Length', 'image/png'), ctx.json(data));
 	}),
 
-	rest.post('/auth/2fa/disable', (req, res, ctx) => {
+	rest.get('/auth/2fa/disable', (req, res, ctx) => {
 		return res(ctx.status(200));
+	}),
+
+	rest.get('/auth/2fa/qr-code', (req, res, ctx) => {
+		const data = generateQRCode();
+		console.log(data);
+		return res(ctx.set('Content-Length', 'image/png'), ctx.json(data));
 	}),
 ];
