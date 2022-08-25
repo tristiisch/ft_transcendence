@@ -197,8 +197,7 @@ export class UsersService {
 		// }
 		if (user.avatar_64 != null) {
 			try {
-				const avatarBase64: string = await toBase64(user.avatar_64)
-				user.avatar = avatarBase64;
+				user.avatar_64 = await toBase64(user.avatar_64);
 			} catch (err) {
 				console.log('DEBUG', 'user.service.ts avatar', err);
 			}

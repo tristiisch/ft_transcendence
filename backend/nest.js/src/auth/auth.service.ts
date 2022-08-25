@@ -106,7 +106,9 @@ export class AuthService {
 
 	async findOne(userId: number): Promise<UserAuth> {
 		isNumberPositive(userId, 'get a auth user');
-		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
+		const userAuth: UserAuth | null = await this.authRepository.findOneBy({ user_id: userId });
+		if (!userAuth)
+			return null;
 		if (userAuth.twoFactorSecret != null)
 			userAuth.has_2fa = true;
 		else

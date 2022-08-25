@@ -19,5 +19,5 @@ export class UserAuth extends BaseEntity {
 	@Column({ nullable: true })
   	twoFactorSecret?: string;
 
-	has_2fa?: boolean;
+	has_2fa?: boolean = false;
 }
