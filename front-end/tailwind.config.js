@@ -6,7 +6,8 @@ module.exports = {
 	  spacing: {
 		'p1.5' : "1.5%",
 		'p5' : "5%",
-		'p10' : "10%"
+		'p10' : "10%",
+		'20vh' : "20vh"
 	  },
       mode: 'jit',
       backgroundImage: {

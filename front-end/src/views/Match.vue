@@ -82,6 +82,7 @@ onMounted(() => {
 		fill: 'gray'
 	})
 
+
 	var fullstage_ratio = stage.width() / 3989
 	var blockers_width = computeBlockerWidth()
 	var blockers_height = computeBlockerHeight()
@@ -132,6 +133,8 @@ onMounted(() => {
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
+		console.log('sidhcsduhu')
+		console.log('zuefhguhs')
 		stage.height(computeStageHeight())
 		stage.width(stage.height() * stage_ratio)
 		fullstage_ratio = stage.width() / 3989
@@ -177,17 +180,17 @@ onMounted(() => {
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">2</h1>
 		</div>
 		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)]">
-			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="text-right z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-left z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 				<h1 class="[font-size:_calc(0.07_*_100vh)] hover:text-yellow-300">{{ player1.username }}</h1>
 			</base-button>
-			<img :src="player1.avatar" class="mt-auto mb-auto h-1/2 border-2 object-cover"/>
+			<img :src="player1.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
 		<div class="w-[calc(0.8_*_100vh)]"></div>
 		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)]">
-			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="text-left z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-right z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 				<h1 class="[font-size:_calc(0.07_*_100vh)] hover:text-yellow-300">{{ player2.username }}</h1>
 			</base-button>
-			<img :src="player2.avatar" class="mt-auto mb-auto h-1/2 border-2 object-cover"/>
+			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
 		<div class="w-[calc(1_*_100vh)] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div>
 		<div class="w-[calc(1_*_100vh)] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">

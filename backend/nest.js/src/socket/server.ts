@@ -49,8 +49,8 @@ export async function createSocketServer(serverPort: number) {
 				const height = 2976
 				var x = width/2
 				var y = height/2
-				var dx = 2
-				var dy = -2
+				var dx = 3
+				var dy = -3
 
 				const blocker_width = width / 50
 				const blocker_height = height / 5
