@@ -4,7 +4,6 @@ import axios from 'axios';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
-import { UserRequest } from './interfaces/UserRequest.interface';
 import { User } from 'src/users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
 
@@ -54,8 +53,8 @@ export class TFAController {
 	@UseGuards(JwtAuthGuard)
 	async register(@Req() req, @Res() response: Response) {
 		const user: User = req.user;
-		const otpauthUrl = await this.authService.generateTFASecret(user.id);
-		const qrCode = await this.authService.QrCodeStream(response, otpauthUrl);
+		const otpauthUrl = await this.authService.generateTFASecret(user);
+		const qrCode = await this.authService.QrCodeStream(otpauthUrl);
 		response.json(qrCode)
 	}
 
@@ -63,15 +62,12 @@ export class TFAController {
 	@UseGuards(JwtAuthGuard)
 	async enableTFA(@Req() req, @Body() data) {
 		const user: User = req.user;
-		const userAuth: UserAuth = await this.authService.findOne(user.id);
-		const valid_code: boolean = this.authService.TFACodeValidation(data.code, userAuth);
+		const code: string = data.twoFacode;
+		const valid_code: boolean = this.authService.TFACodeValidationEnable(code, user.id);
 		if (!valid_code)
-			throw new UnauthorizedException('Wrong authentification code');
-		
-		// Besoin de revoir cette function. Il faut sauvegarder le secret 2fa maintenant et pas avant.
-		// Il faut donc sauvegarder les QRCode et secret 2fa (ceux generer dans register) PAS DANS LA BASE DE DONNEE mais en variable global dans ce
-		// fichier dans une Map ou truc du genre.
-		//await this.authService.enableTFA(req.user.user_id)
+			throw new ForbiddenException('Wrong authentification code');
+
+		await this.authService.enableTFA(user.id)
 	}
 
 	@Post('authenticate')
@@ -79,10 +75,11 @@ export class TFAController {
 	@UseGuards(JwtAuthGuard)
 	async authenticate(@Req() req, @Body() data) {
 		const user: User = req.user;
+		const code: string = data.otpToken;
 		const userAuth: UserAuth = await this.authService.findOne(user.id);
-		const isCodeValid = this.authService.TFACodeValidation(data.code, userAuth);
+		const isCodeValid = this.authService.TFACodeValidationAuthenticate(code, userAuth);
 		if (!isCodeValid) {
-			throw new UnauthorizedException('Wrong authentication code');
+			throw new ForbiddenException('Wrong authentication code');
 		}
 		return {
 			auth: userAuth,
