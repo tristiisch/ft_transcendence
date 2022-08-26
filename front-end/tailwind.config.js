@@ -3,6 +3,11 @@ module.exports = {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+	  spacing: {
+		'p1.5' : "1.5%",
+		'p5' : "5%",
+		'p10' : "10%"
+	  },
       mode: 'jit',
       backgroundImage: {
         'brick': "url(@/assets/brick.jpg)",
@@ -14,6 +19,8 @@ module.exports = {
       fontFamily: {
         Noir: ["Noir", "sans-serif"],
         BPNeon:["Neon", "ns-serif"],
+        VS:["VS", "ns-serif"],
+        skyfont:["skyfont", "ns-serif"],
         Arlon:["Arlon", "sans-serif"],
 		Vibur:["Vibur", "sans-serif"]
       },

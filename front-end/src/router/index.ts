@@ -18,9 +18,9 @@ const router = createRouter({
 			meta: { requiresAuth: true },
 		},
 		{
-			path: '/game',
-			name: 'Game',
-			component: () => import('@/views/Game.vue'),
+			path: '/match/:id',
+			name: 'Match',
+			component: () => import('@/views/Match.vue'),
 			meta: { requiresAuth: true },
 		},
 		{

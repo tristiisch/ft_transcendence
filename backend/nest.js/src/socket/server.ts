@@ -83,10 +83,12 @@ export async function createSocketServer(serverPort: number) {
 						// 	dx = -dx
 						// if (x > 200 && x < 3800 && !(rgba2[0] === 255 && rgba2[1] === 255 && rgba2[2] === 255 && rgba2[2] === 255))
 						// 	dy = -dy
-						if (x > p1_xpos && x < p1_xpos + blocker_width && x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > p1_ypos && y + dy < p1_ypos + blocker_height)
-							dy = -dy
-						else if (x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > p1_ypos && y + dy < p1_ypos + blocker_height)
-							dx = -dx
+						if ((x > p1_xpos && x < p1_xpos + blocker_width && x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > p1_ypos && y + dy < p1_ypos + blocker_height) ||
+							(x > p2_xpos && x < p2_xpos + blocker_width && x + dx > p2_xpos && x + dx < p2_xpos + blocker_width && y + dy > p2_ypos && y + dy < p2_ypos + blocker_height))
+								dy = -dy
+						else if ((x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > p1_ypos && y + dy < p1_ypos + blocker_height) ||
+								(x + dx > p2_xpos && x + dx < p2_xpos + blocker_width && y + dy > p2_ypos && y + dy < p2_ypos + blocker_height))
+								dx = -dx
 						x += dx
 						y += dy
 						socket.emit("ball", x, y)
