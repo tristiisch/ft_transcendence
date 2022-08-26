@@ -1,4 +1,5 @@
 /** @prettier */
+import { Exclude } from 'class-transformer';
 import { IsEmail, IsInt, IsNotEmpty } from 'class-validator';
 import { fromBase64 } from 'src/utils/utils';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
@@ -24,19 +25,11 @@ export class User extends BaseEntity {
 	@IsNotEmpty()
 	username: string;
 
-	@Column({ nullable: true })
 	avatar: string;
 
-	// avatar: string;
-
-	// @Column("int", { nullable: true, array: true })
-	// friends?: number[];
-
-	//@Column({ default: false })
-	//public isTwoFactorAuthenticationEnabled: boolean;
-
+    @Exclude()
 	@Column({ nullable: true })
-  	public twoFactorSecret?: string;
+	avatar_64: string;
 
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
 

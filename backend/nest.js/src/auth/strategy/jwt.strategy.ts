@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, ExtractJwt} from "passport-jwt";
 import { UsersService } from "src/users/users.service";
+import { UserAuth } from "../entity/user-auth.entity";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, "jwt"){
@@ -14,9 +15,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt"){
 		});
 	}
 
-	async validate(userId: number) {
-		const user = await this.usersService.findOne(userId);
-		return user;
+	async validate(jwtData: any) {
+		try {
+			return await this.usersService.findOne(jwtData.id);
+		} catch (err) {
+			if (err instanceof NotFoundException)
+				return null;
+			console.log("ERROR with validate jwt strategy of '", jwtData, "'", err);
+			return null;
+		}
 	}
 
 }

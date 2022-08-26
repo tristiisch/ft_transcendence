@@ -23,6 +23,7 @@ export class UsersService {
 	lambdaGetUser = (user: User, identifier: any) => {
 		if (!user)
 			throw new NotFoundException(`The user '${identifier}' does not exist.`);
+		user.defineAvatar();
 		return user;
 	};
 
@@ -194,28 +195,25 @@ export class UsersService {
 		// 	this.usersRepository.update(userId, user);
 		// 	return;
 		// }
-		if (user.avatar != null && !user.avatar.startsWith('data:')) {
+		if (user.avatar_64 != null) {
 			try {
-				const avatarBase64: string = await toBase64(user.avatar)
-				user.avatar = avatarBase64;
+				user.avatar_64 = await toBase64(user.avatar_64);
 			} catch (err) {
 				console.log('DEBUG', 'user.service.ts avatar', err);
 			}
 		}
 
 		this.usersRepository.update(userId, user);
-		let userAfter: User = await this.findOne(userId);
-		return userAfter;
+		return await this.findOne(userId);
 	}
 
 	async findAvatar(selectUser: UserSelectDTO, @Res() res: Response) {
 		const target: User = await selectUser.resolveUser(this);
-		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar);
+		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);
 		res.writeHead(200, {
 			'Content-Type': avatar.imageType,
 			'Content-Length': avatar.imageBuffer.length
 		});
 		res.end(avatar.imageBuffer);
 	}
-
 }

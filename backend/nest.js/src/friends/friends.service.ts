@@ -41,7 +41,7 @@ export class FriendsService {
 
 		const friendshipCheck: Friendship = await this.findOne(user.id, target.id, false);
 
-		if (friendshipCheck) {
+		if (friendshipCheck !== null) {
 			throw new NotAcceptableException(`They is already a relation between ${user.username} and ${target.username}` + ` with status ${FriendshipStatus[friendshipCheck.status]}.`);
 		}
 		const friendship: Friendship = new Friendship();
@@ -80,7 +80,7 @@ export class FriendsService {
 		if (target.id == user.id) throw new PreconditionFailedException("You can't be friends with yourself.");
 		const friendship: Friendship = await this.findOne(target.id, user.id, true);
 
-		if (!friendship) throw new NotAcceptableException(`${user.username} has no friend request from ${target.username}.`);
+		if (friendship === null) throw new NotAcceptableException(`${user.username} has no friend request from ${target.username}.`);
 
 		if (friendship.status == FriendshipStatus.ACCEPTED) throw new NotAcceptableException(`You are already friend with ${target.username}.`);
 
@@ -106,7 +106,7 @@ export class FriendsService {
 
 		const friendship: Friendship = await this.findOne(user.id, target.id, false);
 
-		if (!friendship) {
+		if (friendship === null) {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
@@ -149,7 +149,7 @@ export class FriendsService {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
 		// await this.userService.findOne(userId);
-		sqlStatement.where('friendship.user_1id = :id', { id: userId }).andWhere('friendship.status = :status', { status: FriendshipStatus.PENDING });
+		sqlStatement.where('friendship.user1_id = :id', { id: userId }).andWhere('friendship.status = :status', { status: FriendshipStatus.PENDING });
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();
@@ -249,11 +249,17 @@ export class FriendsService {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
 		// await this.userService.findOne(userId);
-		sqlStatement.where('friendship.user_1id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
+		sqlStatement.where('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			return friendships;
 		}, this.userService.lambdaDatabaseUnvailable);
+	}
+
+	async findAllRelationsId(userId: number): Promise<number[]> {
+		return await this.findAllRelations(userId).then((friendships: Friendship[]) => {
+			return friendships.map(f => f.user1_id !== userId ? f.user1_id : f.user2_id);
+		});
 	}
 
 	async findAll(): Promise<Friendship[]> {

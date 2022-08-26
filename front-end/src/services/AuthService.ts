@@ -4,8 +4,8 @@ import type { AxiosResponse } from 'axios';
 class AuthService {
 	login(code: string) {
 		return axios.post('auth/42/redirect', { code }).then((response) => {
-			if (response.data.auth.token) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token}`;
+			if (response.data.auth.token_jwt) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
 			}
 			return response.data;
 		})
@@ -14,27 +14,27 @@ class AuthService {
 	login2FA(otpToken: string) {
 		return axios.post('auth/2fa/login', { otpToken }).then((response) => {
 			console.log(response.data)
-			if (response.data.token) {
-				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+			if (response.data.auth.token_jwt) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
 			}
 			return response.data;
 		});
 	}
 
-	registerUser(id: number, username: string, avatar: string) {
-		return axios.patch(`users/register/${id}`, { username, avatar });
+	registerUser(username: string, avatar: string) {
+		return axios.patch(`users/register`, { username, avatar });
 	}
 
-	enable2FA() {
-		return axios.post('auth/2fa/enable');
+	enable2FA(twoFacode: number) {
+		return axios.post('2fa/enable', { twoFacode });
 	}
 
 	disable2FA() {
-		return axios.get('auth/2fa/disable');
+		return axios.get('2fa/disable');
 	}
 
 	getQrCode2FA() {
-		return axios.get('auth/2fa/generate');
+		return axios.get('2fa/generate');
 	}
 }
 

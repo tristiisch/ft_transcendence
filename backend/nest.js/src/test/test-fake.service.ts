@@ -1,5 +1,6 @@
 /** @prettier */
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { AuthService } from 'src/auth/auth.service';
 import { FriendsService } from 'src/friends/friends.service';
 import { MatchStats } from 'src/game/matchs/entity/matchstats.entity';
 import { MatchStatsService } from 'src/game/matchs/matchs.service';
@@ -8,7 +9,7 @@ import { StatsService } from 'src/game/stats/stats.service';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User, UserStatus } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { random, randomElement, randomEnum, removeFromArray, toBase64 } from 'src/utils/utils';
+import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from 'src/utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 
 @Injectable()
@@ -21,6 +22,8 @@ export class TestFakeService {
 	private readonly statsService: StatsService;
 	@Inject(MatchStatsService)
 	private readonly matchHistoryService: MatchStatsService;
+	@Inject(AuthService)
+	private readonly authService: AuthService;
 
 	private readonly randomMaxStats = 100;
 	private readonly randomMaxScoreGame = 5;
@@ -29,40 +32,40 @@ export class TestFakeService {
 		const data = new Array();
 		const allUserIds: number[] = await this.getUsersIds();
 		for (let i: number = 1; i <= nbUsers; ++i) {
-			let fakeUser: { user: User; stats: UserStats; matchs: MatchStats } = await this.createFakeUser(allUserIds);
+			let fakeUser: { user: User; matchs: MatchStats } = await this.createFakeUser(allUserIds);
 			data.push(fakeUser);
 			allUserIds.push(fakeUser.user.id);
 		}
 		return data;
 	}
 
-	async createFakeUser(allUserIds: number[]): Promise<{ user: User; stats: UserStats; matchs: MatchStats }> {
+	async createFakeUser(allUserIds: number[]): Promise<{ user: User; matchs: MatchStats }> {
 		const user: User = await this.initUser();
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
-		const stats: UserStats = await this.initStats(user);
+		// const stats: UserStats = await this.initStats(user);
 		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
+		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, await this.friendsService.findAllRelationsId(user.id));
 
-		this.initNewFriendship(user, allUserIdsExceptUser);
-		return { user, stats, matchs };
+		this.initNewFriendship(user, usersWithoutRelation);
+		return { user, matchs };
 	}
 
 	async addFakeData(user: User): Promise<{ statusCode: number; message: string }> {
 		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
 
-		const stats: UserStats = await this.initStats(user);
+		// const stats: UserStats = await this.initStats(user);
 		let iMatchs = -1;
 		while (++iMatchs < allUserIdsExceptUser.length) {
 			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 			if (matchs == null) break;
 		}
-		const allFriendsOfUser: number[] = await this.friendsService.findFriendsIds(user.id);
-		for (let userToRemove of allFriendsOfUser) {
-			removeFromArray(allUserIdsExceptUser, userToRemove);
-		}
+		const userWithRealationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
+		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, userWithRealationsIds);
+
 		let iFriends = -1;
-		while (++iFriends < allUserIdsExceptUser.length) {
-			const target: UserSelectDTO = await this.initNewFriendship(user, allFriendsOfUser);
+		while (++iFriends < usersWithoutRelation.length) {
+			const target: UserSelectDTO = await this.initNewFriendship(user, usersWithoutRelation);
 			if (!target) break;
 			removeFromArray(allUserIdsExceptUser, target.id);
 		}
@@ -78,46 +81,57 @@ export class TestFakeService {
 			return response.url;
 		});
 		*/
-		user.avatar = await toBase64('https://picsum.photos/200');
+		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
 		// user.status = UserStatus.IN_GAME;
 		return await this.usersService.add(user);
 	}
 
-	async initStats(user: User): Promise<UserStats> {
-		let userStats: UserStats = new UserStats();
+	// async initStats(user: User): Promise<UserStats> {
+	// 	const userStats: UserStats = new UserStats(user.id);
 
-		userStats.user_id = user.id;
-		userStats.victories = random(0, this.randomMaxStats);
-		userStats.defeats = random(0, this.randomMaxStats);
+	// 	userStats.victories = random(0, this.randomMaxStats);
+	// 	userStats.defeats = random(0, this.randomMaxStats);
 
-		return this.statsService.add(userStats);
-	}
+	// 	return this.statsService.add(userStats);
+	// }
 
 	async initMatchHistory(user: User, userIds: number[]): Promise<MatchStats> {
 		if (userIds.length === 0) {
 			console.log(`Can't find a valid userId for matchHistory of ${JSON.stringify(user)}.`);
 			return null;
 		}
+		const targetId: number = randomElement(userIds);
 		const matchHistory: MatchStats = new MatchStats();
 
 		if (random(0, 2) === 1) {
 			matchHistory.user2_id = user.id;
-			matchHistory.user1_id = randomElement(userIds);
+			matchHistory.user1_id = targetId;
 		} else {
 			matchHistory.user1_id = user.id;
-			matchHistory.user2_id = randomElement(userIds);
+			matchHistory.user2_id = targetId;
 		}
 
 		if (random(0, 4) >= 1) {
 			const scoreWinner: number = this.randomMaxScoreGame;
 			const scoreLoser: number = random(0, this.randomMaxScoreGame);
-			if (random(0, 2) === 1)
+			if (random(0, 2) === 1) {
 				matchHistory.score = [scoreWinner, scoreLoser];
-			else
+			} else {
 				matchHistory.score = [scoreLoser, scoreWinner];
+			}
 			matchHistory.timestamp_ended = new Date();
 			matchHistory.timestamp_ended.setMinutes(matchHistory.timestamp_ended.getMinutes() + random(5, 60));
+
+			if (matchHistory.getWinner() === user.id) {
+				await this.statsService.addVictory(user.id)
+				await this.statsService.addDefeat(targetId)
+			} else if (matchHistory.getWinner() === targetId) {
+				await this.statsService.addVictory(targetId)
+				await this.statsService.addDefeat(user.id)
+			} else {
+				throw new InternalServerErrorException(`They is no winner in the match ${JSON.stringify(matchHistory)}.`);
+			}
 		} else {
 			const scoreUser1: number = random(0, this.randomMaxScoreGame);;
 			const scoreUser2: number = random(0, this.randomMaxScoreGame);
@@ -131,14 +145,14 @@ export class TestFakeService {
 			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
 			return null;
 		}
-		const randomUserId: number = randomElement(userIds);
 		const randomUser: UserSelectDTO = new UserSelectDTO();
-		randomUser.id = randomUserId;
-		randomUser.username = 'fakePlayer';
+		randomUser.id = randomElement(userIds);
+		randomUser.username = randomUser.id.toString();
+
+		await this.friendsService.addFriendRequest(user, randomUser);
+	
 		const randomNb: number = random(1, 4);
 
-		// console.log('User', user, 'randomUser', randomUser);
-		await this.friendsService.addFriendRequest(user, randomUser);
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);
 		return randomUser;

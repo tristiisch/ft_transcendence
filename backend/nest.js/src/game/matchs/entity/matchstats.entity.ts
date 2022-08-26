@@ -33,6 +33,9 @@ export class MatchStats extends BaseEntity {
 	timestamp_ended: Date;
 
 	public getWinner(): number {
+		if (this.timestamp_ended === null)
+			throw new UnprocessableEntityException('The game is not over, there is no winner yet.');
+
 		const score_user1 = this.score[0];
 		const score_user2 = this.score[1];
 		
@@ -43,7 +46,10 @@ export class MatchStats extends BaseEntity {
 		throw new UnprocessableEntityException('There was no winner, the match ended in a tie.');
 	}
 
-	public getLooser(): number {
+	public getLoser(): number {
+		if (this.timestamp_ended === null)
+			throw new UnprocessableEntityException('The game is not over, there is no loser yet.');
+
 		const score_user1 = this.score[0];
 		const score_user2 = this.score[1];
 		

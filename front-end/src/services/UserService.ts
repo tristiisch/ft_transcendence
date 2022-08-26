@@ -12,16 +12,16 @@ class UserService {
 		return axios.get(`users/${id}`);
 	}
 
-	registerUser(id: number, username: string, avatar: string) {
-		return axios.patch(`users/register/${id}`, { username, avatar });
+	registerUser(id: number, username: string, avatar_64: string) {
+		return axios.patch(`users/register`, { username, avatar_64 });
 	}
 
-	updateUsename(id: number, username: string) {
-		return axios.patch(`users/me/${id}/set-username`, { username });
+	updateUsename(username: string) {
+		return axios.patch(`users/set-username`, { username });
 	}
 
-	updateAvatar(id: number, avatar: string) {
-		return axios.patch(`users/me/${id}/set-avatar`, { avatar });
+	updateAvatar(avatar_64: string) {
+		return axios.patch(`users/set-avatar`, { avatar_64 });
 	}
 
 	getUserfriends(id: number) {
@@ -45,24 +45,27 @@ class UserService {
 		return axios.post(`friends/remove/${id}`, { id: targetId });
 	}
 
-	getLeaderboard(id: number) {
-		return axios.post(`stats/leaderboard-with-friends`, {id});
+	getLeaderboard() {
+		return axios.get(`stats/leaderboard-with-friends`);
 	}
 
+	/**
+	 * @param id Should be defined only if you need the history of other user
+	 */
 	getMatchsHistory(id: number) {
-		return axios.post(`matchs/history/${id}`);
+		return axios.post(`matchs/history`, { id: id });
 	}
 
 	getCurrentMatchs() {
 		return axios.get('matchs/current');
 	}
 
-	getNotifications(id: number) {
-		return axios.get(`notification/${id}`);
+	getNotifications() {
+		return axios.get(`notification`);
 	}
 
 	getStats(id: number) {
-		return axios.get(`stats/${id}`);
+		return axios.post('stats', { id: id });
 	}
 
 	getChannels() {

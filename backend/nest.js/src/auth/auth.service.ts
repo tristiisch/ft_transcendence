@@ -7,17 +7,22 @@ import { isNumberPositive, toBase64 } from 'src/utils/utils';
 import { Repository } from 'typeorm';
 import { UserAuth } from './entity/user-auth.entity';
 import { authenticator } from 'otplib';
-import { toFileStream } from 'qrcode';
+import { toDataURL } from 'qrcode';
 import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
+
 	constructor(private jwtService: JwtService, private usersService: UsersService,
 		@InjectRepository(UserAuth)
 		private authRepository: Repository<UserAuth>){
 	}
 
-	async UserConnecting(userInfo42: any){
+	getRepo() {
+		return this.authRepository;
+	}
+
+	async UserConnecting(userInfo42: any): Promise<User> {
 		let user: User;
 		let userAuth: UserAuth;
 		try {
@@ -27,9 +32,11 @@ export class AuthService {
 				user = new User;
 				// user.username = userInfo42.data.login; Est définie a null tant que l'user n'est pas register
 				user.login_42 = userInfo42.data.login;
-				user.avatar = await toBase64(userInfo42.data.image_url);
+				user.username = null;
+				user.avatar_64 = await toBase64(userInfo42.data.image_url);
 				user.status = UserStatus.ONLINE;
 				user = await this.usersService.add(user);
+				user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 			} else {
 				throw err;
 			}
@@ -37,11 +44,9 @@ export class AuthService {
 		userAuth = await this.findOne(user.id);
 		if (!userAuth) {
 			userAuth = new UserAuth(user.id);
-			userAuth.token = await this.createToken(user.id);
-			userAuth.twofa = null;
+			userAuth.token_jwt = await this.createToken(user.id);
 			this.save(userAuth);
 		}
-		user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 		return user;
 	}
 
@@ -59,16 +64,13 @@ export class AuthService {
 
 	public async generateTFASecret(userId: number) {
 		const secret = authenticator.generateSecret();
+		console.log(secret)
 		const user = await this.usersService.findOne(userId);
 		const otpauthUrl = authenticator.keyuri(
 			user.login_42, process.env.TFA_APP, secret);
 		await this.setTFASecret(secret, userId);
-		return {
-			secret,
-			otpauthUrl
-		}
+		return otpauthUrl
 	}
-
 
 	public async createToken(id: number): Promise<string> {
 		const payload = { id: id };
@@ -80,7 +82,7 @@ export class AuthService {
 	public async createTempToken(id: number): Promise<string> {
 		const payload = { id: id };
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_SECRET,
+			secret: process.env.JWT_SECRET_2FA,
 			expiresIn: "2min" // prévoir une variable pour l'expiration du token
 		});
 	}
@@ -91,7 +93,7 @@ export class AuthService {
 			TFA_auth: true
 		};
 		return this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_SECRET,
+			secret: process.env.JWT_SECRET_2FA,
 		});
 	}
 
@@ -101,30 +103,35 @@ export class AuthService {
 
 	async findOne(userId: number): Promise<UserAuth> {
 		isNumberPositive(userId, 'get a auth user');
-		return this.authRepository.findOneBy({ user_id: userId });
+		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
+		if (!userAuth)
+			return null;
+		if (userAuth.twoFactorSecret != null)
+			userAuth.has_2fa = true;
+		else
+			userAuth.has_2fa = false;
+		return userAuth;
 	}
 
 	async setTFASecret(secret: string, userId: number) {
 		return this.authRepository.update(userId, {
-		  twofa: secret
+			twoFactorSecret: secret
 		});
 	}
 
-	public async TFACodeValidation(code: string, user: UserAuth){
+	public TFACodeValidation(code: string, userAuth: UserAuth){
 		return authenticator.verify({
 			token: code,
-			secret: user.twofa
+			secret: userAuth.twoFactorSecret
 		})
 	}
 
-	async enableTFA(userId: number) {
-		return this.authRepository.update(userId, {
-			has_2fa: true
-		});
+	async enableTFA(userId: number, twoFactorSecret: string ) {
+		return this.authRepository.update(userId, { twoFactorSecret: twoFactorSecret });
 	}
 
 	public async QrCodeStream(stream: Response, otpauthUrl: string) {
-		return toFileStream(stream, otpauthUrl);
+		const imagePath = await toDataURL(otpauthUrl);
+		return imagePath;
 	}
-
 }

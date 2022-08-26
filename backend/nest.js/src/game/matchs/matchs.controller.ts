@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guard';
 import { UserSelectDTO } from 'src/users/entity/user-select.dto';
 import { User } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -26,11 +27,18 @@ export class MatchsStatsController {
 		return await this.matchsHistoryService.add(match);
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Post('history')
-	async getUserHistory(@Body() userSelected: UserSelectDTO) {
-		const user: User = await userSelected.resolveUser(this.usersService);
+	async getUserHistory(@Req() req, @Body() userSelected: UserSelectDTO) {
+		let target: User;
+		const user: User = req.user;
 
-		return await this.matchsHistoryService.findAll(user.id);
+		if (userSelected.isEmpty()) {
+			target = user;
+		} else {
+			target = await userSelected.resolveUser(this.usersService);
+		}
+		return await this.matchsHistoryService.findHistory(target.id);
 	}
 
 	/**

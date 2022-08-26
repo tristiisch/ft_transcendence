@@ -1,10 +1,12 @@
-import { ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
 import { UserRequest } from './interfaces/UserRequest.interface';
+import { User } from 'src/users/entity/user.entity';
+import { UserAuth } from './entity/user-auth.entity';
 
 
 
@@ -29,19 +31,16 @@ export class AuthController {
 			const result = await axios.post(url, postData);
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-			console.log(result.data.access_token);
-			const user = await this.authService.UserConnecting(userInfo);
-			const auth = await this.authService.findOne(user.id);
+			const user: User = await this.authService.UserConnecting(userInfo);
+			const auth: UserAuth = await this.authService.findOne(user.id);
+			delete auth.twoFactorSecret; // TODO Verif this method
+			console.log('DEBUG LOGIN', 'auth:', auth);
 			if (user && auth.has_2fa === true)
-				res.json({auth: auth
-				}); // il est aussi de basculer sur le bon controller depuis le back
+				res.json({ auth: auth }); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
-				res.json({
-					auth: auth, //il faut encore créer le token
-					user: user
-				});
-		}catch(err42){
-			throw( new ForbiddenException("Unauthorized"))
+				res.json({ auth: auth, user: user });
+		} catch(err42) {
+			throw new ForbiddenException("Unauthorized");
 		}
 	}
 }
@@ -49,38 +48,45 @@ export class AuthController {
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
 export class TFAController {
-	constructor(	private readonly authService: AuthService,) {}
+	constructor(private readonly authService: AuthService,) {}
 
-	@Post('generate')
+	@Get('generate')
 	@UseGuards(JwtAuthGuard)
-	async register(@Res() response: Response, @Req() request: Request) {
-		const { otpauthUrl } = await this.authService.generateTFASecret(request.body.user_id);
-		return this.authService.QrCodeStream(response, otpauthUrl);
+	async register(@Req() req, @Res() response: Response) {
+		const user: User = req.user;
+		const otpauthUrl = await this.authService.generateTFASecret(user.id);
+		const qrCode = await this.authService.QrCodeStream(response, otpauthUrl);
+		response.json(qrCode)
 	}
 
 	@Post('enable')
 	@UseGuards(JwtAuthGuard)
-	async enableTFA(@Req() req: UserRequest) {
-		const valid_code = this.authService.TFACodeValidation(
-			req.user.twofa, req.user);
+	async enableTFA(@Req() req, @Body() data) {
+		const user: User = req.user;
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		const valid_code: boolean = this.authService.TFACodeValidation(data.code, userAuth);
 		if (!valid_code)
 			throw new UnauthorizedException('Wrong authentification code');
-		await this.authService.enableTFA(req.user.user_id)
+		
+		// Besoin de revoir cette function. Il faut sauvegarder le secret 2fa maintenant et pas avant.
+		// Il faut donc sauvegarder les QRCode et secret 2fa (ceux generer dans register) PAS DANS LA BASE DE DONNEE mais en variable global dans ce
+		// fichier dans une Map ou truc du genre.
+		//await this.authService.enableTFA(req.user.user_id)
 	}
 
 	@Post('authenticate')
 	@HttpCode(200)
 	@UseGuards(JwtAuthGuard)
-	async authenticate(@Req() req: UserRequest, @Res() res: Response) {
-	  const isCodeValid = this.authService.TFACodeValidation(
-		req.user.twofa, req.user);
-	  if (!isCodeValid) {
-		throw new UnauthorizedException('Wrong authentication code');
-	  }
-	  res.json({
-		auth: this.authService.findOne(req.user.user_id),
-		user: this.authService.UserConnectingTFA(req.user.user_id),
-		token: this.authService.createTFAToken(req.user.user_id)
-	  });
+	async authenticate(@Req() req, @Body() data) {
+		const user: User = req.user;
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		const isCodeValid = this.authService.TFACodeValidation(data.code, userAuth);
+		if (!isCodeValid) {
+			throw new UnauthorizedException('Wrong authentication code');
+		}
+		return {
+			auth: userAuth,
+			user: user
+		};
 	}
 }

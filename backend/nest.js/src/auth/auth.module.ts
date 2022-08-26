@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { AuthController, TFAController } from './auth.controller';
 import { JwtStrategy, JwtTFAStrategy } from './strategy';
 import * as dotenv from "dotenv";
 import { JwtModule } from '@nestjs/jwt';
@@ -12,8 +12,9 @@ dotenv.config();
 
 @Module({
 
-	imports: [JwtModule, JwtModule.register({secret: process.env.FT_SECRET,}), UsersModule, TypeOrmModule.forFeature([UserAuth])],
+	imports: [JwtModule, JwtModule.register({secret: process.env.JWT_SECRET,}), UsersModule, TypeOrmModule.forFeature([UserAuth])],
 	providers: [AuthService, JwtStrategy, JwtTFAStrategy],
-	controllers: [AuthController],
+	controllers: [AuthController, TFAController],
+	exports: [AuthService]
 })
 export class AuthModule {}

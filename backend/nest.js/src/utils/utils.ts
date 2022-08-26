@@ -57,9 +57,18 @@ export function randomEnum<T>(enumeration: T) {
 	return randomElement(values);
 }
 
+export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>): Array<T> {
+	const newArray: T[] = new Array();
+	array.forEach(nb => {
+		if (arrayToSubstract.indexOf(nb) === -1)
+			newArray.push(nb);
+	});
+	return newArray;
+}
+
 export function removeFromArray<T>(array: Array<T>, key: T): Array<T> {
-	const index = array.indexOf(key, 0);
-	if (index > -1)
+	const index = array.indexOf(key);
+	if (index != -1)
 		array.splice(index, 1);
 	return array;
 }
@@ -81,5 +90,5 @@ export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: 
 	const imgType: string = imageBase64.substring('data:'.length, imageBase64.indexOf(';'))
 	const imgBase64: string = imageBase64.substring(imageBase64.indexOf(',') + 1, imageBase64.length)
 	const imgRaw = Buffer.from(imgBase64, 'base64')
-	return {imageType: imgType, imageBuffer : imgRaw };
+	return { imageType: imgType, imageBuffer : imgRaw };
 }

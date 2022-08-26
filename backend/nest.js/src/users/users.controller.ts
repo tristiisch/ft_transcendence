@@ -1,6 +1,8 @@
 /** @prettier */
-import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { UserAuth } from 'src/auth/entity/user-auth.entity';
+import { JwtAuthGuard } from 'src/auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';
@@ -30,25 +32,29 @@ export class UsersController {
 		return this.usersService.findOneBy42Login(login);
 	}
 
-	@Patch('register/:id')
-	registerUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		return this.usersService.register(id, userToUpdate);
+	@UseGuards(JwtAuthGuard)
+	@Patch('register')
+	registerUser(@Req() req, @Body() userToUpdate: UserDTO) {
+		const user: User = req.user;
+		return this.usersService.register(user.id, userToUpdate);
 	}
 
-	@Patch('me/:id/set-username')
-	async updateUsername(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		const user: User = await this.usersService.findOne(id);
+	@UseGuards(JwtAuthGuard)
+	@Patch('set-username')
+	async updateUsername(@Req() req, @Body() userToUpdate: UserDTO) {
+		const user: User = req.user;
 
 		user.username = userToUpdate.username;
-		return await this.usersService.update(id, user);
+		return await this.usersService.update(user.id, user);
 	}
 
-	@Patch('me/:id/set-avatar')
-	async updateAvatar(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		const user: User = await this.usersService.findOne(id);
+	@UseGuards(JwtAuthGuard)
+	@Patch('set-avatar')
+	async updateAvatar(@Req() req, @Body() userToUpdate: UserDTO) {
+		const user: User = req.user;
 
-		user.avatar = userToUpdate.avatar;
-		return await this.usersService.update(id, user);
+		user.avatar_64 = userToUpdate.avatar_64;
+		return await this.usersService.update(user.id, user);
 	}
 
 	@Patch(':id')

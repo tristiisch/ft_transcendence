@@ -11,8 +11,8 @@ const authString = localStorage.getItem('userAuth');
 
 if (authString) {
 	console.log(authString)
-	// console.log(userStore.userData.username)
-	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token}`;
+	console.log(userStore.userData.username)
+	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token_jwt}`;
 	UserService.getUser(JSON.parse(authString).user_id)
 		.then((response) => {
 			socket.connect()

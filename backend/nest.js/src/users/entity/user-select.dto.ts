@@ -18,7 +18,7 @@ export class UserSelectDTO {
 	/**
 	 * @throws {NotAcceptableException} UserSelectDTO must have a id or username
 	 */
-	async resolveUser?(usersService: UsersService): Promise<User> {
+	public async resolveUser?(usersService: UsersService): Promise<User> {
 		if (this.id != null) {
 			// console.log("UserSelectDTO resolve with Id " + this.id);
 			return await usersService.findOne(this.id);
@@ -27,6 +27,10 @@ export class UserSelectDTO {
 			return await usersService.findOneByUsername(this.username);
 		}
 		throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
+	}
+
+	public isEmpty?() {
+		return this.id == null && this.username == null;
 	}
 
 	// async resolveUserAvatar64(usersService: UsersService) : Promise<User> {
