@@ -1,6 +1,5 @@
 import { PreconditionFailedException } from "@nestjs/common";
 import axios from 'axios';
-import * as fs from 'fs';
 
 export function isEquals(entity1: any, entity2: any) : boolean {
 	if (!entity1 && !entity2)
