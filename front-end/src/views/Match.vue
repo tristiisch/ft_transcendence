@@ -11,6 +11,7 @@ import type User from '@/types/User';
 
 const route = useRoute()
 const router = useRouter()
+var match_id = route.params.id
 var isLoaded = ref(false)
 
 const userStore = useUserStore()
@@ -30,12 +31,12 @@ const player2: User = userStore.userData as User
 // 		})
 // }
 
-MatchService.loadMatch(route.params.id)
+MatchService.loadMatch(match_id)
 	.then((response) => {
 		console.log("parsed match!", response)
 	})
 	.catch((e) => {
-		if (route.params.id != "devtmp")
+		if (match_id != "devtmp")
 		{
 			router.replace({
 				name: 'NotFound',
@@ -163,7 +164,10 @@ onMounted(() => {
 		ball.x(x * fullstage_ratio)
 		ball.y(y * fullstage_ratio)
 	});
-	socket.emit("start_match");
+	socket.emit("match", match_id)
+	socket.on("hey", (s: string) => {
+		console.log(s)
+	})
 })
 
 </script>
