@@ -10,10 +10,9 @@ import BaseCard from '@/components/BaseCard.vue';
 import TheFooter from '@/components/TheFooter.vue';
 import TheHeader from '@/components/TheHeader.vue';
 import BaseUi from '@/components/BaseUi.vue';
-import BaseSpinner from './components/BaseSpinner.vue';
-import Toast from "vue-toastification";
+import BaseSpinner from '@/components/BaseSpinner.vue';
+import Toast, { POSITION } from "vue-toastification";
 import "vue-toastification/dist/index.css";
-import { createClient } from './client';
 
 /*if (process.env.NODE_ENV === 'development') {
 	const { worker } = await import('./mocks/browser');
@@ -25,6 +24,7 @@ const app = createApp(App);
 const pinia = createPinia();
 
 const options = {
+	position: POSITION.TOP_CENTER
     // You can set your default options here
 };
 

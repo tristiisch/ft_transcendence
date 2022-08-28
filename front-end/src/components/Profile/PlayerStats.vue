@@ -16,5 +16,5 @@ const props = defineProps<{
             <h2 class="text-red-800 text-base sm:text-lg 3xl:text-xl">LOSSES:</h2>
             <h1 class="text-red-700 text-2xl sm:text-4xl 3xl:text-6xl">{{ userStats.defeats }}</h1>
         </div>
-    </div>  
+    </div>
 </template>

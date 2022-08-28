@@ -1,18 +1,10 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
-import type  Match from '@/types/MatchHistory';
-import { useRoute } from 'vue-router';
-import { ref, onMounted, computed } from 'vue';
 import type MatchHistory from '@/types/MatchHistory';
-import { useUserStore } from '@/stores/userStore';
 import type User from '@/types/User';
 
-const route = useRoute();
-const userStore = useUserStore();
-const matchsHistory = ref([] as MatchHistory[]);
-
 defineProps<{
-	user: User
+	user: User,
+	matchsHistory: MatchHistory[]
 }>()
 
 function colorTextScore(value:MatchHistory, opponent:boolean) {
@@ -20,19 +12,6 @@ function colorTextScore(value:MatchHistory, opponent:boolean) {
     else { return 'text-red-700' }
 }
 
-async function fetchMatchsHistory() {
-	return await UsersService.getMatchsHistory(parseInt(route.params.id as string))
-        .then((response) => {
-			matchsHistory.value = response.data;
-		})
-		.catch((e: Error) => {
-			console.log(e);
-		});
-}
-
-onMounted(() => {
-	fetchMatchsHistory()
-});
 </script>
 
 <template>

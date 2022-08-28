@@ -3,7 +3,7 @@ import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import type Stats from '@/types/Stats';
 import { useUserStore } from '@/stores/userStore';
-import { ref, onBeforeMount, watch } from 'vue';
+import { ref, onBeforeMount, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PlayerHistory from '@/components/Profile/PlayerHistory.vue';
 import CardRight from '@/components/CardRight.vue';
@@ -14,6 +14,7 @@ import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
+import type MatchHistory from '@/types/MatchHistory';
 import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
@@ -21,9 +22,10 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
-const user = ref({} as User);
-const userStats = ref({} as Stats)
-const isLoading = ref(false);
+const user = ref<User | null>(null);
+const userStats = ref<Stats | null>(null)
+const matchsHistory = ref<MatchHistory[] | null>(null);
+const error = ref('')
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
 
@@ -38,12 +40,10 @@ function setPartToDisplay(displayPart: string) {
 	setRightCardTitle(displayPart);
 }
 
-function fetchUser(id: number) {
-	isLoading.value = true;
-	UsersService.getUser(id)
+function fetchUser() {
+	UsersService.getUser(parseInt(route.params.id as string))
 		.then((response) => {
 			user.value = response.data;
-			isLoading.value = false;
 		})
 		.catch((e) => {
 			router.replace({
@@ -53,17 +53,27 @@ function fetchUser(id: number) {
 		});
 }
 
-function fetchStats(id: number) {
-	isLoading.value = true;
-	UsersService.getStats(id)
+function fetchStats() {
+	UsersService.getStats(parseInt(route.params.id as string))
 		.then((response) => {
 			userStats.value = response.data;
 			console.log(userStats.value)
-			isLoading.value = false;
 		})
 		.catch((e) => {
-			toast.error(e.response.data.message);
-			isLoading.value = false;
+			error.value = ref(e.response.data.message)
+			toast.error(error.value);
+		});
+}
+
+function fetchMatchsHistory() {
+	UsersService.getMatchsHistory(parseInt(route.params.id as string))
+		.then((response) => {
+			matchsHistory.value = response.data;
+			console.log(matchsHistory.value)
+		})
+		.catch((e) => {
+			error.value = ref(e.response.data.message)
+			toast.error(error.value);
 		});
 }
 
@@ -74,10 +84,18 @@ watch(
 	}
 )
 
+const isLoading = computed(() => {
+	if (user.value && userStats.value && matchsHistory.value || error.value)
+		return false;
+	return true;
+});
+
 onBeforeMount(() => {
 	if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
-	else fetchUser(parseInt(route.params.id as string));
-	fetchStats(parseInt(route.params.id as string))
+	else fetchUser();
+	fetchStats()
+	fetchMatchsHistory()
+
 });
 </script>
 
@@ -86,16 +104,16 @@ onBeforeMount(() => {
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
-					<player-profile :user="user"></player-profile>
+					<player-profile v-if="user" :user="user"></player-profile>
 					<button-part @change-display="setPartToDisplay"></button-part>
-					<rank-card :rank="userStats.rank"></rank-card>
+					<rank-card v-if="userStats" :rank="userStats.rank"></rank-card>
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
 				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-center gap-4 sm:gap-6 h-full w-11/12 px-8 3xl:px-10">
-					<player-stats :userStats="userStats"></player-stats>
+					<player-stats v-if="userStats" :userStats="userStats"></player-stats>
 					<div class="flex justify-center overflow-y-auto w-full">
-						<player-history :user="user"></player-history>
+						<player-history v-if="user && matchsHistory" :user="user" :matchsHistory="matchsHistory"></player-history>
 					</div>
 				</div>
 				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">

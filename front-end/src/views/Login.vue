@@ -15,7 +15,6 @@ const toast = useToast();
 
 const username = ref(userStore.userData.login_42);
 const image = ref(userStore.userData.avatar);
-let isUpload = false;
 const twoFaCode = ref('');
 const isLoading = ref(false);
 
@@ -38,7 +37,6 @@ function redirectTo42LoginPage(): void {
 
 function uploadImage(imageData: string): void {
 	image.value = imageData;
-	isUpload = true;
 }
 
 watch(

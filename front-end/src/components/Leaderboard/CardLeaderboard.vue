@@ -47,7 +47,7 @@
             <base-button link :to="{ name: 'Profile', params: { id: user.id } }">{{ user.username }}</base-button>
         </div>
         <div class="flex gap-3">
-            <player-status :user="user"></player-status>
+            <player-status :userStatus="user.status"></player-status>
             <span>{{ userStatus }}</span>
         </div>
         <div class="flex justify-center items-center">{{ user.rank }}</div>

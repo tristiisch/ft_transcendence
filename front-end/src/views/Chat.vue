@@ -150,7 +150,7 @@ function deleteChannelDiscussion(index: number) {
 
 const isLoading = computed(() => {
 	console.log(friends.value);
-	if ((friends.value && users.value && channels.value) || error.value !== '') return false;
+	if ((friends.value && users.value && channels.value) || error.value) return false;
 	return true;
 });
 

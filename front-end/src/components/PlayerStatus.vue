@@ -3,15 +3,15 @@ import { computed } from 'vue';
 import Status from '@/types/Status';
 import type Leaderboard from '@/types/Leaderboard';
 const props = defineProps<{
-  user: Leaderboard
+  userStatus: Status
 }>()
 
 const isInGame = computed(() => {
-    return props.user.status === Status.INGAME ? true : false;
+    return props.userStatus === Status.INGAME ? true : false;
 })
 
 const isOnline = computed(() => {
-    return props.user.status === Status.ONLINE ? true : false;
+    return props.userStatus === Status.ONLINE ? true : false;
 })
 
 </script>

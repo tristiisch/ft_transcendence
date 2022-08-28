@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import UsersService from '@/services/UserService';
-import type Match from '@/types/MatchHistory';
-import { ref, onBeforeMount } from 'vue';
+import type Match from '@/types/Match';
+import { ref, onBeforeMount, computed } from 'vue';
 import CardLeft from '@/components/CardLeft.vue';
 import CardRight from '@/components/CardRight.vue';
 import CurrentGame from '@/components/Lobby/CurrentGame.vue';
@@ -9,9 +9,11 @@ import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
 import GameSettings from '@/components/Lobby/GameSettings.vue';
 import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
+import { useToast } from 'vue-toastification';
 
-const matchs = ref([] as Match[]);
-const isLoading = ref(false);
+const toast = useToast();
+const matchs = ref<Match[] | null>(null);
+const error = ref('')
 const rightPartToDisplay = ref('gameSettings');
 const invitation = ref(false)
 
@@ -25,16 +27,13 @@ function setRightPartToDisplay()
 }
 
 async function fetchCurrentMatchs() {
-	isLoading.value = true;
 	return await UsersService.getCurrentMatchs()
 		.then((response) => {
 			matchs.value = response.data;
-			isLoading.value = false;
-			console.log(matchs.value);
 		})
-		.catch((e: Error) => {
-			isLoading.value = false;
-			console.log(e);
+		.catch((e) => {
+			error.value = e.response.data.message
+			toast.error(error.value);
 		});
 }
 
@@ -53,6 +52,12 @@ function invitePlayer()
 
 }
 
+const isLoading = computed(() => {
+	if (matchs.value || error.value)
+		return false;
+	return true;
+});
+
 onBeforeMount(() => {
 	fetchCurrentMatchs();
 });
@@ -63,9 +68,9 @@ onBeforeMount(() => {
 	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
-				<div class="flex justify-between items-center h-full flex-wrap sm:flex-col sm:flex-nowrap px-8 ">
+				<div class="flex justify-between items-center h-full flex-wrap sm:flex-col sm:flex-nowrap px-6">
 					<h1 class="w-full text-center font-Arlon tracking-tight text-lg sm:text-xl pb-2 sm:pb-5 border-b-[1px] border-slate-700 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CURRENT GAMES</h1>
-					<current-game @next="rightPartToDisplay = 'invitePlayer'" :matchs="matchs"></current-game>
+					<current-game @next="rightPartToDisplay = 'invitePlayer'" v-if="matchs" :matchs="matchs"></current-game>
 				</div>
 			</card-left>
 			<card-right title="CUSTOM GAME">

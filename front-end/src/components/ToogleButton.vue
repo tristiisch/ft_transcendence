@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type User from '@/types/User';
-import { ref, computed } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 
 export interface Props {
@@ -23,7 +21,7 @@ const emit = defineEmits<{
 		<input v-if="userStore.userAuth.has_2fa && twoFa" @click="emit('switchButton')" type="checkbox" id="default-toggle" class="sr-only peer" checked />
 		<input v-else @click="emit('switchButton')" type="checkbox" id="default-toggle" class="sr-only peer" />
 		<div
-			class="w-11 h-6 bg-red-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-lime-200 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
+			:class="twoFa ? 'bg-neutral-100 peer-checked:bg-blue-600' : 'bg-slate-800 peer-checked:bg-red-600'" class="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
 		></div>
 	</label>
 </template>

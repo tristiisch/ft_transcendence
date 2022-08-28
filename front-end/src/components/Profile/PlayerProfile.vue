@@ -20,9 +20,9 @@ function isUser() {
 
 <template>
 	<div class="self-center flex flex-col justify-around items-center gap-3 pt-4 sm:pt-0 pl-3 sm:pl-0 sm:max-w-full">
-		<img class="w-20 h-20 rounded-full object-cover border-2 sm:w-36 sm:h-36" :src="user.avatar" alt="Rounded avatar" />
+		<img class="w-20 h-20 rounded-full object-cover border-2 border-neutral-100 sm:w-36 sm:h-36" :src="user.avatar" alt="Rounded avatar" />
 		<div class="flex gap-2 sm:gap-5">
-			<player-status :user="user"></player-status>
+			<player-status :userStatus="user.status"></player-status>
 			<span class="text-slate-700 text-xl sm:text-3xl">{{ user.username }}</span>
 			 <base-button link :to="{ name: 'Chat', query: { discussion: user.id }} ">
 				<svg v-if="!isUser()" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

@@ -2,14 +2,11 @@
 import UserService from '@/services/UserService';
 import type Leaderboard from '@/types/Leaderboard';
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
-import { useUserStore } from '@/stores/userStore';
-import Toogle from '@/components/Leaderboard/ToogleButton.vue';
+import Toogle from '@/components/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 import socket from '@/plugin/socketInstance';
 import { useToast } from 'vue-toastification';
-import PlayerSettingsVue from '@/components/Profile/PlayerSettings.vue';
 
-const userStore = useUserStore();
 const toast = useToast();
 const users = ref<Leaderboard[] | null>(null);
 const friends = ref<Leaderboard[] | null>(null);
@@ -91,7 +88,6 @@ function switchDysplayUsers() {
 function fetchLeaderboard() {
 	UserService.getLeaderboard()
 		.then((response) => {
-				console.log(response.data)
 				playerToDisplay.value = users.value = response.data.leaderBoard
 				friends.value = response.data.leaderBoardFriends
 		})

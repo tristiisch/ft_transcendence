@@ -72,7 +72,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
+	<base-spinner small v-if="isLoading"></base-spinner>
 	<div v-else class="flex flex-col items-center justify-center h-full w-full">
 		<p class="text-red-200 text-sm pb-3 sm:pb-5">
 			You have <span class="text-red-700">{{ size }}</span> notifications
