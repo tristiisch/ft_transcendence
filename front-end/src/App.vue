@@ -3,16 +3,15 @@ import axios from '@/plugin/axiosInstance';
 import UserService from '@/services/UserService';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
-import socket from './plugin/socketInstance';
+import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const toast = useToast();
 const authString = localStorage.getItem('userAuth');
 
 if (authString) {
-	console.log(authString)
-	// console.log(userStore.userData.username)
 	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token_jwt}`;
+	socket.auth = { token: JSON.parse(authString).token_jwt }
 	UserService.getUser(JSON.parse(authString).user_id)
 		.then((response) => {
 			socket.connect()

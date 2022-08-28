@@ -1,11 +1,12 @@
 import axios from '@/plugin/axiosInstance';
-import type { AxiosResponse } from 'axios';
+import socket from '@/plugin/socketInstance';
 
 class AuthService {
 	login(code: string) {
 		return axios.post('auth/42/redirect', { code }).then((response) => {
 			if (response.data.auth.token_jwt) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
+				socket.auth = { token: response.data.auth.token_jwt }
 			}
 			return response.data;
 		})
@@ -16,6 +17,7 @@ class AuthService {
 			console.log(response.data)
 			if (response.data.auth.token_jwt) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
+				socket.auth = { token: response.data.auth.token_jwt }
 			}
 			return response.data;
 		});
