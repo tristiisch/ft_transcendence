@@ -8,10 +8,10 @@ import MatchService from '@/services/MatchService';
 import UserService from '@/services/UserService'
 import { useUserStore } from '@/stores/userStore';
 import type User from '@/types/User';
-import users from '@/data/users';
 
 const route = useRoute()
 const router = useRouter()
+var match_id = route.params.id
 var isLoaded = ref(false)
 
 const userStore = useUserStore()
@@ -31,12 +31,12 @@ const player2: User = userStore.userData as User
 // 		})
 // }
 
-MatchService.loadMatch(route.params.id)
+MatchService.loadMatch(match_id)
 	.then((response) => {
 		console.log("parsed match!", response)
 	})
 	.catch((e) => {
-		if (route.params.id != "devtmp")
+		if (match_id != "devtmp")
 		{
 			router.replace({
 				name: 'NotFound',
@@ -47,7 +47,6 @@ MatchService.loadMatch(route.params.id)
 
 onMounted(() => {
 	const stage_ratio = 3989/2976
-	const ball_speed_quotient = 200 // the least, the faster
 	const ball_size_quotient = 100 // the least, the bigger
 	const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
 	const ball_ypos_quotient = 2 // same
@@ -133,8 +132,6 @@ onMounted(() => {
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
-		console.log('sidhcsduhu')
-		console.log('zuefhguhs')
 		stage.height(computeStageHeight())
 		stage.width(stage.height() * stage_ratio)
 		fullstage_ratio = stage.width() / 3989
@@ -167,7 +164,10 @@ onMounted(() => {
 		ball.x(x * fullstage_ratio)
 		ball.y(y * fullstage_ratio)
 	});
-	socket.emit("start_match");
+	socket.emit("match", match_id)
+	socket.on("hey", (s: string) => {
+		console.log(s)
+	})
 })
 
 </script>
@@ -179,16 +179,16 @@ onMounted(() => {
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> / VS \</h1>
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">2</h1>
 		</div>
-		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)]">
+		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
 			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-left z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<h1 class="[font-size:_calc(0.07_*_100vh)] hover:text-yellow-300">{{ player1.username }}</h1>
+				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ player1.username }}</h1>
 			</base-button>
 			<img :src="player1.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
 		<div class="w-[calc(0.8_*_100vh)]"></div>
-		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)]">
+		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)] mr-5">
 			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-right z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<h1 class="[font-size:_calc(0.07_*_100vh)] hover:text-yellow-300">{{ player2.username }}</h1>
+				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ player2.username }}</h1>
 			</base-button>
 			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
