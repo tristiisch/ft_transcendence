@@ -34,7 +34,7 @@ function acceptInvitation(notification: Notification) {
 	console.log('accept');
 	if (notification.type === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.acceptFriendRequest(notification.from_user_id)
+		UsersService.notificationAction(notification.id, true)
 		.then(() => {
 			if (notifications.value) {
 				for (let i = 0; i < notifications.value.length; i++) {
@@ -52,7 +52,7 @@ function declineInvitation(notification: Notification) {
 	console.log('decline');
 	if (notification.type === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.refuseFriendRequest(notification.from_user_id)
+		UsersService.notificationAction(notification.id, false)
 		.then(() => {
 			if (notifications.value) {
 				for (let i = 0; i < notifications.value.length; i++) {

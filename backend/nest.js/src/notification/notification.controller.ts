@@ -17,7 +17,7 @@ export class NotificationController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('action')
-	notificationAction(@Req() req, @Body() notifAction: NotificationAction) {
-		return this.notifService.action(req.user, notifAction);
+	async notificationAction(@Req() req, @Body() notifAction: NotificationAction) {
+		return await this.notifService.action(req.user, notifAction);
 	}
 }

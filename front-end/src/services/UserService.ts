@@ -68,6 +68,10 @@ class UserService {
 		return axios.get(`notification`);
 	}
 
+	notificationAction(notifId: number, accept: boolean) {
+		return axios.post(`notification/action`, { id: notifId, accept: accept });
+	}
+
 	getStats(id: number) {
 		return axios.post('stats', { id: id });
 	}
@@ -75,7 +79,6 @@ class UserService {
 	getChannels() {
 		return axios.get('chat/channels');
 	}
-
 }
 
 export default new UserService();
