@@ -7,13 +7,10 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
 
-
-
-
 @Controller("auth")
 export class AuthController {
 	constructor(private authService: AuthService, private jwtService: JwtService) {}
-​
+
 	@Post('42/redirect')
 	async redirect(@Res() res: Response, @Req() req: Request) {
 		try{
@@ -30,14 +27,14 @@ export class AuthController {
 			const result = await axios.post(url, postData);
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-			const user: User = await this.authService.UserConnecting(userInfo);
-			const auth: UserAuth = await this.authService.findOne(user.id);
-			delete auth.twoFactorSecret; // TODO Verif this method
-			console.log('DEBUG LOGIN', 'auth:', auth);
-			if (user && auth.has_2fa === true)
-				res.json({ auth: auth }); // il est aussi de basculer sur le bon controller depuis le back
+			const { user, userAuth } = await this.authService.UserConnecting(userInfo);
+			delete userAuth.twoFactorSecret; // TODO Verif this method
+
+			console.log('DEBUG LOGIN', 'auth:', userAuth);
+			if (user && userAuth.has_2fa === true)
+				res.json({ auth: userAuth }); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
-				res.json({ auth: auth, user: user });
+				res.json({ auth: userAuth, user: user });
 		} catch(err42) {
 			throw new ForbiddenException("Unauthorized");
 		}
@@ -85,5 +82,12 @@ export class TFAController {
 			auth: userAuth,
 			user: user
 		};
+	}
+
+	@Get('disable')
+	@UseGuards(JwtAuthGuard)
+	async disable(@Req() req) {
+		const user: User = req.user;
+		this.authService.disableTFA(user.id);
 	}
 }

@@ -8,13 +8,15 @@ import { Repository } from 'typeorm';
 import { UserAuth } from './entity/user-auth.entity';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { StatsService } from 'src/game/stats/stats.service';
+import { UserStats } from 'src/game/stats/entity/userstats.entity';
 
 @Injectable()
 export class AuthService {
 
 	private temp2FASecret: Map<number, string> = new Map();
 
-	constructor(private jwtService: JwtService, private usersService: UsersService,
+	constructor(private jwtService: JwtService, private usersService: UsersService, private statsService: StatsService,
 		@InjectRepository(UserAuth)
 		private authRepository: Repository<UserAuth>){
 	}
@@ -23,9 +25,10 @@ export class AuthService {
 		return this.authRepository;
 	}
 
-	async UserConnecting(userInfo42: any): Promise<User> {
+	async UserConnecting(userInfo42: any): Promise<{ user: User, userAuth: UserAuth }> {
 		let user: User;
 		let userAuth: UserAuth;
+		let userStats: UserStats;
 		try {
 			user = await this.usersService.findOneBy42Login(userInfo42.data.login);
 		} catch (err) {
@@ -48,7 +51,12 @@ export class AuthService {
 			userAuth.token_jwt = await this.createToken(user.id);
 			this.save(userAuth);
 		}
-		return user;
+		userStats = await this.statsService.findOneById(user.id);
+		if (!userStats) {
+			userStats = new UserStats(user.id);
+			this.statsService.add(userStats);
+		}
+		return { user, userAuth };
 	}
 
 	async UserConnectingTFA(userId: number){
@@ -136,6 +144,11 @@ export class AuthService {
 			throw new BadRequestException('BadRequest: You should generate a 2FA QRCode before enable 2FA.');
 		const secret = this.temp2FASecret.get(userId);
 		return this.authRepository.update(userId, { twoFactorSecret: secret });
+	}
+
+	async disableTFA(userId: number) {
+		this.temp2FASecret.delete(userId);
+		return this.authRepository.update(userId, { twoFactorSecret: null });
 	}
 
 	public async QrCodeStream(otpauthUrl: string) {

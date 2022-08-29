@@ -7,12 +7,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserAuth } from './entity/user-auth.entity';
+import { StatsModule } from 'src/game/stats/stats.module';
 
 dotenv.config();
 
 @Module({
 
-	imports: [JwtModule, JwtModule.register({secret: process.env.JWT_SECRET,}), UsersModule, TypeOrmModule.forFeature([UserAuth])],
+	imports: [JwtModule, JwtModule.register({secret: process.env.JWT_SECRET,}), UsersModule, TypeOrmModule.forFeature([UserAuth]), StatsModule],
 	providers: [AuthService, JwtStrategy, JwtTFAStrategy],
 	controllers: [AuthController, TFAController],
 	exports: [AuthService]

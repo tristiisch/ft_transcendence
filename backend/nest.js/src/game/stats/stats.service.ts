@@ -31,8 +31,6 @@ export class StatsService {
     async findOneById(userId: number): Promise<UserStats> {
 		isNumberPositive(userId, 'get a user');
 		return await this.statsRepository.findOneBy({ user_id: userId }).then((stats: UserStats) => {
-			if (!stats)
-				throw new PreconditionFailedException(`This user never played.`);
             return stats;
         }, this.userService.lambdaDatabaseUnvailable);
     }
@@ -44,15 +42,9 @@ export class StatsService {
     }
 
     async findOrCreate(userId: number): Promise<UserStats> {
-		let userStats: UserStats;
-
-		try {
-			userStats = await this.findOneById(userId);
-		} catch (err) {
-			if (!(err instanceof PreconditionFailedException))
-				throw err;
+		let userStats: UserStats = await this.findOneById(userId);
+		if (!userStats)
 			userStats = new UserStats(userId);
-		}
 		return userStats;
     }
 
@@ -70,9 +62,6 @@ export class StatsService {
 		return await this.statsRepository.save(userStats);
     }
 
-	/**
-	 * @deprecated Only for test
-	 */
     async add(stats: UserStats) {
 		return await this.statsRepository.save(stats).then((us: UserStats) => {
 			return us;

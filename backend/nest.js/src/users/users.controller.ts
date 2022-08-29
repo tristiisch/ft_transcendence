@@ -44,8 +44,7 @@ export class UsersController {
 	async updateUsername(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
 
-		user.username = userToUpdate.username;
-		return await this.usersService.update(user.id, user);
+		return await this.usersService.updateUsername(user.id, userToUpdate.username);
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -53,13 +52,7 @@ export class UsersController {
 	async updateAvatar(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
 
-		user.avatar_64 = userToUpdate.avatar_64;
-		return await this.usersService.update(user.id, user);
-	}
-
-	@Patch(':id')
-	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		return this.usersService.update(id, userToUpdate);
+		return await this.usersService.updateAvatar(user.id, userToUpdate.avatar_64);
 	}
 
 	@Get(':id')
@@ -90,7 +83,7 @@ export class UsersController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('me')
-	async getOwnInfo(@Req() req) {
+	getOwnInfo(@Req() req) {
 		const user: User = req.user;
 		return user;
 	}

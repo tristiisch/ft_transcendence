@@ -163,15 +163,14 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
-	async update(userId: number, user: UserDTO) {
-		// const userBefore: User = await this.findOne(userId);
-		await this.usersRepository.update(userId, user);
-		const userAfter: User = await this.findOne(userId);
+	async updateUsername(userId: number, username: string): Promise<User> {
+		await this.usersRepository.update(userId, { username: username });
+		return await this.findOne(userId);
+	}
 
-//		if (isEquals(userBefore, userAfter)) {
-//			throw new BadRequestException();
-//		}
-		return userAfter;
+	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
+		await this.usersRepository.update(userId, { avatar_64: avatar_64 });
+		return await this.findOne(userId);
 	}
 
 	async register(userId: number, user: UserDTO) {
@@ -179,27 +178,11 @@ export class UsersService {
 		if (userBefore.username !== null)
 			throw new BadRequestException(`User ${userBefore.username} already register.`);
 
-		// const succes = (imageBase64: string) => {
-		// 	console.log('YESSS', imageBase64);
-		// 	user.avatar = imageBase64;
-		// 	this.usersRepository.update(userId, user);
-		// }
-		// const error = (reason: string): Promise<void> => {
-		// 	console.log('update1');
-		// 	this.usersRepository.update(userId, user);
-		// 	return;
-		// }
-		// const onfinally = () => {
-		// 	console.log('update2');
-		// 	delete user.avatar;
-		// 	this.usersRepository.update(userId, user);
-		// 	return;
-		// }
 		if (user.avatar_64 != null) {
 			try {
 				user.avatar_64 = await toBase64(user.avatar_64);
 			} catch (err) {
-				console.log('DEBUG', 'user.service.ts avatar', err);
+				console.log('ERROR', 'user.service.ts avatar', err);
 			}
 		}
 
