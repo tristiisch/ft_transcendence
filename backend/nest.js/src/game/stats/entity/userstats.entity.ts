@@ -27,4 +27,6 @@ export class UserStats extends BaseEntity {
 
 	@Column({ generatedType: 'STORED', asExpression: `victories - defeats`, update: false })
 	score: number;
+
+	rank: number;
 }

@@ -134,4 +134,24 @@ export class StatsService {
 		}
 		return {leaderBoard, leaderBoardFriends};
     }
+
+	async getRank(user: User): Promise<number> {
+		
+		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
+
+		// SELECT position
+		// FROM (SELECT *, row_number() over(order by score DESC) as position from public.user_stats) result 
+		// where user_id = 7778;
+
+		// sqlStatement.select('i.*');
+		// sqlStatement.from(subQuery => {
+		// 	return subQuery.select('*').addSelect('row_number() over (order by score DESC) as position');
+		// }, "i");
+
+		// sqlStatement.orderBy('userstats.score', 'DESC', 'NULLS LAST');
+		// return await sqlStatement.getOne().then((rank) => {
+		// 	return rank.score;
+		// }, this.userService.lambdaDatabaseUnvailable);
+		return 1;
+	}
 }
