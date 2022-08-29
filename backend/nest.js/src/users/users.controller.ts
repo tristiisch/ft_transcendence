@@ -87,4 +87,11 @@ export class UsersController {
 		selectUser.username = username;
 		return this.usersService.findAvatar(selectUser, res);
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('me')
+	async getOwnInfo(@Req() req) {
+		const user: User = req.user;
+		return user;
+	}
 }

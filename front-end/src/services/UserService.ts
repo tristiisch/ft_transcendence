@@ -12,6 +12,10 @@ class UserService {
 		return axios.get(`users/${id}`);
 	}
 
+	getMe() {
+		return axios.get('users/me');
+	}
+
 	registerUser(id: number, username: string, avatar_64: string) {
 		return axios.patch(`users/register`, { username, avatar_64 });
 	}
