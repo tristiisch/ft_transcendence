@@ -28,11 +28,11 @@ function setDisplayedPart(button: number) {
 
 function treatFriendRequest() {
 	if (friendButton.value === 'Add friend')
-		UsersService.sendFriendRequest(userStore.userData.id, parseInt(route.params.id as string)).catch((e) => {
+		UsersService.sendFriendRequest(parseInt(route.params.id as string)).catch((e) => {
 			console.log(e);
 		});
 	else
-		UsersService.removeFriend(userStore.userData.id, parseInt(route.params.id as string))
+		UsersService.removeFriend(parseInt(route.params.id as string))
 			.then(() => {
 				fetchfriends();
 			})

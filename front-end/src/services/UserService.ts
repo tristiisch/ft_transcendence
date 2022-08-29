@@ -16,7 +16,7 @@ class UserService {
 		return axios.get('users/me');
 	}
 
-	registerUser(id: number, username: string, avatar_64: string) {
+	registerUser(username: string, avatar_64: string) {
 		return axios.patch(`users/register`, { username, avatar_64 });
 	}
 
@@ -33,20 +33,20 @@ class UserService {
 		return axios.get(`friends/names/${id}`);
 	}
 
-	sendFriendRequest(id: number, targetId: number) {
-		return axios.post(`friends/request/add/${id}`, { id: targetId });
+	sendFriendRequest(targetId: number) {
+		return axios.post(`friends/request/add`, { id: targetId });
 	}
 
-	acceptFriendRequest(id: number, targetId: number) {
-		return axios.post(`friends/accept/${id}`, { id: targetId });
+	acceptFriendRequest(targetId: number) {
+		return axios.post(`friends/accept`, { id: targetId });
 	}
 
-	refuseFriendRequest(id: number, targetId: number) {
-		return axios.post(`friends/request/remove/${id}`, { id: targetId });
+	refuseFriendRequest(targetId: number) {
+		return axios.post(`friends/request/remove`, { id: targetId });
 	}
 
-	removeFriend(id: number, targetId: number) {
-		return axios.post(`friends/remove/${id}`, { id: targetId });
+	removeFriend(targetId: number) {
+		return axios.post(`friends/remove`, { id: targetId });
 	}
 
 	getLeaderboard() {

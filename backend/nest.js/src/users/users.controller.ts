@@ -55,8 +55,8 @@ export class UsersController {
 		return await this.usersService.updateAvatar(user.id, userToUpdate.avatar_64);
 	}
 
-	@Get('me')
 	@UseGuards(JwtAuthGuard)
+	@Get('me')
 	getOwnInfo(@Req() req) {
 		const user: User = req.user;
 		return user;
