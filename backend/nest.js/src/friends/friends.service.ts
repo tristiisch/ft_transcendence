@@ -248,7 +248,6 @@ export class FriendsService {
 	async findAllRelations(userId: number): Promise<Friendship[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
-		// await this.userService.findOne(userId);
 		sqlStatement.where('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -258,7 +257,7 @@ export class FriendsService {
 
 	async findAllRelationsId(userId: number): Promise<number[]> {
 		return await this.findAllRelations(userId).then((friendships: Friendship[]) => {
-			return friendships.map(f => f.user1_id !== userId ? f.user1_id : f.user2_id);
+			return friendships.map(f => f.user1_id != userId ? f.user1_id : f.user2_id);
 		});
 	}
 

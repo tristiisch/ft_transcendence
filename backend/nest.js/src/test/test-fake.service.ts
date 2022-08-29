@@ -1,5 +1,5 @@
 /** @prettier */
-import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { FriendsService } from 'src/friends/friends.service';
 import { MatchStats } from 'src/game/matchs/entity/matchstats.entity';
@@ -60,14 +60,22 @@ export class TestFakeService {
 			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 			if (matchs == null) break;
 		}
-		const userWithRealationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
-		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, userWithRealationsIds);
+		const userWithRelationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
+		let usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, userWithRelationsIds);
+
+		// console.log('debug usersWithoutRelation', usersWithoutRelation);
+		for (const u of userWithRelationsIds) {
+
+			if (usersWithoutRelation.indexOf(u) != -1) {
+				throw new NotAcceptableException(`You want to add a relationship between ${user.username} & ${u}, but they already have a relationship.`);
+			}
+		}
 
 		let iFriends = -1;
 		while (++iFriends < usersWithoutRelation.length) {
 			const target: UserSelectDTO = await this.initNewFriendship(user, usersWithoutRelation);
 			if (!target) break;
-			removeFromArray(allUserIdsExceptUser, target.id);
+			removeFromArray(usersWithoutRelation, target.id);
 		}
 		return { statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` };
 	}
@@ -76,14 +84,8 @@ export class TestFakeService {
 		let user: User = new User();
 		user.username = Math.random().toString(36).substring(2, 9);
 		user.login_42 = Math.random().toString(36).substring(2, 9);
-		/*
-		user.avatar = await fetch('https://picsum.photos/200').then(function(response) {
-			return response.url;
-		});
-		*/
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
-		// user.status = UserStatus.IN_GAME;
 		return await this.usersService.add(user);
 	}
 
@@ -130,7 +132,7 @@ export class TestFakeService {
 				await this.statsService.addVictory(targetId)
 				await this.statsService.addDefeat(user.id)
 			} else {
-				throw new InternalServerErrorException(`They is no winner in the match ${JSON.stringify(matchHistory)}.`);
+				throw new NotAcceptableException(`They is no winner in the match ${JSON.stringify(matchHistory)}.`);
 			}
 		} else {
 			const scoreUser1: number = random(0, this.randomMaxScoreGame);;

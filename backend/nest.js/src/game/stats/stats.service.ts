@@ -48,6 +48,9 @@ export class StatsService {
 		return userStats;
     }
 
+	/**
+	 * Can be optimize in one SQL Request
+	 */
     async addDefeat(userId: number) {
 		const userStats: UserStats = await this.findOrCreate(userId);
 
@@ -55,6 +58,9 @@ export class StatsService {
 		return await this.statsRepository.save(userStats);
     }
 
+	/**
+	 * Can be optimize in one SQL Request
+	 */
     async addVictory(userId: number) {
 		const userStats: UserStats = await this.findOrCreate(userId);
 
