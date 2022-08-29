@@ -104,7 +104,10 @@ onBeforeMount(() => {
 				.then(() => {
 					console.log(userStore.userAuth.has_2fa);
 					if (userStore.isRegistered && !userStore.userAuth.has_2fa)
+					{
+						socket.connect()
 						router.replace({ name: 'Home' });
+					}
 					isLoading.value = false;
 				})
 				.catch((e) => {
