@@ -55,6 +55,13 @@ export class UsersController {
 		return await this.usersService.updateAvatar(user.id, userToUpdate.avatar_64);
 	}
 
+	@Get('me')
+	@UseGuards(JwtAuthGuard)
+	getOwnInfo(@Req() req) {
+		const user: User = req.user;
+		return user;
+	}
+
 	@Get(':id')
 	getUser(@Param('id') id: number): Promise<User> {
 		return this.usersService.findOne(id);
@@ -79,12 +86,5 @@ export class UsersController {
 
 		selectUser.username = username;
 		return this.usersService.findAvatar(selectUser, res);
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Get('me')
-	getOwnInfo(@Req() req) {
-		const user: User = req.user;
-		return user;
 	}
 }
