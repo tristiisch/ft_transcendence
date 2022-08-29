@@ -10,15 +10,9 @@ export enum ChatStatus {
 	DISCUSSION
 }
 
-export default interface Chat {
-	id: number;
-
-	// @Column({ type: 'enum', enum: ChatStatus, default: ChatStatus.PUBLIC })
-	type: ChatStatus;
-}
-
 @Entity()
-export class Channel implements Chat {
+export class Channel {
+
 	@PrimaryGeneratedColumn()
 	@IsInt()
 	id: number;
@@ -26,11 +20,11 @@ export class Channel implements Chat {
 	@Column({ unique: true })
 	name: string;
 
-	@Column()
+	@Column({ type: 'enum', enum: ChatStatus, default: ChatStatus.PUBLIC })
 	type: ChatStatus;
 
 	@Column()
-	owner_id: User;
+	owner_id: number;
 
 	@Column()
 	avatar: string;
@@ -50,12 +44,7 @@ export class Channel implements Chat {
 	@Column("int", { nullable: true, array: true })
 	banned_ids: number[];
 
-	// messages_id: number[];
-}
-
-
-export interface Discussion extends Chat {
-	user: User,
+	messages: Message;
 }
 
 @Entity()
@@ -66,14 +55,14 @@ export class Message {
 	id: number;
 
 	@Column()
-	id_chat: number;
+	id_sender: number;
+
+	@Column()
+	id_channel: number;
 
 	@Column({ type: 'timestamptz', precision: null, default: () => 'CURRENT_TIMESTAMP' })
-	date: string;
+	date: Date;
 
 	@Column()
 	message: string;
-
-	@Column()
-	id_sender: number;
 }
