@@ -15,6 +15,6 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
     @Get('channels')
     getChannels() {
-        return this.chatService.findAll();
+        return this.chatService.findAllChannels();
     }
 }

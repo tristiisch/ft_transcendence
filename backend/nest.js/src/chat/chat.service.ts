@@ -1,15 +1,18 @@
 /** @prettier */
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Channel } from 'diagnostics_channel';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
-import { Message } from './entity/channel.entity';
+import { Channel } from './entity/channel.entity';
+import { Chat } from './entity/chat.entity';
+import { Message } from './entity/message.entity';
 
 @Injectable()
 export class ChatService {
 
 	constructor(
+		@InjectRepository(Chat)
+		private chatRepo: Repository<Chat>,
 		@InjectRepository(Channel)
 		private channelRepo: Repository<Channel>,
 		@InjectRepository(Message)
@@ -19,6 +22,10 @@ export class ChatService {
 	@Inject(UsersService)
 	private readonly userService: UsersService;
 
+	public getRepoChat() {
+		return this.chatRepo;
+	}
+
 	public getRepoChannel() {
 		return this.channelRepo;
 	}
@@ -27,11 +34,15 @@ export class ChatService {
 		return this.msgRepo;
 	}
 
-    async findAll() : Promise<Channel[]> {
+    async findAllChannels() : Promise<Channel[]> {
 		try {
 			return await this.channelRepo.find();
 		} catch (reason) {
 			return this.userService.lambdaDatabaseUnvailable(reason);
 		}
     }
+
+	async addChat(chat: Chat) {
+		return this.chatRepo.insert(chat);
+	}
 }

@@ -1,68 +1,39 @@
-/** @prettier */
-import { IsInt } from 'class-validator';
-import { User } from 'src/users/entity/user.entity';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from "src/users/entity/user.entity";
+import { ChildEntity, Column } from "typeorm";
+import { Chat, ChatFront } from "./chat.entity";
 
-export enum ChatStatus {
-	PUBLIC,
-	PRIVATE,
-	PROTECTED,
-	DISCUSSION
-}
-
-@Entity()
-export class Channel {
-
-	@PrimaryGeneratedColumn()
-	@IsInt()
-	id: number;
+@ChildEntity()
+export class Channel extends Chat {
 
 	@Column({ unique: true })
 	name: string;
-
-	@Column({ type: 'enum', enum: ChatStatus, default: ChatStatus.PUBLIC })
-	type: ChatStatus;
 
 	@Column()
 	owner_id: number;
 
 	@Column()
-	avatar: string;
+	avatar_64: string;
 
 	@Column()
 	password: string | null;
 
 	@Column("int", { nullable: true, array: true })
-	users_ids: number[];
+	admins_ids: number[];
 
 	@Column("int", { nullable: true, array: true })
-	admin_ids: number[];
-
-	@Column("int", { nullable: true, array: true })
-	mute_ids: number[];
+	muted_ids: number[];
 
 	@Column("int", { nullable: true, array: true })
 	banned_ids: number[];
-
-	messages: Message;
 }
 
-@Entity()
-export class Message {
+export class ChannelFront extends ChatFront {
 
-	@PrimaryGeneratedColumn()
-	@IsInt()
-	id: number;
-
-	@Column()
-	id_sender: number;
-
-	@Column()
-	id_channel: number;
-
-	@Column({ type: 'timestamptz', precision: null, default: () => 'CURRENT_TIMESTAMP' })
-	date: Date;
-
-	@Column()
-	message: string;
+	name: string;
+	owner: User;
+	avatar: string;
+	password: string | null;
+	admins: User[];
+	muted: User[];
+	banned_ids: User[];
 }

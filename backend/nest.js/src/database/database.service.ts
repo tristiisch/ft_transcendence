@@ -1,8 +1,6 @@
 /** @prettier */
 import { Injectable } from '@nestjs/common';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { Channel } from 'src/chat/entity/channel.entity';
-import { User } from 'src/users/entity/user.entity';
 import { UserSubscriber } from 'src/users/entity/user.subscriber';
 
 @Injectable()
