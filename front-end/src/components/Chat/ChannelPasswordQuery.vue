@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type Channel from '@/types/Channel';
-import { UniqueFieldDefinitionNamesRule } from 'graphql';
+import { useChatStore } from '@/stores/chatStore';
 
+const chatStore = useChatStore();
 const password = ref('')
-const passwordError = ref(false)
-const props = defineProps<{ inChannel: Channel}>()
-
-const emit = defineEmits<{
-	(event: 'registered'): void; }>();
+const passwordError = ref(false);
 
 function checkPassword()
 {
-    if (props.inChannel.password === password.value)    
-        emit('registered')
+    if (chatStore.inChannel?.password === password.value)    
+        chatStore.registrationToChannel()
     else
     {
        passwordError.value = true

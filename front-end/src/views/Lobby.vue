@@ -73,7 +73,7 @@ onMounted(() => {
 					<div class="flex flex-col justify-center items-center w-full h-full">
 						<game-settings v-if="rightPartToDisplay === 'gameSettings'" @next="rightPartToDisplay = 'selectPlayer'"></game-settings>
 						<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
-						<add-search-player v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'" :singleSelection="true"></add-search-player>
+						<add-search-player v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'" :singleSelection="true" :type="'users'"></add-search-player>
 					</div>
 					<button-return-next v-if="rightPartToDisplay != 'invitePlayer'" @click="setRightPartToDisplay()" :side="side()" class="self-end mt-2"></button-return-next>
 				</div>

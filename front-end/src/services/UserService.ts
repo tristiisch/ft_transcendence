@@ -31,7 +31,6 @@ class UserService {
 	}
 
 	getUserfriends(id: number) {
-		console.log(id)
 		return axios.get(`friends/names/${id}`);
 	}
 
@@ -67,7 +66,7 @@ class UserService {
 		return axios.get('chat/channels');
 	}
 
-	getDiscussion(id: number) {
+	getDiscussions(id: number) {
 		return axios.get(`chat/discussionsHistoric/${id}`);
 	}
 

@@ -1,60 +1,16 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
-import type Message from '@/types/Message';
-import type Channel from '@/types/Channel';
+import PartToDisplay from '@/types/ChatPartToDisplay';
 import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
 import message from '@/components/Chat/Message.vue';
 import socket from '@/plugin/socketInstance';
-import type User from '@/types/User';
 import { onBeforeMount, watch, ref } from 'vue';
-import type Discussion from '@/types/Discussion';
+import { useChatStore } from '@/stores/chatStore';
 
+const chatStore = useChatStore();
 const userStore = useUserStore();
 const scroll = ref<HTMLInputElement | null>(null);
 const newMessage = ref('');
-const messages = ref<Message[]>([])
-
-const props = defineProps<{
-	inDiscussion: Discussion | null
-	inChannel: Channel | null
-	users: User[]
-}>()
-
-const emit = defineEmits<{
-	(e: 'channelSettings'): void,
-}>()
-
-function sendMessage() {
-	if (newMessage.value != '')
-	{
-		const now = (new Date()).toLocaleString();
-		messages.value.push({
-			date: now,
-			message: newMessage.value,
-			idSender: userStore.userData.id
-		});
-		socket.emit('chat-message', {
-			date: now,
-			message: newMessage.value,
-			id: userStore.userData.id
-		});
-		newMessage.value = '';
-		scrollToEnd();
-	}
-}
-
-socket.on('chat-message', (data) => {
-	console.log(data.sender);
-	messages.value.push({
-		idMessage: -1,
-		idChat: -1,
-		date: data.date,
-		message: data.message,
-		idSender: data.id,
-	});
-	console.log(data);
-	console.log(messages.value);
-});
 
 function scrollToEnd() {
 	if (scroll.value) {
@@ -62,39 +18,37 @@ function scrollToEnd() {
 	}
 }
 
-onBeforeMount(() => {
-	if (props.inDiscussion)
-		messages.value = props.inDiscussion.messages
-	else if (props.inChannel)
-		messages.value = props.inChannel.messages
-});
+function sendMessage() { 
+	chatStore.sendMessage(newMessage.value)
+	newMessage.value = ''
+	scrollToEnd()
+}
 
-watch(() => props.inDiscussion, () => {
-	if (props.inDiscussion)
-		messages.value = props.inDiscussion.messages
-});
-
-watch(() => props.inChannel, () => {
-	if (props.inChannel)
-		messages.value = props.inChannel.messages
+socket.on('chat-message', (data) => {
+	console.log(data.sender);
+	chatStore.messages.push({
+		date: data.date,
+		message: data.message,
+		idSender: data.id,
+	});
 });
 
 </script>
 
 <template>
     <div class="flex flex-col justify-between h-full">
-        <ChatTopImage :inDiscussion="inDiscussion" :inChannel="inChannel"></ChatTopImage>
+        <ChatTopImage></ChatTopImage>
         <div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
-            <message @scroll="scrollToEnd" :messages="messages" :inDiscussion="inDiscussion" :inChannel="inChannel" :users="users"></message>
+            <message @scroll="scrollToEnd"></message>
         </div>
         <div class="w-full flex justify-between gap-3">
             <form @submit.prevent="sendMessage()" class="w-full">
                 <input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white" />
             </form>
-            <button v-if="inDiscussion" class="bg-lime-400 rounded-lg px-2">
+            <button v-if="chatStore.inDiscussion" class="bg-lime-400 rounded-lg px-2">
                 <img src="@/assets/inGame.png" class="w-10" />
             </button>
-            <button v-if="inChannel" @click="emit('channelSettings')">
+            <button v-if="chatStore.inChannel" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHANNEL_SETTINGS)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="#F87171">
                     <path
                         fill-rule="evenodd"
