@@ -19,9 +19,9 @@ function alreadySelectedUsers() {
 		if (props.type === 'ban')
 			return chatStore.inChannel.banned
 		else if (props.type === 'admin')
-			return chatStore.inChannel.admin
+			return chatStore.inChannel.admins
 		else 
-			return chatStore.inChannel.mute
+			return chatStore.inChannel.muted
 	}
 	return null
 }

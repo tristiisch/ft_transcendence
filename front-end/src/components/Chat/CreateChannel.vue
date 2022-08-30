@@ -56,9 +56,12 @@ function treatNewChannelData()
             avatar: newAvatar.value,
             users: chatStore.selectedItems,
             password: newPassword.value,
-            admin: [userStore.userData],
+            // admins & owner should not be defined here
+            // It is the backend that must define this by putting the user who made the request
+            // Otherwise anyone could create channels for others
+            admins: [userStore.userData],
             owner: userStore.userData,
-            mute: [],
+            muted: [],
             banned: [],
             messages: []
         }

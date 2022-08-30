@@ -1,6 +1,7 @@
 import { User } from "src/users/entity/user.entity";
 import { ChildEntity, Column } from "typeorm";
 import { Chat, ChatFront } from "./chat.entity";
+import { MessageFront } from "./message.entity";
 
 @ChildEntity()
 export class Channel extends Chat {
@@ -33,7 +34,8 @@ export class ChannelFront extends ChatFront {
 	owner: User;
 	avatar: string;
 	password: string | null;
+	users: User[];
 	admins: User[];
 	muted: User[];
-	banned_ids: User[];
+	banned: User[];
 }

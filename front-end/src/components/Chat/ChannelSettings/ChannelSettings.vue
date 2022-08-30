@@ -22,7 +22,7 @@ function playerStatus() {
 	if (chatStore.inChannel) {
 		if (chatStore.inChannel.owner.id === userStore.userData.id) return 'OWNER'
 		else {
-			for (const member of chatStore.inChannel.admin)
+			for (const member of chatStore.inChannel.admins)
 				if (member.id === userStore.userData.id)
 					return 'ADMINISTRATOR'
 			return 'MEMBER'
@@ -38,7 +38,7 @@ function isOwner() {
 
 function isAdmin() { 
 	if (chatStore.inChannel) {
-		for(const user of chatStore.inChannel.admin)
+		for(const user of chatStore.inChannel.admins)
 			if (user.id === userStore.userData.id)
 				return true
 		return false
@@ -62,8 +62,8 @@ function passwordStatus() {
 	}
 }
 
-function administratorStatus() { return chatStore.inChannel?.admin.length }
-function muteStatus() { return chatStore.inChannel?.mute.length }
+function administratorStatus() { return chatStore.inChannel?.admins.length }
+function muteStatus() { return chatStore.inChannel?.muted.length }
 function banStatus() { return chatStore.inChannel?.banned.length }
 
 function displayButton() {

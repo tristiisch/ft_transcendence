@@ -13,8 +13,8 @@ export default interface Channel extends Chat {
 	avatar: string,
 	users: User[],
 	password: string | null
-	admin: User[],
+	admins: User[],
 	owner: User,
-	mute: User[],
+	muted: User[],
 	banned: User[]
 }

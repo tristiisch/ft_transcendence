@@ -2,7 +2,7 @@
 import { IsInt } from 'class-validator';
 import { User } from 'src/users/entity/user.entity';
 import { Column, Entity, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
-import { Message } from './message.entity';
+import { Message, MessageFront } from './message.entity';
 
 export enum ChatStatus {
 	PUBLIC,
@@ -30,7 +30,5 @@ export class ChatFront {
 
 	id: number;
 	type: ChatStatus;
-	users: User[];
-	users_connected: User[];
-	messages: Message[];
+	messages: MessageFront[];
 }

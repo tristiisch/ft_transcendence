@@ -63,7 +63,7 @@ onBeforeMount(() => {
 		toast.error(error.value);
 	});
 	chatStore
-		.fetchUserDiscussions(userStore.userData.id)
+		.fetchUserDiscussions()
 		.then(() => {
 			if (route.query.discussion) {
 				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));

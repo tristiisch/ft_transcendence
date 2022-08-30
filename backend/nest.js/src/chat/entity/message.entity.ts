@@ -20,3 +20,11 @@ export class Message {
 	@Column()
 	message: string;
 }
+
+export class MessageFront {
+	idMessage?: number;
+	idChat?: number;
+	date: string;
+	message: string;
+	idSender: number;
+}
