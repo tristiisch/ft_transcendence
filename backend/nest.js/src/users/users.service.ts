@@ -23,7 +23,7 @@ export class UsersService {
 	lambdaGetUser = (user: User, identifier: any) => {
 		if (!user)
 			throw new NotFoundException(`The user '${identifier}' does not exist.`);
-		user.defineAvatar();
+		delete user.avatar_64;
 		return user;
 	};
 
@@ -107,7 +107,7 @@ export class UsersService {
 		if (!login42 || login42.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty 42login.");
 		}
-		return await this.usersRepository.findOne({ where: {login_42 : login42 } }).then((user: User) => {
+		return await this.usersRepository.findOne({ where: { login_42: login42 } }).then((user: User) => {
 			return this.lambdaGetUser(user, login42);
 		}, this.lambdaDatabaseUnvailable);
 	}
@@ -181,22 +181,26 @@ export class UsersService {
 		if (user.avatar_64 != null) {
 			try {
 				user.avatar_64 = await toBase64(user.avatar_64);
+				this.usersRepository.update(userId, { avatar_64: user.avatar_64 });
 			} catch (err) {
 				console.log('ERROR', 'user.service.ts avatar', err);
 			}
 		}
-
-		this.usersRepository.update(userId, user);
 		return await this.findOne(userId);
 	}
 
 	async findAvatar(selectUser: UserSelectDTO, @Res() res: Response) {
-		const target: User = await selectUser.resolveUser(this);
+		let target: User;
+		if (selectUser.id != null)
+			target = await this.usersRepository.findOneBy({ id: selectUser.id });
+		else if (selectUser.username != null)
+			target = await this.usersRepository.findOneBy({ username: selectUser.username });
+		else
+			throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
+
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);
-		res.writeHead(200, {
-			'Content-Type': avatar.imageType,
-			'Content-Length': avatar.imageBuffer.length
-		});
+
+		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
 	}
 }

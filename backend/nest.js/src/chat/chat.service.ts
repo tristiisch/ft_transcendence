@@ -34,9 +34,9 @@ export class ChatService {
 		return this.msgRepo;
 	}
 
-    async findAllChannels() : Promise<Channel[]> {
+    async findAllChannels() : Promise<Chat[]> {
 		try {
-			return await this.channelRepo.find();
+			return await this.chatRepo.find();
 		} catch (reason) {
 			return this.userService.lambdaDatabaseUnvailable(reason);
 		}

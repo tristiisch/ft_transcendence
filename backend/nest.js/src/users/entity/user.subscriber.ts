@@ -9,7 +9,6 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
 	}
 
 	async afterLoad(user: User): Promise<void> {
-		// user.getAvatar();
-		// user.setAvatar();
+		user.defineAvatar();
 	}
 }

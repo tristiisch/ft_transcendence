@@ -67,7 +67,6 @@ export class AuthService {
 			throw err;
 		}
 		user.status = UserStatus.ONLINE;
-		user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 		return user;
 	}
 

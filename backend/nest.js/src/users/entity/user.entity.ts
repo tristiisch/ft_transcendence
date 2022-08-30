@@ -14,7 +14,6 @@ export enum UserStatus {
 @Entity()
 export class User extends BaseEntity {
 	@PrimaryGeneratedColumn()
-	// @IsInt()
 	id: number;
 
 	@Column()
@@ -27,12 +26,10 @@ export class User extends BaseEntity {
 
 	avatar: string;
 
-    @Exclude()
 	@Column({ nullable: true })
 	avatar_64: string;
 
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
-
 	status: UserStatus;
 
 	public defineAvatar() {
