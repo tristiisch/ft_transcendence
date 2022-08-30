@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import axios from '@/plugin/axiosInstance';
 import UserService from '@/services/UserService';
+import TokenService from '@/services/TokenService';
 import { useUserStore } from '@/stores/userStore';
-import { useToast } from 'vue-toastification';
 import socket from '@/plugin/socketInstance';
+import { useRouter } from 'vue-router';
 
 const userStore = useUserStore();
-const toast = useToast();
-const authString = localStorage.getItem('userAuth');
+const router = useRouter();
 
-if (authString) {
-	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token_jwt}`;
-	socket.auth = { token: JSON.parse(authString).token_jwt }
-	UserService.getUser(JSON.parse(authString).user_id)
+if (TokenService.isLocalToken()) {
+	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
+	socket.auth = { token: TokenService.getLocalToken() }
+	UserService.getMe()
 		.then((response) => {
 			socket.connect()
 			userStore.userData = response.data;
 		})
 		.catch((e) => {
-			toast.error(e.response.data.message)
+			console.log(e.response.data.message)
+			userStore.removeToken()
+			router.replace({ name: 'Login' });
 		});
 }
 </script>

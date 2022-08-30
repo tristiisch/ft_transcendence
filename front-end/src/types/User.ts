@@ -14,6 +14,7 @@ export interface Auth {
 }
 
 export interface UserState {
+	userToken: string | null;
 	userAuth: Auth;
 	userData: User;
 }

@@ -9,21 +9,18 @@ const userStore = useUserStore();
 const toast = useToast();
 const twoFaCode = ref<number | null>(null);
 const isLoading = ref(false);
-const qrCode = ref<null | string>(null);
+const qrCode = ref('');
 
 function toogle2FA() {
-	if (qrCode.value || userStore.userAuth.has_2fa) {
-		userStore.update2FA(false);
-		qrCode.value = null
-		/*AuthService.disable2FA()
+	if (userStore.userAuth.has_2fa) {
+		AuthService.disable2FA()
 			.then(() => {
 				userStore.update2FA(false);
 				qrCode.value = ''
-				console.log(qrCode.value)
 			})
 			.catch((e: Error) => {
 				console.log(e);
-			});*/
+			});
 	} else {
 		isLoading.value = true;
 		AuthService.getQrCode2FA()
@@ -43,7 +40,7 @@ function validate2FA() {
 		AuthService.enable2FA(twoFaCode.value)
 		.then((response) => {
 			userStore.update2FA(true);
-			qrCode.value = null
+			qrCode.value = ''
 			console.log(response)
 		})
 		.catch((e) => {

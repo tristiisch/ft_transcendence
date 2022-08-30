@@ -95,29 +95,30 @@ function verifyState(state: string) {
 }
 
 onBeforeMount(() => {
-	if (route.query.code !== undefined && route.query.state !== undefined && !userStore.isLoggedIn) {
+	if (route.query.code != undefined && route.query.state != undefined && !userStore.isLoggedIn) {
 		isLoading.value = true;
 		try {
 			verifyState(route.query.state as string)
 			userStore
 				.handleLogin(route.query.code as string)
 				.then(() => {
-					console.log(userStore.userAuth.has_2fa);
 					if (userStore.isRegistered && !userStore.userAuth.has_2fa)
 					{
 						socket.connect()
 						router.replace({ name: 'Home' });
 					}
-					isLoading.value = false;
+					else isLoading.value = false;
 				})
 				.catch((e) => {
 					isLoading.value = false;
 					toast.error(e.response.data.message);
 				});
 		}
-		catch (message: string) {
+		catch (error) {
 			isLoading.value = false;
-			toast.error(message);
+			console.log(error)
+			userStore.removeToken()
+			router.replace({ name: 'Login' });
 		}
 	}
 });
@@ -128,9 +129,9 @@ onBeforeMount(() => {
 		<base-spinner v-if="isLoading"></base-spinner>
 		<div v-else class="flex flex-col items-center">
 			<div class="font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
-			<button-gradient1 v-if="!userStore.isLoggedIn" @click="redirectTo42LoginPage()">Login with 42
+			<button-gradient1 v-if="!userStore.userAuth.token_jwt" @click="redirectTo42LoginPage()">Login with 42
 			</button-gradient1>
-			<BaseCard v-else-if="!userStore.isRegistered">
+			<BaseCard v-else-if="!userStore.isRegistered && !userStore.userAuth.has_2fa">
 				<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent>
 					<div class="flex flex-col gap-4 items-center">
 						<p class="text-slate-500 text-center w-full">Please choose an username and avatar</p>
