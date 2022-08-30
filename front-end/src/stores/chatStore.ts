@@ -18,19 +18,20 @@ export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
 		users: [],
 		friends: [],
-        discussions: [],
-        inDiscussion: null,
 		channels: [],
-        inChannel: null,
+		userDiscussions: [],
+		inDiscussion: null,
+		userChannels: [],
+		inChannel: null,
 		inChannelRegistration: false,
 		cardRightPartToDisplay: PartToDisplay.CHAT,
 		cardLeftPartToDisplay: PartToDisplay.DISCUSSIONS,
 		cardRightTitle: 'CHAT',
 		messages: [],
-		selectedItems: []
+		selectedItems: [],
 	}),
 	getters: {
-		isLoading: (state) => state.discussions && state.channels ? false : true,
+		isLoading: (state) => (state.userDiscussions && state.userChannels ? false : true),
 		leftPartIsDiscussion: (state) => state.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS,
 		displayChannel: (state) => state.cardRightPartToDisplay === PartToDisplay.CHANNELS,
 		displayChannelSettings: (state) => state.cardRightPartToDisplay === PartToDisplay.CHANNEL_SETTINGS,
@@ -38,59 +39,63 @@ export const useChatStore = defineStore('chatStore', {
 		displayAddDiscussion: (state) => state.cardRightPartToDisplay === PartToDisplay.ADD_DISCUSSION,
 		displayChat: (state) => state.cardRightPartToDisplay === PartToDisplay.CHAT,
 		isProtectedChannel: (state) => state.inChannel?.type === ChatStatus.PROTECTED && !state.inChannelRegistration,
-		isTypeArrayUsers: (state) => { 
-			return (array: selectedItems): array is User[] => (array as User[])[0] === undefined || (array as User[])[0].username !== undefined
+		isTypeArrayUsers: (state) => {
+			return (array: selectedItems): array is User[] => (array as User[])[0] === undefined || (array as User[])[0].username !== undefined;
 		},
-		isTypeUser: (state) => {  
-			return (user: selectedItem): user is User => (user as User).username !== undefined
+		isTypeUser: (state) => {
+			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
-		getPlayerName: (state) => { 
-			return (senderId: number) => state.users.find(user => user.id === senderId)?.username
+		getPlayerName: (state) => {
+			return (senderId: number) => state.users.find((user) => user.id === senderId)?.username;
 		},
-		getPlayerAvatar: (state) => { 
-			return (senderId: number) => state.users.find(user => user.id === senderId)?.avatar
+		getPlayerAvatar: (state) => {
+			return (senderId: number) => state.users.find((user) => user.id === senderId)?.avatar;
 		},
-		getPlayerId: (state) => { 
-			return (senderId: number) => state.users.find(user => user.id === senderId)?.id
+		getPlayerId: (state) => {
+			return (senderId: number) => state.users.find((user) => user.id === senderId)?.id;
 		},
 		getUser: (state) => {
-			return (userId: number) => state.users.find(user => user.id === userId)
-		}
+			return (userId: number) => state.users.find((user) => user.id === userId);
+		},
 	},
 	actions: {
 		async fetchUsers() {
 			try {
-				const response = await UserService.getUsers()
-				this.users = response.data
-			} 
-			catch (error: any) {
+				const response = await UserService.getUsers();
+				this.users = response.data;
+			} catch (error: any) {
 				throw error;
 			}
 		},
 		async fetchChannels() {
 			try {
-				const response = await UserService.getChannels()
-				this.channels = response.data
-			} 
-			catch (error: any) {
+				const response = await UserService.getChannels();
+				this.userChannels = response.data;
+			} catch (error: any) {
 				throw error;
 			}
 		},
 		async fetchfriends() {
 			try {
-				const response = await UserService.getUserfriends(userStore.userData.id)
-				this.friends = response.data
-			} 
-			catch (error: any) {
+				const response = await UserService.getUserfriends(userStore.userData.id);
+				this.friends = response.data;
+			} catch (error: any) {
 				throw error;
 			}
 		},
-		async fetchDiscussions(playerId: number) {
+		async fetchUserChannels() {
 			try {
-				const response = await UserService.getDiscussions(playerId)
-				this.discussions = response.data
-			} 
-			catch (error: any) {
+				const response = await UserService.getUserChannels(userStore.userData.id);
+				this.friends = response.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchUserDiscussions(playerId: number) {
+			try {
+				const response = await UserService.getUserDiscussions(playerId);
+				this.userDiscussions = response.data;
+			} catch (error: any) {
 				throw error;
 			}
 		},
@@ -98,167 +103,144 @@ export const useChatStore = defineStore('chatStore', {
 			if (this.inDiscussion) this.inDiscussion = null;
 			this.inChannel = channel;
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			this.messages = this.inChannel.messages
-			const fromIndex = this.channels.findIndex(element => element.name === channel.name);
-			if (fromIndex > 0) {																					// shift channel to top of channel list
-				const element = this.channels.splice(fromIndex, 1)[0];	
-				this.channels.unshift(element)
+			this.messages = this.inChannel.messages;
+			const fromIndex = this.userChannels.findIndex((element) => element.name === channel.name);
+			if (fromIndex > 0) {
+				// shift channel to top of channel list
+				const element = this.userChannels.splice(fromIndex, 1)[0];
+				this.userChannels.unshift(element);
 			}
-			if (this.inChannel.type === ChatStatus.PROTECTED) {														
-				for (const user of channel.users)
-					if (user.id === userStore.userData.id)
-						this.inChannelRegistration = true;
+			if (this.inChannel.type === ChatStatus.PROTECTED) {
+				for (const user of channel.users) if (user.id === userStore.userData.id) this.inChannelRegistration = true;
 			}
-			
 		},
 		loadDiscussion(discussion: Discussion) {
 			if (this.inChannel) this.inChannel = null;
 			this.inDiscussion = discussion;
-			this.messages = this.inDiscussion.messages
+			this.messages = this.inDiscussion.messages;
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			const fromIndex = this.discussions.findIndex(element => element.user.id === discussion.user.id);
-			if (fromIndex > 0) {																					// shift discussion to top of discussion list
-				const element = this.discussions.splice(fromIndex, 1)[0];	
-				this.discussions.unshift(element)
+			const fromIndex = this.userDiscussions.findIndex((element) => element.user.id === discussion.user.id);
+			if (fromIndex > 0) {
+				// shift discussion to top of discussion list
+				const element = this.userDiscussions.splice(fromIndex, 1)[0];
+				this.userDiscussions.unshift(element);
 			}
 		},
 		async addNewChannel(newChannel: Channel) {
 			try {
-				UserService.addChannel(userStore.userData.id, newChannel)
-				this.channels.unshift(newChannel)
-				this.loadChannel(this.channels[0])
-			}
-			catch (error: any) {
+				UserService.addChannel(userStore.userData.id, newChannel);
+				this.userChannels.unshift(newChannel);
+				this.loadChannel(this.userChannels[0]);
+			} catch (error: any) {
 				throw error;
 			}
 		},
-		async addNewDiscussion(user: User)
-		{
-			if (this.discussions) {
-				for(const discussion of this.discussions) {
+		async addNewDiscussion(user: User) {
+			if (this.userDiscussions) {
+				for (const discussion of this.userDiscussions) {
 					if (discussion.user.id === user.id) {
-						this.loadDiscussion(discussion)
-						this.selectedItems = []
-						return 
+						this.loadDiscussion(discussion);
+						this.selectedItems = [];
+						return;
 					}
 				}
 			}
 			try {
-					const newDiscussion : Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[]}
-					UserService.addDiscussion(userStore.userData.id, newDiscussion)
-					this.discussions.unshift(newDiscussion)
-					this.loadDiscussion(this.discussions[0])
-					this.selectedItems = []
-				}
-			catch (error: any) {
+				const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
+				UserService.addDiscussion(userStore.userData.id, newDiscussion);
+				this.userDiscussions.unshift(newDiscussion);
+				this.loadDiscussion(this.userDiscussions[0]);
+				this.selectedItems = [];
+			} catch (error: any) {
 				throw error;
 			}
 		},
 		joinNewChannel() {
-			if (!this.isTypeUser(this.selectedItems[0]))
-				this.channels.unshift(this.selectedItems[0])
-			this.inChannel = this.channels[0]
-			this.setRightPartToDisplay(PartToDisplay.CHAT)
-			this.selectedItems = []
+			//send to back
+			if (!this.isTypeUser(this.selectedItems[0])) this.userChannels.unshift(this.selectedItems[0]);
+			this.inChannel = this.userChannels[0];
+			this.setRightPartToDisplay(PartToDisplay.CHAT);
+			this.selectedItems = [];
 		},
 		deleteDiscussion(index: number) {
-			if (this.discussions) {
+			if (this.userDiscussions) {
 				if (index >= 0) {
-					this.discussions.splice(index, 1)
+					this.userDiscussions.splice(index, 1);
 					// socket.emit('chat-discussion-delete', discussions.value[index])
 				}
 			}
 		},
 		deleteChannel(index: number) {
-			if (this.channels) {
+			if (this.userChannels) {
 				if (index >= 0) {
-					this.channels.splice(index, 1)
+					this.userChannels.splice(index, 1);
 					// socket.emit('chat-channel-delete', channelToDelete)
 				}
 			}
 		},
 		deleteUserFromChannel(userToDelete: User) {
 			if (this.inChannel) {
-				let index = this.inChannel.admin.findIndex(user => user.id === userToDelete.id)
-				if (index >= 0) this.inChannel.admin.splice(index, 1)
-				index = this.inChannel.mute.findIndex(user => user.id === userToDelete.id)
-				if (index >= 0) this.inChannel.mute.splice(index, 1)	
-				index = this.inChannel.users.findIndex(user => user.id === userToDelete.id)
-				if (index >= 0) this.inChannel.users.splice(index, 1)
-				if(this.inChannel?.type === ChatStatus.PROTECTED)
-					this.inChannelRegistration = false;
+				let index = this.inChannel.admin.findIndex((user) => user.id === userToDelete.id);
+				if (index >= 0) this.inChannel.admin.splice(index, 1);
+				index = this.inChannel.mute.findIndex((user) => user.id === userToDelete.id);
+				if (index >= 0) this.inChannel.mute.splice(index, 1);
+				index = this.inChannel.users.findIndex((user) => user.id === userToDelete.id);
+				if (index >= 0) this.inChannel.users.splice(index, 1);
+				if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
 			}
 		},
-		registrationToChannel() { 
-			this.inChannelRegistration = true 
+		registrationToChannel() {
+			this.inChannelRegistration = true;
 		},
 		setCardRightTitle(displayPart: PartToDisplay) {
-			if (displayPart === PartToDisplay.CHAT)
-				this.cardRightTitle = 'CHAT';
-			else if (displayPart === PartToDisplay.ADD_DISCUSSION)
-				this.cardRightTitle = 'DISCUSSION';
-			else if (displayPart === PartToDisplay.ADD_CHANNEL)
-				this.cardRightTitle = 'CHANNEL';
-			else if (displayPart === PartToDisplay.CHANNEL_SETTINGS)
-				this.cardRightTitle = 'SETTINGS';
+			if (displayPart === PartToDisplay.CHAT) this.cardRightTitle = 'CHAT';
+			else if (displayPart === PartToDisplay.ADD_DISCUSSION) this.cardRightTitle = 'DISCUSSION';
+			else if (displayPart === PartToDisplay.ADD_CHANNEL) this.cardRightTitle = 'CHANNEL';
+			else if (displayPart === PartToDisplay.CHANNEL_SETTINGS) this.cardRightTitle = 'SETTINGS';
 		},
 		setRightPartToDisplay(name: PartToDisplay | null) {
-			if (name)
-				this.cardRightPartToDisplay = name;
+			if (name) this.cardRightPartToDisplay = name;
 			else {
-				if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS)
-					this.cardRightPartToDisplay = PartToDisplay.ADD_DISCUSSION;
-				else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS)
-					this.cardRightPartToDisplay = PartToDisplay.ADD_CHANNEL;
+				if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) this.cardRightPartToDisplay = PartToDisplay.ADD_DISCUSSION;
+				else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS) this.cardRightPartToDisplay = PartToDisplay.ADD_CHANNEL;
 			}
 			this.setCardRightTitle(this.cardRightPartToDisplay);
 		},
 		setLeftPartToDisplay(clickedOn: string) {
-			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS && clickedOn !== 'discussion') 
-				this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
-			else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS && clickedOn !== 'channels') 
-				this.cardLeftPartToDisplay = PartToDisplay.DISCUSSIONS;
+			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS && clickedOn !== 'discussion') this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
+			else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS && clickedOn !== 'channels') this.cardLeftPartToDisplay = PartToDisplay.DISCUSSIONS;
 		},
 		setSelectedItem(selectedItem: User | Channel, singleSelection: boolean) {
 			if (!singleSelection) {
-				if (this.isTypeArrayUsers(this.selectedItems) && this.isTypeUser(selectedItem))
-					this.selectedItems.push(selectedItem)
-				else if (!this.isTypeArrayUsers(this.selectedItems) && !this.isTypeUser(selectedItem))
-				this.selectedItems.push(selectedItem)
-			}	
-			else
-				this.selectedItems[0] = selectedItem
+				if (this.isTypeArrayUsers(this.selectedItems) && this.isTypeUser(selectedItem)) this.selectedItems.push(selectedItem);
+				else if (!this.isTypeArrayUsers(this.selectedItems) && !this.isTypeUser(selectedItem)) this.selectedItems.push(selectedItem);
+			} else this.selectedItems[0] = selectedItem;
 		},
-		unsetSelectItem(itemToUnselectId : number, singleSelection: boolean) {
-			if (!singleSelection)
-			{
-				const indexArraycurrentSelection = this.selectedItems.findIndex(item => item.id === itemToUnselectId)
+		unsetSelectItem(itemToUnselectId: number, singleSelection: boolean) {
+			if (!singleSelection) {
+				const indexArraycurrentSelection = this.selectedItems.findIndex((item) => item.id === itemToUnselectId);
 				this.selectedItems.splice(indexArraycurrentSelection, 1);
-			}
-			else
-				this.selectedItems.splice(0, 1);
+			} else this.selectedItems.splice(0, 1);
 		},
 		checkChangeInArray(baseArray: User[]) {
-			for(const userBa of baseArray)
-			{
-				const index = this.selectedItems.findIndex(user => user.id === userBa.id)
-				if (index < 0) return true
+			for (const userBa of baseArray) {
+				const index = this.selectedItems.findIndex((user) => user.id === userBa.id);
+				if (index < 0) return true;
 			}
-			for(const selectedUser of this.selectedItems)
-			{
-				const index = baseArray.findIndex(user => user.id === selectedUser.id)
-				if (index < 0) return true
+			for (const selectedUser of this.selectedItems) {
+				const index = baseArray.findIndex((user) => user.id === selectedUser.id);
+				if (index < 0) return true;
 			}
-			return false
+			return false;
 		},
-		UpdateChannelNamePassword(password: string, name: string) { 
+		UpdateChannelNamePassword(password: string, name: string) {
 			if (this.inChannel) {
 				if (password != '' && password != this.inChannel.password) {
-					this.inChannel.password = password
+					this.inChannel.password = password;
 					//post password to back
 				}
 				if (name != '' && name != this.inChannel.name) {
-					this.inChannel.name = name
+					this.inChannel.name = name;
 					//post password to back
 				}
 			}
@@ -266,56 +248,53 @@ export const useChatStore = defineStore('chatStore', {
 		updateBanArray() {
 			if (this.inChannel && this.isTypeArrayUsers(this.selectedItems)) {
 				if (this.checkChangeInArray(this.inChannel.banned)) {
-					for(const selectedUser of this.selectedItems)
-						this.deleteUserFromChannel(selectedUser)
-					this.inChannel.banned = this.selectedItems
+					for (const selectedUser of this.selectedItems) this.deleteUserFromChannel(selectedUser);
+					this.inChannel.banned = this.selectedItems;
 					//socket.emit('chat-channel-ban', selectedUsers)
 				}
-				this.selectedItems = []
+				this.selectedItems = [];
 			}
 		},
 		updateMuteArray() {
 			if (this.inChannel && this.isTypeArrayUsers(this.selectedItems)) {
 				if (this.checkChangeInArray(this.inChannel.mute)) {
-					this.inChannel.mute = this.selectedItems
+					this.inChannel.mute = this.selectedItems;
 					//socket.emit('chat-channel-admin', selectedUsers);
-					console.log('jorjoorjt')
+					console.log('jorjoorjt');
 				}
-				this.selectedItems = []
+				this.selectedItems = [];
 			}
 		},
 		updateAdminArray() {
 			if (this.inChannel && this.isTypeArrayUsers(this.selectedItems)) {
-				if(this.checkChangeInArray(this.inChannel.admin)) {
-					this.inChannel.admin = this.selectedItems
+				if (this.checkChangeInArray(this.inChannel.admin)) {
+					this.inChannel.admin = this.selectedItems;
 					//socket.emit('chat-channel-mute', selectedUsers);
-				}	
-				this.selectedItems = []
+				}
+				this.selectedItems = [];
 			}
-		},	
+		},
 		leaveChannel(user: User) {
 			if (this.inChannel) {
-				let isOwner = false
-				if (this.inChannel.owner.id === userStore.userData.id)
-						isOwner = true
-				this.deleteUserFromChannel(user)
-				if (this.inChannel.users.length > 0 && isOwner)
-					this.inChannel.owner = this.inChannel.admin[0]
-				const index = this.channels.findIndex(channel => channel.id === this.inChannel?.id)
-				this.deleteChannel(index)
-				this.inChannel = null
-				this.setRightPartToDisplay(PartToDisplay.CHAT) 
+				let isOwner = false;
+				if (this.inChannel.owner.id === userStore.userData.id) isOwner = true;
+				this.deleteUserFromChannel(user);
+				if (this.inChannel.users.length > 0 && isOwner) this.inChannel.owner = this.inChannel.admin[0];
+				const index = this.userChannels.findIndex((channel) => channel.id === this.inChannel?.id);
+				this.deleteChannel(index);
+				this.inChannel = null;
+				this.setRightPartToDisplay(PartToDisplay.CHAT);
 				//socket.emit('chat-channel-leave', userStore.userData);
 				//socket.emit('chat-channel-leave', userStore.userData);
 			}
 		},
 		sendMessage(newMessage: string) {
 			if (newMessage != '') {
-				const now = (new Date()).toLocaleString();
-				this.messages.push( {
+				const now = new Date().toLocaleString();
+				this.messages.push({
 					date: now,
 					message: newMessage,
-					idSender: userStore.userData.id
+					idSender: userStore.userData.id,
 				});
 				// socket.emit('chat-message', {
 				// 	date: now,
@@ -323,6 +302,6 @@ export const useChatStore = defineStore('chatStore', {
 				// 	id: userStore.userData.id
 				// });
 			}
-		}
-	}
+		},
+	},
 });

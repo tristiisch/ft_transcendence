@@ -5,7 +5,6 @@ import type Match from '@/types/MatchHistory';
 import type Discussion from '@/types/Discussion';
 
 class UserService {
-
 	getUsers() {
 		return axios.get('users');
 	}
@@ -81,44 +80,49 @@ class UserService {
 		return axios.get('chat/channels');
 	}
 
-	getDiscussions(id: number) {
-		return axios.get(`chat/discussionsHistoric/${id}`);
+	getUserDiscussions(id: number) {
+		return axios.get(`chat/user-discussions/${id}`);
 	}
 
+	getUserChannels(id: number) {
+		return axios.get(`chat/user-channels/${id}`);
+	}
+
+	//Use socket for the fetch below
 	addDiscussion(id: number, newDiscussion: Discussion) {
-		return axios.post(`chat/addDiscussion/${id}`, { discussion: newDiscussion })
+		return axios.post(`chat/addDiscussion/${id}`, { discussion: newDiscussion });
 	}
 
 	addChannel(id: number, newChannel: Channel) {
-		return axios.post(`chat/addChannel/${id}`, { channel: newChannel })
+		return axios.post(`chat/addChannel/${id}`, { channel: newChannel });
 	}
 
 	deleteChannel(id: number, targetId: number) {
-		return axios.post(`chat/leaveChannel/${id}`, { id: targetId })
+		return axios.post(`chat/leaveChannel/${id}`, { id: targetId });
 	}
 
 	deleteDiscussionl(id: number, targetId: number) {
-		return axios.post(`chat/leaveChannel/${id}`, { id: targetId })
+		return axios.post(`chat/delete-discussions/${id}`, { id: targetId });
 	}
 
 	leaveChannel(id: number, targetId: number) {
-		return axios.post(`chat/leaveChannel/${id}`, { id: targetId })
+		return axios.post(`chat/leave-channel/${id}`, { id: targetId });
 	}
 
 	channelAddAdmins(id: number, newAdminList: User[]) {
-		return axios.post(`chat/channelAddAdmins/${id}`, { adminList: newAdminList })
+		return axios.post(`chat/channelAddAdmins/${id}`, { adminList: newAdminList });
 	}
 
 	channelBanMembers(id: number, newBanList: User[]) {
-		return axios.post(`chat/channelBanPlayers/${id}`, { banList: newBanList})
+		return axios.post(`chat/channelBanPlayers/${id}`, { banList: newBanList });
 	}
 
 	channelMuteMembers(id: number, newMuteList: User[]) {
-		return axios.post(`chat/channelMutePlayers/${id}`, { muteList: newMuteList })
+		return axios.post(`chat/channelMutePlayers/${id}`, { muteList: newMuteList });
 	}
 
 	channelRemoveMembers(id: number, newBanList: User[]) {
-		return axios.post(`chat/channelBanPlayers/${id}`, { banList: newBanList})
+		return axios.post(`chat/channelBanPlayers/${id}`, { banList: newBanList });
 	}
 }
 
