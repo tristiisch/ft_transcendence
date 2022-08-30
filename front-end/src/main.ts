@@ -14,11 +14,6 @@ import BaseSpinner from '@/components/BaseSpinner.vue';
 import Toast, { POSITION } from "vue-toastification";
 import "vue-toastification/dist/index.css";
 
-/*if (process.env.NODE_ENV === 'development') {
-	const { worker } = await import('./mocks/browser');
-	worker.start();
-}*/
-
 const app = createApp(App);
 
 const pinia = createPinia();
