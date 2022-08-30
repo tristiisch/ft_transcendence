@@ -1,6 +1,8 @@
 import axios from '@/plugin/axiosInstance';
 import type User from '@/types/User';
+import type Channel from '@/types/Channel';
 import type Match from '@/types/MatchHistory';
+import type Discussion from '@/types/Discussion';
 
 class UserService {
 
@@ -29,7 +31,6 @@ class UserService {
 	}
 
 	getUserfriends(id: number) {
-		console.log(id)
 		return axios.get(`friends/names/${id}`);
 	}
 
@@ -78,6 +79,46 @@ class UserService {
 
 	getChannels() {
 		return axios.get('chat/channels');
+	}
+
+	getDiscussions(id: number) {
+		return axios.get(`chat/discussionsHistoric/${id}`);
+	}
+
+	addDiscussion(id: number, newDiscussion: Discussion) {
+		return axios.post(`chat/addDiscussion/${id}`, { discussion: newDiscussion })
+	}
+
+	addChannel(id: number, newChannel: Channel) {
+		return axios.post(`chat/addChannel/${id}`, { channel: newChannel })
+	}
+
+	deleteChannel(id: number, targetId: number) {
+		return axios.post(`chat/leaveChannel/${id}`, { id: targetId })
+	}
+
+	deleteDiscussionl(id: number, targetId: number) {
+		return axios.post(`chat/leaveChannel/${id}`, { id: targetId })
+	}
+
+	leaveChannel(id: number, targetId: number) {
+		return axios.post(`chat/leaveChannel/${id}`, { id: targetId })
+	}
+
+	channelAddAdmins(id: number, newAdminList: User[]) {
+		return axios.post(`chat/channelAddAdmins/${id}`, { adminList: newAdminList })
+	}
+
+	channelBanMembers(id: number, newBanList: User[]) {
+		return axios.post(`chat/channelBanPlayers/${id}`, { banList: newBanList})
+	}
+
+	channelMuteMembers(id: number, newMuteList: User[]) {
+		return axios.post(`chat/channelMutePlayers/${id}`, { muteList: newMuteList })
+	}
+
+	channelRemoveMembers(id: number, newBanList: User[]) {
+		return axios.post(`chat/channelBanPlayers/${id}`, { banList: newBanList})
 	}
 }
 

@@ -3,10 +3,12 @@ import axios from 'axios';
 import users from '@/data/users';
 import matchs from '@/data/matchs';
 import matchsHistory from '@/data/matchsHistory';
+import discussions from '@/data/discussions';
 import notifications from '@/data/notifications'
 import friends from '@/data/friends';
 import channels from '@/data/Channels';
 import Status from '@/types/Status';
+import type Message from '@/types/Message';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import type User from '@/types/User';
@@ -90,6 +92,40 @@ export default [
 
 	rest.get('/notifications/:id', (req, res, ctx) => {
 		return res(ctx.json(notifications.get(parseInt(req.params.id as string))));
+	}),
+
+	rest.get('/chat/discussionsHistoric/:id', (req, res, ctx) => {
+		return res(ctx.json(discussions.get(parseInt(req.params.id as string))));
+	}),
+
+	rest.post('/chat/addDiscussion/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/addChannel/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/channelAddAdmins/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/channelBanPlayers/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/channelMutePlayers/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
+	}),
+
+	rest.post('/chat/addChannel/:id', async (req, res, ctx) => {
+		const data = await req.json();
+		return res(ctx.json(200));
 	}),
 
 	rest.post('/matchs/history/:id', async (req, res, ctx) => {

@@ -5,16 +5,13 @@ import PartToDisplay from '@/types/ChatPartToDisplay';
 import { useChatStore } from '@/stores/chatStore';
 
 const chatStore = useChatStore();
+const emit = defineEmits<{ (e: 'close'): void }>()
 
-function onValidate() {
-    if (chatStore.isTypeUser(chatStore.selectedItems[0]))
-        chatStore.addNewDiscussion(chatStore.selectedItems[0])
-}
 </script>
 
 <template>
     <div class="flex flex-col justify-between items-center h-full w-full px-6 3xl:px-10">
-        <AddSearchPlayer :singleSelection="true" :type="'users'"></AddSearchPlayer>
-        <button-close-validate @validate="onValidate()" @close="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)"></button-close-validate>
+        <AddSearchPlayer :singleSelection="true" :type="'channels'"></AddSearchPlayer>
+        <button-close-validate @validate="chatStore.joinNewChannel()" @close="emit('close')"></button-close-validate>
     </div>
 </template>

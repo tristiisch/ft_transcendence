@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chatStore';
+
+const chatStore = useChatStore();
 
 const emit = defineEmits<{
-	(e: 'close'): void,
+	(e: 'close'): void
 	(e: 'validate'): void
 }>()
 

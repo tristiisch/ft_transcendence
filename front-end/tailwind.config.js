@@ -34,6 +34,8 @@ module.exports = {
         // => @media (max-height: 800px),(min-width: 375px) { ... }
         '3xl': { 'raw': '(min-width: 1792px)' },
 		// => @media (min-width: 1792px) { ... }
+		'4xl': { 'raw': '(min-width: 2048px)' }
+		// => @media (min-width: 1792px) { ... }
       },
     },
   },

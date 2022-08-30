@@ -1,75 +1,54 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
-import type User from '@/types/User';
-import type Channel from '@/types/Channel';
+import PartToDisplay from '@/types/ChatPartToDisplay';
 import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
-import Message from '@/components/Chat/Message.vue';
+import message from '@/components/Chat/Message.vue';
 import socket from '@/plugin/socketInstance';
-import { ref } from 'vue';
+import { onBeforeMount, watch, ref } from 'vue';
+import { useChatStore } from '@/stores/chatStore';
 
+const chatStore = useChatStore();
 const userStore = useUserStore();
-const messages = ref([] as { message: string; sender: string; date: string }[]);
 const scroll = ref<HTMLInputElement | null>(null);
 const newMessage = ref('');
-
-const props = defineProps<{
-  inChatWith: User | null
-  inChannel: Channel | null
-  users: User[] | null
-}>()
-
-const emit = defineEmits<{
-	(e: 'channelSettings'): void,
-}>()
-
-function sendMessage() {
-	const now = new Date();
-	messages.value.push({
-		message: newMessage.value,
-		sender: userStore.userData.username,
-		date: '2022/09/8',
-	});
-	socket.emit('chat-message', {
-		message: newMessage.value,
-		sender: userStore.userData.username,
-		date: '2022/09/8',
-	});
-	newMessage.value = '';
-	scrollToEnd();
-}
-
-socket.on('chat-message', (data) => {
-	console.log(data.sender);
-	messages.value.push({
-		message: data.message,
-		sender: data.sender,
-		date: data.date,
-	});
-	console.log(data);
-	console.log(messages.value);
-});
 
 function scrollToEnd() {
 	if (scroll.value) {
 		scroll.value.scrollTop = scroll.value.scrollHeight;
 	}
 }
+
+function sendMessage() { 
+	chatStore.sendMessage(newMessage.value)
+	newMessage.value = ''
+	scrollToEnd()
+}
+
+socket.on('chat-message', (data) => {
+	console.log(data.sender);
+	chatStore.messages.push({
+		date: data.date,
+		message: data.message,
+		idSender: data.id,
+	});
+});
+
 </script>
 
 <template>
     <div class="flex flex-col justify-between h-full">
-        <ChatTopImage :inChatWith="inChatWith" :inChannel="inChannel"></ChatTopImage>
+        <ChatTopImage></ChatTopImage>
         <div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
-            <message v-if="users" @scroll="scrollToEnd" :messages="messages" :users="users"></message>
+            <message @scroll="scrollToEnd"></message>
         </div>
         <div class="w-full flex justify-between gap-3">
             <form @submit.prevent="sendMessage()" class="w-full">
                 <input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white" />
             </form>
-            <button v-if="inChatWith" class="bg-lime-400 rounded-lg px-2">
+            <button v-if="chatStore.inDiscussion" class="bg-lime-400 rounded-lg px-2">
                 <img src="@/assets/inGame.png" class="w-10" />
             </button>
-            <button v-if="inChannel" @click="emit('channelSettings')">
+            <button v-if="chatStore.inChannel" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHANNEL_SETTINGS)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="#F87171">
                     <path
                         fill-rule="evenodd"

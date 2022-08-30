@@ -1,14 +1,20 @@
 import type User from '@/types/User';
-import type status from '@/types/ChannelStatus';
+import type Message from '@/types/Message';
+import type ChatStatus from '@/types/ChatStatus';
 
-export default interface Channel {
+export interface Chat {
+	id?: number,
+	type: ChatStatus,
+	messages: Message[]
+}
+
+export default interface Channel extends Chat {
 	name: string,
-	type: status,
 	avatar: string,
 	users: User[],
-	password: (string | null)
+	password: string | null
 	admin: User[],
-	owner: string,
+	owner: User,
 	mute: User[],
 	banned: User[]
 }
