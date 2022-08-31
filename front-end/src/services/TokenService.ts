@@ -1,11 +1,16 @@
 class TokenService {
 		isLocalToken() {
-			if(localStorage.getItem('userToken')) return true
+			if (localStorage.getItem('userToken')) return true
 			return false
 		}
 		getLocalToken() {
-			const token = localStorage.getItem('userToken');
-			if (token) return JSON.parse(token)
+			try {
+				const token = localStorage.getItem('userToken');
+				if (token) return JSON.parse(token)
+			}
+			catch {
+				return null
+			}
 		}
 		setLocalToken(token: string) {
 			localStorage.setItem('userToken', JSON.stringify(token));

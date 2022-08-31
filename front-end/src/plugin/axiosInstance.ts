@@ -17,26 +17,4 @@ instance.interceptors.response.use(
 	}
 );
 
-instance.interceptors.response.use(
-	response => response,
-	error => {
-		const userStore = useUserStore();
-		if (error.response.status === 444) {
-			userStore.handleLogout()
-			console.log('You are blocked from the website');
-		}
-		return Promise.reject(error);
-	}
-);
-
-/*instance.interceptors.response.use(
-	response => response,
-	error => {
-		if (error.response.status === 445) {
-			console.log('notAdminRedirect');
-		}
-		return Promise.reject(error);
-	}
-);*/
-
 export default instance;

@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import ButtonGradient1 from '@/components/ButtonGradient1.vue';
 import UsersService from '@/services/UserService';
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import type User from '@/types/User';
 
 const userStore = useUserStore();
 const route = useRoute();
-const friends = ref([] as User[]);
+const pending = ref(false);
 const displayPart = ref('Player Stats');
+
+const emit = defineEmits<{
+	(e: 'changeDisplay', displayedPart: string): void;
+	(e: 'removeFriend', userId: number): void;
+}>();
+
+const props = defineProps<{ friends?: User[] }>();
 
 function isUser() {
 	if (parseInt(route.params.id as string) === userStore.userData.id) return true;
@@ -28,13 +35,17 @@ function setDisplayedPart(button: number) {
 
 function treatFriendRequest() {
 	if (friendButton.value === 'Add friend')
-		UsersService.sendFriendRequest(parseInt(route.params.id as string)).catch((e) => {
-			console.log(e);
-		});
-	else
+		UsersService.sendFriendRequest(parseInt(route.params.id as string))
+			.then(() => {
+				pending.value = true;
+			})
+			.catch((e) => {
+				console.log(e);
+			});
+	else if (friendButton.value === 'Remove friend')
 		UsersService.removeFriend(parseInt(route.params.id as string))
 			.then(() => {
-				fetchfriends();
+				emit('removeFriend', parseInt(route.params.id as string));
 			})
 			.catch((e) => {
 				console.log(e);
@@ -42,9 +53,12 @@ function treatFriendRequest() {
 }
 
 const friendButton = computed(() => {
-	for (const friend of friends.value) {
+	if (props.friends) {
+		for (const friend of props.friends) {
 			if (friend.id === parseInt(route.params.id as string)) return 'Remove friend';
+		}
 	}
+	if (pending.value === true) return 'Pending';
 	return 'Add friend';
 });
 
@@ -56,25 +70,6 @@ const button1Name = computed(() => {
 const button2Name = computed(() => {
 	if (displayPart.value === 'Settings') return 'Notifications';
 	else return 'Settings';
-});
-
-async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.userData.id)
-		.then((response) => {
-			friends.value = response.data;
-			console.log(response.data);
-		})
-		.catch((e: Error) => {
-			console.log(e);
-		});
-}
-
-const emit = defineEmits<{
-	(e: 'changeDisplay', displayedPart: string): void;
-}>();
-
-onMounted(() => {
-	if (parseInt(route.params.id as string) !== userStore.userData.id) fetchfriends();
 });
 </script>
 

@@ -3,7 +3,7 @@ import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import type Stats from '@/types/Stats';
 import { useUserStore } from '@/stores/userStore';
-import { ref, onBeforeMount, watch, computed } from 'vue';
+import { ref, onBeforeMount, watch, computed, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PlayerHistory from '@/components/Profile/PlayerHistory.vue';
 import CardRight from '@/components/CardRight.vue';
@@ -15,6 +15,7 @@ import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
 import type MatchHistory from '@/types/MatchHistory';
+import socket from '@/plugin/socketInstance';
 import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
@@ -22,10 +23,11 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
-const user = ref<User | null>(null);
-const userStats = ref<Stats | null>(null)
-const matchsHistory = ref<MatchHistory[] | null>(null);
-const error = ref('')
+const user = ref<User>();
+const userStats = ref<Stats>();
+const matchsHistory = ref<MatchHistory[]>();
+const friends = ref<User[]>();
+const error = ref('');
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
 
@@ -57,10 +59,10 @@ function fetchStats() {
 	UsersService.getStats(parseInt(route.params.id as string))
 		.then((response) => {
 			userStats.value = response.data;
-			console.log(userStats.value)
+			console.log(userStats.value);
 		})
 		.catch((e) => {
-			error.value = ref(e.response.data.message)
+			error.value = ref(e.response.data.message);
 			toast.error(error.value);
 		});
 }
@@ -69,12 +71,34 @@ function fetchMatchsHistory() {
 	UsersService.getMatchsHistory(parseInt(route.params.id as string))
 		.then((response) => {
 			matchsHistory.value = response.data;
-			console.log(matchsHistory.value)
+			console.log(matchsHistory.value);
 		})
 		.catch((e) => {
-			error.value = ref(e.response.data.message)
+			error.value = ref(e.response.data.message);
 			toast.error(error.value);
 		});
+}
+
+function fetchfriends() {
+	UsersService.getUserfriends(userStore.userData.id)
+		.then((response) => {
+			friends.value = response.data;
+			console.log(response.data);
+		})
+		.catch((e: Error) => {
+			console.log(e);
+		});
+}
+
+function removeFriend(userId: number) {
+	if (friends.value) {
+		const index = friends.value.findIndex((element) => element.id === userId);
+		if (index !== -1) friends.value.splice(index, 1);
+	}
+}
+
+function updateStatus(data: User) {
+	if (user.value) if (data.id === user.value.id) user.value.status = data.status;
 }
 
 watch(
@@ -82,20 +106,37 @@ watch(
 	() => {
 		if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
 	}
-)
+);
+
+const isMe = computed(() => {
+	return parseInt(route.params.id as string) === userStore.userData.id;
+});
 
 const isLoading = computed(() => {
-	if (user.value && userStats.value && matchsHistory.value || error.value)
-		return false;
+	if (isMe.value) {
+		if ((user.value && userStats.value && matchsHistory.value) || error.value) return false;
+	} else if ((user.value && userStats.value && matchsHistory.value && friends.value) || error.value) return false;
 	return true;
 });
 
 onBeforeMount(() => {
-	if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
-	else fetchUser();
-	fetchStats()
-	fetchMatchsHistory()
+	if (isMe.value) user.value = userStore.userData;
+	else {
+		fetchUser();
+		fetchfriends();
+	}
+	fetchStats();
+	fetchMatchsHistory();
+	socket.on('update_status', (data) => {
+		console.log(data);
+		updateStatus(data);
+	});
+});
 
+onBeforeUnmount(() => {
+	socket.off('update_status', (data) => {
+		updateStatus(data);
+	});
 });
 </script>
 
@@ -104,16 +145,16 @@ onBeforeMount(() => {
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
-					<player-profile v-if="user" :user="user"></player-profile>
-					<button-part @change-display="setPartToDisplay"></button-part>
-					<rank-card v-if="userStats" :rank="userStats.rank"></rank-card>
+					<player-profile :user="user"></player-profile>
+					<button-part @change-display="setPartToDisplay" @remove-Friend="removeFriend" :friends="friends"></button-part>
+					<rank-card :rank="userStats?.rank"></rank-card>
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
 				<div v-if="partToDisplay === 'Player Stats'" class="flex flex-col justify-center gap-4 sm:gap-6 h-full w-11/12 px-8 3xl:px-10">
-					<player-stats v-if="userStats" :userStats="userStats"></player-stats>
+					<player-stats :userStats="userStats"></player-stats>
 					<div class="flex justify-center overflow-y-auto w-full">
-						<player-history v-if="user && matchsHistory" :user="user" :matchsHistory="matchsHistory"></player-history>
+						<player-history :user="user" :matchsHistory="matchsHistory"></player-history>
 					</div>
 				</div>
 				<div v-else-if="partToDisplay === 'Notifications'" class="flex flex-col justify-center items-center px-10 w-11/12">

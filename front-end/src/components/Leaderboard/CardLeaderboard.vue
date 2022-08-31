@@ -7,14 +7,14 @@
     const sizeAvatar = ref<HTMLInputElement | null>(null)
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
     const windowHeight = ref(window.innerHeight);
-    const props = defineProps<{ user: Leaderboard }>()
+    const props = defineProps<{ user?: Leaderboard }>()
 
     const userStatus = computed(() => {
-        if (props.user.status === Status.INGAME)
+        if (props.user?.status === Status.INGAME)
             return 'Ingame'
-        else if (props.user.status === Status.OFFLINE)
+        else if (props.user?.status === Status.OFFLINE)
             return 'Offline'
-        else (props.user.status === Status.ONLINE)
+        else (props.user?.status === Status.ONLINE)
             return 'Online'
     })
 
@@ -42,14 +42,14 @@
     <div
         class="relative grid [grid-template-columns:_2fr_1fr_1fr] auto-cols-min place-content-center h-full text-slate-800 overflow-hidden bg-gradient-to-r from-red-400 to-blue-500 hover:from-green-500 hover:to-lime-200"
     >
-        <img ref="sizeAvatar" class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover" :src="user.avatar" alt="Rounded avatar" />
+        <img ref="sizeAvatar" class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover" :src="user?.avatar" alt="Rounded avatar" />
         <div class="flex items-center pr-4" :style="avatarWidth">
-            <base-button link :to="{ name: 'Profile', params: { id: user.id } }">{{ user.username }}</base-button>
+            <base-button link :to="{ name: 'Profile', params: { id: user?.id } }">{{ user?.username }}</base-button>
         </div>
         <div class="flex gap-3">
-            <player-status :userStatus="user.status"></player-status>
+            <player-status :userStatus="user?.status"></player-status>
             <span>{{ userStatus }}</span>
         </div>
-        <div class="flex justify-center items-center">{{ user.rank }}</div>
+        <div class="flex justify-center items-center">{{ user?.rank }}</div>
     </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import UserService from '@/services/UserService';
-import type Leaderboard from '@/types/Leaderboard';
+import type LeaderboardUser from '@/types/Leaderboard';
+import type { UserStatus} from '@/types/User';
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import Toogle from '@/components/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
@@ -8,9 +9,9 @@ import socket from '@/plugin/socketInstance';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
-const users = ref<Leaderboard[] | null>(null);
-const friends = ref<Leaderboard[] | null>(null);
-const playerToDisplay = ref<Leaderboard[] | null>(null);
+const users = ref<LeaderboardUser[]>();
+const friends = ref<LeaderboardUser[]>();
+const playerToDisplay = ref<LeaderboardUser[]>();
 const error = ref('')
 const playerName = ref('')
 const type = ref('All');
@@ -103,8 +104,17 @@ const displayUser = computed(() => {
 	else return friends.value;
 });
 
-function changeUserStatus(data: string) {
-	console.log(data);
+function updateStatus(data: UserStatus) {
+	if (users.value)
+	{
+		const index = users.value.findIndex((user) => user.id === data.id);
+		if(index !== -1) users.value[index].status = data.status
+	}
+	if (friends.value)
+	{
+		const index = friends.value.findIndex((user) => user.id === data.id);
+		if(index !== -1) friends.value[index].status = data.status
+	}
 }
 
 const isLoading = computed(() => {
@@ -116,14 +126,14 @@ const isLoading = computed(() => {
 
 onBeforeMount(() => {
 	fetchLeaderboard();
-	socket.on('statusChange', (data) => {
-		changeUserStatus(data);
+	socket.on('update_status', (data) => {
+		updateStatus(data);
 	});
 });
 
 onBeforeUnmount(() => {
-	socket.off('statusChange', (data) => {
-		changeUserStatus(data);
+	socket.off('update_status', (data) => {
+		updateStatus(data);
 	});
 });
 </script>

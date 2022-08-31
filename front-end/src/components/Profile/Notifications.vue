@@ -3,12 +3,10 @@ import UsersService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
 import { ref, onBeforeMount, computed } from 'vue';
-import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 
 const notifications = ref<Notification[] | null>(null);
 const isLoading = ref(false);
-const userStore = useUserStore();
 const toast = useToast();
 
 function fetchNotifications() {
@@ -37,9 +35,8 @@ function acceptInvitation(notification: Notification) {
 		UsersService.notificationAction(notification.id, true)
 		.then(() => {
 			if (notifications.value) {
-				for (let i = 0; i < notifications.value.length; i++) {
-					if (notifications.value[i].id === notification.id) notifications.value.splice(i, 1);
-				}
+				const index = notifications.value.findIndex((element) => element.id === notification.id);
+				if(index !== -1) notifications.value.splice(index, 1)
 			}
 		})
 		.catch((e: Error) => {
@@ -55,9 +52,8 @@ function declineInvitation(notification: Notification) {
 		UsersService.notificationAction(notification.id, false)
 		.then(() => {
 			if (notifications.value) {
-				for (let i = 0; i < notifications.value.length; i++) {
-					if (notifications.value[i].id === notification.id) notifications.value.splice(i, 1);
-				}
+				const index = notifications.value.findIndex((element) => element.id === notification.id);
+				if(index !== -1) notifications.value.splice(index, 1)
 			}
 		})
 		.catch((e: Error) => {
