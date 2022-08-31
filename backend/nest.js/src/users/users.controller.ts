@@ -1,6 +1,7 @@
 /** @prettier */
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthService } from 'src/auth/auth.service';
 import { UserAuth } from 'src/auth/entity/user-auth.entity';
 import { JwtAuthGuard } from 'src/auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
@@ -10,7 +11,12 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
+
 	constructor(private readonly usersService: UsersService) {}
+
+	// TODO: this work
+	// @Inject(forwardRef(() => AuthService))
+	// private readonly authService: AuthService;
 
 	@Get()
 	getAllUsers(): Promise<User[]> {
@@ -57,9 +63,10 @@ export class UsersController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('me')
-	getOwnInfo(@Req() req) {
+	async getOwnInfo(@Req() req) {
 		const user: User = req.user;
-		return user;
+		// const userAuth: UserAuth = await this.authService.findOne(user.id);
+		// return { user, has_2fa: userAuth.has_2fa };
 	}
 
 	@Get(':id')
