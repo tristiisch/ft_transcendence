@@ -12,6 +12,7 @@ const error = ref('');
 const toast = useToast();
 const userToggle = ref(false);
 const itemsToDisplay = ref<User[] | Channel[]>([]);
+const filterButton = ref('All');
 const itemName = ref('');
 
 const props = defineProps<{
@@ -20,19 +21,24 @@ const props = defineProps<{
 }>();
 
 function changeDisplayToFriends() {
-	itemsToDisplay.value = chatStore.friends;
+    itemsToDisplay.value = chatStore.friends;
+    filterButton.value = 'Friends'
 }
 function changeDisplayToAllUsers() {
-	itemsToDisplay.value = chatStore.users;
+    itemsToDisplay.value = chatStore.users;
+    filterButton.value = 'All'
 }
 function changeDisplayToPublic() {
-	itemsToDisplay.value = chatStore.userChannels.filter((channel) => channel.type === ChatStatus.PUBLIC);
+    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PUBLIC);
+    filterButton.value = 'Public'
 }
 function changeDisplayToProtected() {
-	itemsToDisplay.value = chatStore.userChannels.filter((channel) => channel.type === ChatStatus.PROTECTED);
+    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PROTECTED);
+    filterButton.value = 'Protected'
 }
 function changeDisplayToAllChannels() {
-	itemsToDisplay.value = chatStore.userChannels;
+    itemsToDisplay.value = chatStore.channels;
+	filterButton.value = 'All'
 }
 
 function placeHolder() {
@@ -79,30 +85,30 @@ onBeforeMount(() => {
 				class="relative flex-shrink-0 inline-flex items-center rounded-l-lg border border-blue-600 py-2 px-3 text-sm font-medium text-center text-white bg-blue-600"
 				type="button"
 			>
-				Filter<svg aria-hidden="true" class="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+			{{ filterButton }}<svg aria-hidden="true" class="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 					<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
 				</svg>
 			</button>
 			<div v-show="userToggle" class="absolute z-10 w-44 bg-red-100 rounded shadow">
-				<ul v-if="chatStore.isTypeArrayUsers(itemsToDisplay)" class="py-1 text-sm text-gray-700">
-					<li>
-						<button @click="changeDisplayToFriends(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Friends</button>
-					</li>
-					<li>
-						<button @click="changeDisplayToAllUsers(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">All</button>
-					</li>
-				</ul>
-				<ul v-else class="py-1 text-sm text-gray-700">
-					<li>
-						<button @click="changeDisplayToPublic(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Public</button>
-					</li>
-					<li>
-						<button @click="changeDisplayToProtected(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Protected</button>
-					</li>
-					<li>
-						<button @click="changeDisplayToAllChannels(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">All</button>
-					</li>
-				</ul>
+				<ul v-if="type === 'users'" class="py-1 text-sm text-gray-700">
+                    <li v-if="filterButton === 'All'">
+                        <button @click="changeDisplayToFriends(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Friends</button>
+                    </li>
+                    <li v-if="filterButton === 'Friends'">
+                        <button @click="changeDisplayToAllUsers(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">All</button>
+                    </li>
+                </ul>
+                <ul v-else class="py-1 text-sm text-gray-700">
+                    <li v-if="filterButton !== 'Public'">
+                        <button @click="changeDisplayToPublic(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Public</button>
+                    </li>
+                    <li v-if="filterButton !== 'Protected'">
+                        <button @click="changeDisplayToProtected(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Protected</button>
+                    </li>
+                    <li v-if="filterButton !== 'All'">
+                        <button @click="changeDisplayToAllChannels(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">All</button>
+                    </li>
+                </ul>
 			</div>
 		</div>
 		<div class="relative w-full">

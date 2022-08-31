@@ -116,6 +116,6 @@ function onValidation() {
             </div>
         </div>
     </div>
-    <add-search-player v-else :singleSelection="true" :type="'users'"></add-search-player>
+    <add-search-player v-else :singleSelection="false" :type="'users'"></add-search-player>
     <button-close-validate @validate="onValidation()" @close="emit('close')"></button-close-validate>
 </template>
