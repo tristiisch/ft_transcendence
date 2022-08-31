@@ -181,10 +181,12 @@ export class UsersService {
 		if (user.avatar_64 != null) {
 			try {
 				user.avatar_64 = await toBase64(user.avatar_64);
-				this.usersRepository.update(userId, { avatar_64: user.avatar_64 });
+				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username });
 			} catch (err) {
 				console.log('ERROR', 'user.service.ts avatar', err);
 			}
+		} else {
+			this.usersRepository.update(userId, { username: user.username });
 		}
 		return await this.findOne(userId);
 	}
