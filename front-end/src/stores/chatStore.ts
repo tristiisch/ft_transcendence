@@ -70,7 +70,7 @@ export const useChatStore = defineStore('chatStore', {
 		async fetchChannels() {
 			try {
 				const response = await UserService.getChannels();
-				this.userChannels = response.data;
+				this.Channels = response.data;
 			} catch (error: any) {
 				throw error;
 			}
@@ -86,7 +86,7 @@ export const useChatStore = defineStore('chatStore', {
 		async fetchUserChannels() {
 			try {
 				const response = await UserService.getUserChannels();
-				this.friends = response.data;
+				this.userChannels = response.data;
 			} catch (error: any) {
 				throw error;
 			}
@@ -104,7 +104,7 @@ export const useChatStore = defineStore('chatStore', {
 			this.inChannel = channel;
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
 			this.messages = this.inChannel.messages;
-			const fromIndex = this.userChannels.findIndex((element) => element.name === channel.name);
+			const fromIndex = this.userChannels.findIndex((userChannel) => userChannel.name === channel.name);
 			if (fromIndex > 0) {
 				// shift channel to top of channel list
 				const element = this.userChannels.splice(fromIndex, 1)[0];
@@ -129,8 +129,11 @@ export const useChatStore = defineStore('chatStore', {
 		async addNewChannel(newChannel: Channel) {
 			try {
 				UserService.addChannel(newChannel);
-				this.userChannels.unshift(newChannel);
+				if (this.userChannels.length) this.userChannels.unshift(newChannel);
+				else this.userChannels.push(newChannel);
+				this.channels.push(newChannel);
 				this.loadChannel(this.userChannels[0]);
+				this.selectedItems = [];
 			} catch (error: any) {
 				throw error;
 			}
@@ -148,7 +151,8 @@ export const useChatStore = defineStore('chatStore', {
 			try {
 				const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
 				UserService.addDiscussion(newDiscussion);
-				this.userDiscussions.unshift(newDiscussion);
+				if (this.userDiscussions.length) this.userDiscussions.unshift(newDiscussion);
+				else this.userDiscussions.push(newDiscussion);
 				this.loadDiscussion(this.userDiscussions[0]);
 				this.selectedItems = [];
 			} catch (error: any) {
@@ -167,6 +171,14 @@ export const useChatStore = defineStore('chatStore', {
 				if (index >= 0) {
 					this.userDiscussions.splice(index, 1);
 					// socket.emit('chat-discussion-delete', discussions.value[index])
+				}
+			}
+		},
+		deleteUserChannel(index: number) {
+			if (this.userChannels) {
+				if (index >= 0) {
+					this.userChannels.splice(index, 1);
+					// socket.emit('chat-userChannel-delete', channelToDelete)
 				}
 			}
 		},
@@ -278,10 +290,17 @@ export const useChatStore = defineStore('chatStore', {
 			if (this.inChannel) {
 				let isOwner = false;
 				if (this.inChannel.owner.id === userStore.userData.id) isOwner = true;
-				this.deleteUserFromChannel(user);
-				if (this.inChannel.users.length > 0 && isOwner) this.inChannel.owner = this.inChannel.admins[0];
-				const index = this.userChannels.findIndex((channel) => channel.id === this.inChannel?.id);
-				this.deleteChannel(index);
+				if (this.inChannel.users.length > 1) {
+					this.deleteUserFromChannel(user);
+					if (isOwner)
+						this.inChannel.owner = this.inChannel.admins[0];
+				}
+				else {
+					const index = this.channels.findIndex((channel) => channel.name === this.inChannel?.name);
+					this.deleteChannel(index);
+				}
+				const index = this.userChannels.findIndex((userChannel) => userChannel.name === this.inChannel?.name);
+				this.deleteUserChannel(index);
 				this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 				//socket.emit('chat-channel-leave', userStore.userData);
