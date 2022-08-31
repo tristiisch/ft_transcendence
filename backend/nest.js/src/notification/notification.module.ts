@@ -10,7 +10,7 @@ import { FriendsModule } from 'src/friends/friends.module';
 @Module({
 	imports: [UsersModule, TypeOrmModule.forFeature([Notification]), forwardRef(() => FriendsModule)],
 	providers: [NotificationService],
-	exports: [NotificationService],
 	controllers: [NotificationController],
+	exports: [NotificationService],
 })
 export class NotificationModule {}
