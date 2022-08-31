@@ -5,16 +5,29 @@ import { map } from "rxjs";
 import { Server } from "socket.io";
 //import { startMatch } from "../game/matchs/matchs.sockets"
 //import { createCanvas, loadImage } from 'canvas'
+interface UserStatus {
+	id: number
+	status: Status
+  }
+
+enum Status {
+	OFFLINE,
+	ONLINE,
+	INGAME,
+	SPEC,
+}
 
 interface ServerToClientEvents {
 	ball: (x: number, y: number) => void;
 	hey: (s: string) => void;
+	update_status: (data: UserStatus) => void;
 }
 
 interface ClientToServerEvents {
 	start_match: () => void;
-	p1_dy: (dy: number) => void; 
+	p1_dy: (dy: number) => void;
 	match: (id: number) => void;
+	update_status: (status: Status) => void;
 }
 
 interface InterServerEvents {
@@ -86,7 +99,7 @@ export async function createSocketServer(serverPort: number) {
 	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 
 	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-		{ 
+		{
 			cors: { origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}` }
 		}
 	);
@@ -107,16 +120,22 @@ export async function createSocketServer(serverPort: number) {
 			{
 				startMatch(io, id)
 			}
-		})
-// 		socket.on("start_match", () => {
-// 			// if (started === false)
-// 			// {
-// 				console.log('[SOCKET.IO]', 'SERVER',  "receive 'START_MATCH'");
-// 				started = true
-// 			// }
-// 		});
-	});
+		});
+		socket.on("start_match", () => {
+			// if (started === false)
+			// {
+				console.log('[SOCKET.IO]', 'SERVER',  "receive 'START_MATCH'");
+				started = true
+			// }
+		});
 
+		socket.on("update_status", (status) => {
+			console.log(status)
+			const data = { id: 2,
+				status: status }
+			socket.broadcast.emit("update_status", (data))
+		});
+	})
 	// io.serverSideEmit("ping"); // 'this adapter does not support the serverSideEmit() functionality' => error msg on Windows & Linux setup (WSL Ubuntu)
 
 	io.on("ping", () => {
