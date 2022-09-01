@@ -1,11 +1,11 @@
 /** @prettier */
 import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notification, NotificationType } from 'src/notification/entity/notification.entity';
-import { NotificationService } from 'src/notification/notification.service';
-import { UserSelectDTO } from 'src/users/entity/user-select.dto';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { Notification, NotificationType } from '../notification/entity/notification.entity';
+import { NotificationService } from '../notification/notification.service';
+import { UserSelectDTO } from '../users/entity/user-select.dto';
+import { User } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
 import { DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { Friendship, FriendshipStatus } from './entity/friendship.entity';
 

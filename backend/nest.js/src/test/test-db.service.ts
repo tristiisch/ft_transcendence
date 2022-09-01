@@ -1,10 +1,10 @@
 /** @prettier */
 import { Inject, Injectable } from '@nestjs/common';
-import { AuthService } from 'src/auth/auth.service';
-import { FriendsService } from 'src/friends/friends.service';
-import { MatchStatsService } from 'src/game/matchs/matchs.service';
-import { StatsService } from 'src/game/stats/stats.service';
-import { UsersService } from 'src/users/users.service';
+import { AuthService } from '../auth/auth.service';
+import { FriendsService } from '../friends/friends.service';
+import { MatchStatsService } from '../game/matchs/matchs.service';
+import { StatsService } from '../game/stats/stats.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TestDbService {

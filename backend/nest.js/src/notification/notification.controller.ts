@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guard';
-import { isNumberPositive } from 'src/utils/utils';
+import { JwtAuthGuard } from '../auth/guard';
+import { isNumberPositive } from '../utils/utils';
 import { NotificationAction } from './entity/notification-action.entity';
 import { NotificationService } from './notification.service';
 

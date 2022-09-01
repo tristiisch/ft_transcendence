@@ -1,9 +1,9 @@
 import { Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FriendsService } from 'src/friends/friends.service';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { isEquals, isNumberPositive } from 'src/utils/utils';
+import { FriendsService } from '../../friends/friends.service';
+import { User } from '../../users/entity/user.entity';
+import { UsersService } from '../../users/users.service';
+import { isEquals, isNumberPositive } from '../../utils/utils';
 import { InsertResult, Repository, SelectQueryBuilder, UpdateResult } from 'typeorm';
 import { LeaderboardUser } from './entity/leaderboard.entity';
 import { UserStats } from './entity/userstats.entity';
@@ -97,7 +97,7 @@ export class StatsService {
 		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
 
 		sqlStatement.skip(min).limit(max).orderBy('userstats.score', 'DESC', 'NULLS LAST');
-	
+
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -110,7 +110,7 @@ export class StatsService {
 			// Need to order by date update
 			// .addOrderBy('userstats.victories', 'ASC', 'NULLS LAST')
 			// .addOrderBy('userstats.defeats', 'DESC', 'NULLS LAST');
-	
+
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -142,11 +142,11 @@ export class StatsService {
     }
 
 	async getRank(user: User): Promise<number> {
-		
+
 		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
 
 		// SELECT position
-		// FROM (SELECT *, row_number() over(order by score DESC) as position from public.user_stats) result 
+		// FROM (SELECT *, row_number() over(order by score DESC) as position from public.user_stats) result
 		// where user_id = 7778;
 
 		// sqlStatement.select('i.*');
