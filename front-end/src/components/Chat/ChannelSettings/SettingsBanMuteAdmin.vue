@@ -2,8 +2,8 @@
 import { useChatStore } from '@/stores/chatStore';
 import { ref, computed, onBeforeMount } from 'vue';
 import type User from '@/types/User';
-import ButtonCloseValidate from '@/components/Chat/Button/ButtonCloseValidate.vue'
-import UsersList from '@/components/Chat/UsersChannelsList.vue';
+import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
+import UsersList from '@/components/Divers/UsersChannelsList.vue';
 
 const chatStore = useChatStore();
 const selectableUsers = ref<User[]>([])

@@ -1,38 +1,47 @@
 <script setup lang="ts">
-import { useChatStore } from '@/stores/chatStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import { onBeforeMount, ref, watch } from 'vue'
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
 
-
-const chatStore = useChatStore();
+const globalStore = useGlobalStore();
 const showCheckMark = ref([] as boolean[])
 
 const props = defineProps<{
-    selectableItems: User[] | Channel[]; 
+	selectableItems: User[] | Channel[]; 
 	alreadySlectedUsers: User[] | null;
 	singleSelection: boolean;
 }>()
 
-const emit = defineEmits<{
-	(event: 'close'): void
-	(event: 'validate'): void;
-}>();
-
-function markItems(index: number)
-{
+function markItems(index: number) {
 	if (props.singleSelection) {
 		for (const value of showCheckMark.value)						//check if there is already an active selection, only one selection possible
 			if (value === true) return
 	}
+	if (!props.singleSelection) {
+		if (globalStore.isTypeArrayUsers(globalStore.selectedItems)
+			&& globalStore.isTypeArrayUsers(props.selectableItems)
+			&& globalStore.isTypeUser(props.selectableItems[index])) 
+			globalStore.selectedItems.push(props.selectableItems[index])
+		else if (!globalStore.isTypeArrayUsers(globalStore.selectedItems)
+			&& !globalStore.isTypeArrayUsers(props.selectableItems)
+			&& !globalStore.isTypeUser(props.selectableItems[index]))
+			globalStore.selectedItems.push(props.selectableItems[index])
+	}
+	else
+		globalStore.selectedItems[0] = props.selectableItems[index];
 	showCheckMark.value[index] = true
-	chatStore.setSelectedItem(props.selectableItems[index], props.singleSelection)
 }
 
 function unmarkItems(index: number)
 {
-	const userToUncheckId = props.selectableItems[index].id
-	if(userToUncheckId) chatStore.unsetSelectItem(userToUncheckId, props.singleSelection)
+	const itemToUnmarkId = props.selectableItems[index].id
+	if (!props.singleSelection) {
+		const indexArraycurrentSelection = globalStore.selectedItems.findIndex((item) => item.id === itemToUnmarkId);
+		globalStore.selectedItems.splice(indexArraycurrentSelection, 1);
+	} 
+	else
+		globalStore.selectedItems.splice(0, 1);
 	showCheckMark.value[index] = false
 }
 
@@ -43,17 +52,18 @@ function treatAlreadyMarkedUsers()
 		for(const markedUser of props.alreadySlectedUsers) {
 			let index = props.selectableItems.findIndex(user => user.id === markedUser.id)
 			showCheckMark.value[index] = true
-			chatStore.setSelectedItem(markedUser, props.singleSelection)
+			if(globalStore.isTypeArrayUsers(globalStore.selectedItems) && globalStore.isTypeUser(markedUser))
+				globalStore.selectedItems.push(markedUser)
 		}
 	}
 }
 
 function displayName(item: User | Channel) {
-	return chatStore.isTypeUser(item) ? item.username : item.name
+	return globalStore.isTypeUser(item) ? item.username : item.name
 }
 
 function formAvatar(item: User | Channel) {
-	return chatStore.isTypeUser(item) ? 'rounded-full' : 'rounded'
+	globalStore.isTypeUser(item) ? 'rounded-full' : 'rounded'
 }
 
 watch(() => props.selectableItems, () => {
@@ -66,7 +76,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-    <div class="overflow-y-auto w-full h-full">
+	<div class="overflow-y-auto w-full h-full">
 		<div v-for="(item, index) in selectableItems" :key="item.id" class="flex justify-between items-center h-[calc(100%_/_4)] sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)] border-b w-full border-red-400">
 			<div class="inline-flex items-center py-4">
 				<img class="shrink-0 w-12 h-12 rounded-full object-cover border border-red-400" :class="formAvatar(item)" :src="item.avatar" alt="Rounded avatar">

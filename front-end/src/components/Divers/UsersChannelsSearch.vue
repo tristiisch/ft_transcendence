@@ -1,15 +1,16 @@
 <script setup lang="ts">
+import { useGlobalStore } from '@/stores/globalStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch, toDisplayString } from 'vue';
-import { useToast } from 'vue-toastification';
 import type Channel from '@/types/Channel';
 import ChatStatus from '@/types/ChatStatus';
 import type User from '@/types/User';
-import UsersList from '@/components/Chat/UsersChannelsList.vue';
+import UsersList from '@/components/Divers/UsersChannelsList.vue';
 
+const globalStore = useGlobalStore();
 const chatStore = useChatStore();
-const error = ref('');
-const toast = useToast();
+const userStore = useUserStore();
 const userToggle = ref(false);
 const itemsToDisplay = ref<User[] | Channel[]>([]);
 const filterButton = ref('All');
@@ -21,24 +22,26 @@ const props = defineProps<{
 }>();
 
 function changeDisplayToFriends() {
-    itemsToDisplay.value = chatStore.friends;
-    filterButton.value = 'Friends'
+    itemsToDisplay.value = globalStore.friends;
+    filterButton.value = 'Friends';
 }
 function changeDisplayToAllUsers() {
-    itemsToDisplay.value = chatStore.users;
-    filterButton.value = 'All'
+    itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
+    filterButton.value = 'All';
 }
 function changeDisplayToPublic() {
-    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PUBLIC);
-    filterButton.value = 'Public'
+	const ChannelsUserNotIn= globalStore.getChannelsFiltered(chatStore.userChannels);
+    itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PUBLIC);
+    filterButton.value = 'Public';
 }
 function changeDisplayToProtected() {
-    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PROTECTED);
-    filterButton.value = 'Protected'
+	const ChannelsUserNotIn = globalStore.getChannelsFiltered(chatStore.userChannels);
+    itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PROTECTED);
+    filterButton.value = 'Protected';
 }
 function changeDisplayToAllChannels() {
-    itemsToDisplay.value = chatStore.channels;
-	filterButton.value = 'All'
+    itemsToDisplay.value = globalStore.getChannelsFiltered(chatStore.userChannels);
+	filterButton.value = 'All';
 }
 
 function placeHolder() {
@@ -47,7 +50,7 @@ function placeHolder() {
 
 function searchPlayer() {
 	if (itemName.value != '') {
-		if (chatStore.isTypeArrayUsers(itemsToDisplay.value)) return itemsToDisplay.value.filter((item) => item.username.toLowerCase().includes(itemName.value.toLowerCase()));
+		if (globalStore.isTypeArrayUsers(itemsToDisplay.value)) return itemsToDisplay.value.filter((item) => item.username.toLowerCase().includes(itemName.value.toLowerCase()));
 		else return itemsToDisplay.value.filter((item) => item.name.toLowerCase().includes(itemName.value.toLowerCase()));
 	} else return itemsToDisplay.value;
 }
@@ -60,20 +63,8 @@ watch(
 );
 
 onBeforeMount(() => {
-	chatStore.fetchUsers().catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchfriends().catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchChannels().catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	if (props.type === 'users') itemsToDisplay.value = chatStore.users;
-	else itemsToDisplay.value = chatStore.channels;
+	if (props.type === 'users') itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
+	else itemsToDisplay.value = globalStore.getChannelsFiltered(chatStore.userChannels);
 });
 </script>
 

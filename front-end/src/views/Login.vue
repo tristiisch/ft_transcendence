@@ -6,7 +6,7 @@ import { ref, watch, onBeforeMount } from 'vue';
 import socket from '@/plugin/socketInstance';
 import BaseCard from '@/components/Ui/BaseCard.vue';
 import BaseSpinner from '@/components/Ui/BaseSpinner.vue';
-import ButtonGradient from '@/components/Divers/ButtonGradient.vue';
+import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 
 const router = useRouter();

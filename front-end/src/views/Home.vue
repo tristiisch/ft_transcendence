@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, onBeforeMount } from 'vue'
 import { useUserStore } from '@/stores/userStore';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useToast } from 'vue-toastification';
 
+const toast = useToast();
+const globalStore = useGlobalStore();
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 const imageLoaded = ref(false);
 const userStore = useUserStore();
+const error = ref('');
 
 function tvSize() {
 	if (windowHeight.value > windowWidth.value)
@@ -63,6 +68,17 @@ onMounted(() => {
 onUnmounted(() => {
 window.removeEventListener('resize', handleResize)
 })
+
+onBeforeMount(() => {
+	globalStore.fetchUsers().catch((e: Error) => {
+		error.value = e.message;
+		toast.error(error.value);
+	});
+	globalStore.fetchfriends().catch((e: Error) => {
+		error.value = e.message;
+		toast.error(error.value);
+	});
+});
 
 </script>
 

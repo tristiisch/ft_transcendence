@@ -2,7 +2,7 @@
 import { ref, computed, onBeforeMount} from 'vue'
 import { useChatStore } from '@/stores/chatStore';
 import status from '@/types/ChatStatus';
-import ButtonCloseValidate from '@/components/Chat/Button/ButtonCloseValidate.vue';
+import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
 
 const chatStore = useChatStore();
 const newPassword = ref('');

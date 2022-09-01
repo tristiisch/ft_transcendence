@@ -5,7 +5,7 @@ import PartToDisplay from '@/types/ChatPartToDisplay';
 import { useChatStore } from '@/stores/chatStore';
 import ChannelJoin from '@/components/Chat/AddChannel/ChannelJoin.vue'
 import ChannelCreate from '@/components/Chat/AddChannel/ChannelCreate.vue';
-import ButtonReturnNext from '@/components/Chat/Button/ButtonReturnNext.vue';
+import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 
 const toast = useToast();
 const chatStore = useChatStore();

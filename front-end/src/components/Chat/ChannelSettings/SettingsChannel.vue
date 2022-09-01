@@ -1,12 +1,11 @@
-
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
-import { ref, computed, onBeforeMount } from 'vue';
+import { ref } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
 import Status, { ChatStatus } from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import SettingsBanMuteAdmin from '@/components/Chat/ChannelSettings/SettingsBanMuteAdmin.vue';
-import ButtonReturnNext from '@/components/Chat/Button/ButtonReturnNext.vue';
+import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import SettingsPasswordName from '@/components/Chat/ChannelSettings/SettingsPasswordName.vue';
 import UsersChannelsNameImage from '@/components/Chat/UsersChannelNameImages.vue';
 

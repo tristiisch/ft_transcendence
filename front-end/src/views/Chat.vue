@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -11,8 +12,8 @@ import ChatStatus from '@/types/ChatStatus';
 import ChannelsList from '@/components/Chat/ChannelsList.vue';
 import ChannelAdd from '@/components/Chat/AddChannel/ChannelAdd.vue';
 import DiscussionAdd from '@/components/Chat/DiscussionAdd.vue';
-import ButtonPlus from '@/components/Chat/Button/ButtonPlus.vue';
-import ButtonDelete from '@/components/Chat/Button/ButtonDelete.vue';
+import ButtonPlus from '@/components/Button/ButtonPlus.vue';
+import ButtonDelete from '@/components/Button/ButtonDelete.vue';
 import ChannelPasswordQuery from '@/components/Chat/ChannelPasswordQuery.vue';
 import SettingsChannel from '@/components/Chat/ChannelSettings/SettingsChannel.vue';
 import DiscussionList from '@/components/Chat/DiscussionList.vue';
@@ -20,6 +21,7 @@ import Chat from '@/components/Chat/ChatRoot.vue';
 
 const toast = useToast();
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const route = useRoute();
 const displayDelete = ref([] as boolean[]);
@@ -43,16 +45,12 @@ function unsetDisplayDelete(index: number) {
 }
 
 const isLoading = computed(() => {
-	if ((chatStore.userDiscussions && chatStore.userChannels && chatStore.friends) || error.value !== '') return false;
+	if ((chatStore.userDiscussions && chatStore.userChannels) || error.value !== '') return false;
 	return true;
 });
 
 onBeforeMount(() => {
-	chatStore.fetchUsers().catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchChannels().catch((e: Error) => {
+	globalStore.fetchChannels().catch((e: Error) => {
 		error.value = e.message;
 		toast.error(error.value);
 	});
@@ -60,22 +58,21 @@ onBeforeMount(() => {
 		error.value = e.message;
 		toast.error(error.value);
 	});
-	chatStore
-		.fetchUserDiscussions()
+	chatStore.fetchUserDiscussions()
 		.then(() => {
 			if (route.query.discussion) {
 				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
 				if (discussion) chatStore.loadDiscussion(discussion);
 				else {
-					const user = chatStore.getUser(parseInt(route.query.discussion as string));
-					if (user) chatStore.addNewDiscussion(user);
+					const user = globalStore.getUser(parseInt(route.query.discussion as string));
+					if (user) chatStore.addNewDiscussion();
 				}
 			}
 		})
 		.catch((e: Error) => {
 			error.value = e.message;
 			toast.error(error.value);
-		});
+	});
 });
 </script>
 

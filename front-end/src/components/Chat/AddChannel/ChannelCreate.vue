@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
-import { ref } from 'vue';
+import { useGlobalStore } from '@/stores/globalStore';
+import { ref, watch } from 'vue';
 import type Channel from '@/types/Channel';
-import channelStatus from '@/types/ChatStatus';
+import { ChatStatus } from '@/types/ChatStatus';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
-import UsersSearch from '@/components/Chat/UsersChannelsSearch.vue';
-import ButtonCloseValidate from '@/components/Chat/Button/ButtonCloseValidate.vue';
+import UsersSearch from '@/components/Divers/UsersChannelsSearch.vue';
+import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
 
 const chatStore = useChatStore();
+const globalStore = useGlobalStore();
 const userStore = useUserStore();
-const protectedChannel = ref(false);
-const newChannelType = ref<channelStatus>(channelStatus.PUBLIC);
+const newChannelType = ref<ChatStatus>(ChatStatus.PUBLIC);
 const newChannelName = ref('');
-const newPassword = ref<string | null>(null);
+const newPassword = ref('');
 const newAvatar = ref('src/assets/ChannelDefaultPublic.png');
 const selectPlayer = ref(false);
+const error = ref('');
+const placeholder = ref('');
 let isUpload = false;
 
 const emit = defineEmits<{
@@ -28,32 +31,30 @@ function uploadImage(imageData: string): void {
 }
 
 function clickOnButtonPublic() {
-	protectedChannel.value = false
-	newChannelType.value=channelStatus.PUBLIC
+	newChannelType.value=ChatStatus.PUBLIC
 	newAvatar.value = 'src/assets/ChannelDefaultPublic.png'
 }
 
 function clickOnButtonPrivate() {
-	protectedChannel.value = false
-	newChannelType.value=channelStatus.PRIVATE
+	newChannelType.value=ChatStatus.PRIVATE
 	newAvatar.value = 'src/assets/ChannelDefaultPrivate.png'
 }
 
 function clickOnButtonProtected() {
-	protectedChannel.value = true
-	newChannelType.value=channelStatus.PROTECTED
+	newChannelType.value=ChatStatus.PROTECTED
 	newAvatar.value = 'src/assets/ChannelDefaultProtected.png'
 }
 
 function treatNewChannelData()
 {
-    if (chatStore.isTypeArrayUsers(chatStore.selectedItems)) {
-        chatStore.setSelectedItem(userStore.userData, false)
+    if (globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
+        const selection = globalStore.selectedItems;
+        selection.push(userStore.userData);
         const newChannel: Channel = {
             name: newChannelName.value,
             type: newChannelType.value, 
             avatar: newAvatar.value,
-            users: chatStore.selectedItems,
+            users: selection,
             password: newPassword.value,
             // admins & owner should not be defined here
             // It is the backend that must define this by putting the user who made the request
@@ -69,43 +70,65 @@ function treatNewChannelData()
 }
 
 function onValidation() {
+    if (newChannelName.value === '') {
+        error.value = 'name empty';
+        return
+    }
+    if (newChannelType.value === ChatStatus.PROTECTED && newPassword.value === '')  {
+        error.value = 'password empty';
+        return
+    }
     if (selectPlayer.value)
         treatNewChannelData()
     else
         selectPlayer.value = !selectPlayer.value
 }
+
+function labelInputChannelName() {
+    if (error.value === 'name empty')
+        return 'Please enter a Channel Name'
+    else
+        return 'Channel name:'
+}
+
+function labelInputPassword() {
+    if (error.value === 'password empty')
+        return 'Please enter a Password Name'
+    else
+        return 'Password:'
+}
+
+watch(() => newChannelName.value, () => {
+    if (newChannelName.value !== '')
+        error.value = '';
+});
+
+watch(() => newPassword.value, () => {
+    if (newPassword.value !== '')
+        error.value = '';
+});
 </script>
 
 <template>
     <div v-if="!selectPlayer" class="flex flex-col justify-center items-center gap-6 h-full w-full">
         <form class="mb-2 w-full lg:w-4/5" @submit.prevent>
-            <label class="block mb-2 text-sm font-medium text-red-200">Channel name:</label>
-            <input type="text" v-model="newChannelName" class="bg-neutral-100 border border-blue-600 placeholder:text-slate-300 placeholder:text-center text-center text-blue-600 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose name">
+            <label class="block mb-2 text-sm font-medium" :class="error === 'name empty' ? 'text-red-700' : 'text-red-200'">{{ labelInputChannelName() }}</label>
+            <input type="text" v-model="newChannelName" :class="error === 'name empty' ? 'border-red-800' : 'border-blue-600'" class="bg-neutral-100 border placeholder:text-slate-300 placeholder:text-center text-center text-blue-600 text-sm rounded-lg block w-full p-2" placeholder="choose name">
         </form>
         <div class="inline-flex shadow-sm w-full lg:w-4/5">
-            <button @click="clickOnButtonPublic" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-l-lg border border-blue-600 sm:text-sm focus:bg-blue-600 focus:text-white">
+            <button @click="clickOnButtonPublic" class="w-1/3 py-2 px-4 text-xs sm:text-sm border border-r-none rounded-l-lg border-blue-600" :class="newChannelType === ChatStatus.PUBLIC ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">
                 Public
             </button>
-            <button @click="clickOnButtonPrivate" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 border-t border-b border-blue-600 sm:text-sm focus:bg-blue-600 focus:text-white">
+            <button @click="clickOnButtonPrivate" class="w-1/3 py-2 px-4 text-xs sm:text-sm border-t border-b border-blue-600" :class="newChannelType === ChatStatus.PRIVATE ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">
                 Private
             </button>
-            <button @click="clickOnButtonProtected" class="w-1/3 py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-r-md border border-blue-600 sm:text-sm focus:bg-blue-600 focus:text-white">
+            <button @click="clickOnButtonProtected" class="w-1/3 py-2 px-4 text-xs sm:text-sm border rounded-r-md border-blue-600" :class="newChannelType === ChatStatus.PROTECTED ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">
                 Protected
             </button>
         </div>
-        <!-- <div v-if="success">
-            <label class="block mb-2 text-sm font-medium text-green-700 dark:text-green-500">Channel name:</label>
-            <input type="text" id="success" class="bg-green-50 border border-green-500 text-green-900 dark:text-green-400 placeholder-green-700 dark:placeholder-green-500 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-green-500" placeholder="Success input">
-            <p class="mt-2 text-sm text-green-600 dark:text-green-500"><span class="font-medium">Well done!</span> Some success messsage.</p>
-        </div>
-        <div v-else>
-            <label for="error" class="block mb-2 text-sm font-medium text-red-700 dark:text-red-500">Channel name:</label>
-            <input type="text" id="error" class="bg-red-50 border border-red-500 text-red-900 placeholder-red-700 text-sm rounded-lg focus:ring-red-500 dark:bg-gray-700 focus:border-red-500 block w-full p-2.5 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500" placeholder="Error input">
-            <p class="mt-2 text-sm text-red-600 dark:text-red-500"><span class="font-medium">Oh, snapp!</span> Some error message.</p>
-        </div> -->
-        <form v-if="protectedChannel" class="w-full lg:w-4/5" @submit.prevent>
-            <label class="block mb-2 text-sm font-medium text-red-200">Password:</label>
-            <input type="text" v-model="newPassword" class="bg-neutral-100 border border-blue-600 placeholder:text-slate-300 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
+        <form v-if="newChannelType === ChatStatus.PROTECTED" class="w-full lg:w-4/5" @submit.prevent>
+            <label class="block mb-2 text-sm font-medium" :class="error === 'password empty'? 'text-red-700' : 'text-red-200'">{{ labelInputPassword() }}</label>
+            <input type="text" v-model="newPassword" :class="error === 'password empty' ? 'border-red-800' : 'border-blue-600'" class="bg-neutral-100 border placeholder:text-slate-300 text-blue-600 text-sm rounded-lg w-full p-2" placeholder="choose password">
         </form>
         <div class="flex flex-col justify-center items-center w-full sm:w-4/5">
             <label class="block mb-2 text-sm font-medium text-red-200">Choose image:</label>
