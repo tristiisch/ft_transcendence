@@ -4,6 +4,8 @@ import UserService from '@/services/UserService';
 import TokenService from '@/services/TokenService';
 import type { UserState, Auth } from '@/types/User';
 import type User from '@/types/User';
+import status from '@/types/Status';
+import socket from '@/plugin/socketInstance';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -51,8 +53,9 @@ export const useUserStore = defineStore('userStore', {
 			}
 		},
 		handleLogout() {
+			socket.emit('update_status', status.OFFLINE )
 			this.removeToken()
-			location.reload();
+			//location.reload();
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {

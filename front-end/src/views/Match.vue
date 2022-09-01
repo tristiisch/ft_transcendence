@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, onBeforeMount, onUpdated } from 'vue';
+import { ref, onMounted, onBeforeMount, onUpdated, onBeforeUnmount } from 'vue';
 import Konva from 'konva'
 import socket from '@/plugin/socketInstance'
 import { useRoute, useRouter } from 'vue-router';
@@ -8,6 +8,7 @@ import MatchService from '@/services/MatchService';
 import UserService from '@/services/UserService'
 import { useUserStore } from '@/stores/userStore';
 import type User from '@/types/User';
+import status from '@/types/Status';
 
 const route = useRoute()
 const router = useRouter()
@@ -46,6 +47,9 @@ MatchService.loadMatch(match_id)
 })
 
 onMounted(() => {
+
+	socket.emit('update_status', status.INGAME )
+
 	const stage_ratio = 3989/2976
 	const ball_size_quotient = 100 // the least, the bigger
 	const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
@@ -169,6 +173,10 @@ onMounted(() => {
 		console.log(s)
 	})
 })
+
+onBeforeUnmount(() => {
+	socket.emit('update_status', status.ONLINE)
+});
 
 </script>
 

@@ -24,8 +24,8 @@ function setRightPartToDisplay()
 
 }
 
-async function fetchCurrentMatchs() {
-	return await UsersService.getCurrentMatchs()
+function fetchCurrentMatchs() {
+	UsersService.getCurrentMatchs()
 		.then((response) => {
 			matchs.value = response.data;
 		})

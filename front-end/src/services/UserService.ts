@@ -30,7 +30,7 @@ class UserService {
 	}
 
 	getUserfriends(id: number) {
-		return axios.get(`friends/names/${id}`);
+		return axios.get(`friends/${id}`);
 	}
 
 	sendFriendRequest(targetId: number) {

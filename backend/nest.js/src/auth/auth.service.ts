@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'src/users/entity/user.entity';
@@ -16,10 +16,15 @@ export class AuthService {
 
 	private temp2FASecret: Map<number, string> = new Map();
 
-	constructor(private jwtService: JwtService, private usersService: UsersService, private statsService: StatsService,
+	constructor(private jwtService: JwtService,
 		@InjectRepository(UserAuth)
 		private authRepository: Repository<UserAuth>){
 	}
+
+	@Inject(UsersService)
+	private readonly usersService: UsersService;
+	@Inject(StatsService)
+	private readonly statsService: StatsService;
 
 	getRepo() {
 		return this.authRepository;
@@ -114,10 +119,10 @@ export class AuthService {
 		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
 		if (!userAuth)
 			return null;
-		if (userAuth.twoFactorSecret != null)
+		/*if (userAuth.twoFactorSecret != null)
 			userAuth.has_2fa = true;
 		else
-			userAuth.has_2fa = false;
+			userAuth.has_2fa = false;*/
 		return userAuth;
 	}
 

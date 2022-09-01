@@ -12,7 +12,7 @@ const isLoading = ref(false);
 const qrCode = ref('');
 
 function toogle2FA() {
-	if (userStore.userAuth.has_2fa) {
+	if (qrCode.value != '' || userStore.userAuth.has_2fa) {
 		AuthService.disable2FA()
 			.then(() => {
 				userStore.update2FA(false);
@@ -25,6 +25,7 @@ function toogle2FA() {
 		isLoading.value = true;
 		AuthService.getQrCode2FA()
 			.then((response) => {
+				userStore.update2FA(true);
 				qrCode.value = response.data
 				isLoading.value = false;
 			})
@@ -34,6 +35,7 @@ function toogle2FA() {
 			});
 	}
 }
+
 function validate2FA() {
 	if (twoFaCode.value)
 	{
@@ -48,7 +50,6 @@ function validate2FA() {
 		});
 	}
 	else toast.error('Authentification code is empty');
-
 }
 </script>
 

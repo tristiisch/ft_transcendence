@@ -96,7 +96,7 @@ function verifyState(state: string) {
 }
 
 onBeforeMount(() => {
-	if (route.query.code != undefined && route.query.state != undefined && !userStore.isLoggedIn) {
+	if (route.query.code !== undefined && route.query.state !== undefined && !userStore.isLoggedIn) {
 		isLoading.value = true;
 		try {
 			verifyState(route.query.state as string)

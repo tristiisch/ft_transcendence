@@ -1,6 +1,6 @@
 import type Status from '@/types/Status'
 
-export default interface Leaderboard {
+export default interface LeaderboardUser {
 	id: number
 	avatar: string
 	username: string

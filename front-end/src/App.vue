@@ -17,10 +17,13 @@ if (TokenService.isLocalToken()) {
 			socket.connect()
 			userStore.userData = response.data;
 		})
-		.catch((e) => {
-			console.log(e.response.data.message)
-			userStore.removeToken()
-			router.replace({ name: 'Login' });
+		.catch((error) => {
+			if (error.response.status !== 401)
+			{
+				console.log(error.response.data.message)
+				userStore.removeToken()
+				router.replace({ name: 'Login' });
+			}
 		});
 }
 </script>
