@@ -1,8 +1,8 @@
 /** @prettier */
 import { Injectable } from '@nestjs/common';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { UserAuthSubscriber } from 'src/auth/entity/auth.subscriber';
-import { UserSubscriber } from 'src/users/entity/user.subscriber';
+import { UserAuthSubscriber } from '../auth/entity/auth.subscriber';
+import { UserSubscriber } from '../users/entity/user.subscriber';
 
 @Injectable()
 export class DatabaseService implements TypeOrmOptionsFactory {
