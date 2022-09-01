@@ -1,21 +1,19 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
-import type User from '@/types/User';
-import type Stats from '@/types/Stats';
 import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
+import UsersService from '@/services/UserService';
+import type User from '@/types/User';
+import type Stats from '@/types/Stats';
+import type MatchHistory from '@/types/MatchHistory';
 import PlayerHistory from '@/components/Profile/PlayerHistory.vue';
-import CardRight from '@/components/CardRight.vue';
 import PlayerStats from '@/components/Profile/PlayerStats.vue';
-import CardLeft from '@/components/CardLeft.vue';
 import RankCard from '@/components/Profile/RankCard.vue';
 import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
-import type MatchHistory from '@/types/MatchHistory';
-import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
 const route = useRoute();

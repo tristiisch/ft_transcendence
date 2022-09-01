@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chatStore';
 import { onBeforeMount, ref, watch } from 'vue'
 import type User from '@/types/User';
-import { useChatStore } from '@/stores/chatStore';
 import type Channel from '@/types/Channel';
-import type ChatStatus from '@/types/ChatStatus';
+
 
 const chatStore = useChatStore();
 const showCheckMark = ref([] as boolean[])
@@ -63,7 +63,6 @@ watch(() => props.selectableItems, () => {
 onBeforeMount(() => {
 	treatAlreadyMarkedUsers()
 });
-
 </script>
 
 <template>

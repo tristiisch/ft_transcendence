@@ -1,13 +1,12 @@
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chatStore';
+import { useUserStore } from '@/stores/userStore';
 import { ref } from 'vue';
 import type Channel from '@/types/Channel';
-import channelStatus from '@/types/ChatStatus'
-import UploadAvatar from '@/components/UploadAvatar.vue';
-import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
-import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue'
-import PartToDisplay from '@/types/ChatPartToDisplay';
-import { useChatStore } from '@/stores/chatStore';
-import { useUserStore } from '@/stores/userStore'
+import channelStatus from '@/types/ChatStatus';
+import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
+import UsersSearch from '@/components/Chat/UsersChannelsSearch.vue';
+import ButtonCloseValidate from '@/components/Chat/Button/ButtonCloseValidate.vue';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -116,6 +115,6 @@ function onValidation() {
             </div>
         </div>
     </div>
-    <add-search-player v-else :singleSelection="false" :type="'users'"></add-search-player>
+    <users-search v-else :singleSelection="false" :type="'users'"></users-search>
     <button-close-validate @validate="onValidation()" @close="emit('close')"></button-close-validate>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import ButtonPlus from '@/components/Chat/ButtonPlus.vue';
+import ButtonPlus from '@/components/Chat/Button/ButtonPlus.vue';
 
 const mode = ref('random')
 

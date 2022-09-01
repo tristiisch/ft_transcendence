@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chatStore';
 import { ref, onBeforeMount, watch, toDisplayString } from 'vue';
 import { useToast } from 'vue-toastification';
-import type User from '@/types/User';
-import DisplayList from '@/components/Chat/DisplayList.vue';
 import type Channel from '@/types/Channel';
-import { useChatStore } from '@/stores/chatStore';
 import ChatStatus from '@/types/ChatStatus';
+import type User from '@/types/User';
+import UsersList from '@/components/Chat/UsersChannelsList.vue';
 
 const chatStore = useChatStore();
 const error = ref('');
@@ -121,5 +121,5 @@ onBeforeMount(() => {
 			/>
 		</div>
 	</form>
-	<display-list :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></display-list>
+	<users-list :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></users-list>
 </template>

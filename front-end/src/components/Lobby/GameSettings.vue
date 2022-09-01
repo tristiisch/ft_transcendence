@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
 import { ref } from 'vue';
 
 const imageTab = ref(['src/assets/pong1.jpeg', 'src/assets/pong2.jpg'] as string[])

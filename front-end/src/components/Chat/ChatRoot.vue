@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useUserStore } from '@/stores/userStore';
-import PartToDisplay from '@/types/ChatPartToDisplay';
-import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
-import message from '@/components/Chat/Message.vue';
-import socket from '@/plugin/socketInstance';
-import { onBeforeMount, watch, ref } from 'vue';
+import { ref } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
+import { useUserStore } from '@/stores/userStore';
+import socket from '@/plugin/socketInstance';
+import PartToDisplay from '@/types/ChatPartToDisplay';
+import UsersChannelsNameImage from '@/components/Chat/UsersChannelNameImages.vue';
+import message from '@/components/Chat/ChatMessage.vue';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -37,7 +37,7 @@ socket.on('chat-message', (data) => {
 
 <template>
     <div class="flex flex-col justify-between h-full">
-        <ChatTopImage></ChatTopImage>
+        <users-channels-name-image></users-channels-name-image>
         <div class="flex flex-col w-full h-[calc(100%_-_36px)] overflow-y-auto" ref="scroll">
             <message @scroll="scrollToEnd"></message>
         </div>

@@ -47,7 +47,7 @@ windowHeight.value = window.innerHeight;
 }
 
 const isLoading = computed(() => {
-	if (userStore.userData.avatar && userStore.userData.username)
+	if (userStore.userData.avatar !== undefined && userStore.userData.username !== undefined)
 		return false;
 	return true;
 });

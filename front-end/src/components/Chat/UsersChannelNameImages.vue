@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import baseButton from '@/components/BaseButton.vue'
 import { useChatStore } from '@/stores/chatStore';
+import baseButton from '@/components/Ui/BaseButton.vue'
 
 const chatStore = useChatStore();
-
 </script>
 
 <template>

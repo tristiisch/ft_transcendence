@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import Status from '@/types/Status';
-import type User from '@/types/User';
-import PlayerStatus from '@/components/PlayerStatus.vue';
 import { useUserStore } from '@/stores/userStore';
-import { ref, watch } from 'vue';
+import type User from '@/types/User';
+import PlayerStatus from '@/components/Divers/PlayerStatus.vue';
 
 const props = defineProps<{
 	user: User;
@@ -15,7 +13,6 @@ function isUser() {
 	if (props.user.id === userStore.userData.id) return true;
 	return false;
 }
-
 </script>
 
 <template>

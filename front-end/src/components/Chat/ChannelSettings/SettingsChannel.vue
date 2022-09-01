@@ -1,14 +1,14 @@
 
 <script setup lang="ts">
-import Status, { ChatStatus } from '@/types/ChatStatus';
-import ChannelBanMuteAdmin from '@/components/Chat/ChannelSettings/ChannelBanMuteAdmin.vue';
-import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
-import ChannelPasswordName from '@/components/Chat/ChannelSettings/ChannelPasswordName.vue';
-import ChatTopImage from '@/components/Chat/ChatTopImage.vue';
-import PartToDisplay from '@/types/ChatPartToDisplay';
 import { useUserStore } from '@/stores/userStore';
 import { ref, computed, onBeforeMount } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
+import Status, { ChatStatus } from '@/types/ChatStatus';
+import PartToDisplay from '@/types/ChatPartToDisplay';
+import SettingsBanMuteAdmin from '@/components/Chat/ChannelSettings/SettingsBanMuteAdmin.vue';
+import ButtonReturnNext from '@/components/Chat/Button/ButtonReturnNext.vue';
+import SettingsPasswordName from '@/components/Chat/ChannelSettings/SettingsPasswordName.vue';
+import UsersChannelsNameImage from '@/components/Chat/UsersChannelNameImages.vue';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -110,7 +110,7 @@ function isType()
 
 <template>
 	<div class="flex flex-col justify-between h-full w-full px-8 3xl:px-10">
-		<ChatTopImage></ChatTopImage>
+		<users-channels-name-image></users-channels-name-image>
 		<div v-if="displayButton()" class="flex flex-col justify-center h-full items-center gap-5">
 			<div class="text-center">
 				<p class="text-red-200 text-xs sm:text-sm">your are <span class="text-red-800">{{ playerStatus() }}</span> of this channel.</p>
@@ -134,7 +134,7 @@ function isType()
 			</div>
 		</div>
 		<button-return-next v-if="displayButton()" :side="'previous'" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)" class="self-end"></button-return-next>
-		<channel-password-name v-else-if="displayPasswordPage" @close="resetDisplayPage()"></channel-password-name>
-		<channel-ban-mute-admin v-else @validate="resetDisplayPage()" @close="resetDisplayPage()" :type="isType()"></channel-ban-mute-admin>
+		<settings-password-name v-else-if="displayPasswordPage" @close="resetDisplayPage()"></settings-password-name>
+		<settings-ban-mute-admin v-else @validate="resetDisplayPage()" @close="resetDisplayPage()" :type="isType()"></settings-ban-mute-admin>
 	</div>
 </template>

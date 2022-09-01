@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type Discussion from '@/types/Discussion'
 import { useUserStore } from '@/stores/userStore'
 import { useChatStore } from '@/stores/chatStore';
 import { ref, watch } from 'vue';
+import type Discussion from '@/types/Discussion'
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -30,7 +30,6 @@ function colorText(){
 watch(props.discussion.messages, () => {
 	lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1]
 });
-
 </script>
 
 <template>

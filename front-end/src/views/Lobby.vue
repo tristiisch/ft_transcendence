@@ -1,15 +1,13 @@
 <script setup lang="ts">
+import { useToast } from 'vue-toastification';
+import { ref, onBeforeMount, computed } from 'vue';
 import UsersService from '@/services/UserService';
 import type Match from '@/types/Match';
-import { ref, onBeforeMount, computed } from 'vue';
-import CardLeft from '@/components/CardLeft.vue';
-import CardRight from '@/components/CardRight.vue';
 import CurrentGame from '@/components/Lobby/CurrentGame.vue';
-import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
+import AddSearchPlayer from '@/components/Chat/UsersChannelsSearch.vue';
 import GameSettings from '@/components/Lobby/GameSettings.vue';
-import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
+import ButtonReturnNext from '@/components/Chat/Button/ButtonReturnNext.vue';
 import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
-import { useToast } from 'vue-toastification';
 
 const toast = useToast();
 const matchs = ref<Match[] | null>(null);

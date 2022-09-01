@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { useChatStore } from '@/stores/chatStore';
-import CreateChannel from '@/components/Chat/CreateChannel.vue';
-import ButtonReturnNext from '@/components/Chat/ButtonReturnNext.vue';
-import PartToDisplay from '@/types/ChatPartToDisplay';
 import { useToast } from 'vue-toastification';
 import { ref } from 'vue'
-import JoinChannel from '@/components/Chat//JoinChannel.vue'
+import PartToDisplay from '@/types/ChatPartToDisplay';
+import { useChatStore } from '@/stores/chatStore';
+import ChannelJoin from '@/components/Chat/AddChannel/ChannelJoin.vue'
+import ChannelCreate from '@/components/Chat/AddChannel/ChannelCreate.vue';
+import ButtonReturnNext from '@/components/Chat/Button/ButtonReturnNext.vue';
 
 const toast = useToast();
 const chatStore = useChatStore();
-// const channelsList = ref<Channel[]>(chatStore.channels)
 const error = ref('');
 const displayCreateChannel = ref(false);
 const displayJoinChannel = ref(false);
@@ -38,7 +37,7 @@ function resetDisplay() {
 			</button>
 		</div>
 		<button-return-next v-if="displayButton()" :side="'previous'" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)" class="self-end"></button-return-next>
-		<create-channel v-if="displayCreateChannel" @close="resetDisplay()"></create-channel>
-		<join-channel v-else-if="displayJoinChannel" @close="resetDisplay()"></join-channel>
+		<channel-create v-if="displayCreateChannel" @close="resetDisplay()"></channel-create>
+		<channel-join v-else-if="displayJoinChannel" @close="resetDisplay()"></channel-join>
 	</div>
 </template>

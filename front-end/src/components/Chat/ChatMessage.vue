@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onUpdated, onBeforeMount} from 'vue'
-import BaseButton from '../BaseButton.vue';
 import { useChatStore } from '@/stores/chatStore';
+import { onUpdated, onBeforeMount} from 'vue'
+import BaseButton from '@/components/Ui/BaseButton.vue';
+
 
 const chatStore = useChatStore();
 
@@ -18,7 +19,6 @@ function redirectTo(senderId: number) {
 onUpdated(()=> {
     emit('scroll')
 });
-
 </script>
 
 <template>
