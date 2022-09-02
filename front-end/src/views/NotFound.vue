@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ButtonGradient from '@/components/Divers/ButtonGradient.vue';
+import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 </script>
 
 <template>

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import UsersService from '@/services/UserService';
-import ButtonGradient from '@/components/Divers/ButtonGradient.vue';
+import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 
 import type User from '@/types/User';
 
