@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import UploadAvatar from '@/components/UploadAvatar.vue';
 import { useToast } from 'vue-toastification';
 import { useUserStore } from '@/stores/userStore';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 
 const userStore = useUserStore();
 const toast = useToast();

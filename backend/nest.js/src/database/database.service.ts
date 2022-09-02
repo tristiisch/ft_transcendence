@@ -1,7 +1,8 @@
 /** @prettier */
 import { Injectable } from '@nestjs/common';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { UserSubscriber } from 'src/users/entity/user.subscriber';
+import { UserAuthSubscriber } from '../auth/entity/auth.subscriber';
+import { UserSubscriber } from '../users/entity/user.subscriber';
 
 @Injectable()
 export class DatabaseService implements TypeOrmOptionsFactory {
@@ -21,7 +22,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
 			autoLoadEntities: true,
 			// TypeORM should update any changes of your entities automatically ?
 			synchronize: true,
-			subscribers: [UserSubscriber],
+			subscribers: [UserSubscriber, UserAuthSubscriber],
 		};
 	}
 }

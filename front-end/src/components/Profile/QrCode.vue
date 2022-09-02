@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Toogle from '@/components/ToogleButton.vue';
-import { useToast } from 'vue-toastification';
-import AuthService from '@/services/AuthService';
 import { useUserStore } from '@/stores/userStore';
 import { ref } from 'vue';
+import { useToast } from 'vue-toastification';
+import AuthService from '@/services/AuthService';
+import Toogle from '@/components/Divers/ToogleButton.vue';
 
 const userStore = useUserStore();
 const toast = useToast();

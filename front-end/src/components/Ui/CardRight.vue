@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import CardTitle from './CardTitle.vue'
+    import CardTitle from '@/components/Ui/CardTitle.vue'
     const props = defineProps<{
     title?: string
 }>()

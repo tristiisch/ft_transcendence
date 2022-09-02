@@ -3,8 +3,8 @@ import { StatsService } from './stats.service';
 import { StatsController } from './stats.controller';
 import { UserStats } from './entity/userstats.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from 'src/users/users.module';
-import { FriendsModule } from 'src/friends/friends.module';
+import { UsersModule } from '../../users/users.module';
+import { FriendsModule } from '../../friends/friends.module';
 
 @Module({
 	imports: [UsersModule, TypeOrmModule.forFeature([UserStats]), StatsModule, FriendsModule],

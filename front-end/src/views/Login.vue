@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import BaseCard from '../components/BaseCard.vue';
-import ButtonGradient1 from '@/components/ButtonGradient1.vue';
-import UploadAvatar from '@/components/UploadAvatar.vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, watch, onBeforeMount } from 'vue';
 import socket from '@/plugin/socketInstance';
+import BaseCard from '@/components/Ui/BaseCard.vue';
+import BaseSpinner from '@/components/Ui/BaseSpinner.vue';
+import ButtonGradient from '@/components/Button/ButtonGradient.vue';
+import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -132,8 +133,8 @@ onBeforeMount(() => {
 		<base-spinner v-if="isLoading"></base-spinner>
 		<div v-else class="flex flex-col items-center">
 			<div class="font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
-			<button-gradient1 v-if="!userStore.userAuth.token_jwt" @click="redirectTo42LoginPage()">Login with 42
-			</button-gradient1>
+			<button-gradient v-if="!userStore.userAuth.token_jwt" @click="redirectTo42LoginPage()">Login with 42
+			</button-gradient>
 			<BaseCard v-else-if="!userStore.isRegistered && !userStore.userAuth.has_2fa">
 				<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent>
 					<div class="flex flex-col gap-4 items-center">
@@ -145,7 +146,7 @@ onBeforeMount(() => {
 							v-model.trim="username"
 							placeholder="Username"
 						/>
-						<button-gradient1 @click="submitRegistrationForm">Send</button-gradient1>
+						<button-gradient @click="submitRegistrationForm">Send</button-gradient>
 					</div>
 					<upload-avatar login @image-loaded="uploadImage" :image="image"></upload-avatar>
 				</form>
@@ -156,7 +157,7 @@ onBeforeMount(() => {
 					<p class="text-slate-500">Please enter your 2FA code below</p>
 					<div class="flex justify-center gap-4">
 						<input type="password" name="twoFaCode" v-model="twoFaCode" placeholder="2FA code" class="text-center text-neutral-100 placeholder:text-slate-600 bg-slate-800 rounded placeholder:text-center" />
-						<button-gradient1 @click="submit2faForm">Send</button-gradient1>
+						<button-gradient @click="submit2faForm">Send</button-gradient>
 					</div>
 				</form>
 			</BaseCard>

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type Stats from '@/types/Stats';
-defineProps<{
-	userStats?: Stats;
-}>();
+
+defineProps<{ userStats?: Stats }>()
 </script>
 
 <template>

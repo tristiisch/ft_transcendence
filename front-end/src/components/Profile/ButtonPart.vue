@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import ButtonGradient1 from '@/components/ButtonGradient1.vue';
-import UsersService from '@/services/UserService';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
+import UsersService from '@/services/UserService';
+import ButtonGradient from '@/components/Divers/ButtonGradient.vue';
+
 import type User from '@/types/User';
 
 const userStore = useUserStore();
@@ -75,17 +76,17 @@ const button2Name = computed(() => {
 
 <template>
 	<div v-if="!isUser()" class="flex flex-col gap-4">
-		<button-gradient1 @click="treatFriendRequest()">
+		<button-gradient @click="treatFriendRequest()">
 			{{ friendButton }}
-		</button-gradient1>
-		<button-gradient1> Block </button-gradient1>
+		</button-gradient>
+		<button-gradient> Block </button-gradient>
 	</div>
 	<div v-else class="flex flex-col gap-4">
-		<button-gradient1 @click="setDisplayedPart(1)">
+		<button-gradient @click="setDisplayedPart(1)">
 			{{ button1Name }}
-		</button-gradient1>
-		<button-gradient1 @click="setDisplayedPart(2)">
+		</button-gradient>
+		<button-gradient @click="setDisplayedPart(2)">
 			{{ button2Name }}
-		</button-gradient1>
+		</button-gradient>
 	</div>
 </template>

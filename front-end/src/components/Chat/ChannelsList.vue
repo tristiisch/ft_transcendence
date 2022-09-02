@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chatStore';
 import type Channel from '@/types/Channel';
 import Status from '@/types/ChatStatus';
-import { useChatStore } from '@/stores/chatStore';
 
 const chatStore = useChatStore();
 const props = defineProps<{ 

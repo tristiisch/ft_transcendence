@@ -1,15 +1,15 @@
 /** @prettier */
 import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { AuthService } from 'src/auth/auth.service';
-import { FriendsService } from 'src/friends/friends.service';
-import { MatchStats } from 'src/game/matchs/entity/matchstats.entity';
-import { MatchStatsService } from 'src/game/matchs/matchs.service';
-import { UserStats } from 'src/game/stats/entity/userstats.entity';
-import { StatsService } from 'src/game/stats/stats.service';
-import { UserSelectDTO } from 'src/users/entity/user-select.dto';
-import { User, UserStatus } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from 'src/utils/utils';
+import { AuthService } from '../auth/auth.service';
+import { FriendsService } from '../friends/friends.service';
+import { MatchStats } from '../game/matchs/entity/matchstats.entity';
+import { MatchStatsService } from '../game/matchs/matchs.service';
+import { UserStats } from '../game/stats/entity/userstats.entity';
+import { StatsService } from '../game/stats/stats.service';
+import { UserSelectDTO } from '../users/entity/user-select.dto';
+import { User, UserStatus } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
+import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 
 @Injectable()
@@ -152,7 +152,7 @@ export class TestFakeService {
 		randomUser.username = randomUser.id.toString();
 
 		await this.friendsService.addFriendRequest(user, randomUser);
-	
+
 		const randomNb: number = random(1, 4);
 
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);

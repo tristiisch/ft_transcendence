@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue'
-import DisplayList from '@/components/Chat/DisplayList.vue';
-import type User from '@/types/User';
 import { useChatStore } from '@/stores/chatStore';
 import { ref, computed, onBeforeMount } from 'vue';
+import type User from '@/types/User';
+import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
+import UsersList from '@/components/Divers/UsersChannelsList.vue';
 
 const chatStore = useChatStore();
 const selectableUsers = ref<User[]>([])
@@ -56,6 +56,6 @@ onBeforeMount(() => {
 </script>
 
 <template>
-    <display-list :selectableItems="selectableUsers" :singleSelection="false" :alreadySlectedUsers="alreadySelectedUsers()" :type="'user'"></display-list>
+    <users-list :selectableItems="selectableUsers" :singleSelection="false" :alreadySlectedUsers="alreadySelectedUsers()" :type="'user'"></users-list>
     <button-close-validate @validate="updateChangeInChannel()" @close="emit('close')"></button-close-validate>
 </template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
+    import { computed, ref, onMounted, onUnmounted, onBeforeUpdate } from 'vue';
     import type Leaderboard from '@/types/Leaderboard';
     import Status from '@/types/Status';
-    import PlayerStatus from '@/components/PlayerStatus.vue'
-    import { computed, ref, onMounted, onUnmounted, onBeforeUpdate } from 'vue';
-
+    import PlayerStatus from '@/components/Divers/PlayerStatus.vue'
+    
     const sizeAvatar = ref<HTMLInputElement | null>(null)
     const avatarWidth = ref(sizeAvatar.value?.width.toString() as string)
     const windowHeight = ref(window.innerHeight);

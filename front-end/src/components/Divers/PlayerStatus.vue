@@ -2,9 +2,8 @@
 import { computed } from 'vue';
 import Status from '@/types/Status';
 import type Leaderboard from '@/types/Leaderboard';
-const props = defineProps<{
-  userStatus?: Status
-}>()
+
+const props = defineProps<{ userStatus?: Status }>()
 
 const isInGame = computed(() => {
     return props.userStatus === Status.INGAME ? true : false;

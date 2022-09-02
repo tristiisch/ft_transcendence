@@ -16,7 +16,6 @@ function checkPassword()
        password.value = ''
     }
 }
-
 </script>
 
 <template>

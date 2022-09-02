@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
-import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useToast } from 'vue-toastification';
+import UsersService from '@/services/UserService';
+import type Notification from '@/types/Notification';
 
 const notifications = ref<Notification[] | null>(null);
 const isLoading = ref(false);

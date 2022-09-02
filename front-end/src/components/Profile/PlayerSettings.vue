@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, onBeforeMount, watch } from 'vue';
 import { useUserStore } from '@/stores/userStore';
-import QrCode from '@/components/Profile/QrCode.vue';
 import { useToast } from 'vue-toastification';
-import UserService from '@/services/UserService';
+import QrCode from '@/components/Profile/QrCode.vue';
 import EditProfile from '@/components/Profile/EditProfile.vue';
 
 const userStore = useUserStore();

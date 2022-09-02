@@ -1,9 +1,9 @@
 /** @prettier */
 import { forwardRef, Inject, Injectable, NotFoundException, NotImplementedException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FriendsService } from 'src/friends/friends.service';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { FriendsService } from '../friends/friends.service';
+import { User } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
 import { InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { NotificationFront } from './entity/notification-front.entity';
@@ -16,7 +16,7 @@ export class NotificationService {
 	private readonly friendService: FriendsService;
 	@Inject(UsersService)
 	private readonly userService: UsersService;
-	
+
 	constructor(@InjectRepository(Notification) private notifsRepository: Repository<Notification>) {}
 
 	public async addNotif(notif: Notification): Promise<InsertResult> {
@@ -62,7 +62,7 @@ export class NotificationService {
 				await this.friendService.removeFriendship(user, target)
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
-	
+
 		}
 		notif.is_deleted = true;
 		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });

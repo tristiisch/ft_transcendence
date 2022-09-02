@@ -1,7 +1,5 @@
 <script setup lang="ts">
-    const props = defineProps<{
-    side: string
-}>()
+defineProps<{ side: string }>()
 </script>
 
 

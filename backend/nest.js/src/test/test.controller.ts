@@ -1,10 +1,10 @@
 /** @prettier */
 import { Body, Controller, Get, Inject, Param, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { UserSelectDTO } from 'src/users/entity/user-select.dto';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { isNumberPositive } from 'src/utils/utils';
+import { UserSelectDTO } from '../users/entity/user-select.dto';
+import { User } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
+import { isNumberPositive } from '../utils/utils';
 import { TestDbService } from './test-db.service';
 import { TestFakeService } from './test-fake.service';
 

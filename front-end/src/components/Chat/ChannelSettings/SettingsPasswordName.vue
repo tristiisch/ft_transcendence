@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import status from '@/types/ChatStatus';
-import type Channel from '@/types/Channel';
-import ButtonCloseValidate from '@/components/Chat/ButtonCloseValidate.vue';
-import PartToDisplay from '@/types/ChatPartToDisplay';
 import { ref, computed, onBeforeMount} from 'vue'
 import { useChatStore } from '@/stores/chatStore';
+import status from '@/types/ChatStatus';
+import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
 
 const chatStore = useChatStore();
 const newPassword = ref('');

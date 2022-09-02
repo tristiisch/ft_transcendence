@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia';
+import { useUserStore } from '@/stores/userStore';
+import { useGlobalStore } from '@/stores/globalStore';
+import socket from '@/plugin/socketInstance';
 import UserService from '@/services/UserService';
 import type User from '@/types/User';
 import type ChatState from '@/types/ChatState';
@@ -7,18 +10,12 @@ import type Discussion from '@/types/Discussion';
 import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
-import socket from '@/plugin/socketInstance';
-import { useUserStore } from '@/stores/userStore';
 
 const userStore = useUserStore();
-type selectedItems = User[] | Channel[];
-type selectedItem = User | Channel;
+const globalStore = useGlobalStore();
 
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
-		users: [],
-		friends: [],
-		channels: [],
 		userDiscussions: [],
 		inDiscussion: null,
 		userChannels: [],
@@ -27,8 +24,7 @@ export const useChatStore = defineStore('chatStore', {
 		cardRightPartToDisplay: PartToDisplay.CHAT,
 		cardLeftPartToDisplay: PartToDisplay.DISCUSSIONS,
 		cardRightTitle: 'CHAT',
-		messages: [],
-		selectedItems: [],
+		messages: []
 	}),
 	getters: {
 		isLoading: (state) => (state.userDiscussions && state.userChannels ? false : true),
@@ -39,23 +35,11 @@ export const useChatStore = defineStore('chatStore', {
 		displayAddDiscussion: (state) => state.cardRightPartToDisplay === PartToDisplay.ADD_DISCUSSION,
 		displayChat: (state) => state.cardRightPartToDisplay === PartToDisplay.CHAT,
 		isProtectedChannel: (state) => state.inChannel?.type === ChatStatus.PROTECTED && !state.inChannelRegistration,
-		isTypeArrayUsers: (state) => {
-			return (array: selectedItems): array is User[] => (array as User[])[0] === undefined || (array as User[])[0].username !== undefined;
+		getIndexUserChannels: (state) => {
+			return  (channel: Channel) => state.userChannels.findIndex((userChannel) => userChannel.name === channel.name);
 		},
-		isTypeUser: (state) => {
-			return (user: selectedItem): user is User => (user as User).username !== undefined;
-		},
-		getPlayerName: (state) => {
-			return (senderId: number) => state.users.find((user) => user.id === senderId)?.username;
-		},
-		getPlayerAvatar: (state) => {
-			return (senderId: number) => state.users.find((user) => user.id === senderId)?.avatar;
-		},
-		getPlayerId: (state) => {
-			return (senderId: number) => state.users.find((user) => user.id === senderId)?.id;
-		},
-		getUser: (state) => {
-			return (userId: number) => state.users.find((user) => user.id === userId);
+		getIndexUserDiscussions: (state) => {
+			return  (discussion: Discussion) => state.userDiscussions.findIndex((userDiscussion) => userDiscussion.user.id === discussion.user.id);
 		},
 	},
 	actions: {
@@ -70,7 +54,7 @@ export const useChatStore = defineStore('chatStore', {
 		async fetchChannels() {
 			try {
 				const response = await UserService.getChannels();
-				this.channels = response.data;
+				this.Channels = response.data;
 			} catch (error: any) {
 				throw error;
 			}
@@ -104,14 +88,15 @@ export const useChatStore = defineStore('chatStore', {
 			this.inChannel = channel;
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
 			this.messages = this.inChannel.messages;
-			const fromIndex = this.userChannels.findIndex((userChannel) => userChannel.name === channel.name);
+			const fromIndex = this.getIndexUserChannels(channel);
 			if (fromIndex > 0) {
 				// shift channel to top of channel list
 				const element = this.userChannels.splice(fromIndex, 1)[0];
 				this.userChannels.unshift(element);
 			}
 			if (this.inChannel.type === ChatStatus.PROTECTED) {
-				for (const user of channel.users) if (user.id === userStore.userData.id) this.inChannelRegistration = true;
+				for (const user of channel.users)
+					if (user.id === userStore.userData.id) this.inChannelRegistration = true;
 			}
 		},
 		loadDiscussion(discussion: Discussion) {
@@ -119,52 +104,54 @@ export const useChatStore = defineStore('chatStore', {
 			this.inDiscussion = discussion;
 			this.messages = this.inDiscussion.messages;
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			const fromIndex = this.userDiscussions.findIndex((element) => element.user.id === discussion.user.id);
+			const fromIndex = this.getIndexUserDiscussions(discussion)
 			if (fromIndex > 0) {
 				// shift discussion to top of discussion list
 				const element = this.userDiscussions.splice(fromIndex, 1)[0];
 				this.userDiscussions.unshift(element);
 			}
 		},
-		async addNewChannel(newChannel: Channel) {
-			try {
-				UserService.addChannel(newChannel);
+		addNewChannel(newChannel: Channel) {
+			if (!globalStore.isTypeUser(newChannel)) {
+				// socket.emit('chat-userDiscussion-add', channelToDelete)
 				if (this.userChannels.length) this.userChannels.unshift(newChannel);
 				else this.userChannels.push(newChannel);
-				this.channels.push(newChannel);
+				globalStore.channels.push(newChannel);
 				this.loadChannel(this.userChannels[0]);
-				this.selectedItems = [];
-			} catch (error: any) {
-				throw error;
+				globalStore.resetSelectedItems();
 			}
 		},
-		async addNewDiscussion(user: User) {
-			if (this.userDiscussions) {
+		addNewDiscussion() {
+			if (this.userDiscussions && globalStore.isTypeUser(globalStore.selectedItems[0])) {
 				for (const discussion of this.userDiscussions) {
-					if (discussion.user.id === user.id) {
+					if (discussion.user.id === globalStore.selectedItems[0].id) {
 						this.loadDiscussion(discussion);
-						this.selectedItems = [];
+						globalStore.resetSelectedItems();
 						return;
 					}
 				}
 			}
-			try {
-				const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-				UserService.addDiscussion(newDiscussion);
+			if (globalStore.isTypeUser(globalStore.selectedItems[0])) {
+				// socket.emit('chat-userDiscussion-add', channelToDelete)
+				const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: globalStore.selectedItems[0], messages: [] as Message[] };
 				if (this.userDiscussions.length) this.userDiscussions.unshift(newDiscussion);
 				else this.userDiscussions.push(newDiscussion);
 				this.loadDiscussion(this.userDiscussions[0]);
-				this.selectedItems = [];
-			} catch (error: any) {
-				throw error;
+				globalStore.resetSelectedItems();
+
 			}
 		},
 		joinNewChannel() {
 			//send to back
-			if (!this.isTypeUser(this.selectedItems[0])) this.userChannels.unshift(this.selectedItems[0]);
+			if (!globalStore.isTypeUser(globalStore.selectedItems[0])) {
+				if (this.userChannels.length > 0)
+					this.userChannels.unshift(globalStore.selectedItems[0]);
+				else
+					this.userChannels.push(globalStore.selectedItems[0]);
+			}
 			this.inChannel = this.userChannels[0];
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			this.selectedItems = [];
+			globalStore.resetSelectedItems();
 		},
 		deleteDiscussion(index: number) {
 			if (this.userDiscussions) {
@@ -222,29 +209,6 @@ export const useChatStore = defineStore('chatStore', {
 			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS && clickedOn !== 'discussion') this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
 			else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS && clickedOn !== 'channels') this.cardLeftPartToDisplay = PartToDisplay.DISCUSSIONS;
 		},
-		setSelectedItem(selectedItem: User | Channel, singleSelection: boolean) {
-			if (!singleSelection) {
-				if (this.isTypeArrayUsers(this.selectedItems) && this.isTypeUser(selectedItem)) this.selectedItems.push(selectedItem);
-				else if (!this.isTypeArrayUsers(this.selectedItems) && !this.isTypeUser(selectedItem)) this.selectedItems.push(selectedItem);
-			} else this.selectedItems[0] = selectedItem;
-		},
-		unsetSelectItem(itemToUnselectId: number, singleSelection: boolean) {
-			if (!singleSelection) {
-				const indexArraycurrentSelection = this.selectedItems.findIndex((item) => item.id === itemToUnselectId);
-				this.selectedItems.splice(indexArraycurrentSelection, 1);
-			} else this.selectedItems.splice(0, 1);
-		},
-		checkChangeInArray(baseArray: User[]) {
-			for (const userBa of baseArray) {
-				const index = this.selectedItems.findIndex((user) => user.id === userBa.id);
-				if (index < 0) return true;
-			}
-			for (const selectedUser of this.selectedItems) {
-				const index = baseArray.findIndex((user) => user.id === selectedUser.id);
-				if (index < 0) return true;
-			}
-			return false;
-		},
 		UpdateChannelNamePassword(password: string, name: string) {
 			if (this.inChannel) {
 				if (password != '' && password != this.inChannel.password) {
@@ -258,32 +222,31 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		updateBanArray() {
-			if (this.inChannel && this.isTypeArrayUsers(this.selectedItems)) {
-				if (this.checkChangeInArray(this.inChannel.banned)) {
-					for (const selectedUser of this.selectedItems) this.deleteUserFromChannel(selectedUser);
-					this.inChannel.banned = this.selectedItems;
+			if (this.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
+				if (globalStore.checkChangeInArray(this.inChannel.banned)) {
+					for (const selectedUser of globalStore.selectedItems) this.deleteUserFromChannel(selectedUser);
+					this.inChannel.banned = globalStore.selectedItems;
 					//socket.emit('chat-channel-ban', selectedUsers)
 				}
-				this.selectedItems = [];
+				globalStore.resetSelectedItems();
 			}
 		},
 		updateMuteArray() {
-			if (this.inChannel && this.isTypeArrayUsers(this.selectedItems)) {
-				if (this.checkChangeInArray(this.inChannel.muted)) {
-					this.inChannel.muted = this.selectedItems;
+			if (this.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
+				if (globalStore.checkChangeInArray(this.inChannel.muted)) {
+					this.inChannel.muted = globalStore.selectedItems;
 					//socket.emit('chat-channel-admin', selectedUsers);
-					console.log('jorjoorjt');
 				}
-				this.selectedItems = [];
+				globalStore.resetSelectedItems();
 			}
 		},
 		updateAdminArray() {
-			if (this.inChannel && this.isTypeArrayUsers(this.selectedItems)) {
-				if (this.checkChangeInArray(this.inChannel.admins)) {
-					this.inChannel.admins = this.selectedItems;
+			if (this.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
+				if (globalStore.checkChangeInArray(this.inChannel.admins)) {
+					this.inChannel.admins = globalStore.selectedItems;
 					//socket.emit('chat-channel-mute', selectedUsers);
 				}
-				this.selectedItems = [];
+				globalStore.resetSelectedItems();
 			}
 		},
 		leaveChannel(user: User) {
@@ -296,10 +259,12 @@ export const useChatStore = defineStore('chatStore', {
 						this.inChannel.owner = this.inChannel.admins[0];
 				}
 				else {
-					const index = this.channels.findIndex((channel) => channel.name === this.inChannel?.name);
-					this.deleteChannel(index);
+					if (this.inChannel) {
+						const index = globalStore.getIndexChannels(this.inChannel)
+						this.deleteChannel(index);
+					}
 				}
-				const index = this.userChannels.findIndex((userChannel) => userChannel.name === this.inChannel?.name);
+				const index = this.getIndexUserChannels(this.inChannel)
 				this.deleteUserChannel(index);
 				this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);

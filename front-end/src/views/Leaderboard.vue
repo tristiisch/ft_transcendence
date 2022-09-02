@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import UserService from '@/services/UserService';
-import type LeaderboardUser from '@/types/Leaderboard';
-import type { UserStatus } from '@/types/User';
-import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
-import Toogle from '@/components/ToogleButton.vue';
-import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
-import socket from '@/plugin/socketInstance';
 import { useToast } from 'vue-toastification';
+import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
+import UserService from '@/services/UserService';
+import socket from '@/plugin/socketInstance';
+import type LeaderboardUser from '@/types/Leaderboard';
+import type { UserStatus} from '@/types/User';
+import Toogle from '@/components/Divers/ToogleButton.vue';
+import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
+
 
 const toast = useToast();
 const users = ref<LeaderboardUser[]>();
