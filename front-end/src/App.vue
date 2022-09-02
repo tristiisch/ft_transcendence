@@ -4,10 +4,10 @@ import UserService from '@/services/UserService';
 import TokenService from '@/services/TokenService';
 import { useUserStore } from '@/stores/userStore';
 import socket from '@/plugin/socketInstance';
-import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
-const router = useRouter();
+const toast = useToast();
 
 if (TokenService.isLocalToken()) {
 	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
@@ -17,13 +17,10 @@ if (TokenService.isLocalToken()) {
 			socket.connect()
 			userStore.userData = response.data;
 		})
-		.catch((error) => {
-			if (error.response.status !== 401)
-			{
-				console.log(error.response.data.message)
-				userStore.removeToken()
-				router.replace({ name: 'Login' });
-			}
+		.catch((e) => {
+			if (e.response.data) toast.error(e.response.data.message)
+			else toast.error("Something went wrong")
+			userStore.handleLogout();
 		});
 }
 </script>

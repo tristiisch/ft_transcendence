@@ -32,7 +32,8 @@ function fetchCurrentMatchs() {
 			matchs.value = response.data;
 		})
 		.catch((e) => {
-			error.value = e.response.data.message
+			if (e.response.data) error.value = e.response.data.message;
+			else error.value = "Something went wrong"
 			toast.error(error.value);
 		});
 }

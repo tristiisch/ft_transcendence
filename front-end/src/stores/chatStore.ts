@@ -70,7 +70,7 @@ export const useChatStore = defineStore('chatStore', {
 		async fetchChannels() {
 			try {
 				const response = await UserService.getChannels();
-				this.Channels = response.data;
+				this.channels = response.data;
 			} catch (error: any) {
 				throw error;
 			}

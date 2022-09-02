@@ -6,6 +6,7 @@ import type { UserState, Auth } from '@/types/User';
 import type User from '@/types/User';
 import status from '@/types/Status';
 import socket from '@/plugin/socketInstance';
+import router from '@/router/index';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -22,10 +23,6 @@ export const useUserStore = defineStore('userStore', {
 			TokenService.setLocalToken(this.userAuth.token_jwt)
 			this.userToken = this.userAuth.token_jwt
 			console.log(this.userToken)
-		},
-		removeToken() {
-			TokenService.removeLocalToken()
-			this.userToken = null
 		},
 		async handleLogin(code: string) {
 			try {
@@ -54,8 +51,11 @@ export const useUserStore = defineStore('userStore', {
 		},
 		handleLogout() {
 			socket.emit('update_status', status.OFFLINE )
-			this.removeToken()
-			//location.reload();
+			TokenService.removeLocalToken()
+			this.userToken = null
+			this.userAuth = {} as Auth,
+			this.userData = {} as User,
+			router.replace({name: 'Login'})
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {

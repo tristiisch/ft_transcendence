@@ -46,12 +46,24 @@ function fetchUser() {
 	UsersService.getUser(parseInt(route.params.id as string))
 		.then((response) => {
 			user.value = response.data;
+			fetchStats();
+			fetchMatchsHistory();
+			fetchfriends();
 		})
 		.catch((e) => {
-			router.replace({
+			if (e.response && e.response.status === 404)
+			{
+				router.replace({
 				name: 'NotFound',
 				params: { pathMatch: route.path.substring(1).split('/') },
-			});
+				});
+			}
+			else
+			{
+				if (e.response.data) error.value = e.response.data.message;
+				else error.value = "Something went wrong"
+				toast.error(error.value);
+			}
 		});
 }
 
@@ -62,7 +74,8 @@ function fetchStats() {
 			console.log(userStats.value);
 		})
 		.catch((e) => {
-			error.value = ref(e.response.data.message);
+			if (e.response.data) error.value = e.response.data.message;
+			else error.value = "Something went wrong"
 			toast.error(error.value);
 		});
 }
@@ -74,7 +87,8 @@ function fetchMatchsHistory() {
 			console.log(matchsHistory.value);
 		})
 		.catch((e) => {
-			error.value = ref(e.response.data.message);
+			if (e.response.data) error.value = e.response.data.message;
+			else error.value = "Something went wrong"
 			toast.error(error.value);
 		});
 }
@@ -83,10 +97,11 @@ function fetchfriends() {
 	UsersService.getUserfriends(userStore.userData.id)
 		.then((response) => {
 			friends.value = response.data;
-			console.log(response.data);
 		})
-		.catch((e: Error) => {
-			console.log(e);
+		.catch((e) => {
+			if (e.response.data) error.value = e.response.data.message;
+			else error.value = "Something went wrong"
+			toast.error(error.value);
 		});
 }
 
@@ -120,13 +135,13 @@ const isLoading = computed(() => {
 });
 
 onBeforeMount(() => {
-	if (isMe.value) user.value = userStore.userData;
-	else {
-		fetchUser();
-		fetchfriends();
+	if (isMe.value)
+	{
+		user.value = userStore.userData;
+		fetchStats();
+		fetchMatchsHistory();
 	}
-	fetchStats();
-	fetchMatchsHistory();
+	else fetchUser();
 	socket.on('update_status', (data) => {
 		console.log(data);
 		updateStatus(data);

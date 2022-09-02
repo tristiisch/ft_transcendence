@@ -61,7 +61,8 @@ function submit2faForm() {
 			router.replace({ name: 'Home' });
 		})
 		.catch((e) => {
-			toast.error(e.response.data.message);
+			if (e.response.data) toast.error(e.response.data.message)
+			else toast.error("Something went wrong")
 		});
 }
 
@@ -82,7 +83,8 @@ function submitRegistrationForm() {
 			})
 			.catch((e) => {
 				isLoading.value = false;
-				toast.error(e.response.data.message);
+				if (e.response.data) toast.error(e.response.data.message)
+				else toast.error("Something went wrong")
 			});
 	}
 }
@@ -111,14 +113,15 @@ onBeforeMount(() => {
 				})
 				.catch((e) => {
 					isLoading.value = false;
-					toast.error(e.response.data.message);
+					if (e.response.data) toast.error(e.response.data.message);
+					else toast.error("Something went wrong")
+					userStore.handleLogout()
 				});
 		}
 		catch (error) {
 			isLoading.value = false;
 			console.log(error)
-			userStore.removeToken()
-			router.replace({ name: 'Login' });
+			userStore.handleLogout()
 		}
 	}
 });

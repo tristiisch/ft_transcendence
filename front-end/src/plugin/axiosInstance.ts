@@ -5,13 +5,16 @@ const instance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
 });
 
+instance.defaults.headers.common['Content-Type'] = 'application/json';
+
 instance.interceptors.response.use(
-	response => response,
-	error => {
-		const userStore = useUserStore();
-		if (error.response.status === 401) {
-			userStore.handleLogout()
-			console.log('Your session has expired');
+	function (response) {
+		return response;
+	},
+	function (error) {
+		if ([401, 403, 0].includes(error.response.status)) {
+			const userStore = useUserStore();
+			userStore.handleLogout();
 		}
 		return Promise.reject(error);
 	}
