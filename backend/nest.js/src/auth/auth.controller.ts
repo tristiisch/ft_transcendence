@@ -39,6 +39,14 @@ export class AuthController {
 			throw new ForbiddenException("Unauthorized");
 		}
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('me')
+	async getOwnInfo(@Req() req) {
+		const user: User = req.user;
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		return userAuth;
+	}
 }
 
 @Controller('2fa')
