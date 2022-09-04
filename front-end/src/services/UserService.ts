@@ -33,8 +33,8 @@ class UserService {
 		return axios.patch(`users/set-avatar`, { avatar_64 });
 	}
 
-	getUserfriends(id: number) {
-		return axios.get(`friends/${id}`);
+	getUserfriends() {
+		return axios.get(`friends`);
 	}
 
 	sendFriendRequest(targetId: number) {

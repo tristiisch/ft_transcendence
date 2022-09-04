@@ -68,7 +68,7 @@ export const useGlobalStore = defineStore('globalStore', {
 			{
 				try {
 					const userStore = useUserStore();
-					const response = await UserService.getUserfriends(userStore.userData.id);
+					const response = await UserService.getUserfriends();
 					this.friends = response.data;
 				} catch (error: any) {
 					throw error;
