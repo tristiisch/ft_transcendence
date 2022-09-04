@@ -29,9 +29,6 @@ const chatStore = useChatStore();
 const route = useRoute();
 const displayDelete = ref([] as boolean[]);
 const error = ref('');
-const fetchLoaded = ref([false, false, false, false, false]);
-const isLoading = ref(true);
-
 function addButton() {
 	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
 	else return 'Add channel';
@@ -49,13 +46,6 @@ function unsetDisplayDelete(index: number) {
 	displayDelete.value[index] = false;
 }
 
-// watch(fetchLoaded.value, () => {
-// 	if (fetchLoaded.value[0] === true && fetchLoaded.value[1] === true
-// 		&& fetchLoaded.value[2] === true && fetchLoaded.value[3] === true
-// 		&& fetchLoaded.value[4] === true)
-// 		isLoading.value = false;
-// });
-
 socket.on("chatDiscussionCreate", (discussion: Discussion) => {
 	chatStore.addNewDiscussion(discussion);
 });
@@ -65,7 +55,7 @@ socket.on("chatChannelCreate", (channel: Channel) => {
 });
 
 socket.on("chatChannelDelete", (channel: Channel) => {
-	chatStore.deleteChannel(channel);
+	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.name));
 });
 
 socket.on("chatChannelJoin", (channelName: string, joinedUser: User) => {
@@ -88,57 +78,31 @@ socket.on("chatChannelMute", (channel: Channel, newMuteList: User[]) => {
 	chatStore.updateMuteList(channel, newMuteList)
 });
 
-socket.on('chatMessage', (type: ChatStatus, data: {date: string, message: string, idSender: number}) => {
-	console.log(data.message);
-	if (type === ChatStatus.DISCUSSION) {
-		if(chatStore.inDiscussion) {
-			chatStore.inDiscussion.messages.push({
-				date: data.date,
-				message: data.message,
-				idSender: data.idSender,
-			});
-		}
-	}
-	else {
-		if (chatStore.inChannel) {
-			chatStore.inChannel.messages.push({
-				date: data.date,
-				message: data.message,
-				idSender: data.idSender,
-			});
-		}
-	}
+socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
+	chatStore.addDiscussionMessage(discussion, data);
+});
+
+socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
+	chatStore.addChannelMessage(channel, data);
 });
 
 onBeforeMount(() => {
 	globalStore.fetchUsers()
-	.then(() => {
-		fetchLoaded.value[0] = true;
-	})
 	.catch((e: Error) => {
 		error.value = e.message;
 		toast.error(error.value);
 	});
 	globalStore.fetchfriends()
-	.then(() => {
-		fetchLoaded.value[1] = true;
-	})
 	.catch((e: Error) => {
 		error.value = e.message;
 		toast.error(error.value);
 	});
 	chatStore.fetchChannels()
-	.then(() => {
-		fetchLoaded.value[2] = true;
-	})
 	.catch((e: Error) => {
 		error.value = e.message;
 		toast.error(error.value);
 	});
 	chatStore.fetchUserChannels()
-	.then(() => {
-		fetchLoaded.value[3] = true;
-	})
 	.catch((e: Error) => {
 		error.value = e.message;
 		toast.error(error.value);
@@ -152,11 +116,11 @@ onBeforeMount(() => {
 					const user = globalStore.getUser(parseInt(route.query.discussion as string));
 					if (user) {
 						const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-						chatStore.createNewDiscussion(newDiscussion);
+						if (!chatStore.isNewDiscussion(newDiscussion))
+							chatStore.createNewDiscussion(newDiscussion, true);
 					}
 				}
 			}
-			fetchLoaded.value[4] = true;
 		})
 		.catch((e: Error) => {
 			error.value = e.message;

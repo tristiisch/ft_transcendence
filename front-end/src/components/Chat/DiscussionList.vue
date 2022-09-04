@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore'
 import { useChatStore } from '@/stores/chatStore';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import type Discussion from '@/types/Discussion'
+import { computed } from '@vue/reactivity';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -27,9 +28,16 @@ function colorText(){
         return 'text-slate-700'
 }
 
+const numberOfUnreadedMessage = computed(() => {
+    const nb = chatStore.nbUnreadMessageInDiscussion(props.discussion);
+    return nb;
+})
+
 watch(props.discussion.messages, () => {
 	lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1]
 });
+
+
 </script>
 
 <template>
@@ -42,8 +50,11 @@ watch(props.discussion.messages, () => {
                 <span class="text-sm" :class="colorText()">{{ discussion.user.username }}</span>
                 <span v-if="lastMessage" class="pr-4 text-xs" :class="colorText()">{{ lastMessage.date }}</span>
             </div>
-            <p v-if="lastMessage" class="w-full text-left truncate text-xs" :class="colorText()"><span>{{ prefix() }}</span>{{ lastMessage.message }}</p>
-			<p v-else class="w-full text-left truncate text-xs" :class="colorText()">NO MESSAGES</p>
+            <div class="flex justify-between items-center">
+                <p v-if="lastMessage" class="w-full text-left truncate text-xs" :class="colorText()"><span>{{ prefix() }}</span>{{ lastMessage.message }}</p>
+			    <p v-else class="w-full text-left truncate text-xs" :class="colorText()">NO MESSAGES</p>
+                <div v-if="numberOfUnreadedMessage" class="bg-red-600 rounded-full px-2 text-xs text-white mr-4">{{ numberOfUnreadedMessage }}</div>
+            </div>
         </div>
     </button>
 </template>

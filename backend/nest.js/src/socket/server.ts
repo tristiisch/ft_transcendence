@@ -83,7 +83,8 @@ interface ServerToClientEvents {
 	chatChannelBan: (channel: Channel, banList: User[]) => void;
 	chatChannelAdmin:(channel: Channel, adminList: User[]) => void;
 	chatChannelMute: (channel: Channel, muteList: User[]) => void;
-	chatMessage: (type: ChatStatus, data: Message) => void;
+	chatDiscussionMessage: (discussion: Discussion, data: Message) => void;
+	chatChannelMessage: (channel: Channel, data: Message) => void;
 }
 
 interface ClientToServerEvents {
@@ -101,8 +102,8 @@ interface ClientToServerEvents {
 	chatChannelBan: (channel: Channel, banList: User[]) => void;
 	chatChannelAdmin:(channel: Channel, adminList: User[]) => void;
 	chatChannelMute: (channel: Channel, muteList: User[]) => void;
-	chatDiscussionMessage: (message: Message, target: number) => void;
-	chatChannelMessage: (channel: Channel, data: Message) => void;
+	chatDiscussionMessage: (discussion: Discussion, message: Message) => void;
+	chatChannelMessage: (channel: Channel, message: Message) => void;
 }
 
 interface InterServerEvents {
@@ -190,7 +191,6 @@ export async function createSocketServer(serverPort: number) {
 		let user_token = socket.handshake.auth.token
 		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', socket.id, 'with jwt =>', user_token);
 		users[user_token] = socket.id
-
 		socket.on("match", (id) => {
 			if (matches.has(id) === false)
 				matches.set(id, { room: io.to('match_' + id), started:false, p1_jwt: socket.id, p2_jwt: null, p1_ypos: 0, p2_ypos: 0 })
@@ -244,22 +244,27 @@ export async function createSocketServer(serverPort: number) {
 
 		socket.on("chatChannelCreate", (userId, channel) => {
 			socket.join(channel.name);
+			socket.id
+			socket.join(channel.name);users[socket.handshake.auth.token]
+			//need to add each socket id of members in join
 			if (channel.type !== ChatStatus.PRIVATE)
-				socket.broadcast.emit("chatChannelCreate", (channel));
-		});
+				//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
+				socket.broadcast.emit("chatChannelCreate", (channel))  //to delete when join you have implemented join
+			});
 		
 		socket.on("chatChannelDelete", (channel) => {
-			socket.broadcast.emit("chatChannelDelete", (channel));
+			//socket.to(channel.name).emit("chatChannelDelete", (channel)); // need room implementation, no broadcast
+			socket.broadcast.emit("chatChannelDelete", (channel)); 
 		});
 		
 		socket.on("chatChannelJoin", (channelName, joinedUser) => {
-			socket.join(channelName)
+			// socket.join(channelName)       										// need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelJoin", channelName, joinedUser);
 		});
 		
 		socket.on("chatChannelLeave", (channel, user) => {
-			socket.leave(channel.name);
-			socket.broadcast.emit("chatChannelLeave", channel, user);
+			// socket.leave(channel.name);
+			socket.broadcast.emit("chatChannelLeave", channel, user); // need room implementation, no broadcast
 		});
 		
 		socket.on("chatChannelBan", (channel, newBanList) => {
@@ -274,17 +279,14 @@ export async function createSocketServer(serverPort: number) {
 			socket.broadcast.emit("chatChannelMute", channel, newMuteList);
 		});
 
-		socket.on("chatDiscussionMessage", (message, target) => {
-			console.log(message, target);
-			// const user1 = message.idSender.toString();
-			// const user2 = target.toString()
-			// const roomName = user1 + user2;
+		socket.on("chatDiscussionMessage", (discussion, message) => {
 			// socket.to(roomName).emit("chatMessage", ChatStatus.DISCUSSION, message);  // need room implementation, no broadcast
-			socket.broadcast.emit("chatMessage", ChatStatus.DISCUSSION, message);
+			socket.broadcast.emit("chatDiscussionMessage", discussion, message);
 		});
 
-		socket.on("chatChannelMessage", (channel, data) => {
-			socket.to(channel.name).emit("chatMessage", channel.type, data);
+		socket.on("chatChannelMessage", (channel, message) => {
+			//socket.to(channel.name).emit("chatMessage", channel.type, data);  // need room implementation, no broadcast
+			socket.broadcast.emit("chatChannelMessage", channel, message);
 		});
 	})
 	// io.serverSideEmit("ping"); // 'this adapter does not support the serverSideEmit() functionality' => error msg on Windows & Linux setup (WSL Ubuntu)

@@ -2,19 +2,24 @@
 import { useGlobalStore } from '@/stores/globalStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
+import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, watch, toDisplayString } from 'vue';
 import type Channel from '@/types/Channel';
 import ChatStatus from '@/types/ChatStatus';
 import type User from '@/types/User';
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
+import BaseSpinner from '../Ui/BaseSpinner.vue';
 
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const userStore = useUserStore();
+const toast = useToast();
 const userToggle = ref(false);
 const itemsToDisplay = ref<User[] | Channel[]>([]);
 const filterButton = ref('All');
 const itemName = ref('');
+const isLoading = ref(true);
+const error = ref('');
 
 const props = defineProps<{
 	singleSelection: boolean;
@@ -63,13 +68,27 @@ watch(
 );
 
 onBeforeMount(() => {
-	if (props.type === 'users') itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
-	else itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
+	if (props.type === 'users') {
+		itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
+		isLoading.value = false;
+	}
+	else {
+		chatStore.fetchChannels()
+		.then(() => {
+			itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
+			isLoading.value = false;
+		})
+		.catch((e: Error) => {
+			error.value = e.message;
+			toast.error(error.value);
+		});
+	}
 });
 </script>
 
 <template>
-	<form class="flex w-full pb-4" @submit.prevent>
+	<base-spinner v-if="isLoading"></base-spinner>
+	<form v-if="!isLoading" class="flex w-full pb-4" @submit.prevent>
 		<div class="self-start relative">
 			<button
 				@click="userToggle = !userToggle"
@@ -112,5 +131,5 @@ onBeforeMount(() => {
 			/>
 		</div>
 	</form>
-	<users-list :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></users-list>
+	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></users-list>
 </template>

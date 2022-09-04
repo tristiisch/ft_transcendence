@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chatStore';
+import { useUserStore } from '@/stores/userStore';
 
 const chatStore = useChatStore();
+const userStore = useUserStore();
 
 const props = defineProps<{ index: number; isChannel: boolean}>();
 
@@ -12,7 +14,7 @@ const emit = defineEmits<{
 function deleteChannelDiscussion(index: number)
 {
     if (props.isChannel) {
-        chatStore.deleteUserChannel(index)
+        chatStore.leaveChannel(chatStore.userChannels[index], userStore.userData)
         emit('close')
     }
     else {
