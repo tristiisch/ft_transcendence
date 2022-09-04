@@ -5,6 +5,7 @@ import { UsersService } from '../../users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { MatchStats } from './entity/matchstats.entity';
 import { MatchOwn } from './entity/own-match.entity';
+import { Match } from './entity/match.entity';
 
 @Injectable()
 export class MatchStatsService {
@@ -14,11 +15,17 @@ export class MatchStatsService {
 		private matchsHistoryRepository: Repository<MatchStats>,
 	) {}
 
+	private readonly matches = new Map<number, Match>()
+
 	@Inject(UsersService)
 	private readonly userService: UsersService;
 
 	public getRepo() {
 		return this.matchsHistoryRepository;
+	}
+
+	public getMatches() {
+		return this.matches;
 	}
 
 	async add(matchHistory: MatchStats) {

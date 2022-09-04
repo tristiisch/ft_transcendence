@@ -12,6 +12,16 @@ class AuthService {
 		})
 	}
 
+	fakeLogin() {
+		return axios.post('auth/fakeLogin/2').then((response) => {
+			if (response.data.auth.token_jwt) {
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
+				socket.auth = { token: response.data.auth.token_jwt }
+			}
+			return response.data;
+		})
+	}
+
 	login2FA(otpToken: string) {
 		return axios.post('2fa/authenticate', { otpToken }).then((response) => {
 			console.log(response.data)

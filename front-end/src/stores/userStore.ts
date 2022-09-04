@@ -39,6 +39,21 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
+		async handleFakeLogin() {
+			try {
+				const data = await AuthService.fakeLogin();
+				this.userAuth = data.auth;
+				console.log(this.userAuth)
+				if (!this.userAuth.has_2fa)
+				{
+					this.userData = data.user;
+					console.log(this.userData)
+					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
+				}
+			} catch (error: any) {
+				throw error;
+			}
+		},
 		async handleLogin2Fa(twoFaCode: string) {
 			try {
 				const data = await AuthService.login2FA(twoFaCode);

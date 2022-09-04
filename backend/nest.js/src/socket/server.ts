@@ -6,12 +6,11 @@ import { Jwt } from "jsonwebtoken";
 import { map } from "rxjs";
 import { Server } from "socket.io";
 import { MatchOwn } from "src/game/matchs/entity/own-match.entity";
-//import { startMatch } from "../game/matchs/matchs.sockets"
-//import { createCanvas, loadImage } from 'canvas'
+
 interface UserStatus {
 	id: number
 	status: Status
-  }
+}
 
 enum ChatStatus {
 	PUBLIC,
@@ -67,6 +66,7 @@ enum Status {
 
 interface ServerToClientEvents {
 	//matches
+	start_match: () => void;
 	ball: (x: number, y: number) => void;
 	hey: (s: string) => void;
 	p1_ypos: (y: number) => void;
@@ -89,9 +89,9 @@ interface ServerToClientEvents {
 
 interface ClientToServerEvents {
 	//matches
+	match: (id: number) => void;
 	p1_ypos: (dy: number) => void;
 	p2_ypos: (dy: number) => void;
-	match: (id: number) => void;
 	//others
 	update_status: (status: Status) => void;
 	chatDiscussionCreate: (user: User, discussion: Discussion) => void;
@@ -115,7 +115,7 @@ interface SocketData {
 	age: number;
 }
 
-async function startMatch(match, match_room)
+async function startMatch(match)
 {
 	match.started = true
 
@@ -134,6 +134,9 @@ async function startMatch(match, match_room)
 	const p2_xpos = width - width / 10
 	match.p1_ypos = height / 2 - blocker_height / 2
 	match.p2_ypos = height / 2 - blocker_height / 2
+
+	match.room.emit("start_match")
+	setTimeout(() => {
 
 	//				let canvas = createCanvas(3989, 2976)
 	//				canvas.width = 3989
@@ -159,11 +162,12 @@ async function startMatch(match, match_room)
 					dx = -dx
 			x += dx
 			y += dy
-			match_room.emit("ball", x, y)
+			match.room.emit("ball", x, y)
 
 			//dx += dx < 0 ? -0.0001 : 0.0001
 		}, 1)
 	//})
+	}, 3000)
 }
 
 interface Match {
@@ -215,7 +219,7 @@ export async function createSocketServer(serverPort: number) {
 			}
 			if (numClients == 2 && match.started == false)
 			{
-				startMatch(match, io.to('match_' + id))
+				startMatch(match)
 			}
 		});
 
