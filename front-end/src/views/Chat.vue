@@ -54,7 +54,7 @@ socket.on("chatChannelCreate", (channel: Channel) => {
 });
 
 socket.on("chatChannelDelete", (channel: Channel) => {
-	chatStore.deleteChannel(channel);
+	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.name));
 });
 
 socket.on("chatChannelJoin", (channelName: string, joinedUser: User) => {
@@ -77,26 +77,12 @@ socket.on("chatChannelMute", (channel: Channel, newMuteList: User[]) => {
 	chatStore.updateMuteList(channel, newMuteList)
 });
 
-socket.on('chatMessage', (type: ChatStatus, data: {date: string, message: string, idSender: number}) => {
-	console.log(data.message);
-	if (type === ChatStatus.DISCUSSION) {
-		if(chatStore.inDiscussion) {
-			chatStore.inDiscussion.messages.push({
-				date: data.date,
-				message: data.message,
-				idSender: data.idSender,
-			});
-		}
-	}
-	else {
-		if (chatStore.inChannel) {
-			chatStore.inChannel.messages.push({
-				date: data.date,
-				message: data.message,
-				idSender: data.idSender,
-			});
-		}
-	}
+socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
+	chatStore.addDiscussionMessage(discussion, data);
+});
+
+socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
+	chatStore.addChannelMessage(channel, data);
 });
 
 const isLoaded = computed(() => {
@@ -116,7 +102,8 @@ onBeforeMount(() => {
 					const user = globalStore.getUser(parseInt(route.query.discussion as string));
 					if (user) {
 						const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-						chatStore.createNewDiscussion(newDiscussion);
+						if (!chatStore.isNewDiscussion(newDiscussion))
+							chatStore.createNewDiscussion(newDiscussion, true);
 					}
 				}
 			}

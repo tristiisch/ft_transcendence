@@ -16,7 +16,7 @@ function createNewDiscussion()
 {
     if (globalStore.isTypeUser(globalStore.selectedItems[0])) {
         const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: globalStore.selectedItems[0], messages: [] as Message[] };
-        chatStore.createNewDiscussion(newDiscussion);
+        chatStore.createNewDiscussion(newDiscussion, true);
         globalStore.resetSelectedItems();
     }
 }
