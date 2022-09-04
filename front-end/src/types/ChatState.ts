@@ -15,6 +15,7 @@ export interface ChatState {
 	cardLeftPartToDisplay: PartToDisplay;
 	cardRightTitle: string;
 	messages: Message[];
+	isLoading: boolean;
 }
 
 export default ChatState;

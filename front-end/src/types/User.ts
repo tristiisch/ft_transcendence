@@ -14,13 +14,4 @@ export interface UserStatus {
 	status: Status;
 }
 
-export interface Auth {
-	token_jwt: string;
-	has_2fa: boolean;
-}
 
-export interface UserState {
-	userToken: string | null;
-	userAuth: Auth;
-	userData: User;
-}

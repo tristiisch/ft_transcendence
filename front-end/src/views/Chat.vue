@@ -2,9 +2,8 @@
 import { useUserStore } from '@/stores/userStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import type Message from '@/types/Message';
@@ -22,15 +21,12 @@ import SettingsChannel from '@/components/Chat/ChannelSettings/SettingsChannel.v
 import DiscussionList from '@/components/Chat/DiscussionList.vue';
 import Chat from '@/components/Chat/ChatRoot.vue';
 
-const toast = useToast();
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const route = useRoute();
+const router = useRouter();
 const displayDelete = ref([] as boolean[]);
-const error = ref('');
-const fetchLoaded = ref([false, false, false, false, false]);
-const isLoading = ref(true);
 
 function addButton() {
 	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
@@ -48,13 +44,6 @@ function setDisplayDelete(index: number) {
 function unsetDisplayDelete(index: number) {
 	displayDelete.value[index] = false;
 }
-
-// watch(fetchLoaded.value, () => {
-// 	if (fetchLoaded.value[0] === true && fetchLoaded.value[1] === true
-// 		&& fetchLoaded.value[2] === true && fetchLoaded.value[3] === true
-// 		&& fetchLoaded.value[4] === true)
-// 		isLoading.value = false;
-// });
 
 socket.on("chatDiscussionCreate", (discussion: Discussion) => {
 	chatStore.addNewDiscussion(discussion);
@@ -110,40 +99,15 @@ socket.on('chatMessage', (type: ChatStatus, data: {date: string, message: string
 	}
 });
 
+const isLoaded = computed(() => {
+	if (!chatStore.isLoading && userStore.isLoaded) return true;
+	return false;
+})
+
 onBeforeMount(() => {
-	globalStore.fetchUsers()
-	.then(() => {
-		fetchLoaded.value[0] = true;
-	})
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	globalStore.fetchfriends()
-	.then(() => {
-		fetchLoaded.value[1] = true;
-	})
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchChannels()
-	.then(() => {
-		fetchLoaded.value[2] = true;
-	})
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchUserChannels()
-	.then(() => {
-		fetchLoaded.value[3] = true;
-	})
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchUserDiscussions()
+	chatStore.isLoading = true
+	chatStore
+		.fetchAll()
 		.then(() => {
 			if (route.query.discussion) {
 				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
@@ -156,17 +120,17 @@ onBeforeMount(() => {
 					}
 				}
 			}
-			fetchLoaded.value[4] = true;
+			chatStore.isLoading = false
 		})
-		.catch((e: Error) => {
-			error.value = e.message;
-			toast.error(error.value);
-	});
+		.catch((error) => {
+			console.log(error)
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
 });
 </script>
 
 <template>
-	<base-ui>
+	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full px-8">

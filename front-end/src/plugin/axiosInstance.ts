@@ -12,7 +12,7 @@ instance.interceptors.response.use(
 		return response;
 	},
 	function (error) {
-		if ([401, 403, 0].includes(error.response.status)) {
+		if ([401, 403].includes(error.response.status)) {
 			const userStore = useUserStore();
 			userStore.handleLogout();
 		}

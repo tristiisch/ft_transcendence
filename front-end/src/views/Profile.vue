@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount, watch, computed, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import UsersService from '@/services/UserService';
-import socket from '@/plugin/socketInstance';
 import type User from '@/types/User';
 import type Stats from '@/types/Stats';
 import type MatchHistory from '@/types/MatchHistory';
@@ -17,17 +17,21 @@ import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
 
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
 const user = ref<User>();
 const userStats = ref<Stats>();
-const matchsHistory = ref<MatchHistory[]>();
-const friends = ref<User[]>();
-const error = ref('');
+const matchsHistory = ref<MatchHistory[]>([]);
+const isLoading = ref(false)
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
+
+const userId = computed(() => {
+	return parseInt(route.params.id as string)
+})
 
 function setRightCardTitle(displayPart: string) {
 	if (displayPart === 'Notifications') rightCardTitle.value = 'NOTIFICTIONS';
@@ -40,126 +44,76 @@ function setPartToDisplay(displayPart: string) {
 	setRightCardTitle(displayPart);
 }
 
-function fetchUser() {
-	UsersService.getUser(parseInt(route.params.id as string))
-		.then((response) => {
-			user.value = response.data;
-			fetchStats();
-			fetchMatchsHistory();
-			fetchfriends();
-		})
-		.catch((e) => {
-			if (e.response && e.response.status === 404)
-			{
-				router.replace({
-				name: 'NotFound',
-				params: { pathMatch: route.path.substring(1).split('/') },
-				});
-			}
-			else
-			{
-				if (e.response.data) error.value = e.response.data.message;
-				else error.value = "Something went wrong"
-				toast.error(error.value);
-			}
-		});
-}
-
 function fetchStats() {
-	UsersService.getStats(parseInt(route.params.id as string))
+	UsersService.getStats(userId.value)
 		.then((response) => {
 			userStats.value = response.data;
 			console.log(userStats.value);
 		})
-		.catch((e) => {
-			if (e.response.data) error.value = e.response.data.message;
-			else error.value = "Something went wrong"
-			toast.error(error.value);
+		.catch((error) => {
+			throw error
 		});
 }
 
 function fetchMatchsHistory() {
-	UsersService.getMatchsHistory(parseInt(route.params.id as string))
+	UsersService.getMatchsHistory(userId.value)
 		.then((response) => {
 			matchsHistory.value = response.data;
 			console.log(matchsHistory.value);
 		})
-		.catch((e) => {
-			if (e.response.data) error.value = e.response.data.message;
-			else error.value = "Something went wrong"
-			toast.error(error.value);
+		.catch((error) => {
+			throw error
 		});
 }
 
-function fetchfriends() {
-	UsersService.getUserfriends(userStore.userData.id)
-		.then((response) => {
-			friends.value = response.data;
+function fetchAll() {
+	Promise.all([fetchStats(), fetchMatchsHistory()])
+		.then(() => {
+			isLoading.value = false
 		})
-		.catch((e) => {
-			if (e.response.data) error.value = e.response.data.message;
-			else error.value = "Something went wrong"
-			toast.error(error.value);
-		});
-}
-
-function removeFriend(userId: number) {
-	if (friends.value) {
-		const index = friends.value.findIndex((element) => element.id === userId);
-		if (index !== -1) friends.value.splice(index, 1);
-	}
-}
-
-function updateStatus(data: User) {
-	if (user.value) if (data.id === user.value.id) user.value.status = data.status;
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		})
 }
 
 watch(
-	() => route.params.id,
+	() => userId.value,
 	() => {
-		if (parseInt(route.params.id as string) === userStore.userData.id) user.value = userStore.userData;
+		if (userId.value)
+		{
+			isLoading.value = true
+			if (isMe.value) user.value = userStore.userData;
+			else user.value = globalStore.getUser(userId.value)
+			console.log(userId.value)
+			fetchAll()
+		}
 	}
 );
 
 const isMe = computed(() => {
-	return parseInt(route.params.id as string) === userStore.userData.id;
+	return userId.value === userStore.userData.id;
 });
 
-const isLoading = computed(() => {
-	if (isMe.value) {
-		if ((user.value && userStats.value && matchsHistory.value) || error.value) return false;
-	} else if ((user.value && userStats.value && matchsHistory.value && friends.value) || error.value) return false;
-	return true;
+const isLoaded = computed(() => {
+	if (!isLoading.value && !globalStore.isLoading && userStore.isLoaded) return true;
+	return false;
 });
 
 onBeforeMount(() => {
-	if (isMe.value)
-	{
-		user.value = userStore.userData;
-		fetchStats();
-		fetchMatchsHistory();
-	}
-	else fetchUser();
-	socket.on('update_status', (data) => {
-		console.log(data);
-		updateStatus(data);
-	});
-});
-
-onBeforeUnmount(() => {
-	socket.off('update_status', (data) => {
-		updateStatus(data);
-	});
+	isLoading.value = true
+	if (isMe.value) user.value = userStore.userData;
+	else user.value = globalStore.getUser(userId.value)
+	fetchAll()
 });
 </script>
 
 <template>
-	<base-ui :isLoading="isLoading">
+	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
 					<player-profile :user="user"></player-profile>
-					<button-part @change-display="setPartToDisplay" @remove-Friend="removeFriend" :friends="friends"></button-part>
+					<button-part @change-display="setPartToDisplay"></button-part>
 					<rank-card :rank="userStats?.rank"></rank-card>
 				</div>
 			</card-left>

@@ -40,7 +40,7 @@ MatchService.loadMatch(match_id)
 		if (match_id != 1)
 		{
 			router.replace({
-				name: 'NotFound',
+				name: 'Error',
 				params: { pathMatch: route.path.substring(1).split('/') },
 			});
 		}

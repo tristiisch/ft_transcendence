@@ -2,6 +2,8 @@
 import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useGlobalStore } from '@/stores/globalStore';
+import { useUserStore } from '@/stores/userStore';
+import { useRoute, useRouter } from 'vue-router';
 import UsersService from '@/services/UserService';
 import type Match from '@/types/Match';
 import type User from '@/types/User';
@@ -13,9 +15,11 @@ import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
 
 const globalStore = useGlobalStore();
+const userStore = useUserStore();
+const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const matchs = ref<Match[] | null>(null);
-const error = ref('')
 const rightPartToDisplay = ref('gameSettings');
 const invitation = ref(false);
 const invitedUser = ref<User | undefined>();
@@ -34,10 +38,8 @@ function fetchCurrentMatchs() {
 		.then((response) => {
 			matchs.value = response.data;
 		})
-		.catch((e) => {
-			if (e.response.data) error.value = e.response.data.message;
-			else error.value = "Something went wrong"
-			toast.error(error.value);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
 }
 
@@ -59,10 +61,9 @@ function invitePlayer()
     }
 }
 
-const isLoading = computed(() => {
-	if (matchs.value || error.value)
-		return false;
-	return true;
+const isLoaded = computed(() => {
+	if (matchs.value && userStore.isLoaded) return true;
+	return false;
 });
 
 onBeforeMount(() => {
@@ -72,7 +73,7 @@ onBeforeMount(() => {
 
 
 <template>
-	<base-ui :isLoading="isLoading">
+	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-between items-center h-full flex-wrap sm:flex-col sm:flex-nowrap px-6">

@@ -129,9 +129,8 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div class="flex flex-col items-center justify-center h-full pb-32 mx-[8vw]">
-		<base-spinner v-if="isLoading"></base-spinner>
-		<div v-else class="flex flex-col items-center">
+	<base-spinner v-if="isLoading"></base-spinner>
+	<div v-else class="flex flex-col items-center justify-center pb-32 h-full mx-[8vw]">
 			<div class="font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
 			<button-gradient v-if="!userStore.userAuth.token_jwt" @click="redirectTo42LoginPage()">Login with 42
 			</button-gradient>
@@ -162,7 +161,6 @@ onBeforeMount(() => {
 				</form>
 			</BaseCard>
 		</div>
-	</div>
 	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]">
 	</div>
 </template>

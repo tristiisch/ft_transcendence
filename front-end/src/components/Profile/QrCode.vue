@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
 import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
 import Toogle from '@/components/Divers/ToogleButton.vue';
 
 const userStore = useUserStore();
+const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const twoFaCode = ref<number | null>(null);
 const isLoading = ref(false);
@@ -18,8 +21,8 @@ function toogle2FA() {
 				userStore.update2FA(false);
 				qrCode.value = ''
 			})
-			.catch((e: Error) => {
-				console.log(e);
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
 	} else {
 		isLoading.value = true;
@@ -29,9 +32,8 @@ function toogle2FA() {
 				qrCode.value = response.data
 				isLoading.value = false;
 			})
-			.catch((e: Error) => {
-				isLoading.value = false;
-				console.log(e);
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
 	}
 }
@@ -46,7 +48,8 @@ function validate2FA() {
 			console.log(response)
 		})
 		.catch((e) => {
-			toast.error(e.response.data.message);
+			if (e.response.data) toast.error(e.response.data.message)
+			else toast.error("Something went wrong")
 		});
 	}
 	else toast.error('Authentification code is empty');
@@ -54,7 +57,8 @@ function validate2FA() {
 </script>
 
 <template>
-	<div class="flex flex-col justify-center items-center h-full w-full gap-4 sm:gap-8 sm:mt-3">
+	<base-spinner small v-if="isLoading"></base-spinner>
+	<div v-else class="flex flex-col justify-center items-center h-full w-full gap-4 sm:gap-8 sm:mt-3">
 		<div class="flex flex-col justify-center gap-4 w-full">
 			<div class="flex justify-center w-full">
 				<span class="text-red-200 pr-2">OFF</span>
@@ -64,7 +68,6 @@ function validate2FA() {
 			<p v-if="!qrCode && !userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is disable</p>
 			<p v-if="!qrCode && userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is Enable</p>
 		</div>
-		<base-spinner small v-if="isLoading"></base-spinner>
 		<div v-if="qrCode && !isLoading" class="flex justify-center w-full">
 			<img :src="qrCode" alt="QR code" class="w-20 sm:w-32" />
 		</div>

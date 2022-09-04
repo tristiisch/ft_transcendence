@@ -22,7 +22,8 @@ export const useChatStore = defineStore('chatStore', {
 		cardRightPartToDisplay: PartToDisplay.CHAT,
 		cardLeftPartToDisplay: PartToDisplay.DISCUSSIONS,
 		cardRightTitle: 'CHAT',
-		messages: []
+		messages: [],
+		isLoading: false
 	}),
 	getters: {
 		leftPartIsDiscussion: (state) => state.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS,
@@ -32,20 +33,49 @@ export const useChatStore = defineStore('chatStore', {
 		displayAddDiscussion: (state) => state.cardRightPartToDisplay === PartToDisplay.ADD_DISCUSSION,
 		displayChat: (state) => state.cardRightPartToDisplay === PartToDisplay.CHAT,
 		isProtectedChannel: (state) => state.inChannel?.type === ChatStatus.PROTECTED && !state.inChannelRegistration,
-		getIndexChannels: (state) => { 
-			return  (channelName: string) => state.channels.findIndex((channel) => channel.name === channelName);
+		getIndexChannels: (state) => {
+			return (channelName: string) => state.channels.findIndex((channel) => channel.name === channelName);
 		},
 		getIndexUserChannels: (state) => {
-			return  (channelName: string) => state.userChannels.findIndex((userChannel) => userChannel.name === channelName);
+			return (channelName: string) => state.userChannels.findIndex((userChannel) => userChannel.name === channelName);
 		},
 		getIndexUserDiscussions: (state) => {
-			return  (discussion: Discussion) => state.userDiscussions.findIndex((userDiscussion) => userDiscussion.user.id === discussion.user.id);
+			return (discussion: Discussion) => state.userDiscussions.findIndex((userDiscussion) => userDiscussion.user.id === discussion.user.id);
 		},
-		getChannelsFiltered: (state) => { 
-			return  (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
+		getChannelsFiltered: (state) => {
+			return (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
 		},
 	},
 	actions: {
+		async fetchAll() {
+			try {
+				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchUserChannels() {
+			if (!this.userChannels.length)
+			{
+				try {
+					const response = await UserService.getUserChannels();
+					this.userChannels = response.data;
+				} catch (error: any) {
+					throw error;
+				}
+			}
+		},
+		async fetchUserDiscussions() {
+			if (!this.userDiscussions.length)
+			{
+				try {
+					const response = await UserService.getUserDiscussions();
+					this.userDiscussions = response.data;
+				} catch (error: any) {
+					throw error;
+				}
+			}
+		},
 		async fetchChannels() {
 			try {
 				const response = await UserService.getChannels();
@@ -53,22 +83,11 @@ export const useChatStore = defineStore('chatStore', {
 			} catch (error: any) {
 				throw error;
 			}
+			this.setCardRightTitle(this.cardRightPartToDisplay);
 		},
-		async fetchUserChannels() {
-			try {
-				const response = await UserService.getUserChannels();
-				this.userChannels = response.data;
-			} catch (error: any) {
-				throw error;
-			}
-		},
-		async fetchUserDiscussions() {
-			try {
-				const response = await UserService.getUserDiscussions();
-				this.userDiscussions = response.data;
-			} catch (error: any) {
-				throw error;
-			}
+		setLeftPartToDisplay(clickedOn: string) {
+			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS && clickedOn !== 'discussion') this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
+			else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS && clickedOn !== 'channels') this.cardLeftPartToDisplay = PartToDisplay.DISCUSSIONS;
 		},
 		setCardRightTitle(displayPart: PartToDisplay) {
 			if (displayPart === PartToDisplay.CHAT) this.cardRightTitle = 'CHAT';
@@ -83,10 +102,6 @@ export const useChatStore = defineStore('chatStore', {
 				else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS) this.cardRightPartToDisplay = PartToDisplay.ADD_CHANNEL;
 			}
 			this.setCardRightTitle(this.cardRightPartToDisplay);
-		},
-		setLeftPartToDisplay(clickedOn: string) {
-			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS && clickedOn !== 'discussion') this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
-			else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS && clickedOn !== 'channels') this.cardLeftPartToDisplay = PartToDisplay.DISCUSSIONS;
 		},
 		loadChannel(channel: Channel) {
 			if (this.inDiscussion) this.inDiscussion = null;
@@ -149,14 +164,14 @@ export const useChatStore = defineStore('chatStore', {
 			if (index >= 0) channel.users.splice(index, 1);
 			if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
 		},
-		deleteUserDiscussion(index: number) { 
+		deleteUserDiscussion(index: number) {
 			const userStore = useUserStore();
 			if (index >= 0) {
 				this.userDiscussions.splice(index, 1);
 				socket.emit('chatDiscussionDelete', (this.userDiscussions[index], userStore.userData.id))
 			}
 		},
-		deleteUserChannel(indexUserChannel: number) { 
+		deleteUserChannel(indexUserChannel: number) {
 			const indexChannel = this.getIndexChannels(this.userChannels[indexUserChannel].name)
 			this.channels.splice(indexChannel, 1);
 			socket.emit('chatChannelDelete', this.userChannels[indexUserChannel])
@@ -192,7 +207,7 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				index = this.getIndexUserChannels(channel.name);
 				this.userChannels[index].name = newName;
-			}		
+			}
 		},
 		updateBanList(channel: Channel, newBanList: User[]) {
 			let index = this.getIndexChannels(channel.name);
@@ -260,14 +275,14 @@ export const useChatStore = defineStore('chatStore', {
 			for (const user of channel.users)
 					if (user.id === userStore.userData.id) this.inChannelRegistration = true;
 		},
-		shiftPositionUserChannel( channel: Channel) { 
+		shiftPositionUserChannel( channel: Channel) {
 			const fromIndex = this.getIndexUserChannels(channel.name)
 			if (fromIndex > 0) {
 				const element = this.userChannels.splice(fromIndex, 1)[0];
 				this.userChannels.unshift(element);
 			}
 		},
-		shiftPositionUserDiscussion( discussion: Discussion) { 
+		shiftPositionUserDiscussion( discussion: Discussion) {
 			const fromIndex = this.getIndexUserDiscussions(discussion)
 			if (fromIndex > 0) {
 				const element = this.userDiscussions.splice(fromIndex, 1)[0];

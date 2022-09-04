@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import UsersService from '@/services/UserService';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 
-import type User from '@/types/User';
-
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
 const route = useRoute();
+const router = useRouter();
 const pending = ref(false);
 const displayPart = ref('Player Stats');
 
 const emit = defineEmits<{
 	(e: 'changeDisplay', displayedPart: string): void;
-	(e: 'removeFriend', userId: number): void;
 }>();
 
-const props = defineProps<{ friends?: User[] }>();
+const userId = computed(() => {
+	return parseInt(route.params.id as string)
+})
 
-function isUser() {
-	if (parseInt(route.params.id as string) === userStore.userData.id) return true;
+const isUser = computed(() =>  {
+	if (userId.value === userStore.userData.id) return true;
 	return false;
-}
+})
 
 function setDisplayedPart(button: number) {
 	if (button === 1)
@@ -35,31 +37,30 @@ function setDisplayedPart(button: number) {
 }
 
 function treatFriendRequest() {
-	if (friendButton.value === 'Add friend')
-		UsersService.sendFriendRequest(parseInt(route.params.id as string))
+	if (!globalStore.isFriend(userId.value)) {
+		UsersService.sendFriendRequest(userId.value)
 			.then(() => {
 				pending.value = true;
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
-	else if (friendButton.value === 'Remove friend')
-		UsersService.removeFriend(parseInt(route.params.id as string))
+	}
+	else {
+		UsersService.removeFriend(userId.value)
 			.then(() => {
-				emit('removeFriend', parseInt(route.params.id as string));
+				globalStore.removeFriend(userId.value)
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
+	}
 }
 
 const friendButton = computed(() => {
-	if (props.friends) {
-		for (const friend of props.friends) {
-			if (friend.id === parseInt(route.params.id as string)) return 'Remove friend';
-		}
-	}
-	if (pending.value === true) return 'Pending';
+	console.log(globalStore.isFriend(userId.value))
+	if (globalStore.isFriend(userId.value)) return 'Remove friend';
+	else if (pending.value === true) return 'Pending';
 	return 'Add friend';
 });
 
@@ -75,7 +76,7 @@ const button2Name = computed(() => {
 </script>
 
 <template>
-	<div v-if="!isUser()" class="flex flex-col gap-4">
+	<div v-if="!isUser" class="flex flex-col gap-4">
 		<button-gradient @click="treatFriendRequest()">
 			{{ friendButton }}
 		</button-gradient>

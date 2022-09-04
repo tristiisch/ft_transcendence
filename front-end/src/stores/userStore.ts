@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
+import type { UserState, Auth } from '@/types/UserState';
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
 import TokenService from '@/services/TokenService';
-import type { UserState, Auth } from '@/types/User';
 import type User from '@/types/User';
 import status from '@/types/Status';
 import socket from '@/plugin/socketInstance';
-import router from '@/router/index';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -15,8 +14,9 @@ export const useUserStore = defineStore('userStore', {
 		userData: {} as User,
 	}),
 	getters: {
-		isLoggedIn: (state) => state.userToken != null,
-		isRegistered: (state) => state.userData && state.userData.username != null,
+		isLoggedIn: (state) => state.userToken !== null,
+		isRegistered: (state) => state.userData.username !== null,
+		isLoaded: (state) => state.userData.id !== undefined && state.userData.username !== undefined && state.userData.avatar !== undefined
 	},
 	actions: {
 		saveToken() {
@@ -52,10 +52,7 @@ export const useUserStore = defineStore('userStore', {
 		handleLogout() {
 			socket.emit('update_status', status.OFFLINE )
 			TokenService.removeLocalToken()
-			this.userToken = null
-			this.userAuth = {} as Auth,
-			this.userData = {} as User,
-			router.replace({name: 'Login'})
+			location.reload()
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
@@ -63,6 +60,14 @@ export const useUserStore = defineStore('userStore', {
 				this.userData.username = newUsername;
 				this.userData.avatar = newAvatar;
 				this.saveToken()
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchMe() {
+			try {
+				const response = await UserService.getMe();
+				this.userData = response.data;
 			} catch (error: any) {
 				throw error;
 			}

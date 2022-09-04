@@ -12,7 +12,8 @@ export const useGlobalStore = defineStore('globalStore', {
 	state: (): GlobalState => ({
 		users: [],
 		friends: [],
-		selectedItems: []
+		selectedItems: [],
+		isLoading: false
 	}),
 	getters: {
 		isTypeArrayUsers: (state) => {
@@ -20,6 +21,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		isTypeUser: (state) => {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
+		},
+		isFriend: (state) => {
+			return (userId: number) => state.friends.some((friend) => friend.id === userId);
 		},
 		getUserName: (state) => {
 			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
@@ -33,30 +37,42 @@ export const useGlobalStore = defineStore('globalStore', {
 		getUser: (state) => {
 			return (userId: number) => state.users.find((user) => user.id === userId);
 		},
-		getIndexSelectedItems: (state) => { 
+		getIndexSelectedItems: (state) => {
 			return  (user: User) => state.selectedItems.findIndex((userSelectioned) => userSelectioned.id === user.id);
 		},
-		getUsersFiltered: (state) => { 
+		getUsersFiltered: (state) => {
 			return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
 		},
-		
 	},
-    actions: {
-		async fetchUsers() {
+	actions: {
+		async fetchAll() {
 			try {
-				const response = await UserService.getUsers();
-				this.users = response.data;
+				await Promise.all([this.fetchUsers(), this.fetchfriends()]);
 			} catch (error: any) {
 				throw error;
 			}
 		},
+		async fetchUsers() {
+			if (!this.users.length)
+			{
+				try {
+					const response = await UserService.getUsers();
+					this.users = response.data;
+				} catch (error: any) {
+					throw error;
+				}
+			}
+		},
 		async fetchfriends() {
-			try {
-				const userStore = useUserStore();
-				const response = await UserService.getUserfriends(userStore.userData.id);
-				this.friends = response.data;
-			} catch (error: any) {
-				throw error;
+			if (!this.friends.length)
+			{
+				try {
+					const userStore = useUserStore();
+					const response = await UserService.getUserfriends(userStore.userData.id);
+					this.friends = response.data;
+				} catch (error: any) {
+					throw error;
+				}
 			}
 		},
 		checkChangeInArray(baseArray: User[]) {
@@ -80,6 +96,19 @@ export const useGlobalStore = defineStore('globalStore', {
 			const index = this.users.findIndex(user => user.id === userToRemoveId);
 			this.users.splice(index, 1);
 		},
-    }
+		removeFriend(friendToRemoveId: number) {
+			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
+			this.friends.splice(index, 1);
+		},
+		updateUser(userToChange: User) {
+			const index = this.users.findIndex(user => user.id === userToChange.id);
+			this.users[index] = userToChange
+			if (this.isFriend(userToChange.id))
+			{
+				const index = this.friends.findIndex(friend => friend.id === userToChange.id);
+				this.users[index] = userToChange
+			}
+		}
+
+	}
 });
-	

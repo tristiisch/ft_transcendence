@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
+	history: createWebHistory(),
 	routes: [
 		{ path: '/', redirect: '/login' },
 		{
@@ -55,11 +55,11 @@ const router = createRouter({
 		},
 		{
 			path: '/:pathMatch(.*)*',
-			name: 'NotFound',
-			component: () => import('@/views/NotFound.vue'),
+			name: 'Error',
+			component: () => import('@/views/Error.vue'),
 			//meta: { requiresAuth: true },
 		},
-		{ path: '/:notFound(.*)', name: 'notFound', component: () => import('@/views/NotFound.vue') },
+		//{ path: '/:notFound(.*)', name: 'NotFound', component: () => import('@/views/NotFound.vue') },
 	],
 });
 
