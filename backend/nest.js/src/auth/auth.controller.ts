@@ -4,9 +4,9 @@ import axios from 'axios';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/users/entity/user.entity';
+import { User } from '../users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 
 @Controller("auth")
 export class AuthController {
