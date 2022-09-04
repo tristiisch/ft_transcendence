@@ -24,6 +24,12 @@ const router = createRouter({
 			//meta: { requiresAuth: true },
 		},
 		{
+			path: '/matchmaking',
+			name: 'Matchmaking',
+			component: () => import('@/views/Matchmaking.vue'),
+			//meta: { requiresAuth: true },
+		},
+		{
 			path: '/profile/:id(\\d+)',
 			name: 'Profile',
 			component: () => import('@/views/Profile.vue'),

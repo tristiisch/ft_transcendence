@@ -12,7 +12,7 @@ import status from '@/types/Status';
 
 const route = useRoute()
 const router = useRouter()
-var match_id = route.params.id
+var match_id = parseInt(route.params.id as string)
 var isLoaded = ref(false)
 
 const userStore = useUserStore()
@@ -37,7 +37,7 @@ MatchService.loadMatch(match_id)
 		console.log("parsed match!", response)
 	})
 	.catch((e) => {
-		if (match_id != "devtmp")
+		if (match_id != 1)
 		{
 			router.replace({
 				name: 'NotFound',
@@ -73,7 +73,7 @@ onMounted(() => {
 		height: computeStageHeight(),
 		width: stage_width
 	})
-	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
+	//stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
 	var layer = new Konva.Layer()
 
@@ -95,14 +95,6 @@ onMounted(() => {
 		x: stage.width() / blocker_xpos_quotient,
 		y: stage.height() / 2 - blockers_height / 2,
 		fill: 'red',
-		draggable: true,
-		dragBoundFunc: function (pos) {
-			socket.emit("p1_dy", pos.y / fullstage_ratio)
-			return {
-				x: this.absolutePosition().x,
-				y: pos.y
-			};
-		}
 	})
 	var p2_blocker = new Konva.Rect({
 		width: blockers_width,
@@ -111,6 +103,23 @@ onMounted(() => {
 		y: stage.height() / 2 - blockers_height / 2,
 		fill: 'red'
 	})
+
+	var stage_container = document.getElementById('stage-container')!
+	stage_container.addEventListener('mousemove', playerMove);
+	function playerMove(event: any) {
+		var stage_pos = stage_container.getBoundingClientRect()
+		var mouse_ypos = event.clientY - stage_pos.y
+
+		if (mouse_ypos < computeBlockerHeight() / 2) {
+			p1_blocker.y(0)
+		} else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2) {
+			p1_blocker.y(stage.height() - computeBlockerHeight())
+		} else {
+			p1_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
+		socket.emit("p1_ypos", p1_blocker.y())
+    }
+}
+
 	// document.addEventListener("keydown", function(e) {
 	// 	// console.log(e.key)
 	// 	if (e.key == 'ArrowDown') {
@@ -168,6 +177,8 @@ onMounted(() => {
 		ball.x(x * fullstage_ratio)
 		ball.y(y * fullstage_ratio)
 	});
+	socket.on("p1_ypos", (y) => p1_blocker.y(y))
+	socket.on("p2_ypos", (y) => p2_blocker.y(y))
 	socket.emit("match", match_id)
 	socket.on("hey", (s: string) => {
 		console.log(s)
@@ -187,7 +198,7 @@ onBeforeUnmount(() => {
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> / VS \</h1>
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">2</h1>
 		</div>
-		<div class="flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
+		<!-- <div class="flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
 			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-left z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ player1.username }}</h1>
 			</base-button>
@@ -199,7 +210,7 @@ onBeforeUnmount(() => {
 				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ player2.username }}</h1>
 			</base-button>
 			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
-		</div>
+		</div> -->
 		<div class="w-[calc(1_*_100vh)] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div>
 		<div class="w-[calc(1_*_100vh)] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
@@ -207,8 +218,8 @@ onBeforeUnmount(() => {
 		<div class="w-[calc(1_*_100vh)] absolute opacity-10 m-auto left-0 right-0 top-3 h-3/4 bg-TvScreenPixel"></div>
 		<div id="stage-container"></div>
 
-		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
 	</div>
+		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
 	<!-- <div class="relative flex flex-col h-full w-full justify-center bg-[#9f9e89] bg-TvScreen-texture">
 		<div class="h-full w-full bg-contain bg-TvScreen bg-no-repeat bg-center z-10 xl:my-6 flex">
 		</div>
