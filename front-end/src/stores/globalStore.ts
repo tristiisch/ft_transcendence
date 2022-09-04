@@ -8,13 +8,10 @@ import type Channel from '@/types/Channel';
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
 
-const userStore = useUserStore();
-
 export const useGlobalStore = defineStore('globalStore', {
 	state: (): GlobalState => ({
 		users: [],
 		friends: [],
-		channels: [],
 		selectedItems: []
 	}),
 	getters: {
@@ -25,19 +22,16 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
 		getUserName: (state) => {
-			return (senderId: number) => state.users.find((user) => user.id === senderId)?.username;
+			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
 		},
 		getUserAvatar: (state) => {
-			return (senderId: number) => state.users.find((user) => user.id === senderId)?.avatar;
+			return (idSender: number) => state.users.find((user) => user.id === idSender)?.avatar;
 		},
 		getUserId: (state) => {
-			return (senderId: number) => state.users.find((user) => user.id === senderId)?.id;
+			return (idSender: number) => state.users.find((user) => user.id === idSender)?.id;
 		},
 		getUser: (state) => {
 			return (userId: number) => state.users.find((user) => user.id === userId);
-		},
-		getIndexChannels: (state) => { 
-			return  (inChannel: Channel) => state.channels.findIndex((channel) => channel.name === inChannel.name);
 		},
 		getIndexSelectedItems: (state) => { 
 			return  (user: User) => state.selectedItems.findIndex((userSelectioned) => userSelectioned.id === user.id);
@@ -45,9 +39,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		getUsersFiltered: (state) => { 
 			return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
 		},
-		getChannelsFiltered: (state) => { 
-			return  (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
-		},
+		
 	},
     actions: {
 		async fetchUsers() {
@@ -58,16 +50,9 @@ export const useGlobalStore = defineStore('globalStore', {
 				throw error;
 			}
 		},
-		async fetchChannels() {
-			try {
-				const response = await UserService.getChannels();
-				this.channels = response.data;
-			} catch (error: any) {
-				throw error;
-			}
-		},
 		async fetchfriends() {
 			try {
+				const userStore = useUserStore();
 				const response = await UserService.getUserfriends(userStore.userData.id);
 				this.friends = response.data;
 			} catch (error: any) {
@@ -87,7 +72,14 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		resetSelectedItems() {
 			this.selectedItems = []
-		}
+		},
+		addUser(user: User) {
+			this.users.push(user);
+		},
+		removeUser(userToRemoveId: number) {
+			const index = this.users.findIndex(user => user.id === userToRemoveId);
+			this.users.splice(index, 1);
+		},
     }
 });
 	

@@ -12,11 +12,11 @@ const emit = defineEmits<{
 function deleteChannelDiscussion(index: number)
 {
     if (props.isChannel) {
-        chatStore.deleteChannel(index)
+        chatStore.deleteUserChannel(index)
         emit('close')
     }
     else {
-        chatStore.deleteDiscussion(index)
+        chatStore.deleteUserDiscussion(index)
         emit('close')
     }
 }

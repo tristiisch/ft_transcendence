@@ -68,18 +68,6 @@ onMounted(() => {
 onUnmounted(() => {
 window.removeEventListener('resize', handleResize)
 })
-
-onBeforeMount(() => {
-	globalStore.fetchUsers().catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	globalStore.fetchfriends().catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-});
-
 </script>
 
 <template>

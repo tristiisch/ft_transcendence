@@ -5,6 +5,7 @@ import type Message from '@/types/Message';
 import type PartToDisplay from '@/types/ChatPartToDisplay';
 
 export interface ChatState {
+	channels: Channel[];
 	userDiscussions: Discussion[];
 	inDiscussion: Discussion | null;
 	userChannels: Channel[];

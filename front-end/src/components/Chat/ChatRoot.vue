@@ -23,16 +23,6 @@ function sendMessage() {
 	newMessage.value = ''
 	scrollToEnd()
 }
-
-socket.on('chat-message', (data) => {
-	console.log(data.sender);
-	chatStore.messages.push({
-		date: data.date,
-		message: data.message,
-		idSender: data.id,
-	});
-});
-
 </script>
 
 <template>

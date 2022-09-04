@@ -95,16 +95,10 @@ function isType()
 		return 'ban'
 }
 
-// socket.on('chat-channel-ban', (data: User[]) => { 
-// 	props.inChannel.banned = data
-// 	for(const user of data) {
-// 		deleteUserFromChannel(user)
-// 	}
-// });
-// socket.on('chat-channel-mute', (data: User[]) => { props.inChannel.mute = data });
-// socket.on('chat-channel-admin', (data: User[]) => { props.inChannel.admin = data });
-// socket.on('chat-channel-leave', (data: User) => { leaveChannel(data) });
-
+function leaveChannel() {
+	if (chatStore.inChannel) 
+		chatStore.leaveChannel(chatStore.inChannel, userStore.userData)
+}
 </script>
 
 <template>
@@ -129,7 +123,7 @@ function isType()
 				<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Ban
 				</button>
-				<button :class="setColSpan()" @click="chatStore.leaveChannel(userStore.userData)" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">Leave channel</button>
+				<button :class="setColSpan()" @click="leaveChannel()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">Leave channel</button>
 			</div>
 		</div>
 		<button-return-next v-if="displayButton()" :side="'previous'" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)" class="self-end"></button-return-next>

@@ -30,17 +30,17 @@ function changeDisplayToAllUsers() {
     filterButton.value = 'All';
 }
 function changeDisplayToPublic() {
-	const ChannelsUserNotIn= globalStore.getChannelsFiltered(chatStore.userChannels);
+	const ChannelsUserNotIn= chatStore.getChannelsFiltered(chatStore.userChannels);
     itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PUBLIC);
     filterButton.value = 'Public';
 }
 function changeDisplayToProtected() {
-	const ChannelsUserNotIn = globalStore.getChannelsFiltered(chatStore.userChannels);
+	const ChannelsUserNotIn = chatStore.getChannelsFiltered(chatStore.userChannels);
     itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PROTECTED);
     filterButton.value = 'Protected';
 }
 function changeDisplayToAllChannels() {
-    itemsToDisplay.value = globalStore.getChannelsFiltered(chatStore.userChannels);
+    itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
 	filterButton.value = 'All';
 }
 
@@ -64,7 +64,7 @@ watch(
 
 onBeforeMount(() => {
 	if (props.type === 'users') itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
-	else itemsToDisplay.value = globalStore.getChannelsFiltered(chatStore.userChannels);
+	else itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
 });
 </script>
 

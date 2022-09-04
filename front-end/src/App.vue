@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import axios from '@/plugin/axiosInstance';
-import UserService from '@/services/UserService';
-import TokenService from '@/services/TokenService';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
-import socket from '@/plugin/socketInstance';
 import { useToast } from 'vue-toastification';
+import TokenService from '@/services/TokenService';
+import UserService from '@/services/UserService';
+import axios from '@/plugin/axiosInstance';
+import socket from '@/plugin/socketInstance';
+import type User from '@/types/User';
 
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
+const chatStore = useChatStore();
 const toast = useToast();
 
 if (TokenService.isLocalToken()) {
@@ -23,6 +28,14 @@ if (TokenService.isLocalToken()) {
 			userStore.handleLogout();
 		});
 }
+
+socket.on("userAdd", (user: User) => {
+	globalStore.addUser(user);
+});
+
+socket.on("userRemove", (userToRemoveId: number) => {
+	globalStore.removeUser(userToRemoveId);
+});
 </script>
 
 <template>

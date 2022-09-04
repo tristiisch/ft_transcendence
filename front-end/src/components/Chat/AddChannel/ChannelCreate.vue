@@ -65,7 +65,10 @@ function treatNewChannelData()
             banned: [],
             messages: []
         }
-        chatStore.addNewChannel(newChannel)
+        if (!globalStore.isTypeUser(newChannel)) {
+            chatStore.createNewChannel(newChannel)
+            globalStore.resetSelectedItems();
+        }
     }
 }
 

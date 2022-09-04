@@ -11,11 +11,9 @@ import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 
-const userStore = useUserStore();
-const globalStore = useGlobalStore();
-
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
+		channels: [],
 		userDiscussions: [],
 		inDiscussion: null,
 		userChannels: [],
@@ -27,7 +25,6 @@ export const useChatStore = defineStore('chatStore', {
 		messages: []
 	}),
 	getters: {
-		isLoading: (state) => (state.userDiscussions && state.userChannels ? false : true),
 		leftPartIsDiscussion: (state) => state.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS,
 		displayChannel: (state) => state.cardRightPartToDisplay === PartToDisplay.CHANNELS,
 		displayChannelSettings: (state) => state.cardRightPartToDisplay === PartToDisplay.CHANNEL_SETTINGS,
@@ -35,34 +32,24 @@ export const useChatStore = defineStore('chatStore', {
 		displayAddDiscussion: (state) => state.cardRightPartToDisplay === PartToDisplay.ADD_DISCUSSION,
 		displayChat: (state) => state.cardRightPartToDisplay === PartToDisplay.CHAT,
 		isProtectedChannel: (state) => state.inChannel?.type === ChatStatus.PROTECTED && !state.inChannelRegistration,
+		getIndexChannels: (state) => { 
+			return  (channelName: string) => state.channels.findIndex((channel) => channel.name === channelName);
+		},
 		getIndexUserChannels: (state) => {
-			return  (channel: Channel) => state.userChannels.findIndex((userChannel) => userChannel.name === channel.name);
+			return  (channelName: string) => state.userChannels.findIndex((userChannel) => userChannel.name === channelName);
 		},
 		getIndexUserDiscussions: (state) => {
 			return  (discussion: Discussion) => state.userDiscussions.findIndex((userDiscussion) => userDiscussion.user.id === discussion.user.id);
 		},
+		getChannelsFiltered: (state) => { 
+			return  (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
+		},
 	},
 	actions: {
-		async fetchUsers() {
-			try {
-				const response = await UserService.getUsers();
-				this.users = response.data;
-			} catch (error: any) {
-				throw error;
-			}
-		},
 		async fetchChannels() {
 			try {
 				const response = await UserService.getChannels();
-				this.Channels = response.data;
-			} catch (error: any) {
-				throw error;
-			}
-		},
-		async fetchfriends() {
-			try {
-				const response = await UserService.getUserfriends(userStore.userData.id);
-				this.friends = response.data;
+				this.channels = response.data;
 			} catch (error: any) {
 				throw error;
 			}
@@ -83,114 +70,6 @@ export const useChatStore = defineStore('chatStore', {
 				throw error;
 			}
 		},
-		loadChannel(channel: Channel) {
-			if (this.inDiscussion) this.inDiscussion = null;
-			this.inChannel = channel;
-			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			this.messages = this.inChannel.messages;
-			const fromIndex = this.getIndexUserChannels(channel);
-			if (fromIndex > 0) {
-				// shift channel to top of channel list
-				const element = this.userChannels.splice(fromIndex, 1)[0];
-				this.userChannels.unshift(element);
-			}
-			if (this.inChannel.type === ChatStatus.PROTECTED) {
-				for (const user of channel.users)
-					if (user.id === userStore.userData.id) this.inChannelRegistration = true;
-			}
-		},
-		loadDiscussion(discussion: Discussion) {
-			if (this.inChannel) this.inChannel = null;
-			this.inDiscussion = discussion;
-			this.messages = this.inDiscussion.messages;
-			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			const fromIndex = this.getIndexUserDiscussions(discussion)
-			if (fromIndex > 0) {
-				// shift discussion to top of discussion list
-				const element = this.userDiscussions.splice(fromIndex, 1)[0];
-				this.userDiscussions.unshift(element);
-			}
-		},
-		addNewChannel(newChannel: Channel) {
-			if (!globalStore.isTypeUser(newChannel)) {
-				// socket.emit('chat-userDiscussion-add', channelToDelete)
-				if (this.userChannels.length) this.userChannels.unshift(newChannel);
-				else this.userChannels.push(newChannel);
-				globalStore.channels.push(newChannel);
-				this.loadChannel(this.userChannels[0]);
-				globalStore.resetSelectedItems();
-			}
-		},
-		addNewDiscussion() {
-			if (this.userDiscussions && globalStore.isTypeUser(globalStore.selectedItems[0])) {
-				for (const discussion of this.userDiscussions) {
-					if (discussion.user.id === globalStore.selectedItems[0].id) {
-						this.loadDiscussion(discussion);
-						globalStore.resetSelectedItems();
-						return;
-					}
-				}
-			}
-			if (globalStore.isTypeUser(globalStore.selectedItems[0])) {
-				// socket.emit('chat-userDiscussion-add', channelToDelete)
-				const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: globalStore.selectedItems[0], messages: [] as Message[] };
-				if (this.userDiscussions.length) this.userDiscussions.unshift(newDiscussion);
-				else this.userDiscussions.push(newDiscussion);
-				this.loadDiscussion(this.userDiscussions[0]);
-				globalStore.resetSelectedItems();
-
-			}
-		},
-		joinNewChannel() {
-			//send to back
-			if (!globalStore.isTypeUser(globalStore.selectedItems[0])) {
-				if (this.userChannels.length > 0)
-					this.userChannels.unshift(globalStore.selectedItems[0]);
-				else
-					this.userChannels.push(globalStore.selectedItems[0]);
-			}
-			this.inChannel = this.userChannels[0];
-			this.setRightPartToDisplay(PartToDisplay.CHAT);
-			globalStore.resetSelectedItems();
-		},
-		deleteDiscussion(index: number) {
-			if (this.userDiscussions) {
-				if (index >= 0) {
-					this.userDiscussions.splice(index, 1);
-					// socket.emit('chat-discussion-delete', discussions.value[index])
-				}
-			}
-		},
-		deleteUserChannel(index: number) {
-			if (this.userChannels) {
-				if (index >= 0) {
-					this.userChannels.splice(index, 1);
-					// socket.emit('chat-userChannel-delete', channelToDelete)
-				}
-			}
-		},
-		deleteChannel(index: number) {
-			if (this.userChannels) {
-				if (index >= 0) {
-					this.userChannels.splice(index, 1);
-					// socket.emit('chat-channel-delete', channelToDelete)
-				}
-			}
-		},
-		deleteUserFromChannel(userToDelete: User) {
-			if (this.inChannel) {
-				let index = this.inChannel.admins.findIndex((user) => user.id === userToDelete.id);
-				if (index >= 0) this.inChannel.admins.splice(index, 1);
-				index = this.inChannel.muted.findIndex((user) => user.id === userToDelete.id);
-				if (index >= 0) this.inChannel.muted.splice(index, 1);
-				index = this.inChannel.users.findIndex((user) => user.id === userToDelete.id);
-				if (index >= 0) this.inChannel.users.splice(index, 1);
-				if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
-			}
-		},
-		registrationToChannel() {
-			this.inChannelRegistration = true;
-		},
 		setCardRightTitle(displayPart: PartToDisplay) {
 			if (displayPart === PartToDisplay.CHAT) this.cardRightTitle = 'CHAT';
 			else if (displayPart === PartToDisplay.ADD_DISCUSSION) this.cardRightTitle = 'DISCUSSION';
@@ -209,83 +88,200 @@ export const useChatStore = defineStore('chatStore', {
 			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS && clickedOn !== 'discussion') this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
 			else if (this.cardLeftPartToDisplay === PartToDisplay.CHANNELS && clickedOn !== 'channels') this.cardLeftPartToDisplay = PartToDisplay.DISCUSSIONS;
 		},
-		UpdateChannelNamePassword(password: string, name: string) {
-			if (this.inChannel) {
-				if (password != '' && password != this.inChannel.password) {
-					this.inChannel.password = password;
-					//post password to back
-				}
-				if (name != '' && name != this.inChannel.name) {
-					this.inChannel.name = name;
-					//post password to back
-				}
+		loadChannel(channel: Channel) {
+			if (this.inDiscussion) this.inDiscussion = null;
+			this.inChannel = channel;
+			this.setRightPartToDisplay(PartToDisplay.CHAT);
+			this.messages = this.inChannel.messages;
+			this.shiftPositionUserChannel(channel);
+			if (this.inChannel.type === ChatStatus.PROTECTED) {
+				this.userIsRegistered(channel);
 			}
 		},
-		updateBanArray() {
-			if (this.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-				if (globalStore.checkChangeInArray(this.inChannel.banned)) {
-					for (const selectedUser of globalStore.selectedItems) this.deleteUserFromChannel(selectedUser);
-					this.inChannel.banned = globalStore.selectedItems;
-					//socket.emit('chat-channel-ban', selectedUsers)
-				}
-				globalStore.resetSelectedItems();
+		loadDiscussion(discussion: Discussion) {
+			if (this.inChannel) this.inChannel = null;
+			this.inDiscussion = discussion;
+			this.messages = this.inDiscussion.messages;
+			this.setRightPartToDisplay(PartToDisplay.CHAT);
+			this.shiftPositionUserDiscussion(discussion);
+		},
+		addNewChannel(channel: Channel) {
+			this.channels.push(channel);
+		},
+		addNewDiscussion(discussion: Discussion) {
+			this.userDiscussions.push(discussion);
+		},
+		createNewDiscussion(discussion: Discussion) {
+			const userStore = useUserStore();
+			if (!this.isNewDiscussion(discussion)) {
+			this.userDiscussions.length ? this.userDiscussions.unshift(discussion) : this.userDiscussions.push(discussion)
+			socket.emit('chatDiscussionCreate', userStore.userData, discussion)
+			this.loadDiscussion(this.userDiscussions[0]);
 			}
 		},
-		updateMuteArray() {
-			if (this.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-				if (globalStore.checkChangeInArray(this.inChannel.muted)) {
-					this.inChannel.muted = globalStore.selectedItems;
-					//socket.emit('chat-channel-admin', selectedUsers);
-				}
-				globalStore.resetSelectedItems();
+		addUserToChannel(channelName: string, user: User) {
+			let index = this.getIndexChannels(channelName);
+			this.channels[index].users.push(user);
+			index = this.getIndexUserChannels(channelName);
+			this.userChannels[index].users.push(user)
+		},
+		createNewChannel(newChannel: Channel) {
+			const userStore = useUserStore();
+			if (newChannel.type === ChatStatus.PUBLIC || newChannel.type === ChatStatus.PRIVATE )
+				this.channels.push(newChannel);
+			this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
+			socket.emit('chatChannelCreate', userStore.userData.id, newChannel)
+			this.loadChannel(this.userChannels[0]);
+		},
+		joinNewChannel(channel : Channel) {
+			const userStore = useUserStore();
+			this.userChannels.length ? this.userChannels.unshift(channel) : this.userChannels.push(channel);
+			this.inChannel = this.userChannels[0];
+			socket.emit('chatChannelJoin', channel.name, userStore.userData.id)
+			this.setRightPartToDisplay(PartToDisplay.CHAT);
+		},
+		deleteUserFromChannel(channel: Channel, userToDelete: User) {
+			let index = channel.admins.findIndex((user) => user.id === userToDelete.id);
+			if (index >= 0) channel.admins.splice(index, 1);
+			index = channel.muted.findIndex((user) => user.id === userToDelete.id);
+			if (index >= 0) channel.muted.splice(index, 1);
+			index = channel.users.findIndex((user) => user.id === userToDelete.id);
+			if (index >= 0) channel.users.splice(index, 1);
+			if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
+		},
+		deleteUserDiscussion(index: number) { 
+			const userStore = useUserStore();
+			if (index >= 0) {
+				this.userDiscussions.splice(index, 1);
+				socket.emit('chatDiscussionDelete', (this.userDiscussions[index], userStore.userData.id))
 			}
 		},
-		updateAdminArray() {
-			if (this.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-				if (globalStore.checkChangeInArray(this.inChannel.admins)) {
-					this.inChannel.admins = globalStore.selectedItems;
-					//socket.emit('chat-channel-mute', selectedUsers);
-				}
-				globalStore.resetSelectedItems();
+		deleteUserChannel(indexUserChannel: number) { 
+			const indexChannel = this.getIndexChannels(this.userChannels[indexUserChannel].name)
+			this.channels.splice(indexChannel, 1);
+			socket.emit('chatChannelDelete', this.userChannels[indexUserChannel])
+			this.userChannels.splice(indexUserChannel, 1);
+		},
+		deleteChannel(channel: Channel) {
+			let index = this.getIndexChannels(channel.name)
+			if (index >= 0) this.channels.splice(index, 1);
+			index = this.getIndexUserChannels(channel.name);
+			if (index >= 0) this.deleteUserChannel(index);
+		},
+		leaveChannel(channel: Channel, user: User) {
+			const userStore = useUserStore();
+			this.deleteUserFromChannel(channel, user);
+			if (channel.users.length > 1) {
+				if (channel.owner.id === user.id) channel.owner = channel.admins[0];
+				if (userStore.userData.id === user.id) socket.emit('chatChannelLeave', userStore.userData);
+			}
+			else {
+				this.deleteChannel(channel);
+				if (userStore.userData.id === user.id) socket.emit('chatChannelDelete', channel)
+			}
+			this.inChannel = null;
+			this.setRightPartToDisplay(PartToDisplay.CHAT);
+		},
+		UpdateChannelName(channel: Channel, newName: string) {
+			let index = this.getIndexChannels(channel.name);
+			this.channels[index].name = newName;
+			if (this.inChannel === channel) {
+				this.inChannel.name = newName;
+				socket.emit('chatChannelName', this.inChannel, newName);
+			}
+			else {
+				index = this.getIndexUserChannels(channel.name);
+				this.userChannels[index].name = newName;
+			}		
+		},
+		updateBanList(channel: Channel, newBanList: User[]) {
+			let index = this.getIndexChannels(channel.name);
+			this.channels[index].banned = newBanList;
+			if (this.inChannel === channel) {
+				this.inChannel.banned = newBanList
+				socket.emit('chatChannelBan', channel, newBanList);
+			}
+			else {
+				index = this.getIndexUserChannels(channel.name);
+				this.userChannels[index].admins = newBanList;
+			}
+			for (const banned of channel.banned) {
+				this.deleteUserFromChannel(this.channels[index], banned);
+				if (this.inChannel) this.deleteUserFromChannel(this.inChannel, banned);
 			}
 		},
-		leaveChannel(user: User) {
-			if (this.inChannel) {
-				let isOwner = false;
-				if (this.inChannel.owner.id === userStore.userData.id) isOwner = true;
-				if (this.inChannel.users.length > 1) {
-					this.deleteUserFromChannel(user);
-					if (isOwner)
-						this.inChannel.owner = this.inChannel.admins[0];
-				}
-				else {
-					if (this.inChannel) {
-						const index = globalStore.getIndexChannels(this.inChannel)
-						this.deleteChannel(index);
-					}
-				}
-				const index = this.getIndexUserChannels(this.inChannel)
-				this.deleteUserChannel(index);
-				this.inChannel = null;
-				this.setRightPartToDisplay(PartToDisplay.CHAT);
-				//socket.emit('chat-channel-leave', userStore.userData);
-				//socket.emit('chat-channel-leave', userStore.userData);
+		updateMuteList(channel: Channel, newMutedList: User[]) {
+			let index = this.getIndexChannels(channel.name);
+			this.channels[index].muted = newMutedList;
+			if (this.inChannel === channel) {
+				this.inChannel.muted = newMutedList
+				socket.emit('chatChannelMute', channel, newMutedList);
 			}
+			else
+				this.userChannels[index].admins = newMutedList;
+		},
+		updateAdminList(channel: Channel, newAdminList: User[]) {
+			let index = this.getIndexChannels(channel.name);
+			this.channels[index].admins = newAdminList;
+			if (this.inChannel === channel) {
+				this.inChannel.admins = newAdminList
+				socket.emit('chatChannelAdmin', channel, newAdminList);
+			}
+			else
+				this.userChannels[index].admins = newAdminList;
 		},
 		sendMessage(newMessage: string) {
+			const userStore = useUserStore();
 			if (newMessage != '') {
 				const now = new Date().toLocaleString();
-				this.messages.push({
-					date: now,
-					message: newMessage,
-					idSender: userStore.userData.id,
-				});
-				// socket.emit('chat-message', {
-				// 	date: now,
-				// 	messageData: newMessage,
-				// 	id: userStore.userData.id
-				// });
+				if (this.inDiscussion) {
+					this.inDiscussion.messages.push({
+						date: now,
+						message: newMessage,
+						idSender: userStore.userData.id,
+					});
+					socket.emit('chatDiscussionMessage', this.inDiscussion.messages[this.inDiscussion.messages.length - 1], this.inDiscussion.user.id);
+				}
+				else if (this.inChannel) {
+					this.inChannel.messages.push({
+						date: now,
+						message: newMessage,
+						idSender: userStore.userData.id,
+					});
+					socket.emit('chatChannelmessage', this.inChannel, this.inChannel.messages);
+				}
 			}
+		},
+		registrationToChannel() {
+			this.inChannelRegistration = true;
+		},
+		userIsRegistered(channel: Channel) {
+			const userStore = useUserStore();
+			for (const user of channel.users)
+					if (user.id === userStore.userData.id) this.inChannelRegistration = true;
+		},
+		shiftPositionUserChannel( channel: Channel) { 
+			const fromIndex = this.getIndexUserChannels(channel.name)
+			if (fromIndex > 0) {
+				const element = this.userChannels.splice(fromIndex, 1)[0];
+				this.userChannels.unshift(element);
+			}
+		},
+		shiftPositionUserDiscussion( discussion: Discussion) { 
+			const fromIndex = this.getIndexUserDiscussions(discussion)
+			if (fromIndex > 0) {
+				const element = this.userDiscussions.splice(fromIndex, 1)[0];
+				this.userDiscussions.unshift(element);
+			}
+		},
+		isNewDiscussion(newDiscussion: Discussion) {
+			for (const discussion of this.userDiscussions) {
+				if (discussion.user.id === newDiscussion.user.id) {
+					this.loadDiscussion(discussion);
+					return 1;
+				}
+			}
+			return 0;
 		},
 	},
 });

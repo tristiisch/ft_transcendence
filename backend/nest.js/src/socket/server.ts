@@ -1,6 +1,7 @@
 // https://socket.io/fr/docs/v4/typescript/
 // TEST socket.io server <-> client
 
+import { Socket } from "engine.io";
 import { map } from "rxjs";
 import { Server } from "socket.io";
 //import { startMatch } from "../game/matchs/matchs.sockets"
@@ -9,6 +10,51 @@ interface UserStatus {
 	id: number
 	status: Status
   }
+
+enum ChatStatus {
+	PUBLIC,
+	PRIVATE,
+	PROTECTED,
+	DISCUSSION
+}
+
+interface Message {
+	idMessage?: number,
+	idChat?: number,
+	date: string,
+	message: string,
+	idSender: number
+}
+
+interface Discussion extends Chat {
+	user: User,
+}
+
+interface User {
+	id: number;
+	login_42: string;
+	avatar: string;
+	avatar_64?: string;
+	username: string;
+	status: Status;
+}
+
+interface Chat {
+	id?: number,
+	type: ChatStatus,
+	messages: Message[]
+}
+
+interface Channel extends Chat {
+	name: string,
+	avatar: string,
+	users: User[],
+	password: string | null
+	admins: User[],
+	owner: User,
+	muted: User[],
+	banned: User[]
+}
 
 enum Status {
 	OFFLINE,
@@ -21,6 +67,17 @@ interface ServerToClientEvents {
 	ball: (x: number, y: number) => void;
 	hey: (s: string) => void;
 	update_status: (data: UserStatus) => void;
+	userAdd: (user: User) => void;
+	userRemove: (user: User) => void;
+	chatDiscussionCreate: (discussion: Discussion) => void;
+	chatChannelCreate: (channel: Channel) => void;
+	chatChannelDelete: (channel: Channel) => void;
+	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
+	chatChannelLeave: (channel: Channel, user: User) => void;
+	chatChannelBan: (channel: Channel, banList: User[]) => void;
+	chatChannelAdmin:(channel: Channel, adminList: User[]) => void;
+	chatChannelMute: (channel: Channel, muteList: User[]) => void;
+	chatMessage: (type: ChatStatus, data: Message) => void;
 }
 
 interface ClientToServerEvents {
@@ -28,6 +85,16 @@ interface ClientToServerEvents {
 	p1_dy: (dy: number) => void;
 	match: (id: number) => void;
 	update_status: (status: Status) => void;
+	chatDiscussionCreate: (user: User, discussion: Discussion) => void;
+	chatChannelCreate: (userId: number, channel: Channel) => void;
+	chatChannelDelete: (channel: Channel) => void;
+	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
+	chatChannelLeave: (channel: Channel, user: User) => void;
+	chatChannelBan: (channel: Channel, banList: User[]) => void;
+	chatChannelAdmin:(channel: Channel, adminList: User[]) => void;
+	chatChannelMute: (channel: Channel, muteList: User[]) => void;
+	chatDiscussionMessage: (message: Message, target: number) => void;
+	chatChannelMessage: (channel: Channel, data: Message) => void;
 }
 
 interface InterServerEvents {
@@ -134,6 +201,67 @@ export async function createSocketServer(serverPort: number) {
 			const data = { id: 2,
 				status: status }
 			socket.broadcast.emit("update_status", (data))
+		});
+
+		// socket.on("userAdd", (user) => {             // transform to io
+		// 	socket.broadcast.emit("userAdd", (user));
+		// });
+		
+		// socket.on("userRemove", (user) => {
+		// 	socket.broadcast.emit("userRemove", (user));
+		// });
+		
+		socket.on("chatDiscussionCreate", (user, discussion) => {
+			const user1 = user.id.toString();
+			const user2 = discussion.user.id.toString()
+			const roomName = user1 + user2;
+			socket.join(roomName)
+			socket.to(discussion.user.username).emit("chatDiscussionCreate", (discussion));
+		});
+
+		socket.on("chatChannelCreate", (userId, channel) => {
+			socket.join(channel.name);
+			if (channel.type !== ChatStatus.PRIVATE)
+				socket.broadcast.emit("chatChannelCreate", (channel));
+		});
+		
+		socket.on("chatChannelDelete", (channel) => {
+			socket.broadcast.emit("chatChannelDelete", (channel));
+		});
+		
+		socket.on("chatChannelJoin", (channelName, joinedUser) => {
+			socket.join(channelName)
+			socket.broadcast.emit("chatChannelJoin", channelName, joinedUser);
+		});
+		
+		socket.on("chatChannelLeave", (channel, user) => {
+			socket.leave(channel.name);
+			socket.broadcast.emit("chatChannelLeave", channel, user);
+		});
+		
+		socket.on("chatChannelBan", (channel, newBanList) => {
+			socket.broadcast.emit("chatChannelBan", channel, newBanList);
+		});
+		
+		socket.on("chatChannelAdmin", (channel, newAdminList) => {
+			socket.broadcast.emit("chatChannelAdmin", channel, newAdminList);
+		});
+		
+		socket.on("chatChannelMute", (channel, newMuteList) => {
+			socket.broadcast.emit("chatChannelMute", channel, newMuteList);
+		});
+
+		socket.on("chatDiscussionMessage", (message, target) => {
+			console.log(message, target);
+			// const user1 = message.idSender.toString();
+			// const user2 = target.toString()
+			// const roomName = user1 + user2;
+			// socket.to(roomName).emit("chatMessage", ChatStatus.DISCUSSION, message);  // need room implementation, no broadcast
+			socket.broadcast.emit("chatMessage", ChatStatus.DISCUSSION, message);
+		});
+
+		socket.on("chatChannelMessage", (channel, data) => {
+			socket.to(channel.name).emit("chatMessage", channel.type, data);
 		});
 	})
 	// io.serverSideEmit("ping"); // 'this adapter does not support the serverSideEmit() functionality' => error msg on Windows & Linux setup (WSL Ubuntu)
