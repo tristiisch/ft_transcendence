@@ -3,12 +3,17 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
+import { useGlobalStore } from '@/stores/globalStore';
 
 const route = useRoute();
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
+
+if (globalStore.isLoading = true)
+	globalStore.isLoading = false
 
 const error = computed(() => {
-	if (route.query)
+	if (route.query.code)
 	{
 		if (route.query.code === '0')
 			return 'Network Error'

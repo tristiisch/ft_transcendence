@@ -35,6 +35,10 @@ class AuthService {
 		});
 	}
 
+	getAuth() {
+		return axios.get('auth/me');
+	}
+
 	registerUser(username: string, avatar: string) {
 		return axios.patch(`users/register`, { username, avatar });
 	}

@@ -5,20 +5,21 @@ import type Match from '@/types/MatchHistory';
 import type Discussion from '@/types/Discussion';
 
 class UserService {
-	getUsers() {
-		return axios.get('users');
-	}
-
-	getUser(id: number) {
-		return axios.get(`users/${id}`);
-	}
 
 	getMe() {
 		return axios.get('users/me');
 	}
 
-	getMyFriends() {
-		return axios.get('friends/me');
+	getUsers() {
+		return axios.get('users');
+	}
+
+	getFriends() {
+		return axios.get('friends');
+	}
+
+	getUser(id: number) {
+		return axios.get(`users/${id}`);
 	}
 
 	registerUser(username: string, avatar_64: string) {

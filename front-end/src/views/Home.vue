@@ -56,19 +56,22 @@ function onImageLoad() {
 onBeforeMount(() => {
 	window.addEventListener('resize', handleResize);
 
-	globalStore.isLoading = true;
-	globalStore
-		.fetchAll()
-		.then(() => {
-			globalStore.isLoading = false;
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-		});
+	if (!globalStore.isLoading)
+	{
+		globalStore.isLoading = true;
+		globalStore
+			.fetchAll()
+			.then(() => {
+				globalStore.isLoading = false;
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			});
 
-	socket.on('update_user', (user: User) => {
-		globalStore.updateUser(user);
-	});
+		socket.on('update_user', (user: User) => {
+			globalStore.updateUser(user);
+		});
+	}
 });
 
 onUnmounted(() => {

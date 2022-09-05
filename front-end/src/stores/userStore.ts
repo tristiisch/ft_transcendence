@@ -24,8 +24,15 @@ export const useUserStore = defineStore('userStore', {
 			this.userToken = this.userAuth.token_jwt
 			console.log(this.userToken)
 		},
-		async handleLogin(code: string) {
+		verifyState(state: string) {
+			const randomString = localStorage.getItem('state')
+			localStorage.removeItem('state');
+			if (!randomString || randomString && state !== JSON.parse(randomString))
+				throw new Error('State is not valid')
+		},
+		async handleLogin(code: string, state: string) {
 			try {
+				this.verifyState(state)
 				const data = await AuthService.login(code);
 				this.userAuth = data.auth;
 				console.log(this.userAuth)
@@ -80,10 +87,25 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
+		async fetchAll() {
+			try {
+				await Promise.all([this.fetchMe(), this.fetchAuth()])
+			} catch (error: any) {
+				throw error;
+			}
+		},
 		async fetchMe() {
 			try {
 				const response = await UserService.getMe();
 				this.userData = response.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchAuth() {
+			try {
+				const response = await AuthService.getAuth();
+				this.userAuth = response.data;
 			} catch (error: any) {
 				throw error;
 			}

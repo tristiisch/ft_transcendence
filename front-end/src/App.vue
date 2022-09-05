@@ -2,6 +2,7 @@
 import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
+import { onBeforeMount } from 'vue';
 import TokenService from '@/services/TokenService';
 import axios from '@/plugin/axiosInstance';
 import socket from '@/plugin/socketInstance';
@@ -12,14 +13,24 @@ const globalStore = useGlobalStore();
 const router = useRouter();
 const route = useRoute();
 
-if (TokenService.isLocalToken()) {
+socket.on("userAdd", (user: User) => {
+	globalStore.addUser(user);
+});
+
+socket.on("userRemove", (userToRemoveId: number) => {
+	globalStore.removeUser(userToRemoveId);
+});
+
+onBeforeMount(() => {
+	if (TokenService.isLocalToken()) {
 	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
 	socket.auth = { token: TokenService.getLocalToken() };
 
-	userStore.fetchMe().catch((error) => {
+	userStore.fetchAll().catch((error) => {
 		console.log(error);
 		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 	});
+
 
 	globalStore.isLoading = true
 	globalStore
@@ -31,15 +42,8 @@ if (TokenService.isLocalToken()) {
 			console.log(error);
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
-}
-
-socket.on("userAdd", (user: User) => {
-	globalStore.addUser(user);
-});
-
-socket.on("userRemove", (userToRemoveId: number) => {
-	globalStore.removeUser(userToRemoveId);
-});
+	}
+})
 </script>
 
 <template>

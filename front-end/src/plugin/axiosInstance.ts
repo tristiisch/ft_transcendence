@@ -12,9 +12,11 @@ instance.interceptors.response.use(
 		return response;
 	},
 	function (error) {
-		if ([401, 403].includes(error.response.status)) {
+		const userStore = useUserStore();
+		if ([401].includes(error.response.status) && userStore.isLoggedIn) {
 			const userStore = useUserStore();
 			userStore.handleLogout();
+			return new Promise(() => {})
 		}
 		return Promise.reject(error);
 	}

@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { useUserStore } from '@/stores/userStore';
 import UserService from '@/services/UserService';
 import type GlobalState from '@/types/GlobalState';
 import type User from '@/types/User';
@@ -67,8 +66,7 @@ export const useGlobalStore = defineStore('globalStore', {
 			if (!this.friends.length)
 			{
 				try {
-					const userStore = useUserStore();
-					const response = await UserService.getUserfriends();
+					const response = await UserService.getFriends();
 					this.friends = response.data;
 				} catch (error: any) {
 					throw error;
