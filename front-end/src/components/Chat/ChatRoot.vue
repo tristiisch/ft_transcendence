@@ -18,6 +18,10 @@ function scrollToEnd() {
 	}
 }
 
+function sendGameInvitation() {
+    chatStore.sendMessage('game invitation', 'game');
+}
+
 function sendMessage() { 
 	chatStore.sendMessage(newMessage.value)
 	newMessage.value = ''
@@ -35,7 +39,7 @@ function sendMessage() {
             <form @submit.prevent="sendMessage()" class="w-full">
                 <input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white" />
             </form>
-            <button v-if="chatStore.inDiscussion" class="bg-lime-400 rounded-lg px-2">
+            <button v-if="chatStore.inDiscussion" class="bg-lime-400 rounded-lg px-2" @click="sendGameInvitation()">
                 <img src="@/assets/inGame.png" class="w-10" />
             </button>
             <button v-if="chatStore.inChannel" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHANNEL_SETTINGS)">
