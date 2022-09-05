@@ -159,7 +159,7 @@ export class TestFakeService {
 			const scoreUser2: number = random(0, this.randomMaxScoreGame);
 			matchHistory.score = [scoreUser1, scoreUser2];
 		}
-		return this.matchHistoryService.add(matchHistory);
+		return await this.matchHistoryService.add(matchHistory);
 	}
 
 	async initNewFriendship(user: User, userIds: number[]): Promise<UserSelectDTO> {

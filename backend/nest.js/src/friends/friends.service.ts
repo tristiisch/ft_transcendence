@@ -218,7 +218,7 @@ export class FriendsService {
 
 		// await this.userService.findOne(userId);
 		sqlStatement.where('friendship.status = :status', { status: FriendshipStatus.ACCEPTED });
-		sqlStatement.where('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
+		sqlStatement.andWhere('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();

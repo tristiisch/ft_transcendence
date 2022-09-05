@@ -55,7 +55,7 @@ export class StatsService {
 		const userStats: UserStats = await this.findOrCreate(userId);
 
 		++userStats.defeats;
-		return await this.statsRepository.save(userStats);
+		return await this.statsRepository.update(userStats.user_id, { victories: userStats.defeats });
     }
 
 	/**
@@ -65,7 +65,7 @@ export class StatsService {
 		const userStats: UserStats = await this.findOrCreate(userId);
 
 		++userStats.victories;
-		return await this.statsRepository.save(userStats);
+		return await this.statsRepository.update(userStats.user_id, { victories: userStats.victories });
     }
 
     async add(stats: UserStats) {
@@ -133,7 +133,7 @@ export class StatsService {
 			leaderUser.avatar = target.getAvatarURL();
 			leaderUser.status = target.status;
 
-			if (user.id === us.user_id || friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
+			if (friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
 				leaderBoardFriends.push(leaderUser);
 
 			leaderBoard.push(leaderUser);
