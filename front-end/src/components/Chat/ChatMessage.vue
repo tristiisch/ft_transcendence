@@ -46,7 +46,8 @@ function chooseArray() {
 				<p class="text-sm ">{{ globalStore.getUserName(message.idSender) }}</p>
 				<p class="text-xs">{{ message.date }}</p>
 			</div> 
-			<div class="text-sm min-w-0 text-red-200 break-words">{{ message.message,  message.read = true }}</div>
+			<div v-if="message.type !== 'game'" class="text-sm min-w-0 text-red-200 break-words">{{ message.message,  message.read = true }}</div>
+			<div v-else class="bg-red-600 w-full h-[20px]">{{ message.message, message.read = true}} </div>
 		</div>
     </div>
 </template>

@@ -243,11 +243,11 @@ export async function createSocketServer(serverPort: number) {
 		// });
 
 		socket.on("chatDiscussionCreate", (user, discussion) => {
-			const user1 = user.id.toString();
-			const user2 = discussion.user.id.toString()
-			const roomName = user1 + user2;
-			socket.join(roomName)
-			socket.to(discussion.user.username).emit("chatDiscussionCreate", (discussion));
+			// const user1 = user.id.toString();
+			// const user2 = discussion.user.id.toString()
+			// const roomName = user1 + user2;
+			// socket.join(roomName)
+			// socket.to(discussion.user.username).emit("chatDiscussionCreate", (discussion));
 		});
 
 		socket.on("chatChannelCreate", (userId, channel) => {
@@ -296,6 +296,7 @@ export async function createSocketServer(serverPort: number) {
 		});
 
 		socket.on("chatDiscussionMessage", (discussion, message) => {
+			console.log(message);
 			// socket.to(roomName).emit("chatMessage", ChatStatus.DISCUSSION, message);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatDiscussionMessage", discussion, message);
 		});

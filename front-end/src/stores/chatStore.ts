@@ -325,7 +325,7 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 		},
-		sendMessage(newMessage: string) {
+		sendMessage(newMessage: string, type?: string) {
 			const userStore = useUserStore();
 			if (newMessage != '') {
 				const now = new Date().toLocaleString();
@@ -333,7 +333,8 @@ export const useChatStore = defineStore('chatStore', {
 					date: now,
 					message: newMessage,
 					idSender: userStore.userData.id,
-					read: false
+					read: false,
+					type: type
 				};
 				if (this.inDiscussion) {
 					this.inDiscussion.messages.push(data);
@@ -356,7 +357,7 @@ export const useChatStore = defineStore('chatStore', {
 					user: user,
 					messages: [data]
 					};
-					this.createNewDiscussion(newDiscussion, false);
+					this.addNewDiscussion(newDiscussion);
 				}
 			}
 			else
