@@ -13,8 +13,10 @@ class AuthService {
 	}
 
 	fakeLogin() {
-		return axios.post('auth/fakeLogin/2').then((response) => {
+		return axios.get('auth/fakeLogin/2').then((response) => {
+			console.log('get request fakelogin')
 			if (response.data.auth.token_jwt) {
+				console.log('auth token yes')
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
 				socket.auth = { token: response.data.auth.token_jwt }
 			}

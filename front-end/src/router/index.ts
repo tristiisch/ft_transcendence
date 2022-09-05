@@ -12,6 +12,12 @@ const router = createRouter({
 			//meta: { requiresAuth: false },
 		},
 		{
+			path: '/fakelogin',
+			name: 'FakeLogin',
+			component: () => import('@/views/fakeLogin.vue'),
+			//meta: { requiresAuth: false },
+		},
+		{
 			path: '/home',
 			name: 'Home',
 			component: () => import('@/views/Home.vue'),
@@ -65,7 +71,7 @@ const router = createRouter({
 
 router.beforeEach((to, _) => {
 	const userStore = useUserStore();
-	if (to.name !== 'Login' && !userStore.isLoggedIn) {
+	if (to.name !== 'Login' && !userStore.isLoggedIn && to.name !== 'FakeLogin') {
 		return { name: 'Login' };
 	} else if (to.name === 'Login' && userStore.isLoggedIn) {
 		return { name: 'Home' };
