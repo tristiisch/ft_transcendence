@@ -84,7 +84,7 @@ export const useGlobalStore = defineStore('globalStore', {
 				const index = baseArray.findIndex((user) => user.id === selectedUser.id);
 				if (index < 0 && this.isTypeUser(selectedUser)) listed.push(selectedUser);
 			}
-			return unlisted !== [] || listed !== [] ? { unlisted, listed } : null
+			return (unlisted.length || listed.length) ? { unlisted, listed } : null
 		},
 		resetSelectedItems() {
 			this.selectedItems = []

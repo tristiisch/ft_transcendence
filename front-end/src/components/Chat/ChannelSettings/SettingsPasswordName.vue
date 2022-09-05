@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeMount} from 'vue'
 import { useChatStore } from '@/stores/chatStore';
+import { useUserStore } from '@/stores/userStore';
 import status from '@/types/ChatStatus';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
 
 const chatStore = useChatStore();
+const userStore = useUserStore();
 const newPassword = ref('');
 const newChannelName = ref('');
 
@@ -25,7 +27,7 @@ const label = computed(() => {
 function updatePasswordName() {
     if (chatStore.inChannel) {
         if (newChannelName.value != '' && newChannelName.value !== chatStore.inChannel.name)
-            chatStore.UpdateChannelName(chatStore.inChannel, newChannelName.value, true);
+            chatStore.UpdateChannelName(chatStore.inChannel, { name: newChannelName.value, userWhoChangeName:userStore.userData }, true);
     }
     emit('close')
 }

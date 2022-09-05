@@ -246,9 +246,9 @@ export const useChatStore = defineStore('chatStore', {
 			const indexUser = newBanList.newList.findIndex(user => user.id === userStore.userData.id)
 			if (indexUser >= 0) {
 				const toast = useToast();
-				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
-				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);
 				if (this.inChannel && this.inChannel.name === channel.name) this.inChannel = null;
+				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
+				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);	
 			}
 		},
 		updateMuteList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
