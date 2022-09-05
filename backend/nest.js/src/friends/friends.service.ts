@@ -6,7 +6,7 @@ import { NotificationService } from '../notification/notification.service';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { Friendship, FriendshipStatus } from './entity/friendship.entity';
 
 @Injectable()
@@ -218,7 +218,10 @@ export class FriendsService {
 
 		// await this.userService.findOne(userId);
 		sqlStatement.where('friendship.status = :status', { status: FriendshipStatus.ACCEPTED });
-		sqlStatement.andWhere('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
+		sqlStatement.andWhere(new Brackets(web => {
+			web.where('friendship.user1_id = :id', { id: userId }),
+			web.orWhere('friendship.user2_id = :id')
+		}))
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();

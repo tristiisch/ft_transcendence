@@ -34,7 +34,6 @@ export class AuthController {
 			const { user, userAuth } = await this.authService.UserConnecting(userInfo);
 			delete userAuth.twoFactorSecret; // TODO Verif this method
 
-			console.log('DEBUG LOGIN', 'auth:', userAuth);
 			if (user && userAuth.has_2fa === true)
 				res.json({ auth: userAuth }); // il est aussi de basculer sur le bon controller depuis le back
 			else if (user)
@@ -57,6 +56,7 @@ export class AuthController {
 	async getOwnInfo(@Req() req) {
 		const user: User = req.user;
 		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		delete userAuth.twoFactorSecret;
 		return userAuth;
 	}
 }

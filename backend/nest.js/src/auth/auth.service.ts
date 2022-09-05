@@ -80,7 +80,6 @@ export class AuthService {
 		const secret: string = authenticator.generateSecret();
 		const otpauthUrl = authenticator.keyuri(user.login_42, process.env.TFA_APP, secret);
 
-		console.log('Secret 2FA', secret);
 		this.temp2FASecret.set(user.id, secret);
 		return otpauthUrl;
 	}
