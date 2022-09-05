@@ -11,7 +11,7 @@ import { User, UserStatus } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
-import { UserAuth } from 'src/auth/entity/user-auth.entity';
+import { UserAuth } from '../auth/entity/user-auth.entity';
 
 @Injectable()
 export class TestFakeService {
