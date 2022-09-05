@@ -92,6 +92,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		addUser(user: User) {
 			this.users.push(user);
 		},
+		addFriend(friend: User) {
+			this.friends.push(friend);
+		},
 		removeUser(userToRemoveId: number) {
 			const index = this.users.findIndex(user => user.id === userToRemoveId);
 			this.users.splice(index, 1);

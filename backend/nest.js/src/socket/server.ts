@@ -190,12 +190,14 @@ export async function createSocketServer(serverPort: number) {
 	);
 
 	var users = new Map<string, string>()
+	//var usersSocket = new Map<number, string>() Map for store userId and socker for emit
 	var matches = new Map<number, Match>()
 
 	io.on("connection", (socket) => {
 		let user_token = socket.handshake.auth.token
 		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', socket.id, 'with jwt =>', user_token);
 		users[user_token] = socket.id
+		//usersSocket[function to find user by jwt] = socket
 		socket.on("match", (id) => {
 			if (matches.has(id) === false)
 				matches.set(id, { room: io.to('match_' + id), started:false, p1_jwt: socket.id, p2_jwt: null, p1_ypos: 0, p2_ypos: 0 })
@@ -231,14 +233,15 @@ export async function createSocketServer(serverPort: number) {
 			socket.broadcast.emit("update_status", (data))
 		});
 
+		//socket.on("update_status", (status) => {
 		// socket.on("userAdd", (user) => {             // transform to io
 		// 	socket.broadcast.emit("userAdd", (user));
 		// });
-		
+
 		// socket.on("userRemove", (user) => {
 		// 	socket.broadcast.emit("userRemove", (user));
 		// });
-		
+
 		socket.on("chatDiscussionCreate", (user, discussion) => {
 			const user1 = user.id.toString();
 			const user2 = discussion.user.id.toString()
@@ -256,32 +259,32 @@ export async function createSocketServer(serverPort: number) {
 				//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
 				socket.broadcast.emit("chatChannelCreate", (channel))  //to delete when join you have implemented join
 			});
-		
+
 		socket.on("chatChannelDelete", (channel) => {
 			//socket.to(channel.name).emit("chatChannelDelete", (channel)); // need room implementation, no broadcast
-			socket.broadcast.emit("chatChannelDelete", (channel)); 
+			socket.broadcast.emit("chatChannelDelete", (channel));
 		});
-		
+
 		socket.on("chatChannelJoin", (channelName, joinedUser) => {
 			// socket.join(channelName)       										// need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelJoin", channelName, joinedUser);
 		});
-		
+
 		socket.on("chatChannelLeave", (channel, user) => {
 			// socket.leave(channel.name);
 			socket.broadcast.emit("chatChannelLeave", channel, user); // need room implementation, no broadcast
 		});
-		
+
 		socket.on("chatChannelBan", (channel, newBanList) => {
 			// socket.to(channel.name).emit("chatChannelName", channel, newBanList);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelBan", channel, newBanList);
 		});
-		
+
 		socket.on("chatChannelAdmin", (channel, newAdminList) => {
 			// socket.to(channel.name).emit("chatChannelAdmin", channel, newAdminList);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelAdmin", channel, newAdminList);
 		});
-		
+
 		socket.on("chatChannelMute", (channel, newMuteList) => {
 			// socket.to(channel.name).emit("chatChannelMute", channel, newMuteList);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelMute", channel, newMuteList);
@@ -311,4 +314,6 @@ export async function createSocketServer(serverPort: number) {
 
 	io.listen(serverPort);
 	console.log('[SOCKET.IO]', 'SERVER', "Server socket.io is started !")
+
+	})
 }

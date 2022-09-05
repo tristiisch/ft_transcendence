@@ -18,6 +18,10 @@ class UserService {
 		return axios.get('friends');
 	}
 
+	getFriendsPending() {
+		return axios.get('friends/request/pending');
+	}
+
 	getUser(id: number) {
 		return axios.get(`users/${id}`);
 	}

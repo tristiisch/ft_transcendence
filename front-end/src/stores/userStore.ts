@@ -74,7 +74,7 @@ export const useUserStore = defineStore('userStore', {
 		},
 		handleLogout() {
 			socket.emit('update_status', status.OFFLINE )
-			TokenService.removeLocalToken()
+			localStorage.clear()
 			location.reload()
 		},
 		async registerUser(newUsername: string, newAvatar: string) {

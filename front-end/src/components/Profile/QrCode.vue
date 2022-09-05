@@ -28,7 +28,6 @@ function toogle2FA() {
 		isLoading.value = true;
 		AuthService.getQrCode2FA()
 			.then((response) => {
-				userStore.update2FA(true);
 				qrCode.value = response.data
 				isLoading.value = false;
 			})
@@ -42,31 +41,29 @@ function validate2FA() {
 	if (twoFaCode.value)
 	{
 		AuthService.enable2FA(twoFaCode.value)
-		.then((response) => {
+		.then(() => {
 			userStore.update2FA(true);
 			qrCode.value = ''
-			console.log(response)
 		})
-		.catch((e) => {
-			if (e.response.data) toast.error(e.response.data.message)
-			else toast.error("Something went wrong")
+		.catch((error) => {
+			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
+			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
-	else toast.error('Authentification code is empty');
 }
 </script>
 
 <template>
 	<base-spinner small v-if="isLoading"></base-spinner>
 	<div v-else class="flex flex-col justify-center items-center h-full w-full gap-4 sm:gap-8 sm:mt-3">
-		<div class="flex flex-col justify-center gap-4 w-full">
+		<div v-if="!qrCode" class="flex flex-col justify-center gap-4 w-full">
 			<div class="flex justify-center w-full">
 				<span class="text-red-200 pr-2">OFF</span>
 				<Toogle twoFa @switch-button="toogle2FA"></Toogle>
 				<span class="text-red-200 pl-2">ON</span>
 			</div>
-			<p v-if="!qrCode && !userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is disable</p>
-			<p v-if="!qrCode && userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is Enable</p>
+			<p v-if="!userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is disable</p>
+			<p v-if="userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is Enable</p>
 		</div>
 		<div v-if="qrCode && !isLoading" class="flex justify-center w-full">
 			<img :src="qrCode" alt="QR code" class="w-20 sm:w-32" />

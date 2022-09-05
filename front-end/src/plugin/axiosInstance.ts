@@ -13,7 +13,7 @@ instance.interceptors.response.use(
 	},
 	function (error) {
 		const userStore = useUserStore();
-		if ([401].includes(error.response.status) && userStore.isLoggedIn) {
+		if ([401].includes(error.response.status)) {
 			const userStore = useUserStore();
 			userStore.handleLogout();
 			return new Promise(() => {})
