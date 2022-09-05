@@ -44,10 +44,10 @@ export class AuthController {
 		}
 	}
 
-	@Get('fakelogin/:id')
-	async fakeLogin(@Req() req: Request, @Param('id') userId) {
-		const user: User = await this.usersService.findOne(userId);
-		const userAuth: UserAuth = await this.authService.findOne(userId);
+	@Get('fakelogin/:username')
+	async fakeLogin(@Req() req: Request, @Param('username') username: string) {
+		const user: User = await this.usersService.findOneByUsername(username);
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
 		
 		return { auth: userAuth, user: user };
 	}
