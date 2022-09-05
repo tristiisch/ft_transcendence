@@ -2,9 +2,8 @@
 import { useUserStore } from '@/stores/userStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import type Message from '@/types/Message';
@@ -22,13 +21,13 @@ import SettingsChannel from '@/components/Chat/ChannelSettings/SettingsChannel.v
 import DiscussionList from '@/components/Chat/DiscussionList.vue';
 import Chat from '@/components/Chat/ChatRoot.vue';
 
-const toast = useToast();
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const route = useRoute();
+const router = useRouter();
 const displayDelete = ref([] as boolean[]);
-const error = ref('');
+
 function addButton() {
 	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
 	else return 'Add channel';
@@ -89,29 +88,15 @@ socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
 socket.on('chatChannelName', (channel: Channel, newName: { name: string, userWhoChangeName: User }) => {
 	chatStore.UpdateChannelName(channel, newName, false);
 });
+const isLoaded = computed(() => {
+	if (!chatStore.isLoading && userStore.isLoaded) return true;
+	return false;
+})
 
 onBeforeMount(() => {
-	globalStore.fetchUsers()
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	globalStore.fetchfriends()
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchChannels()
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchUserChannels()
-	.catch((e: Error) => {
-		error.value = e.message;
-		toast.error(error.value);
-	});
-	chatStore.fetchUserDiscussions()
+	chatStore.isLoading = true
+	chatStore
+		.fetchAll()
 		.then(() => {
 			if (route.query.discussion) {
 				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
@@ -125,16 +110,17 @@ onBeforeMount(() => {
 					}
 				}
 			}
+			chatStore.isLoading = false
 		})
-		.catch((e: Error) => {
-			error.value = e.message;
-			toast.error(error.value);
-	});
+		.catch((error) => {
+			console.log(error)
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
 });
 </script>
 
 <template>
-	<base-ui>
+	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full px-8">

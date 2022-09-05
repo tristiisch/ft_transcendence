@@ -8,8 +8,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bob}
       POSTGRES_DB: ${POSTGRES_DATABASE:-ft_transcendance}
       PGDATA: /data/postgres
-    #volumes:
-    #- db_postgres:/data/postgres
+    volumes:
+    - db_postgres:/data/postgres
     restart: always
     ports:
     - 5432:5432
@@ -27,10 +27,10 @@ services:
       PGADMIN_LISTEN_PORT: 8080
       PGADMIN_CONFIG_SERVER_MODE: "False" # Required to have more permission in containers, but remove connection with email & password to pgAdmin
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False" # If this is set to false, no one needs a "master password" to log in
-    #volumes:
-    #- db_pgadmin:/var/lib/pgadmin
-    #- ./pgAdmin/servers.json:/pgadmin4/servers.json
-    #- ./pgAdmin/.pgpass:/pgadmin4/.pgpass
+    volumes:
+    - db_pgadmin:/var/lib/pgadmin
+    - ./pgAdmin/servers.json:/pgadmin4/servers.json
+    - ./pgAdmin/.pgpass:/pgadmin4/.pgpass
     restart: always
     ports:
     - 8080:8080

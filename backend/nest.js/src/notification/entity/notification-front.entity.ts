@@ -1,5 +1,4 @@
 /** @prettier */
-import { User } from 'src/users/entity/user.entity';
 import { NotificationType } from './notification.entity';
 
 export class NotificationFront {

@@ -5,16 +5,21 @@ import type Match from '@/types/MatchHistory';
 import type Discussion from '@/types/Discussion';
 
 class UserService {
+
+	getMe() {
+		return axios.get('users/me');
+	}
+
 	getUsers() {
 		return axios.get('users');
 	}
 
-	getUser(id: number) {
-		return axios.get(`users/${id}`);
+	getFriends() {
+		return axios.get('friends');
 	}
 
-	getMe() {
-		return axios.get('users/me');
+	getUser(id: number) {
+		return axios.get(`users/${id}`);
 	}
 
 	registerUser(username: string, avatar_64: string) {
@@ -29,8 +34,8 @@ class UserService {
 		return axios.patch(`users/set-avatar`, { avatar_64 });
 	}
 
-	getUserfriends(id: number) {
-		return axios.get(`friends/${id}`);
+	getUserfriends() {
+		return axios.get(`friends`);
 	}
 
 	sendFriendRequest(targetId: number) {

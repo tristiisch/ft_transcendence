@@ -12,6 +12,18 @@ class AuthService {
 		})
 	}
 
+	fakeLogin(username: string) {
+		return axios.get('auth/fakeLogin/' + username).then((response) => {
+			console.log('get request fakelogin')
+			if (response.data.auth.token_jwt) {
+				console.log('auth token yes')
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
+				socket.auth = { token: response.data.auth.token_jwt }
+			}
+			return response.data;
+		})
+	}
+
 	login2FA(otpToken: string) {
 		return axios.post('2fa/authenticate', { otpToken }).then((response) => {
 			console.log(response.data)
@@ -21,6 +33,10 @@ class AuthService {
 			}
 			return response.data;
 		});
+	}
+
+	getAuth() {
+		return axios.get('auth/me');
 	}
 
 	registerUser(username: string, avatar: string) {

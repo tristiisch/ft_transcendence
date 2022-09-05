@@ -9,8 +9,12 @@ import { StatsService } from '../game/stats/stats.service';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User, UserStatus } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from '../utils/utils';
+import { random, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64 } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
+import { UserAuth } from '../auth/entity/user-auth.entity';
+import { Channel } from 'chat/entity/channel.entity';
+import { Chat, ChatStatus } from '../chat/entity/chat.entity';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class TestFakeService {
@@ -24,6 +28,8 @@ export class TestFakeService {
 	private readonly matchHistoryService: MatchStatsService;
 	@Inject(AuthService)
 	private readonly authService: AuthService;
+	@Inject(ChatService)
+	private readonly chatService: ChatService;
 
 	private readonly randomMaxStats = 100;
 	private readonly randomMaxScoreGame = 5;
@@ -77,16 +83,30 @@ export class TestFakeService {
 			if (!target) break;
 			removeFromArray(usersWithoutRelation, target.id);
 		}
+		// await this.createFakeChannel(user, allUserIdsExceptUser);
+		// await this.createFakeDiscussion(user, allUserIdsExceptUser);
 		return { statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` };
 	}
 
 	async initUser(): Promise<User> {
 		let user: User = new User();
+		let userAuth: UserAuth;
+		let userStats: UserStats;
+	
 		user.username = Math.random().toString(36).substring(2, 9);
 		user.login_42 = Math.random().toString(36).substring(2, 9);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
-		return await this.usersService.add(user);
+	
+		user = await this.usersService.add(user);
+		userAuth = new UserAuth(user.id);
+		userAuth.token_jwt = await this.authService.createToken(user.id);
+		this.authService.save(userAuth);
+
+		userStats = new UserStats(user.id);
+		this.statsService.add(userStats);
+
+		return user;
 	}
 
 	// async initStats(user: User): Promise<UserStats> {
@@ -166,5 +186,29 @@ export class TestFakeService {
 		return await sqlStatement.getMany().then((users: User[]) => {
 			return users.map((u) => u.id);
 		}, this.usersService.lambdaDatabaseUnvailable);
+	}
+
+	private async createFakeChannel(user: User, userIds: number[]): Promise<any> {
+		const channel: Channel = {
+			name: 'random',
+			owner_id: user.id,
+			avatar_64: await toBase64('https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png'),
+			password: null,
+			admins_ids: [user.id],
+			muted_ids: [],
+			banned_ids: [],
+			type: ChatStatus.PUBLIC,
+			users_ids: [...randomElements(userIds, random(1, 20)), user.id]
+		}
+		await this.chatService.addChat(channel);
+	}
+
+	private async createFakeDiscussion(user: User, userIds: number[]): Promise<any> {
+		const discussion: Chat = {
+			type: ChatStatus.DISCUSSION,
+			users_ids: [randomElement(userIds), user.id]
+		}
+		console.log('Discussion', discussion)
+		await this.chatService.addChat(discussion);
 	}
 }

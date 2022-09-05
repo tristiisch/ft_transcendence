@@ -1,77 +1,86 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, onBeforeMount } from 'vue'
+import { ref, onUnmounted, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { useToast } from 'vue-toastification';
+import { useRoute, useRouter } from 'vue-router';
+import socket from '@/plugin/socketInstance';
+import type User from '@/types/User';
 
-const toast = useToast();
-const globalStore = useGlobalStore();
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 const imageLoaded = ref(false);
 const userStore = useUserStore();
-const error = ref('');
+const globalStore = useGlobalStore();
+const route = useRoute();
+const router = useRouter();
 
 function tvSize() {
-	if (windowHeight.value > windowWidth.value)
-		return 'w-[calc(0.6_*_100vw)]'
-	return 'h-[calc(0.5_*_100vh)]'
+	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.6_*_100vw)]';
+	return 'h-[calc(0.5_*_100vh)]';
 }
 
-function titleSize()
-{
-	if (windowHeight.value > windowWidth.value)
-		return '[font-size:_calc(0.1_*_100vw)] top-[calc(0.15_*_100vh)]'
-	return '[font-size:_calc(0.08_*_100vh)] top-[calc(0.15_*_100vh)]'
+function titleSize() {
+	if (windowHeight.value > windowWidth.value) return '[font-size:_calc(0.1_*_100vw)] top-[calc(0.15_*_100vh)]';
+	return '[font-size:_calc(0.08_*_100vh)] top-[calc(0.15_*_100vh)]';
 }
 
-function screenTitleSize()
-{
-	if (windowHeight.value > windowWidth.value)
-		return '[font-size:_calc(0.09_*_100vw)] pb-[calc(0.1_*_100vw)]'
-	return '[font-size:_calc(0.08_*_100vh)] pb-[calc(0.1_*_100vh)]'
+function screenTitleSize() {
+	if (windowHeight.value > windowWidth.value) return '[font-size:_calc(0.09_*_100vw)] pb-[calc(0.1_*_100vw)]';
+	return '[font-size:_calc(0.08_*_100vh)] pb-[calc(0.1_*_100vh)]';
 }
 
-function screenSize()
-{
-	if (windowHeight.value > windowWidth.value)
-		return 'w-[calc(0.5_*_100vw)]'
-	return 'w-[calc(0.5_*_100vh)]'
+function screenSize() {
+	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.5_*_100vw)]';
+	return 'w-[calc(0.5_*_100vh)]';
 }
 
 function smallScreen() {
-	if( windowWidth.value < 640)
-		return true
-	else
-		return false
+	if (windowWidth.value < 640) return true;
+	else return false;
 }
 
 function handleResize() {
-windowWidth.value = window.innerWidth;
-windowHeight.value = window.innerHeight;
+	windowWidth.value = window.innerWidth;
+	windowHeight.value = window.innerHeight;
 }
 
-const isLoading = computed(() => {
-	if (userStore.userData.avatar && userStore.userData.username)
-		return false;
-	return true;
+const isLoaded = computed(() => {
+	if (!globalStore.isLoading && userStore.isLoaded) return true;
+	return false;
 });
 
-function onImageLoad () {
-      imageLoaded.value = true
-    }
+function onImageLoad() {
+	imageLoaded.value = true;
+}
 
-onMounted(() => {
-    window.addEventListener('resize', handleResize)
-  });
+onBeforeMount(() => {
+	window.addEventListener('resize', handleResize);
+
+	if (!globalStore.isLoading)
+	{
+		globalStore.isLoading = true;
+		globalStore
+			.fetchAll()
+			.then(() => {
+				globalStore.isLoading = false;
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			});
+
+		socket.on('update_user', (user: User) => {
+			globalStore.updateUser(user);
+		});
+	}
+});
 
 onUnmounted(() => {
-window.removeEventListener('resize', handleResize)
-})
+	window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
-	<base-spinner v-if="isLoading"></base-spinner>
+	<base-spinner v-if="!isLoaded"></base-spinner>
 	<div v-else class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">

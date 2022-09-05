@@ -5,6 +5,7 @@ export interface GlobalState {
 	users: User[];
 	friends: User[];
 	selectedItems: User[] | Channel[];
+	isLoading: boolean
 }
 
 export default GlobalState;

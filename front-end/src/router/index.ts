@@ -2,13 +2,19 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
+	history: createWebHistory(),
 	routes: [
 		{ path: '/', redirect: '/login' },
 		{
 			path: '/login',
 			name: 'Login',
 			component: () => import('@/views/Login.vue'),
+			//meta: { requiresAuth: false },
+		},
+		{
+			path: '/fakelogin/:username',
+			name: 'FakeLogin',
+			component: () => import('@/views/fakeLogin.vue'),
 			//meta: { requiresAuth: false },
 		},
 		{
@@ -55,17 +61,17 @@ const router = createRouter({
 		},
 		{
 			path: '/:pathMatch(.*)*',
-			name: 'NotFound',
-			component: () => import('@/views/NotFound.vue'),
+			name: 'Error',
+			component: () => import('@/views/Error.vue'),
 			//meta: { requiresAuth: true },
 		},
-		{ path: '/:notFound(.*)', name: 'notFound', component: () => import('@/views/NotFound.vue') },
+		//{ path: '/:notFound(.*)', name: 'NotFound', component: () => import('@/views/NotFound.vue') },
 	],
 });
 
 router.beforeEach((to, _) => {
 	const userStore = useUserStore();
-	if (to.name !== 'Login' && !userStore.isLoggedIn) {
+	if (to.name !== 'Login' && !userStore.isLoggedIn && to.name !== 'FakeLogin') {
 		return { name: 'Login' };
 	} else if (to.name === 'Login' && userStore.isLoggedIn) {
 		return { name: 'Home' };

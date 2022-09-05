@@ -1,7 +1,7 @@
 /** @prettier */
 import { Body, Controller, Get, Inject, NotImplementedException, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard';
-import { User } from 'src/users/entity/user.entity';
+import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
 import { ChannelFront } from './entity/channel.entity';
@@ -22,13 +22,14 @@ export class ChatController {
 	@Get('user-discussions')
 	getUserPrivateMessage(@Req() req) {
 		const user: User = req.user;
-		throw new NotImplementedException('This feature is under developpement.');
+		return this.chatService.findUserDiscussion(user);
 	}
+
 	@UseGuards(JwtAuthGuard)
 	@Get('user-channels')
 	getUserChannels(@Req() req) {
 		const user: User = req.user;
-		throw new NotImplementedException('This feature is under developpement.');
+		return this.chatService.findUserChannel(user);
 	}
 
 	@UseGuards(JwtAuthGuard)

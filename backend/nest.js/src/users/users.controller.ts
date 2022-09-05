@@ -66,7 +66,7 @@ export class UsersController {
 	async getOwnInfo(@Req() req) {
 		const user: User = req.user;
 		// const userAuth: UserAuth = await this.authService.findOne(user.id);
-		// return { user, has_2fa: userAuth.has_2fa };
+		return user;
 	}
 
 	@Get(':id')

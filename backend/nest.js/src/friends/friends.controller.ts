@@ -63,9 +63,11 @@ export class FriendsController {
 		return this.resolveUsers(this.friendsService.removeFriendship.bind(this.friendsService), req.user, targetSelect);
 	}
 
-	@Get(':id')
-	getFriends(@Param('id') id: number) {
-		return this.friendsService.findFriends(id);
+	@UseGuards(JwtAuthGuard)
+	@Get()
+	getFriends(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findFriends(user.id);
 	}
 
 	@Get('ids/:id')

@@ -1,15 +1,19 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Param, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/users/entity/user.entity';
+import { User } from '../users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
+import { UsersService } from '../users/users.service';
 
 @Controller("auth")
 export class AuthController {
 	constructor(private authService: AuthService, private jwtService: JwtService) {}
+
+	@Inject(UsersService)
+	private readonly usersService: UsersService;
 
 	@Post('42/redirect')
 	async redirect(@Res() res: Response, @Req() req: Request) {
@@ -38,6 +42,22 @@ export class AuthController {
 		} catch(err42) {
 			throw new ForbiddenException("Unauthorized");
 		}
+	}
+
+	@Get('fakelogin/:username')
+	async fakeLogin(@Req() req: Request, @Param('username') username: string) {
+		const user: User = await this.usersService.findOneByUsername(username);
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		
+		return { auth: userAuth, user: user };
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('me')
+	async getOwnInfo(@Req() req) {
+		const user: User = req.user;
+		const userAuth: UserAuth = await this.authService.findOne(user.id);
+		return userAuth;
 	}
 }
 

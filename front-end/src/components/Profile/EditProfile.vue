@@ -2,12 +2,13 @@
 import { useToast } from 'vue-toastification';
 import { useUserStore } from '@/stores/userStore';
 import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 
 const userStore = useUserStore();
 const toast = useToast();
 const router = useRouter();
+const route = useRoute();
 const newUsername = ref(userStore.userData.username);
 const newAvatar = ref(userStore.userData.avatar);
 
@@ -20,8 +21,8 @@ function submitProfileForm() {
 	{
 		userStore
 		.updateAvatar(newAvatar.value)
-		.catch((e) => {
-			toast.error(e.response.data.message);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 	if (userStore.userData.username !== newUsername.value)
@@ -31,8 +32,8 @@ function submitProfileForm() {
 		.then(() => {
 			router.push({ name: 'Profile', params: { username: userStore.userData.username } });
 		})
-		.catch((e) => {
-			toast.error(e.response.data.message);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }

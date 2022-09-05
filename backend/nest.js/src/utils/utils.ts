@@ -36,7 +36,7 @@ export function isNumberPositive(nb: number, actionMsg: string): boolean {
 }
 
 /**
- * Get a random element in array
+ * Get a random number
  */
 export function random(startNumber: number, nbPosibility: number) : number {
 	return Math.floor(Math.random() * nbPosibility) + startNumber;
@@ -47,6 +47,11 @@ export function random(startNumber: number, nbPosibility: number) : number {
  */
 export function randomElement<T>(array: Array<T>) : T {
 	return array[Math.floor(Math.random() * array.length)];
+}
+
+export function randomElements<T>(array: Array<T>, nbElements: number) : T[] {
+	const shuffled = array.sort(() => 0.5 - Math.random());
+	return shuffled.slice(0, nbElements);
 }
 
 export function randomEnum<T>(enumeration: T) {

@@ -2,12 +2,15 @@
 import { NotificationType } from '@/types/Notification';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useToast } from 'vue-toastification';
+import { useRouter, useRoute } from 'vue-router';
 import UsersService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 
 const notifications = ref<Notification[] | null>(null);
 const isLoading = ref(false);
 const toast = useToast();
+const router = useRouter();
+const route = useRoute();
 
 function fetchNotifications() {
 	isLoading.value = true;
@@ -17,9 +20,8 @@ function fetchNotifications() {
 			console.log(notifications.value)
 			isLoading.value = false;
 		})
-		.catch((e: Error) => {
-			isLoading.value = false;
-			toast.error(e);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 }
 
@@ -39,8 +41,8 @@ function acceptInvitation(notification: Notification) {
 				if(index !== -1) notifications.value.splice(index, 1)
 			}
 		})
-		.catch((e: Error) => {
-			toast.error(e);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }
@@ -56,8 +58,8 @@ function declineInvitation(notification: Notification) {
 				if(index !== -1) notifications.value.splice(index, 1)
 			}
 		})
-		.catch((e: Error) => {
-			toast.error(e);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }

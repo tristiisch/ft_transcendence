@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
+import type { UserState, Auth } from '@/types/UserState';
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
 import TokenService from '@/services/TokenService';
-import type { UserState, Auth } from '@/types/User';
 import type User from '@/types/User';
 import status from '@/types/Status';
 import socket from '@/plugin/socketInstance';
-import router from '@/router/index';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -15,8 +14,9 @@ export const useUserStore = defineStore('userStore', {
 		userData: {} as User,
 	}),
 	getters: {
-		isLoggedIn: (state) => state.userToken != null,
-		isRegistered: (state) => state.userData && state.userData.username != null,
+		isLoggedIn: (state) => state.userToken !== null,
+		isRegistered: (state) => state.userData.username !== null,
+		isLoaded: (state) => state.userData.id !== undefined && state.userData.username !== undefined && state.userData.avatar !== undefined
 	},
 	actions: {
 		saveToken() {
@@ -24,8 +24,15 @@ export const useUserStore = defineStore('userStore', {
 			this.userToken = this.userAuth.token_jwt
 			console.log(this.userToken)
 		},
-		async handleLogin(code: string) {
+		verifyState(state: string) {
+			const randomString = localStorage.getItem('state')
+			localStorage.removeItem('state');
+			if (!randomString || randomString && state !== JSON.parse(randomString))
+				throw new Error('State is not valid')
+		},
+		async handleLogin(code: string, state: string) {
 			try {
+				this.verifyState(state)
 				const data = await AuthService.login(code);
 				this.userAuth = data.auth;
 				console.log(this.userAuth)
@@ -36,6 +43,22 @@ export const useUserStore = defineStore('userStore', {
 					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
 				}
 			} catch (error: any) {
+				throw error;
+			}
+		},
+		async handleFakeLogin(username: string) {
+			try {
+				const data = await AuthService.fakeLogin(username);
+				this.userAuth = data.auth;
+				console.log(this.userAuth)
+				if (!this.userAuth.has_2fa)
+				{
+					this.userData = data.user;
+					console.log(this.userData)
+					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
+				}
+			} catch (error: any) {
+				console.log('ERROR FAKE LOGIN')
 				throw error;
 			}
 		},
@@ -52,10 +75,7 @@ export const useUserStore = defineStore('userStore', {
 		handleLogout() {
 			socket.emit('update_status', status.OFFLINE )
 			TokenService.removeLocalToken()
-			this.userToken = null
-			this.userAuth = {} as Auth,
-			this.userData = {} as User,
-			router.replace({name: 'Login'})
+			location.reload()
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
@@ -63,6 +83,29 @@ export const useUserStore = defineStore('userStore', {
 				this.userData.username = newUsername;
 				this.userData.avatar = newAvatar;
 				this.saveToken()
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchAll() {
+			try {
+				await Promise.all([this.fetchMe(), this.fetchAuth()])
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchMe() {
+			try {
+				const response = await UserService.getMe();
+				this.userData = response.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchAuth() {
+			try {
+				const response = await AuthService.getAuth();
+				this.userAuth = response.data;
 			} catch (error: any) {
 				throw error;
 			}
