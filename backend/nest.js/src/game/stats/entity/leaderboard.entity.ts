@@ -1,4 +1,4 @@
-import { UserStatus } from "src/users/entity/user.entity";
+import { UserStatus } from "users/entity/user.entity";
 
 export class LeaderboardUser {
 

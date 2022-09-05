@@ -1,6 +1,5 @@
 /** @prettier */
 import { IsInt } from 'class-validator';
-import { User } from 'src/users/entity/user.entity';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum NotificationType {

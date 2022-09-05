@@ -1,4 +1,4 @@
-import { User } from "src/users/entity/user.entity";
+import { User } from "users/entity/user.entity";
 import { ChatStatus } from "./chat.entity";
 import { MessageFront } from "./message.entity";
 

@@ -1,7 +1,6 @@
-import { User } from "src/users/entity/user.entity";
 import { ChildEntity, Column } from "typeorm";
+import { User } from "users/entity/user.entity";
 import { Chat, ChatFront } from "./chat.entity";
-import { MessageFront } from "./message.entity";
 
 @ChildEntity()
 export class Channel extends Chat {

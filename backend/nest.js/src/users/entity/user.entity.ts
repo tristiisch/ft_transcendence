@@ -1,7 +1,5 @@
 /** @prettier */
-import { Exclude } from 'class-transformer';
-import { IsEmail, IsInt, IsNotEmpty } from 'class-validator';
-import { fromBase64 } from 'src/utils/utils';
+import { IsNotEmpty } from 'class-validator';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum UserStatus {

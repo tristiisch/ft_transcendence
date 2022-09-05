@@ -1,6 +1,5 @@
 /** @prettier */
 import { IsInt } from 'class-validator';
-import { User } from 'src/users/entity/user.entity';
 import { Column, Entity, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
 import { Message, MessageFront } from './message.entity';
 

@@ -5,7 +5,6 @@ import { Socket } from "engine.io";
 import { Jwt } from "jsonwebtoken";
 import { map } from "rxjs";
 import { Server } from "socket.io";
-import { MatchOwn } from "src/game/matchs/entity/own-match.entity";
 
 interface UserStatus {
 	id: number
