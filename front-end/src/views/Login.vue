@@ -55,7 +55,9 @@ watch(
 );
 
 function submit2faForm() {
-	userStore
+	if (twoFaCode.value)
+	{
+		userStore
 		.handleLogin2Fa(twoFaCode.value)
 		.then(() => {
 			socket.connect()
@@ -66,6 +68,7 @@ function submit2faForm() {
 			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
 			else router.replace({ name: 'Login' });
 		});
+	}
 }
 
 function onlyLettersAndNumbers(str: string) {

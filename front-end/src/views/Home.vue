@@ -71,6 +71,10 @@ onBeforeMount(() => {
 		socket.on('update_user', (user: User) => {
 			globalStore.updateUser(user);
 		});
+
+		socket.on('friendAdd', (user: User) => {
+			globalStore.addFriend(user);
+		});
 	}
 });
 

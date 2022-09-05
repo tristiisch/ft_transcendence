@@ -33,7 +33,9 @@ function submitProfileForm() {
 			router.push({ name: 'Profile', params: { username: userStore.userData.username } });
 		})
 		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			//check for name already exist in database --> Code === 403 ?
+			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
+			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }
