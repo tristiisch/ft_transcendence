@@ -49,7 +49,7 @@ export class AuthController {
 		const user: User = await this.usersService.findOne(userId);
 		const userAuth: UserAuth = await this.authService.findOne(userId);
 		
-		return { user, userAuth };
+		return { auth: userAuth, user: user };
 	}
 
 	@UseGuards(JwtAuthGuard)
