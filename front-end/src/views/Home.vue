@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
 import socket from '@/plugin/socketInstance';
+import type Notification from '@/types/Notification';
 import type User from '@/types/User';
 
 const windowHeight = ref(window.innerHeight);
@@ -68,12 +69,20 @@ onBeforeMount(() => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 			});
 
-		socket.on('update_user', (user: User) => {
+		socket.on('updateUser', (user: User) => {
 			globalStore.updateUser(user);
 		});
 
-		socket.on('friendAdd', (user: User) => {
-			globalStore.addFriend(user);
+		socket.on('AddFriend', (friend: User) => {
+			globalStore.addFriend(friend);
+		});
+
+		socket.on('AddNotification', (notification: Notification) => {
+			globalStore.addNotification(notification);
+		});
+
+		socket.on('AddPendingFriend', (pendingFriend: User) => {
+			globalStore.addPendingFriend(pendingFriend);
 		});
 	}
 });

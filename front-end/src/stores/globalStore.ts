@@ -3,6 +3,7 @@ import UserService from '@/services/UserService';
 import type GlobalState from '@/types/GlobalState';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
+import type Notification from '@/types/Notification';
 
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
@@ -11,6 +12,8 @@ export const useGlobalStore = defineStore('globalStore', {
 	state: (): GlobalState => ({
 		users: [],
 		friends: [],
+		pendingFriends: [],
+		notifications: [],
 		selectedItems: [],
 		isLoading: false
 	}),
@@ -73,6 +76,17 @@ export const useGlobalStore = defineStore('globalStore', {
 				}
 			}
 		},
+		async fetchPendingfriends() {
+			if (!this.pendingFriends.length)
+			{
+				try {
+					const response = await UserService.getPendingFriends();
+					this.pendingFriends = response.data;
+				} catch (error: any) {
+					throw error;
+				}
+			}
+		},
 		checkChangeInArray(baseArray: User[]) {
 			let unlisted: User[] = [];
 			let listed: User[] = [];
@@ -95,12 +109,26 @@ export const useGlobalStore = defineStore('globalStore', {
 		addFriend(friend: User) {
 			this.friends.push(friend);
 		},
+		addPendingFriend(pendingFriend: User) {
+			this.friends.push(pendingFriend);
+		},
+		addNotification(notification: Notification) {
+			this.notifications.push(notification);
+		},
 		removeUser(userToRemoveId: number) {
 			const index = this.users.findIndex(user => user.id === userToRemoveId);
 			this.users.splice(index, 1);
 		},
 		removeFriend(friendToRemoveId: number) {
 			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
+			this.friends.splice(index, 1);
+		},
+		removePendingFriend(pendingFriendToRemoveId: number) {
+			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
+			this.friends.splice(index, 1);
+		},
+		removeNotification(notificationToRemoveId: number) {
+			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
 			this.friends.splice(index, 1);
 		},
 		updateUser(userToChange: User) {

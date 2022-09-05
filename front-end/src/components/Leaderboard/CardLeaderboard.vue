@@ -48,7 +48,7 @@ function friendRequest() {
 		if (!globalStore.isFriend(props.user?.id)) {
 		UsersService.sendFriendRequest(props.user?.id)
 			.then(() => {
-				/*UsersService.getFriendsPending().then((response) => {
+				/*UsersService.getPendingFriends().then((response) => {
 					pending.value = response.data
 					console.log(pending.value)
 				}*/
