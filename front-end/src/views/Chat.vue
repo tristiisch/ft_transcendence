@@ -65,16 +65,16 @@ socket.on("chatChannelLeave", (channel: Channel, user: User) => {
 	chatStore.leaveChannel(channel, user);
 });
 
-socket.on("chatChannelBan", (channel: Channel, newBanList: User[]) => {
-	chatStore.updateBanList(channel, newBanList)
+socket.on("chatChannelBan", (channel: Channel, newBanList: { newList: User[], userWhoSelect: User}) => {
+	chatStore.updateBanList(channel, null, newBanList)
 });
 
-socket.on("chatChannelAdmin", (channel: Channel, newAdminList: User[]) => {
-	chatStore.updateAdminList(channel, newAdminList)
+socket.on("chatChannelAdmin", (channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => {
+	chatStore.updateAdminList(channel, null, newAdminList)
 });
 
-socket.on("chatChannelMute", (channel: Channel, newMuteList: User[]) => {
-	chatStore.updateMuteList(channel, newMuteList)
+socket.on("chatChannelMute", (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User}) => {
+	chatStore.updateMuteList(channel, null, newMuteList)
 });
 
 socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
@@ -85,6 +85,9 @@ socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
 	chatStore.addChannelMessage(channel, data);
 });
 
+socket.on('chatChannelName', (channel: Channel, newName: { name: string, userWhoChangeName: User }) => {
+	chatStore.UpdateChannelName(channel, newName, false);
+});
 const isLoaded = computed(() => {
 	if (!chatStore.isLoading && userStore.isLoaded) return true;
 	return false;

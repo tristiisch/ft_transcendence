@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore'
 import { useChatStore } from '@/stores/chatStore';
-import { onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type Discussion from '@/types/Discussion'
-import { computed } from '@vue/reactivity';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();

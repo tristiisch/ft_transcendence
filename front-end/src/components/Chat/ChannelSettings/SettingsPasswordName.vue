@@ -25,7 +25,7 @@ const label = computed(() => {
 function updatePasswordName() {
     if (chatStore.inChannel) {
         if (newChannelName.value != '' && newChannelName.value !== chatStore.inChannel.name)
-            chatStore.UpdateChannelName(chatStore.inChannel, newChannelName.value);
+            chatStore.UpdateChannelName(chatStore.inChannel, newChannelName.value, true);
     }
     emit('close')
 }

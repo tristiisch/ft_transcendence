@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chatStore';
-import { ref, computed, onBeforeMount } from 'vue';
+import { useUserStore } from '@/stores/userStore';
+import { ref, onBeforeMount } from 'vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import type User from '@/types/User';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
 
 const chatStore = useChatStore();
+const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const selectableUsers = ref<User[]>([])
 const props = defineProps<{ type: string; }>();
@@ -41,16 +43,18 @@ function updateSelectableUsers() {
 
 function updateChangeInChannel() {
 	if (chatStore.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-		if (globalStore.checkChangeInArray(chatStore.inChannel.banned)) {
-			const newList = globalStore.selectedItems;
-			if (props.type === 'admin' && globalStore.checkChangeInArray(chatStore.inChannel.admins))
-				chatStore.updateAdminList(chatStore.inChannel, newList);
-			else if (props.type === 'ban' && globalStore.checkChangeInArray(chatStore.inChannel.banned))
-				chatStore.updateBanList(chatStore.inChannel, newList);
-			else if (props.type === 'mute' && globalStore.checkChangeInArray(chatStore.inChannel.muted))
-				chatStore.updateMuteList(chatStore.inChannel, newList);
-			globalStore.resetSelectedItems();
-		}
+		let newList: { newList: User[], userWhoSelect: User } = {
+			newList: globalStore.selectedItems,
+			userWhoSelect: userStore.userData
+		};
+		let selection: {unlisted: User[], listed: User[]} | null;
+		if (props.type === 'admin' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.admins)))
+			chatStore.updateAdminList(chatStore.inChannel, selection, newList);
+		else if (props.type === 'ban' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.banned)))
+			chatStore.updateBanList(chatStore.inChannel, selection, newList);
+		else if (props.type === 'mute' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.muted)))
+			chatStore.updateMuteList(chatStore.inChannel, selection, newList);
+		globalStore.resetSelectedItems();
 	}
 	emit('validate');
 }
