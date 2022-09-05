@@ -315,5 +315,4 @@ export async function createSocketServer(serverPort: number) {
 	io.listen(serverPort);
 	console.log('[SOCKET.IO]', 'SERVER', "Server socket.io is started !")
 
-	})
 }
