@@ -173,10 +173,11 @@ export class TestFakeService {
 
 		await this.friendsService.addFriendRequest(user, randomUser);
 
+		/* Only to test notif friendship. Should be uncommented later
 		const randomNb: number = random(1, 4);
 
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
-		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);
+		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);*/
 		return randomUser;
 	}
 

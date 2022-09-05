@@ -49,7 +49,7 @@ export class FriendsService {
 		friendship.user1_id = user.id;
 		friendship.user2_id = target.id;
 
-		return await this.friendsRepository.insert(friendship).then((insertResult: InsertResult) => {
+		return await this.friendsRepository.insert(friendship).then(async (insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
 				throw new InternalServerErrorException(`Can't add friendship of ${friendship.user1_id} and ${friendship.user1_id}.`);
 			} else if (insertResult.identifiers.length > 1) {
@@ -60,7 +60,7 @@ export class FriendsService {
 			notif.from_user_id= friendship.user1_id
 			notif.is_deleted = false;
 			notif.type = NotificationType.FRIEND_REQUEST
-			this.notifService.addNotif(notif);
+			await this.notifService.addNotif(notif);
 			return { statusCode: 200, message: `You asked as a friend ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}

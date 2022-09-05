@@ -70,43 +70,52 @@ export class FriendsController {
 		return this.friendsService.findFriends(user.id);
 	}
 
-	@Get('ids/:id')
-	getFriendsIds(@Param('id') id: number) {
-		return this.friendsService.findFriendsIds(id);
+	@UseGuards(JwtAuthGuard)
+	@Get('ids')
+	getFriendsIds(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findFriendsIds(user.id);
 	}
 
 	@Get('names/:id')
-	getFriendsNames(@Param('id') id: number) {
-		return this.friendsService.findFriendsNames(id);
+	getFriendsNames(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findFriendsNames(user.id);
 	}
 
-	@Get('request/pending/:id')
-	getFriendRequestsPending(@Param('id') id: number) {
-		return this.friendsService.findPending(id);
+	@Get('request/pending')
+	getFriendRequestsPending(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findPending(user.id);
 	}
 
-	@Get('request/pending/ids/:id')
-	getFriendRequestsPendingIds(@Param('id') id: number) {
-		return this.friendsService.findPendingIds(id);
+	@Get('request/pending/ids')
+	getFriendRequestsPendingIds(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findPendingIds(user.id);
 	}
 
-	@Get('request/pending/names/:id')
-	getFriendRequestsPendingNames(@Param('id') id: number) {
-		return this.friendsService.findPendingNames(id);
+	@Get('request/pending/names')
+	getFriendRequestsPendingNames(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findPendingNames(user.id);
 	}
 
-	@Get('request/received/:id')
-	getFriendRequestsReceived(@Param('id') id: number) {
-		return this.friendsService.findWaiting(id);
+	@Get('request/received')
+	getFriendRequestsReceived(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findWaiting(user.id);
 	}
 
-	@Get('request/received/ids/:id')
-	getFriendRequestsReceivedIds(@Param('id') id: number) {
-		return this.friendsService.findWaitingIds(id);
+	@Get('request/received/ids')
+	getFriendRequestsReceivedIds(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findWaitingIds(user.id);
 	}
 
-	@Get('request/received/names/:id')
-	getFriendRequestsReceivedNames(@Param('id') id: number) {
-		return this.friendsService.findWaitingNames(id);
+	@Get('request/received/names')
+	getFriendRequestsReceivedNames(@Req() req) {
+		const user: User = req.user;
+		return this.friendsService.findWaitingNames(user.id);
 	}
 }
