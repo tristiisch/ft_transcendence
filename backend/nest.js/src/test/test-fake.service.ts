@@ -11,6 +11,7 @@ import { User, UserStatus } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { random, randomElement, randomEnum, removeFromArray, removesFromArray, toBase64 } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
+import { UserAuth } from 'src/auth/entity/user-auth.entity';
 
 @Injectable()
 export class TestFakeService {
@@ -82,11 +83,23 @@ export class TestFakeService {
 
 	async initUser(): Promise<User> {
 		let user: User = new User();
+		let userAuth: UserAuth;
+		let userStats: UserStats;
+	
 		user.username = Math.random().toString(36).substring(2, 9);
 		user.login_42 = Math.random().toString(36).substring(2, 9);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
-		return await this.usersService.add(user);
+	
+		user = await this.usersService.add(user);
+		userAuth = new UserAuth(user.id);
+		userAuth.token_jwt = await this.authService.createToken(user.id);
+		this.authService.save(userAuth);
+
+		userStats = new UserStats(user.id);
+		this.statsService.add(userStats);
+
+		return user;
 	}
 
 	// async initStats(user: User): Promise<UserStats> {
