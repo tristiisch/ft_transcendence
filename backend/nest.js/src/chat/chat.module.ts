@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Chat } from './entity/chat.entity';
 import { UsersModule } from '../users/users.module';
 import { Message } from './entity/message.entity';
-import { Channel } from 'diagnostics_channel';
+import { Channel } from './entity/channel.entity';
 
 @Module({
 	imports: [UsersModule, TypeOrmModule.forFeature([Chat, Channel, Message])],

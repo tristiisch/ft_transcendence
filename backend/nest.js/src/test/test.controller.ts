@@ -15,9 +15,9 @@ export class TestController {
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 
-	@Post('addFakeData')
-	async addFakeData(@Body() user: UserSelectDTO) {
-		const target: User = await user.resolveUser(this.usersService);
+	@Get('addFakeData/:username')
+	async addFakeData(@Param('username') username: string) {
+		const target: User = await this.usersService.findOneByUsername(username);
 		return this.fakeService.addFakeData(target);
 	}
 

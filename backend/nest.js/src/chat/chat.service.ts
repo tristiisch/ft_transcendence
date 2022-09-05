@@ -91,7 +91,15 @@ export class ChatService {
 		return discussions;
     }
 
+	/**
+[Nest] 474  - 09/05/2022, 4:43:27 AM   ERROR [ExceptionsHandler] invalid input value for enum chat_type_enum: "Chat"
+QueryFailedError: invalid input value for enum chat_type_enum: "Chat"
+	 */
 	async addChat(chat: Chat) {
 		return this.chatRepo.insert(chat);
+	}
+
+	async addMessage(msg: Message) {
+		return this.msgRepo.insert(msg);
 	}
 }

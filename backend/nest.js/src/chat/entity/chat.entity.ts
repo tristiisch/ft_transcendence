@@ -1,7 +1,7 @@
 /** @prettier */
 import { IsInt } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
-import { Message, MessageFront } from './message.entity';
+import { MessageFront } from './message.entity';
 
 export enum ChatStatus {
 	PUBLIC,
@@ -16,7 +16,7 @@ export class Chat {
 
 	@PrimaryGeneratedColumn()
 	@IsInt()
-	id: number;
+	id?: number;
 
 	@Column({ type: 'enum', enum: ChatStatus, default: ChatStatus.PUBLIC })
 	type: ChatStatus;
