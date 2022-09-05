@@ -54,8 +54,9 @@ export class StatsService {
     async addDefeat(userId: number) {
 		const userStats: UserStats = await this.findOrCreate(userId);
 
+		//return await this.statsRepository.update(userId, { defeats: userStats.defeats + 1 });
 		++userStats.defeats;
-		return await this.statsRepository.update(userStats.user_id, { victories: userStats.defeats });
+		return await this.statsRepository.save(userStats);
     }
 
 	/**
@@ -64,14 +65,13 @@ export class StatsService {
     async addVictory(userId: number) {
 		const userStats: UserStats = await this.findOrCreate(userId);
 
+		//return await this.statsRepository.update(userId, { victories: userStats.victories + 1 });
 		++userStats.victories;
-		return await this.statsRepository.update(userStats.user_id, { victories: userStats.victories });
+		return await this.statsRepository.save(userStats);
     }
 
     async add(stats: UserStats) {
-		return await this.statsRepository.save(stats).then((us: UserStats) => {
-			return us;
-		}, this.userService.lambdaDatabaseUnvailable);
+		return await this.statsRepository.insert(stats);
     }
 
 	/**

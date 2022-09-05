@@ -49,7 +49,7 @@ export class TestFakeService {
 		const user: User = await this.initUser();
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
-		// const stats: UserStats = await this.initStats(user);
+		//const stats: UserStats = await this.initStats(user);
 		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, await this.friendsService.findAllRelationsId(user.id));
 
@@ -109,14 +109,14 @@ export class TestFakeService {
 		return user;
 	}
 
-	// async initStats(user: User): Promise<UserStats> {
-	// 	const userStats: UserStats = new UserStats(user.id);
+	async initStats(user: User): Promise<UserStats> {
+		const userStats: UserStats = new UserStats(user.id);
 
-	// 	userStats.victories = random(0, this.randomMaxStats);
-	// 	userStats.defeats = random(0, this.randomMaxStats);
-
-	// 	return this.statsService.add(userStats);
-	// }
+	 	//userStats.victories = random(0, this.randomMaxStats);
+	 	//userStats.defeats = random(0, this.randomMaxStats);
+		await this.statsService.add(userStats);
+	 	return userStats;
+	}
 
 	async initMatchHistory(user: User, userIds: number[]): Promise<MatchStats> {
 		if (userIds.length === 0) {
