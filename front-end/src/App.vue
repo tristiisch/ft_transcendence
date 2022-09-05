@@ -25,12 +25,12 @@ onBeforeMount(() => {
 	if (TokenService.isLocalToken()) {
 	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
 	socket.auth = { token: TokenService.getLocalToken() };
+	socket.connect()
 
 	userStore.fetchAll().catch((error) => {
 		console.log(error);
 		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 	});
-
 
 	globalStore.isLoading = true
 	globalStore
