@@ -80,9 +80,10 @@ interface ServerToClientEvents {
 	chatChannelDelete: (channel: Channel) => void;
 	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
-	chatChannelBan: (channel: Channel, banList: User[]) => void;
-	chatChannelAdmin:(channel: Channel, adminList: User[]) => void;
-	chatChannelMute: (channel: Channel, muteList: User[]) => void;
+	chatChannelBan: (channel: Channel, newBanList:{ newList: User[], userWhoSelect: User}) => void;
+	chatChannelAdmin:(channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => void;
+	chatChannelMute: (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User} ) => void;
+	chatChannelName: (channel: Channel, newName: { name: string, userWhoChangeName: User}) => void
 	chatDiscussionMessage: (discussion: Discussion, data: Message) => void;
 	chatChannelMessage: (channel: Channel, data: Message) => void;
 }
@@ -99,9 +100,10 @@ interface ClientToServerEvents {
 	chatChannelDelete: (channel: Channel) => void;
 	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
-	chatChannelBan: (channel: Channel, banList: User[]) => void;
-	chatChannelAdmin:(channel: Channel, adminList: User[]) => void;
-	chatChannelMute: (channel: Channel, muteList: User[]) => void;
+	chatChannelBan: (channel: Channel, newBanList:{ newList: User[], userWhoSelect: User}) => void;
+	chatChannelAdmin:(channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => void;
+	chatChannelMute: (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User} ) => void;
+	chatChannelName: (channel: Channel, newName: { name: string, userWhoChangeName: User}) => void
 	chatDiscussionMessage: (discussion: Discussion, message: Message) => void;
 	chatChannelMessage: (channel: Channel, message: Message) => void;
 }
@@ -244,8 +246,8 @@ export async function createSocketServer(serverPort: number) {
 
 		socket.on("chatChannelCreate", (userId, channel) => {
 			socket.join(channel.name);
-			socket.id
-			socket.join(channel.name);users[socket.handshake.auth.token]
+			// socket.id
+			// socket.join(channel.name);users[socket.handshake.auth.token]
 			//need to add each socket id of members in join
 			if (channel.type !== ChatStatus.PRIVATE)
 				//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
@@ -268,15 +270,23 @@ export async function createSocketServer(serverPort: number) {
 		});
 		
 		socket.on("chatChannelBan", (channel, newBanList) => {
+			// socket.to(channel.name).emit("chatChannelName", channel, newBanList);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelBan", channel, newBanList);
 		});
 		
 		socket.on("chatChannelAdmin", (channel, newAdminList) => {
+			// socket.to(channel.name).emit("chatChannelAdmin", channel, newAdminList);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelAdmin", channel, newAdminList);
 		});
 		
 		socket.on("chatChannelMute", (channel, newMuteList) => {
+			// socket.to(channel.name).emit("chatChannelMute", channel, newMuteList);  // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelMute", channel, newMuteList);
+		});
+
+		socket.on("chatChannelName", (channel, newName) => {
+			// socket.to(channel.name).emit("chatChannelName", channel, newName);  // need room implementation, no broadcast
+			socket.broadcast.emit("chatChannelName", channel, newName);
 		});
 
 		socket.on("chatDiscussionMessage", (discussion, message) => {

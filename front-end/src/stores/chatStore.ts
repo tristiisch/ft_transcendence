@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
+import { useToast } from 'vue-toastification';
 import socket from '@/plugin/socketInstance';
 import UserService from '@/services/UserService';
 import type User from '@/types/User';
@@ -161,75 +162,149 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		leaveChannel(channel: Channel, user: User) {
 			const userStore = useUserStore();
-			this.deleteUserFromChannel(channel, user);
-			if (channel.users.length > 1) {
-				if (channel.owner.id === user.id) channel.owner = channel.admins[0];
+			if ((userStore.userData.id === user.id)) {
+				this.deleteUserFromChannel(channel, user);
 				const leaveMessage = {
 					date: new Date().toLocaleString(),
-					message: '⚪️　'+ user.username + ' just leaved the channel',
+					message: '🔴　'+ user.username + ' just leaved the channel',
 					idSender: -1,
 					read: false
 				};
-				if (this.inChannel === channel) {
-					this.inChannel.messages.push(leaveMessage);
-					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+				channel.messages.push(leaveMessage);
+				socket.emit('chatChannelMessage', channel, channel.messages[channel.messages.length - 1]);
+				if (channel.users.length > 1) {
+					channel.owner = channel.admins[0];                             //////////////////////what to do when no other admin?
+					socket.emit('chatChannelLeave', channel, userStore.userData);
 				}
-				else {
-					const index = this.getIndexUserChannels(channel.name);
-					if (index >= 0) this.userChannels[index].messages.push(leaveMessage);
-					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
-				}	
-				if (userStore.userData.id === user.id) socket.emit('chatChannelLeave', userStore.userData);
-			}
-			else 
-				if (userStore.userData.id === user.id) socket.emit('chatChannelDelete', channel)
-			if (userStore.userData.id === user.id) {
+				else
+					socket.emit('chatChannelDelete', channel)
 				this.deleteUserChannel(this.getIndexUserChannels(channel.name));
 				this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 			}
+			else {
+				const index = this.getIndexUserChannels(channel.name);
+				this.deleteUserFromChannel(this.userChannels[index], user);
+			}
 		},
-		UpdateChannelName(channel: Channel, newName: string) {
-			if (this.inChannel === channel) {
-				this.inChannel.name = newName;
-				socket.emit('chatChannelName', this.inChannel, newName);
+		UpdateChannelName(channel: Channel, newName: { name: string, userWhoChangeName: User }, emit: boolean) {
+			const newChannelNameMessage = {
+				date: new Date().toLocaleString(),
+				message: '⚪️　' + newName.userWhoChangeName.username + ' change the channel name to ' + newName.name.toUpperCase,
+				idSender: -1,
+				read: false
+			};
+			if (this.inChannel && this.inChannel.name === channel.name) {
+				this.inChannel.name = newName.name;
+				this.inChannel.messages.push(newChannelNameMessage);
 			}
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].name = newName;
-			}		
+				this.userChannels[index].name = newName.name;
+				this.userChannels[index].messages.push(newChannelNameMessage);
+			}
+			if (emit) socket.emit('chatChannelName', this.inChannel, newName);
 		},
-		updateBanList(channel: Channel, newBanList: User[]) {
-			if (this.inChannel === channel) {
-				this.inChannel.banned = newBanList
+		updateBanList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
+				newBanList: {newList: User[], userWhoSelect: User }) {
+			if (selection) {
+				this.addAutomaticMessage(channel, selection, '->got unBanned by ' + newBanList.userWhoSelect.username,
+					'-> got Banned by ' + newBanList.userWhoSelect.username)
 				socket.emit('chatChannelBan', channel, newBanList);
 			}
+			/////////////////////////////////////////////////////////////////// best to do in back
+			if (this.inChannel && this.inChannel.name === channel.name) {
+				this.inChannel.banned = newBanList.newList
+				for (const banned of channel.banned)
+					this.deleteUserFromChannel(this.inChannel, banned);
+			}
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].banned = newBanList;
+				this.userChannels[index].banned = newBanList.newList;
+				for (const banned of channel.banned)
+					this.deleteUserFromChannel(this.userChannels[index], banned);
 			}
-			for (const banned of channel.banned) {
-				if (this.inChannel) this.deleteUserFromChannel(this.inChannel, banned);
+			///////////////////////////////////////////////////////////////////
+			const userStore = useUserStore();
+			const indexUser = newBanList.newList.findIndex(user => user.id === userStore.userData.id)
+			if (indexUser >= 0) {
+				const toast = useToast();
+				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
+				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);
+				if (this.inChannel && this.inChannel.name === channel.name) this.inChannel = null;
 			}
 		},
-		updateMuteList(channel: Channel, newMutedList: User[]) {
-			if (this.inChannel === channel) {
-				this.inChannel.muted = newMutedList
+		updateMuteList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
+				newMutedList: {newList: User[], userWhoSelect: User }) {
+			if (selection) {
+				this.addAutomaticMessage(channel, selection, '->got unMuted by ' + newMutedList.userWhoSelect.username,
+					'-> got Muted by ' + newMutedList.userWhoSelect.username);
 				socket.emit('chatChannelMute', channel, newMutedList);
 			}
+			if (this.inChannel && this.inChannel.name === channel.name)
+				this.inChannel.muted = newMutedList.newList
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].muted = newMutedList;
+				this.userChannels[index].muted = newMutedList.newList;
 			}
 		},
-		updateAdminList(channel: Channel, newAdminList: User[]) {
-			if (this.inChannel === channel) {
-				this.inChannel.admins = newAdminList
+		updateAdminList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
+				newAdminList: {newList: User[], userWhoSelect: User }) {
+			if (selection) {
+				this.addAutomaticMessage(channel, selection, '->loose Admin status by ' + newAdminList.userWhoSelect.username,
+					'-> got Admin status by ' + newAdminList.userWhoSelect.username);
 				socket.emit('chatChannelAdmin', channel, newAdminList);
 			}
+			if (this.inChannel && this.inChannel.name === channel.name)
+				this.inChannel.admins = newAdminList.newList;
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].admins = newAdminList;
+				this.userChannels[index].admins = newAdminList.newList;
+			}
+			
+		},
+		addAutomaticMessage(channel: Channel, selection: {unlisted: User[], listed: User[] },
+				messageUnListed: string, messageListed: string) {
+			if (selection.unlisted.length !== 0) {
+				let userNameInUnListed = '';
+				for (const user of selection.unlisted)
+					userNameInUnListed += user.username + ",  ";
+				const newMessage = {
+					date: new Date().toLocaleString(),
+					message: '🔴　' + userNameInUnListed + messageUnListed,
+					idSender: -1,
+					read: false
+				};	
+				if (this.inChannel && this.inChannel.name === channel.name) {
+					this.inChannel.messages.push(newMessage);
+					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+				}
+				else {
+					const index = this.getIndexUserChannels(channel.name);
+					this.userChannels[index].messages.push(newMessage);
+					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
+				}
+				
+			}
+			if (selection.listed.length !== 0) {
+				let userNameInListed = '';
+				for (const user of selection.listed)
+					userNameInListed += user.username + ",  "
+				const newMessage = {
+					date: new Date().toLocaleString(),
+					message: '⚪️　' + userNameInListed + messageListed,
+					idSender: -1,
+					read: false
+				};
+				if (this.inChannel && this.inChannel.name === channel.name) {
+					this.inChannel.messages.push(newMessage);
+					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+				}
+				else {
+					const index = this.getIndexUserChannels(channel.name);
+					this.userChannels[index].messages.push(newMessage);
+					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
+				}
 			}
 		},
 		sendMessage(newMessage: string) {

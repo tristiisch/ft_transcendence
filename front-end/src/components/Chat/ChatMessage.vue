@@ -38,7 +38,7 @@ function chooseArray() {
 
 <template>
     <div v-for="message in chooseArray()" :key="message.date" class="flex gap-2 w-full mt-3 mb-1.5 pl-8">
-		<BaseButton v-if="isUserMessage(message.idSender)" link :to="redirectTo(message.idSender)">
+		<BaseButton v-if="isUserMessage(message.idSender)" link :to="redirectTo(message.idSender)" class="shrink-0">
 			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="globalStore.getUserAvatar(message.idSender)">
 		</BaseButton>
 		<div class="flex flex-col gap-1 min-w-0">
