@@ -12,6 +12,7 @@ const props = defineProps<{
     index: number;
 }>();
 
+// TODO fix -> props.discussion.messages can be undefined
 const lastMessage = ref(props.discussion.messages[props.discussion.messages.length - 1]);
 
 function prefix()
