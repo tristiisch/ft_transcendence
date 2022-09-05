@@ -39,9 +39,9 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
-		async handleFakeLogin() {
+		async handleFakeLogin(username: string) {
 			try {
-				const data = await AuthService.fakeLogin();
+				const data = await AuthService.fakeLogin(username);
 				this.userAuth = data.auth;
 				console.log(this.userAuth)
 				if (!this.userAuth.has_2fa)

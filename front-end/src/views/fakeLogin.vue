@@ -8,8 +8,9 @@ import { useToast } from 'vue-toastification';
 const userStore = useUserStore();
 const router = useRouter();
 const toast = useToast()
+const route = useRoute();
 
-userStore.handleFakeLogin().then(() => {
+userStore.handleFakeLogin(route.params.username).then(() => {
 	if (userStore.isRegistered && !userStore.userAuth.has_2fa)
 	{
 		socket.connect()

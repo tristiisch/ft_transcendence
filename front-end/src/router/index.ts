@@ -12,7 +12,7 @@ const router = createRouter({
 			//meta: { requiresAuth: false },
 		},
 		{
-			path: '/fakelogin',
+			path: '/fakelogin/:username',
 			name: 'FakeLogin',
 			component: () => import('@/views/fakeLogin.vue'),
 			//meta: { requiresAuth: false },

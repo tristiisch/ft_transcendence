@@ -12,8 +12,8 @@ class AuthService {
 		})
 	}
 
-	fakeLogin() {
-		return axios.get('auth/fakeLogin/2').then((response) => {
+	fakeLogin(username: string) {
+		return axios.get('auth/fakeLogin/' + username).then((response) => {
 			console.log('get request fakelogin')
 			if (response.data.auth.token_jwt) {
 				console.log('auth token yes')
