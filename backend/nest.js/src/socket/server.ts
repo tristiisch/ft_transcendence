@@ -255,9 +255,9 @@ export async function createSocketServer(serverPort: number) {
 			// socket.id
 			// socket.join(channel.name);users[socket.handshake.auth.token]
 			//need to add each socket id of members in join
-			if (channel.type !== ChatStatus.PRIVATE)
-				//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
-				socket.broadcast.emit("chatChannelCreate", (channel))  //to delete when join you have implemented join
+			
+			//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
+			socket.broadcast.emit("chatChannelCreate", (channel))  //to delete when join you have implemented join
 			});
 
 		socket.on("chatChannelDelete", (channel) => {

@@ -247,6 +247,7 @@ export const useChatStore = defineStore('chatStore', {
 			if (indexUser >= 0) {
 				const toast = useToast();
 				if (this.inChannel && this.inChannel.name === channel.name) this.inChannel = null;
+				this.setRightPartToDisplay(PartToDisplay.CHAT);
 				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
 				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);	
 			}
