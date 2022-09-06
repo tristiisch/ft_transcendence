@@ -33,7 +33,7 @@ function alreadySelectedUsers() {
 function updateSelectableUsers() {
 	if (chatStore.inChannel){
 		const bannedAndMember: User[] = []
-		for(const member of chatStore.inChannel.users)
+		for(const member of selectableUsers.value)
 			bannedAndMember.push(member)
 		for(const banned of chatStore.inChannel.banned)
 			bannedAndMember.push(banned)
@@ -61,7 +61,7 @@ function updateChangeInChannel() {
 
 onBeforeMount(() => {
 	if (chatStore.inChannel)
-		selectableUsers.value = chatStore.inChannel.users
+		selectableUsers.value = chatStore.inChannel.users.filter(user => user.id !== userStore.userData.id)
 	if (props.type === 'ban')
 		updateSelectableUsers()
 })

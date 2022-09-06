@@ -11,6 +11,7 @@ import type Discussion from '@/types/Discussion';
 import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
+import ChannelsListVue from '@/components/Chat/ChannelsList.vue';
 
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
@@ -119,8 +120,10 @@ export const useChatStore = defineStore('chatStore', {
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
 			this.shiftPositionUserDiscussion(discussion);
 		},
-		addNewChannel(channel: Channel) {
+		addNewChannel(creator: User, channel: Channel) {
 			this.userChannels.push(channel);
+			const toast = useToast();
+			toast.info('you have been added in ' + channel.name + " by " + creator.username);	
 		},
 		addNewDiscussion(discussion: Discussion) {
 			this.userDiscussions.push(discussion);
@@ -144,17 +147,21 @@ export const useChatStore = defineStore('chatStore', {
 				});
 			}
 		},
-		createNewChannel(newChannel: Channel) {
+		createNewChannel(newChannel: Channel, selection: User[]) {
 			const userStore = useUserStore();
 			this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
-			socket.emit('chatChannelCreate', userStore.userData.id, newChannel)
+			const type = this.channelTypeToString(newChannel);
+			this.addAutomaticMessage(newChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
+				, 'have been added to ' + newChannel.name + ' by ' + userStore.userData.username);
+			newChannel.users.unshift(userStore.userData);
+			socket.emit('chatChannelCreate', userStore.userData, newChannel);
 			this.loadChannel(this.userChannels[0]);
 		},
 		joinNewChannel(channel : Channel) {
 			const userStore = useUserStore();
 			this.userChannels.length ? this.userChannels.unshift(channel) : this.userChannels.push(channel);
 			this.inChannel = this.userChannels[0];
-			socket.emit('chatChannelJoin', channel.name, userStore.userData.id)
+			socket.emit('chatChannelJoin', channel.name, userStore.userData.id);
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
 		},
 		deleteUserFromChannel(channel: Channel, userToDelete: User) {
@@ -188,12 +195,7 @@ export const useChatStore = defineStore('chatStore', {
 				};
 				channel.messages.push(leaveMessage);
 				socket.emit('chatChannelMessage', channel, channel.messages[channel.messages.length - 1]);
-				if (channel.users.length > 1) {
-					channel.owner = channel.admins[0];                             //////////////////////what to do when no other admin?
-					socket.emit('chatChannelLeave', channel, userStore.userData);
-				}
-				else
-					socket.emit('chatChannelDelete', channel)
+				this.setChannelOwner(channel, [user])
 				this.deleteUserChannel(this.getIndexUserChannels(channel.name));
 				this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
@@ -201,6 +203,7 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				const index = this.getIndexUserChannels(channel.name);
 				this.deleteUserFromChannel(this.userChannels[index], user);
+				this.setChannelOwner(this.userChannels[index], [user])
 			}
 		},
 		UpdateChannelName(channel: Channel, newName: { name: string, userWhoChangeName: User }, emit: boolean) {
@@ -229,17 +232,22 @@ export const useChatStore = defineStore('chatStore', {
 					'-> got Banned by ' + newBanList.userWhoSelect.username)
 				socket.emit('chatChannelBan', channel, newBanList);
 			}
+			
 			/////////////////////////////////////////////////////////////////// best to do in back
 			if (this.inChannel && this.inChannel.name === channel.name) {
 				this.inChannel.banned = newBanList.newList
 				for (const banned of channel.banned)
 					this.deleteUserFromChannel(this.inChannel, banned);
+				if (selection && selection.listed)
+					this.setChannelOwner(this.inChannel, selection.listed);
 			}
 			else {
 				const index = this.getIndexUserChannels(channel.name);
 				this.userChannels[index].banned = newBanList.newList;
 				for (const banned of channel.banned)
 					this.deleteUserFromChannel(this.userChannels[index], banned);
+				if (selection && selection.listed)
+					this.setChannelOwner(this.userChannels[index], selection.listed);
 			}
 			///////////////////////////////////////////////////////////////////
 			const userStore = useUserStore();
@@ -249,7 +257,7 @@ export const useChatStore = defineStore('chatStore', {
 				if (this.inChannel && this.inChannel.name === channel.name) this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
-				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);	
+				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);
 			}
 		},
 		updateMuteList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
@@ -281,12 +289,27 @@ export const useChatStore = defineStore('chatStore', {
 			}
 			
 		},
+		setChannelOwner(channel: Channel, selection: User[]) {
+			////////////////////////////////////////////////////////////////////////////// best to do in back
+			const indexOwner = selection.findIndex(user => user.id === channel.owner.id)
+			if (indexOwner >= 0) {
+				if (channel.admins.length) {
+					channel.owner = channel.admins[0];
+					this.addAutomaticMessage(channel, {unlisted:[], listed: selection}, '', ' is now owner of the channel.')
+				}
+				else
+					socket.emit('chatChannelDelete', channel)
+			}
+			//////////////////////////////////////////////////////////////////////////////
+		},
 		addAutomaticMessage(channel: Channel, selection: {unlisted: User[], listed: User[] },
 				messageUnListed: string, messageListed: string) {
 			if (selection.unlisted.length !== 0) {
 				let userNameInUnListed = '';
-				for (const user of selection.unlisted)
-					userNameInUnListed += user.username + ",  ";
+				let i= -1;
+				while(++i < selection.unlisted.length - 1)
+					userNameInUnListed += selection.unlisted[i].username + ", ";
+				userNameInUnListed += selection.unlisted[i].username + " ";
 				const newMessage = {
 					date: new Date().toLocaleString(),
 					message: '🔴　' + userNameInUnListed + messageUnListed,
@@ -306,8 +329,10 @@ export const useChatStore = defineStore('chatStore', {
 			}
 			if (selection.listed.length !== 0) {
 				let userNameInListed = '';
-				for (const user of selection.listed)
-					userNameInListed += user.username + ",  "
+				let i = -1;
+				while(++i < selection.listed.length - 1)
+					userNameInListed += selection.listed[i].username + ",  ";
+				userNameInListed += selection.listed[i].username + " ";
 				const newMessage = {
 					date: new Date().toLocaleString(),
 					message: '⚪️　' + userNameInListed + messageListed,
@@ -422,5 +447,13 @@ export const useChatStore = defineStore('chatStore', {
 			}
 			return 0;
 		},
+		channelTypeToString(channel: Channel) {
+			if (channel.type === ChatStatus.PRIVATE)
+				return 'PRIVATE';
+			else if (channel.type === ChatStatus.PROTECTED)
+				return 'PROTECTED';
+			else
+				return 'PUBLIC';
+		}
 	},
 });

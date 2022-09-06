@@ -49,7 +49,6 @@ function treatNewChannelData()
 {
     if (globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
         const selection = globalStore.selectedItems;
-        selection.push(userStore.userData);
         const newChannel: Channel = {
             name: newChannelName.value,
             type: newChannelType.value, 
@@ -66,7 +65,7 @@ function treatNewChannelData()
             messages: []
         }
         if (!globalStore.isTypeUser(newChannel)) {
-            chatStore.createNewChannel(newChannel)
+            chatStore.createNewChannel(newChannel, selection)
             globalStore.resetSelectedItems();
         }
     }
