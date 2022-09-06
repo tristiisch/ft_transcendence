@@ -25,6 +25,9 @@ module.exports = {
         Arlon:["Arlon", "sans-serif"],
 		Vibur:["Vibur", "sans-serif"]
       },
+	  fontSize: {
+		'xxs': '.5rem'
+	  },
       screens: {
         'tvxs': { 'raw': '(max-height: 375px)' },
         // => @media (max-height: 800px),(min-width: 375px) { ... }

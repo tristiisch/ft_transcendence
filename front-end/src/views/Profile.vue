@@ -44,36 +44,17 @@ function setPartToDisplay(displayPart: string) {
 	setRightCardTitle(displayPart);
 }
 
-function fetchStats() {
-	UsersService.getStats(userId.value)
-		.then((response) => {
-			userStats.value = response.data;
-			console.log(userStats.value);
-		})
-		.catch((error) => {
-			throw error
-		});
-}
-
-function fetchMatchsHistory() {
-	UsersService.getMatchsHistory(userId.value)
-		.then((response) => {
-			matchsHistory.value = response.data;
-			console.log(matchsHistory.value);
-		})
-		.catch((error) => {
-			throw error
-		});
-}
-
 function fetchAll() {
-	Promise.all([fetchStats(), fetchMatchsHistory()])
-		.then(() => {
-			isLoading.value = false
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-		})
+	Promise.all([UsersService.getMatchsHistory(userId.value), UsersService.getStats(userId.value)])
+	.then((result) => {
+		console.log(result)
+		matchsHistory.value = result[0].data
+		userStats.value = result[1].data
+		isLoading.value = false
+	})
+	.catch((error) => {
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+	})
 }
 
 watch(
@@ -84,7 +65,6 @@ watch(
 			isLoading.value = true
 			if (isMe.value) user.value = userStore.userData;
 			else user.value = globalStore.getUser(userId.value)
-			console.log(userId.value)
 			fetchAll()
 		}
 	}
@@ -103,7 +83,13 @@ onBeforeMount(() => {
 	isLoading.value = true
 	if (isMe.value) user.value = userStore.userData;
 	else user.value = globalStore.getUser(userId.value)
-	fetchAll()
+	if (!user.value) router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: 404 }});
+	else fetchAll()
+	if (route.query.notification)
+	{
+		partToDisplay.value = 'Notifications'
+		rightCardTitle.value = 'NOTIFICTIONS'
+	}
 });
 </script>
 

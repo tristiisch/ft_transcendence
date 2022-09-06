@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
@@ -72,6 +72,11 @@ const button1Name = computed(() => {
 const button2Name = computed(() => {
 	if (displayPart.value === 'Settings') return 'Notifications';
 	else return 'Settings';
+});
+
+onBeforeMount(() => {
+	if (route.query.notification)
+		displayPart.value = 'Notifications'
 });
 </script>
 
