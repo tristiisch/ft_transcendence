@@ -29,5 +29,11 @@ export class TestDbService {
 		await this.matchHistoryService.getRepo().clear();
 		await this.authService.getRepo().clear();
 		await this.chatService.getRepoChat().clear();
+		await this.chatService.getRepoMsg().clear();
+	}
+
+	async clearChat() {
+		await this.chatService.getRepoChat().clear();
+		await this.chatService.getRepoMsg().clear();
 	}
 }

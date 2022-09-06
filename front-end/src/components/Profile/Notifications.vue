@@ -1,33 +1,20 @@
 <script setup lang="ts">
 import { NotificationType } from '@/types/Notification';
+import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useRouter, useRoute } from 'vue-router';
 import UsersService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 
-const notifications = ref<Notification[] | null>(null);
 const isLoading = ref(false);
+const globalStore = useGlobalStore();
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
-function fetchNotifications() {
-	isLoading.value = true;
-	UsersService.getNotifications()
-		.then((response) => {
-			notifications.value = response.data;
-			console.log(notifications.value)
-			isLoading.value = false;
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-		});
-}
-
 const size = computed(() => {
-	if (notifications.value) return notifications.value.length;
-	else return 0;
+	return globalStore.notifications.length;
 });
 
 function acceptInvitation(notification: Notification) {
@@ -36,10 +23,7 @@ function acceptInvitation(notification: Notification) {
 	{
 		UsersService.notificationAction(notification.id, true)
 		.then(() => {
-			if (notifications.value) {
-				const index = notifications.value.findIndex((element) => element.id === notification.id);
-				if(index !== -1) notifications.value.splice(index, 1)
-			}
+			globalStore.removeNotification(notification.id)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
@@ -53,20 +37,13 @@ function declineInvitation(notification: Notification) {
 	{
 		UsersService.notificationAction(notification.id, false)
 		.then(() => {
-			if (notifications.value) {
-				const index = notifications.value.findIndex((element) => element.id === notification.id);
-				if(index !== -1) notifications.value.splice(index, 1)
-			}
+			globalStore.removeNotification(notification.id)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }
-
-onBeforeMount(() => {
-	fetchNotifications();
-});
 </script>
 
 <template>
@@ -76,7 +53,7 @@ onBeforeMount(() => {
 			You have <span class="text-red-700">{{ size }}</span> notifications
 		</p>
 		<div class="flex flex-col w-full overflow-y-auto gap-3 pr-4">
-			<div v-for="notification in notifications" :key="notification.id">
+			<div v-for="notification in globalStore.notifications" :key="notification.id">
 				<p class="text-xs text-red-300">{{ notification.date }}</p>
 				<div class="flex justify-between items-center w-full p-4 text-blue-600 bg-neutral-100 border border-blue-600 rounded-lg">
 					<div class="flex gap-2">

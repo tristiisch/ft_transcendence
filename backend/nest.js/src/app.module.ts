@@ -14,6 +14,7 @@ import { TestModule } from './test/test.module';
 import { NotificationModule } from './notification/notification.module';
 import { MatchStatsModule } from './game/matchs/matchs.module';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
 	imports: [
@@ -27,6 +28,7 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
 		MatchStatsModule,
 		TestModule,
 		NotificationModule,
+		SocketModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, JwtStrategy],

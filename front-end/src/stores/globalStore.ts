@@ -27,6 +27,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		isFriend: (state) => {
 			return (userId: number) => state.friends.some((friend) => friend.id === userId);
 		},
+		isPendingFriend: (state) => {
+			return (userId: number) => state.pendingFriends.some((pending) => pending.id === userId);
+		},
 		getUserName: (state) => {
 			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
 		},
@@ -49,7 +52,7 @@ export const useGlobalStore = defineStore('globalStore', {
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchUsers(), this.fetchfriends(), this.fetchNotifications()]);
+				await Promise.all([this.fetchUsers(), this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications()]);
 			} catch (error: any) {
 				throw error;
 			}

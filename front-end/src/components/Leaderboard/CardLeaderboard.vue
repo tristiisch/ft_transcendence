@@ -42,6 +42,10 @@ const isFriend = computed(() => {
 	if (props.user) return globalStore.isFriend(props.user?.id);
 });
 
+const isPendingFriend = computed(() => {
+	if (props.user) return globalStore.isPendingFriend(props.user?.id)
+});
+
 function friendRequest() {
 	if(props.user?.id)
 	{
@@ -90,10 +94,11 @@ onUnmounted(() => {
 				<player-status :userStatus="user?.status"></player-status>
 				<span>{{ userStatus }}</span>
 			</div>
-			<div v-else class="flex gap-3" >
-				<button class="inline-flex items-center justify-center p-[1px] text-xs">
-					<span class=" border border-slate-800 text-slate-800 px-1.5 py-1.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0" @click="friendRequest()" > Add friend </span>
+			<div v-else class="inline-flex items-center justify-center p-[1px]">
+				<button v-if="!isPendingFriend">
+					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-blue-600 hover:text-white hover:border-white" @click="friendRequest()" >Add friend</span>
 				</button>
+				<span v-else class="pl-2 text-slate-800">Pending</span>
 			</div>
 		</div>
 		<div class="flex justify-center items-center">{{ user?.rank }}</div>
