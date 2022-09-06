@@ -1,7 +1,5 @@
 /** @prettier */
-import { Exclude } from 'class-transformer';
-import { IsEmail, IsInt, IsNotEmpty } from 'class-validator';
-import { fromBase64 } from 'src/utils/utils';
+import { IsNotEmpty } from 'class-validator';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum UserStatus {
@@ -14,25 +12,22 @@ export enum UserStatus {
 @Entity()
 export class User extends BaseEntity {
 	@PrimaryGeneratedColumn()
-	// @IsInt()
 	id: number;
 
 	@Column()
 	@IsNotEmpty()
 	login_42: string;
 
-	@Column({ unique: true, nullable: true, length: 32 })
+	@Column({ unique: true, nullable: true })
 	@IsNotEmpty()
 	username: string;
 
 	avatar: string;
 
-    @Exclude()
 	@Column({ nullable: true })
 	avatar_64: string;
 
 	@Column({ type: "enum", enum: UserStatus, default: UserStatus.OFFLINE})
-
 	status: UserStatus;
 
 	public defineAvatar() {

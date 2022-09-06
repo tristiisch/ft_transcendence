@@ -1,10 +1,10 @@
 import { Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FriendsService } from 'src/friends/friends.service';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { isEquals, isNumberPositive } from 'src/utils/utils';
-import { InsertResult, Repository, SelectQueryBuilder, UpdateResult } from 'typeorm';
+import { FriendsService } from '../../friends/friends.service';
+import { User } from '../../users/entity/user.entity';
+import { UsersService } from '../../users/users.service';
+import { isEquals, isNumberPositive } from '../../utils/utils';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { LeaderboardUser } from './entity/leaderboard.entity';
 import { UserStats } from './entity/userstats.entity';
 
@@ -31,8 +31,6 @@ export class StatsService {
     async findOneById(userId: number): Promise<UserStats> {
 		isNumberPositive(userId, 'get a user');
 		return await this.statsRepository.findOneBy({ user_id: userId }).then((stats: UserStats) => {
-			if (!stats)
-				throw new PreconditionFailedException(`This user never played.`);
             return stats;
         }, this.userService.lambdaDatabaseUnvailable);
     }
@@ -44,39 +42,28 @@ export class StatsService {
     }
 
     async findOrCreate(userId: number): Promise<UserStats> {
-		let userStats: UserStats;
-
-		try {
-			userStats = await this.findOneById(userId);
-		} catch (err) {
-			if (!(err instanceof PreconditionFailedException))
-				throw err;
+		let userStats: UserStats = await this.findOneById(userId);
+		if (!userStats)
 			userStats = new UserStats(userId);
-		}
 		return userStats;
     }
 
     async addDefeat(userId: number) {
-		const userStats: UserStats = await this.findOrCreate(userId);
-
-		++userStats.defeats;
-		return await this.statsRepository.save(userStats);
+		await this.statsRepository.createQueryBuilder()
+			.update(UserStats).where({ user_id: userId })
+			.set({ defeats: () => "defeats + 1" })
+			.execute()
     }
 
     async addVictory(userId: number) {
-		const userStats: UserStats = await this.findOrCreate(userId);
-
-		++userStats.victories;
-		return await this.statsRepository.save(userStats);
+		await this.statsRepository.createQueryBuilder()
+			.update(UserStats).where({ user_id: userId })
+			.set({ victories: () => "victories + 1" })
+			.execute()
     }
 
-	/**
-	 * @deprecated Only for test
-	 */
     async add(stats: UserStats) {
-		return await this.statsRepository.save(stats).then((us: UserStats) => {
-			return us;
-		}, this.userService.lambdaDatabaseUnvailable);
+		return await this.statsRepository.insert(stats);
     }
 
 	/**
@@ -102,7 +89,7 @@ export class StatsService {
 		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
 
 		sqlStatement.skip(min).limit(max).orderBy('userstats.score', 'DESC', 'NULLS LAST');
-	
+
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -115,7 +102,7 @@ export class StatsService {
 			// Need to order by date update
 			// .addOrderBy('userstats.victories', 'ASC', 'NULLS LAST')
 			// .addOrderBy('userstats.defeats', 'DESC', 'NULLS LAST');
-	
+
 		return await sqlStatement.getMany().then((userStats: UserStats[]) => {
 			return userStats;
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -138,11 +125,19 @@ export class StatsService {
 			leaderUser.avatar = target.getAvatarURL();
 			leaderUser.status = target.status;
 
-			if (user.id === us.user_id || friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
+			if (friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
 				leaderBoardFriends.push(leaderUser);
 
 			leaderBoard.push(leaderUser);
 		}
 		return {leaderBoard, leaderBoardFriends};
     }
+
+	async getRank(user: User): Promise<number> {
+		const rank = await this.statsRepository.query(`SELECT position FROM (SELECT *, row_number() over (order by score DESC) ` +
+			`as position from public.user_stats) result where user_id = ${user.id};`);
+		if (rank == null || rank.length != 1) 
+			return -1;
+		return parseInt(rank[0].position);
+	}
 }

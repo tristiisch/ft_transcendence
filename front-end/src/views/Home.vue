@@ -1,68 +1,99 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onUnmounted, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useRoute, useRouter } from 'vue-router';
+import socket from '@/plugin/socketInstance';
+import type Notification from '@/types/Notification';
+import type User from '@/types/User';
 
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
+const imageLoaded = ref(false);
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
+const route = useRoute();
+const router = useRouter();
 
 function tvSize() {
-	if (windowHeight.value > windowWidth.value)
-		return 'w-[calc(0.6_*_100vw)]'
-	return 'h-[calc(0.5_*_100vh)]'
+	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.6_*_100vw)]';
+	return 'h-[calc(0.5_*_100vh)]';
 }
 
-function titleSize()
-{
-	if (windowHeight.value > windowWidth.value)
-		return '[font-size:_calc(0.1_*_100vw)] top-[calc(0.15_*_100vh)]'
-	return '[font-size:_calc(0.08_*_100vh)] top-[calc(0.15_*_100vh)]'
+function titleSize() {
+	if (windowHeight.value > windowWidth.value) return '[font-size:_calc(0.1_*_100vw)] top-[calc(0.15_*_100vh)]';
+	return '[font-size:_calc(0.08_*_100vh)] top-[calc(0.15_*_100vh)]';
 }
 
-function screenTitleSize()
-{
-	if (windowHeight.value > windowWidth.value)
-		return '[font-size:_calc(0.09_*_100vw)] pb-[calc(0.1_*_100vw)]'
-	return '[font-size:_calc(0.08_*_100vh)] pb-[calc(0.1_*_100vh)]'
+function screenTitleSize() {
+	if (windowHeight.value > windowWidth.value) return '[font-size:_calc(0.09_*_100vw)] pb-[calc(0.1_*_100vw)]';
+	return '[font-size:_calc(0.08_*_100vh)] pb-[calc(0.1_*_100vh)]';
 }
 
-function screenSize()
-{
-	if (windowHeight.value > windowWidth.value)
-		return 'w-[calc(0.5_*_100vw)]'
-	return 'w-[calc(0.5_*_100vh)]'
+function screenSize() {
+	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.5_*_100vw)]';
+	return 'w-[calc(0.5_*_100vh)]';
 }
 
 function smallScreen() {
-	if( windowWidth.value < 640)
-		return true
-	else
-		return false
+	if (windowWidth.value < 640) return true;
+	else return false;
 }
 
 function handleResize() {
-windowWidth.value = window.innerWidth;
-windowHeight.value = window.innerHeight;
+	windowWidth.value = window.innerWidth;
+	windowHeight.value = window.innerHeight;
 }
 
-const userDataLoading = computed(() => {
-	if (userStore.userData.avatar !== undefined && userStore.userData.username !== undefined)
-		return false;
-	return true;
+const isLoaded = computed(() => {
+	if (!globalStore.isLoading && userStore.isLoaded) return true;
+	return false;
 });
 
-onMounted(() => {
-    window.addEventListener('resize', handleResize)
-  });
+function onImageLoad() {
+	imageLoaded.value = true;
+}
+
+onBeforeMount(() => {
+	window.addEventListener('resize', handleResize);
+
+	if (!globalStore.isLoading)
+	{
+		globalStore.isLoading = true;
+		globalStore
+			.fetchAll()
+			.then(() => {
+				globalStore.isLoading = false;
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			});
+
+		socket.on('updateUser', (user: User) => {
+			globalStore.updateUser(user);
+		});
+
+		socket.on('AddFriend', (friend: User) => {
+			globalStore.addFriend(friend);
+		});
+
+		socket.on('AddNotification', (notification: Notification) => {
+			globalStore.addNotification(notification);
+		});
+
+		socket.on('AddPendingFriend', (pendingFriend: User) => {
+			globalStore.addPendingFriend(pendingFriend);
+		});
+	}
+});
 
 onUnmounted(() => {
-window.removeEventListener('resize', handleResize)
-})
-
+	window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
-	<base-spinner v-if="userDataLoading"></base-spinner>
+	<base-spinner v-if="!isLoaded"></base-spinner>
 	<div v-else class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
@@ -78,23 +109,23 @@ window.removeEventListener('resize', handleResize)
             <span class="px-[2vw]">E</span>
         </div>
 		<div class="absolute m-auto left-0 right-0 bottom-[calc(0.15_*_100vh)]">
-			<img src="../assets/TV.png" :class="tvSize()" class="relative m-auto left-0 right-0 z-10"/>
-			<base-button link :to="{ name: 'Game' }" class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<div class="flex justify-center items-center h-full">
-					<h1 :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</h1>
+			<img src="../assets/TV.png" :class="tvSize()" @load="onImageLoad" class="relative m-auto left-0 right-0 z-10"/>
+			<div v-if="imageLoaded">
+				<base-button link :to="{ name: 'Matchmaking', params: {}}" class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+					<div class="flex justify-center items-center h-full">
+						<h1 :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</h1>
+					</div>
+				</base-button>
+				<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-3 h-3/4 bg-stone-800"></div>
+				<div :class="screenSize()" class="animationFlicker absolute m-auto left-0 right-0 top-3 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+					<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>
-			</base-button>
-			<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-3 h-3/4 bg-stone-800"></div>
-			<div :class="screenSize()" class="animationFlicker absolute m-auto left-0 right-0 top-3 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
-				<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
+				<div :class="screenSize()" class="absolute opacity-10 m-auto left-0 right-0 top-3 h-3/4 bg-TvScreenPixel"></div>
 			</div>
-			<div :class="screenSize()" class="absolute opacity-10 m-auto left-0 right-0 top-3 h-3/4 bg-TvScreenPixel"></div>
-
 		</div>
 		<the-footer v-if="!smallScreen()" class="absolute m-auto left-0 right-0 min-h-0 bottom-0 text-xs"></the-footer>
 	</div>
 	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
-
 </template>
 
 <style scoped>

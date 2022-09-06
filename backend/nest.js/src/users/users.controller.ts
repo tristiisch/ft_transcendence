@@ -1,8 +1,9 @@
 /** @prettier */
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { UserAuth } from 'src/auth/entity/user-auth.entity';
-import { JwtAuthGuard } from 'src/auth/guard';
+import { AuthService } from '../auth/auth.service';
+import { UserAuth } from '../auth/entity/user-auth.entity';
+import { JwtAuthGuard } from '../auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';
@@ -10,7 +11,12 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
+
 	constructor(private readonly usersService: UsersService) {}
+
+	// TODO: this work
+	// @Inject(forwardRef(() => AuthService))
+	// private readonly authService: AuthService;
 
 	@Get()
 	getAllUsers(): Promise<User[]> {
@@ -44,8 +50,7 @@ export class UsersController {
 	async updateUsername(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
 
-		user.username = userToUpdate.username;
-		return await this.usersService.update(user.id, user);
+		return await this.usersService.updateUsername(user.id, userToUpdate.username);
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -53,13 +58,15 @@ export class UsersController {
 	async updateAvatar(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
 
-		user.avatar_64 = userToUpdate.avatar_64;
-		return await this.usersService.update(user.id, user);
+		return await this.usersService.updateAvatar(user.id, userToUpdate.avatar_64);
 	}
 
-	@Patch(':id')
-	updateUser(@Param('id') id: number, @Body() userToUpdate: UserDTO) {
-		return this.usersService.update(id, userToUpdate);
+	@UseGuards(JwtAuthGuard)
+	@Get('me')
+	async getOwnInfo(@Req() req) {
+		const user: User = req.user;
+		// const userAuth: UserAuth = await this.authService.findOne(user.id);
+		return user;
 	}
 
 	@Get(':id')

@@ -1,5 +1,4 @@
 import { IsInt, Min } from "class-validator";
-import { User } from "src/users/entity/user.entity";
 import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
@@ -27,4 +26,6 @@ export class UserStats extends BaseEntity {
 
 	@Column({ generatedType: 'STORED', asExpression: `victories - defeats`, update: false })
 	score: number;
+
+	rank: number;
 }

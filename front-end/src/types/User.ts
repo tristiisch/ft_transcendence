@@ -1,19 +1,17 @@
-import type Status from '@/types/Status'
+import type Status from '@/types/Status';
 
 export default interface User {
-	id: number
-	login_42: string
-	avatar: string
-	username: string
-	status: Status
-  }
-
-export interface Auth {
-	token_jwt: string;
-	has_2fa: boolean;
+	id: number;
+	login_42: string;
+	avatar: string;
+	avatar_64?: string;
+	username: string;
+	status: Status;
 }
 
-export interface UserState {
-	userAuth: Auth;
-	userData: User;
+export interface UserStatus {
+	id: number;
+	status: Status;
 }
+
+

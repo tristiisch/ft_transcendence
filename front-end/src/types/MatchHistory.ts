@@ -1,8 +1,8 @@
 
 export default interface MatchHistory {
-  date: Date
+  date: string
   opponent: string
   score: number[]
   won: boolean
-  end: Date
+  end: string
 }

@@ -1,6 +1,5 @@
 import { PreconditionFailedException } from "@nestjs/common";
 import axios from 'axios';
-import * as fs from 'fs';
 
 export function isEquals(entity1: any, entity2: any) : boolean {
 	if (!entity1 && !entity2)
@@ -37,10 +36,15 @@ export function isNumberPositive(nb: number, actionMsg: string): boolean {
 }
 
 /**
- * Get a random element in array
+ * Get a random number
  */
-export function random(startNumber: number, nbPosibility: number) : number {
+export function randomNumber(startNumber: number, nbPosibility: number) : number {
 	return Math.floor(Math.random() * nbPosibility) + startNumber;
+}
+
+export function randomWord(length: number) {
+	const dico: string = "abcdefghijklmnopqrstuvwxyz0123456789";
+	return Array(length).join().split(',').map(function() { return dico.charAt(Math.floor(Math.random() * dico.length)); }).join('');
 }
 
 /**
@@ -48,6 +52,11 @@ export function random(startNumber: number, nbPosibility: number) : number {
  */
 export function randomElement<T>(array: Array<T>) : T {
 	return array[Math.floor(Math.random() * array.length)];
+}
+
+export function randomElements<T>(array: Array<T>, nbElements: number) : T[] {
+	const shuffled = array.sort(() => 0.5 - Math.random());
+	return shuffled.slice(0, nbElements);
 }
 
 export function randomEnum<T>(enumeration: T) {

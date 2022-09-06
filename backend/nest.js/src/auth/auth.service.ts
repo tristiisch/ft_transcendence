@@ -1,30 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserStatus } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { isNumberPositive, toBase64 } from 'src/utils/utils';
+import { User, UserStatus } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
+import { isNumberPositive, toBase64 } from '../utils/utils';
 import { Repository } from 'typeorm';
 import { UserAuth } from './entity/user-auth.entity';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
-import { Response } from 'express';
+import { StatsService } from '../game/stats/stats.service';
+import { UserStats } from '../game/stats/entity/userstats.entity';
 
 @Injectable()
 export class AuthService {
 
-	constructor(private jwtService: JwtService, private usersService: UsersService,
+	private temp2FASecret: Map<number, string> = new Map();
+
+	constructor(private jwtService: JwtService,
 		@InjectRepository(UserAuth)
 		private authRepository: Repository<UserAuth>){
 	}
+
+	@Inject(UsersService)
+	private readonly usersService: UsersService;
+	@Inject(StatsService)
+	private readonly statsService: StatsService;
 
 	getRepo() {
 		return this.authRepository;
 	}
 
-	async UserConnecting(userInfo42: any): Promise<User> {
+	async UserConnecting(userInfo42: any): Promise<{ user: User, userAuth: UserAuth }> {
 		let user: User;
 		let userAuth: UserAuth;
+		let userStats: UserStats;
 		try {
 			user = await this.usersService.findOneBy42Login(userInfo42.data.login);
 		} catch (err) {
@@ -47,7 +56,12 @@ export class AuthService {
 			userAuth.token_jwt = await this.createToken(user.id);
 			this.save(userAuth);
 		}
-		return user;
+		userStats = await this.statsService.findOneById(user.id);
+		if (!userStats) {
+			userStats = new UserStats(user.id);
+			this.statsService.add(userStats);
+		}
+		return { user, userAuth };
 	}
 
 	async UserConnectingTFA(userId: number){
@@ -58,18 +72,16 @@ export class AuthService {
 			throw err;
 		}
 		user.status = UserStatus.ONLINE;
-		user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
 		return user;
 	}
 
-	public async generateTFASecret(userId: number) {
-		const secret = authenticator.generateSecret();
-		console.log(secret)
-		const user = await this.usersService.findOne(userId);
-		const otpauthUrl = authenticator.keyuri(
-			user.login_42, process.env.TFA_APP, secret);
-		await this.setTFASecret(secret, userId);
-		return otpauthUrl
+	public async generateTFASecret(user: User) {
+		this.temp2FASecret.delete(user.id);
+		const secret: string = authenticator.generateSecret();
+		const otpauthUrl = authenticator.keyuri(user.login_42, process.env.TFA_APP, secret);
+
+		this.temp2FASecret.set(user.id, secret);
+		return otpauthUrl;
 	}
 
 	public async createToken(id: number): Promise<string> {
@@ -106,31 +118,43 @@ export class AuthService {
 		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
 		if (!userAuth)
 			return null;
-		if (userAuth.twoFactorSecret != null)
+		/*if (userAuth.twoFactorSecret != null)
 			userAuth.has_2fa = true;
 		else
-			userAuth.has_2fa = false;
+			userAuth.has_2fa = false;*/
 		return userAuth;
 	}
 
-	async setTFASecret(secret: string, userId: number) {
-		return this.authRepository.update(userId, {
-			twoFactorSecret: secret
-		});
+	public TFACodeValidationEnable(code: string, userId: number){
+		if (!this.temp2FASecret.has(userId))
+			throw new BadRequestException('BadRequest: You should generate a 2FA QRCode before send code.');
+		const twoFactorSecret: string = this.temp2FASecret.get(userId);
+		return authenticator.verify({
+			token: code,
+			secret: twoFactorSecret
+		})
 	}
 
-	public TFACodeValidation(code: string, userAuth: UserAuth){
+	public TFACodeValidationAuthenticate(code: string, userAuth: UserAuth){
 		return authenticator.verify({
 			token: code,
 			secret: userAuth.twoFactorSecret
 		})
 	}
 
-	async enableTFA(userId: number, twoFactorSecret: string ) {
-		return this.authRepository.update(userId, { twoFactorSecret: twoFactorSecret });
+	async enableTFA(userId: number) {
+		if (!this.temp2FASecret.has(userId))
+			throw new BadRequestException('BadRequest: You should generate a 2FA QRCode before enable 2FA.');
+		const secret = this.temp2FASecret.get(userId);
+		return this.authRepository.update(userId, { twoFactorSecret: secret });
 	}
 
-	public async QrCodeStream(stream: Response, otpauthUrl: string) {
+	async disableTFA(userId: number) {
+		this.temp2FASecret.delete(userId);
+		return this.authRepository.update(userId, { twoFactorSecret: null });
+	}
+
+	public async QrCodeStream(otpauthUrl: string) {
 		const imagePath = await toDataURL(otpauthUrl);
 		return imagePath;
 	}

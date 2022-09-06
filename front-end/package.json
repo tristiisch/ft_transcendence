@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
-    "preview": "vite preview --port 4173",
+    "preview": "vite preview --port 8000",
     "test:unit": "vitest --environment jsdom",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
@@ -15,10 +15,7 @@
   "dependencies": {
     "axios": "^0.27.2",
     "konva": "^8.3.11",
-    "msw": "^0.44.2",
-    "otplib": "^12.0.1",
     "pinia": "^2.0.14",
-    "qrcode": "^1.5.1",
     "socket.io-client": "^4.5.1",
     "vue": "^3.2.37",
     "vue-axios": "^3.4.1",
@@ -29,7 +26,6 @@
     "@rushstack/eslint-patch": "^1.1.0",
     "@types/jsdom": "^16.2.14",
     "@types/node": "^16.11.47",
-    "@types/qrcode": "^1.4.2",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^11.0.0",
@@ -48,8 +44,5 @@
     "vitest": "^0.15.1",
     "vue-eslint-parser": "^9.0.3",
     "vue-tsc": "^0.38.1"
-  },
-  "msw": {
-    "workerDirectory": "public"
   }
 }

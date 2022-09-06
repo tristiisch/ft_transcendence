@@ -20,7 +20,7 @@ services:
     command: postgres -c stats_temp_directory=/tmp
 
   pgAdmin:
-    image: dpage/pgadmin4:6.12
+    image: dpage/pgadmin4:6.13
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-tglory@student.42Lyon.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-foobar}

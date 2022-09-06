@@ -3,21 +3,36 @@
 @tailwind utilities;
 
 @font-face {
-    font-family: Noir;
-    src: url(@/assets/font/Noir_regular.otf);
-  }
+	font-family: Noir;
+	src: url(@/assets/font/Noir_regular.otf);
+}
 
 @font-face {
-    font-family: Neon;
-    src: url(@/assets/font/BPneon.otf);
-  }
+	font-family: Neon;
+	src: url(@/assets/font/BPneon.otf);
+}
 
-  @font-face {
-    font-family: Arlon;
-    src: url(@/assets/font/Arlon-UltraBold.ttf);
-  }
+@font-face {
+	font-family: Neon;
+	src: url(@/assets/font/BPneon.otf);
+}
 
-  @font-face {
-    font-family: Vibur;
-    src: url(@/assets/font/Vibur-Regular.ttf);
-  }
+@font-face {
+	font-family: skyfont;
+	src: url(@/assets/font/skyfont.otf);
+}
+
+@font-face {
+	font-family: VS;
+	src: url(@/assets/font/VS.ttf);
+}
+
+@font-face {
+	font-family: Arlon;
+	src: url(@/assets/font/Arlon-UltraBold.ttf);
+}
+
+@font-face {
+	font-family: Vibur;
+	src: url(@/assets/font/Vibur-Regular.ttf);
+}

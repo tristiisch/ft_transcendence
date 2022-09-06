@@ -1,50 +1,78 @@
 <script setup lang="ts">
-import axios from '@/plugin/axiosInstance';
-import UserService from '@/services/UserService';
+import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
-import { useToast } from 'vue-toastification';
-import socket from './plugin/socketInstance';
+import { useRoute, useRouter } from 'vue-router';
+import { onBeforeMount } from 'vue';
+import TokenService from '@/services/TokenService';
+import axios from '@/plugin/axiosInstance';
+import socket from '@/plugin/socketInstance';
+import type User from '@/types/User';
 
 const userStore = useUserStore();
-const toast = useToast();
-const authString = localStorage.getItem('userAuth');
+const globalStore = useGlobalStore();
+const router = useRouter();
+const route = useRoute();
 
-if (authString) {
-	console.log(authString)
-	console.log(userStore.userData.username)
-	axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(authString).token_jwt}`;
-	UserService.getUser(JSON.parse(authString).user_id)
-		.then((response) => {
-			socket.connect()
-			userStore.userData = response.data;
+socket.on("userAdd", (user: User) => {
+	globalStore.addUser(user);
+});
+
+socket.on("userRemove", (userToRemoveId: number) => {
+	globalStore.removeUser(userToRemoveId);
+});
+
+onBeforeMount(() => {
+	if (TokenService.isLocalToken()) {
+	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
+	socket.auth = { token: TokenService.getLocalToken() };
+	socket.connect()
+
+	userStore.fetchAll().catch((error) => {
+		console.log(error);
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+	});
+
+	globalStore.isLoading = true
+	globalStore
+		.fetchAll()
+		.then(() => {
+			globalStore.isLoading = false;
 		})
-		.catch((e) => {
-			toast.error(e.response.data.message)
+		.catch((error) => {
+			console.log(error);
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
-}
+	}
+})
 </script>
 
 <template>
-    <router-view></router-view>
+	<router-view></router-view>
 </template>
 
 <style>
 @font-face {
-  font-family: Noir_regular;
-  src: url(@/assets/font/Noir_regular.otf);
+	font-family: Noir_regular;
+	src: url(@/assets/font/Noir_regular.otf);
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
-*, *:before, *:after {
-  box-sizing: border-box;
+*,
+*:before,
+*:after {
+	box-sizing: border-box;
 }
 
-html, body, #app { height: 100%; width: 100%; margin:0; padding:0; }
-
+html,
+body,
+#app {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
 </style>

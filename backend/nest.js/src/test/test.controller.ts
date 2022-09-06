@@ -1,10 +1,8 @@
 /** @prettier */
-import { Body, Controller, Get, Inject, Param, Post, Req } from '@nestjs/common';
-import { Request } from 'express';
-import { UserSelectDTO } from 'src/users/entity/user-select.dto';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { isNumberPositive } from 'src/utils/utils';
+import { Controller, Get, Inject, Param, } from '@nestjs/common';
+import { User } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
+import { isNumberPositive } from '../utils/utils';
 import { TestDbService } from './test-db.service';
 import { TestFakeService } from './test-fake.service';
 
@@ -15,9 +13,9 @@ export class TestController {
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 
-	@Post('addFakeData')
-	async addFakeData(@Body() user: UserSelectDTO) {
-		const target: User = await user.resolveUser(this.usersService);
+	@Get('addFakeData/:username')
+	async addFakeData(@Param('username') username: string) {
+		const target: User = await this.usersService.findOneByUsername(username);
 		return this.fakeService.addFakeData(target);
 	}
 
@@ -31,5 +29,23 @@ export class TestController {
 	clearAllTables() {
 		this.dbService.clearAllTables();
 		return { statusCode: 200, message: 'All tables has been cleared.' };
+	}
+
+	@Get('clear-chat')
+	clearChat() {
+		this.dbService.clearChat();
+		return { statusCode: 200, message: 'All chat has been cleared.' };
+	}
+
+	@Get('generateChannels/:username')
+	async createChannels(@Param('username') username: string) {
+		const target: User = await this.usersService.findOneByUsername(username);
+		return this.fakeService.addChats(target, 1);
+	}
+
+	@Get('generateChannels/:username/:nb')
+	async createManyChannels(@Param('username') username: string, @Param('nb') nb: number) {
+		const target: User = await this.usersService.findOneByUsername(username);
+		return this.fakeService.addChats(target, nb);
 	}
 }

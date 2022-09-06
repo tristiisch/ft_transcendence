@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guard';
-import { UserSelectDTO } from 'src/users/entity/user-select.dto';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { JwtAuthGuard } from '../../auth/guard';
+import { UserSelectDTO } from '../../users/entity/user-select.dto';
+import { User } from '../../users/entity/user.entity';
+import { UsersService } from '../../users/users.service';
 import { UserStats } from './entity/userstats.entity';
 import { StatsService } from './stats.service';
 
@@ -47,11 +47,11 @@ export class StatsController {
 	@UseGuards(JwtAuthGuard)
     @Post()
 	async getStats(@Req() req, @Body() userSelected: UserSelectDTO) {
-		// const user: User = req.user;
 		const target: User = await userSelected.resolveUser(this.usersService);
 		const userStats: UserStats = await this.statsService.findOne(target);
-		if (userStats != null)
-			return userStats;
-		return { user_id: target.id, victories: 0, defeats: 0, score: 0 };
+		if (userStats == null)
+			return { user_id: target.id, victories: 0, defeats: 0, score: 0, rank: -1 };
+		userStats.rank = await this.statsService.getRank(target);
+		return userStats;
 	}
 }

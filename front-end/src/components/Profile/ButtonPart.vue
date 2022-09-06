@@ -1,20 +1,30 @@
 <script setup lang="ts">
-import ButtonGradient1 from '@/components/ButtonGradient1.vue';
-import UsersService from '@/services/UserService';
-import { computed, ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, ref, onBeforeMount } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
-import type User from '@/types/User';
+import { useGlobalStore } from '@/stores/globalStore';
+import UsersService from '@/services/UserService';
+import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
 const route = useRoute();
-const friends = ref([] as User[]);
+const router = useRouter();
+const pending = ref(false);
 const displayPart = ref('Player Stats');
 
-function isUser() {
-	if (parseInt(route.params.id as string) === userStore.userData.id) return true;
+const emit = defineEmits<{
+	(e: 'changeDisplay', displayedPart: string): void;
+}>();
+
+const userId = computed(() => {
+	return parseInt(route.params.id as string)
+})
+
+const isUser = computed(() =>  {
+	if (userId.value === userStore.userData.id) return true;
 	return false;
-}
+})
 
 function setDisplayedPart(button: number) {
 	if (button === 1)
@@ -27,24 +37,30 @@ function setDisplayedPart(button: number) {
 }
 
 function treatFriendRequest() {
-	if (friendButton.value === 'Add friend')
-		UsersService.sendFriendRequest(userStore.userData.id, parseInt(route.params.id as string)).catch((e) => {
-			console.log(e);
-		});
-	else
-		UsersService.removeFriend(userStore.userData.id, parseInt(route.params.id as string))
+	if (!globalStore.isFriend(userId.value)) {
+		UsersService.sendFriendRequest(userId.value)
 			.then(() => {
-				fetchfriends();
+				pending.value = true;
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
+	}
+	else {
+		UsersService.removeFriend(userId.value)
+			.then(() => {
+				globalStore.removeFriend(userId.value)
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			});
+	}
 }
 
 const friendButton = computed(() => {
-	for (const friend of friends.value) {
-			if (friend.id === parseInt(route.params.id as string)) return 'Remove friend';
-	}
+	console.log(globalStore.isFriend(userId.value))
+	if (globalStore.isFriend(userId.value)) return 'Remove friend';
+	else if (pending.value === true) return 'Pending';
 	return 'Add friend';
 });
 
@@ -58,39 +74,25 @@ const button2Name = computed(() => {
 	else return 'Settings';
 });
 
-async function fetchfriends() {
-	await UsersService.getUserfriends(userStore.userData.id)
-		.then((response) => {
-			friends.value = response.data;
-			console.log(response.data);
-		})
-		.catch((e: Error) => {
-			console.log(e);
-		});
-}
-
-const emit = defineEmits<{
-	(e: 'changeDisplay', displayedPart: string): void;
-}>();
-
-onMounted(() => {
-	if (parseInt(route.params.id as string) !== userStore.userData.id) fetchfriends();
+onBeforeMount(() => {
+	if (route.query.notification)
+		displayPart.value = 'Notifications'
 });
 </script>
 
 <template>
-	<div v-if="!isUser()" class="flex flex-col gap-4">
-		<button-gradient1 @click="treatFriendRequest()">
+	<div v-if="!isUser" class="flex flex-col gap-4">
+		<button-gradient @click="treatFriendRequest()">
 			{{ friendButton }}
-		</button-gradient1>
-		<button-gradient1> Block </button-gradient1>
+		</button-gradient>
+		<button-gradient> Block </button-gradient>
 	</div>
 	<div v-else class="flex flex-col gap-4">
-		<button-gradient1 @click="setDisplayedPart(1)">
+		<button-gradient @click="setDisplayedPart(1)">
 			{{ button1Name }}
-		</button-gradient1>
-		<button-gradient1 @click="setDisplayedPart(2)">
+		</button-gradient>
+		<button-gradient @click="setDisplayedPart(2)">
 			{{ button2Name }}
-		</button-gradient1>
+		</button-gradient>
 	</div>
 </template>

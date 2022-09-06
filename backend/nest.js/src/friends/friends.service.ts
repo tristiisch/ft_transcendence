@@ -1,12 +1,12 @@
 /** @prettier */
 import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notification, NotificationType } from 'src/notification/entity/notification.entity';
-import { NotificationService } from 'src/notification/notification.service';
-import { UserSelectDTO } from 'src/users/entity/user-select.dto';
-import { User } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { Notification, NotificationType } from '../notification/entity/notification.entity';
+import { NotificationService } from '../notification/notification.service';
+import { UserSelectDTO } from '../users/entity/user-select.dto';
+import { User } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
+import { Brackets, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { Friendship, FriendshipStatus } from './entity/friendship.entity';
 
 @Injectable()
@@ -49,7 +49,7 @@ export class FriendsService {
 		friendship.user1_id = user.id;
 		friendship.user2_id = target.id;
 
-		return await this.friendsRepository.insert(friendship).then((insertResult: InsertResult) => {
+		return await this.friendsRepository.insert(friendship).then(async (insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
 				throw new InternalServerErrorException(`Can't add friendship of ${friendship.user1_id} and ${friendship.user1_id}.`);
 			} else if (insertResult.identifiers.length > 1) {
@@ -60,7 +60,7 @@ export class FriendsService {
 			notif.from_user_id= friendship.user1_id
 			notif.is_deleted = false;
 			notif.type = NotificationType.FRIEND_REQUEST
-			this.notifService.addNotif(notif);
+			await this.notifService.addNotif(notif);
 			return { statusCode: 200, message: `You asked as a friend ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
@@ -218,7 +218,10 @@ export class FriendsService {
 
 		// await this.userService.findOne(userId);
 		sqlStatement.where('friendship.status = :status', { status: FriendshipStatus.ACCEPTED });
-		sqlStatement.where('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
+		sqlStatement.andWhere(new Brackets(web => {
+			web.where('friendship.user1_id = :id', { id: userId }),
+			web.orWhere('friendship.user2_id = :id')
+		}))
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
 			const friends: number[] = new Array();
@@ -248,7 +251,6 @@ export class FriendsService {
 	async findAllRelations(userId: number): Promise<Friendship[]> {
 		const sqlStatement: SelectQueryBuilder<Friendship> = this.friendsRepository.createQueryBuilder('friendship');
 
-		// await this.userService.findOne(userId);
 		sqlStatement.where('friendship.user1_id = :id', { id: userId }).orWhere('friendship.user2_id = :id');
 
 		return await sqlStatement.getMany().then((friendships: Friendship[]) => {
@@ -258,7 +260,7 @@ export class FriendsService {
 
 	async findAllRelationsId(userId: number): Promise<number[]> {
 		return await this.findAllRelations(userId).then((friendships: Friendship[]) => {
-			return friendships.map(f => f.user1_id !== userId ? f.user1_id : f.user2_id);
+			return friendships.map(f => f.user1_id != userId ? f.user1_id : f.user2_id);
 		});
 	}
 

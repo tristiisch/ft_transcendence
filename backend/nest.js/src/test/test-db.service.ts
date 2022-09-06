@@ -1,10 +1,11 @@
 /** @prettier */
 import { Inject, Injectable } from '@nestjs/common';
-import { AuthService } from 'src/auth/auth.service';
-import { FriendsService } from 'src/friends/friends.service';
-import { MatchStatsService } from 'src/game/matchs/matchs.service';
-import { StatsService } from 'src/game/stats/stats.service';
-import { UsersService } from 'src/users/users.service';
+import { ChatService } from '../chat/chat.service';
+import { AuthService } from '../auth/auth.service';
+import { FriendsService } from '../friends/friends.service';
+import { MatchStatsService } from '../game/matchs/matchs.service';
+import { StatsService } from '../game/stats/stats.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TestDbService {
@@ -18,33 +19,21 @@ export class TestDbService {
 	private readonly matchHistoryService: MatchStatsService;
 	@Inject(AuthService)
 	private readonly authService: AuthService;
+	@Inject(ChatService)
+	private readonly chatService: ChatService;
 
 	async clearAllTables() {
-		await this.clearTableUser();
-		await this.clearTableFriends();
-		await this.clearTableStats();
-		await this.clearTableMatchHistory();
-		await this.clearTableMatchHistory();
-		await this.clearTableAuth();
-	}
-
-	async clearTableUser() {
 		await this.usersService.getRepo().clear();
-	}
-
-	async clearTableFriends() {
 		await this.friendsService.getRepo().clear();
-	}
-
-	async clearTableStats() {
 		await this.statsService.getRepo().clear();
-	}
-
-	async clearTableMatchHistory() {
 		await this.matchHistoryService.getRepo().clear();
+		await this.authService.getRepo().clear();
+		await this.chatService.getRepoChat().clear();
+		await this.chatService.getRepoMsg().clear();
 	}
 
-	async clearTableAuth() {
-		await this.authService.getRepo().clear();
+	async clearChat() {
+		await this.chatService.getRepoChat().clear();
+		await this.chatService.getRepoMsg().clear();
 	}
 }

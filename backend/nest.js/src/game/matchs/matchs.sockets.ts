@@ -1,6 +1,9 @@
 //import { createCanvas, loadImage } from 'canvas'
 import { Console } from 'console'
 
+//import { startMatch } from "../game/matchs/matchs.sockets"
+//import { createCanvas, loadImage } from 'canvas'
+
 export async function startMatch(socket)
 {
 	const width = 3989

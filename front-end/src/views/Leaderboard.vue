@@ -1,32 +1,29 @@
 <script setup lang="ts">
-import UserService from '@/services/UserService';
-import type Leaderboard from '@/types/Leaderboard';
+import { useToast } from 'vue-toastification';
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/userStore';
-import Toogle from '@/components/Leaderboard/ToogleButton.vue';
-import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
+import { useRoute, useRouter } from 'vue-router';
+import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
-import { useToast } from 'vue-toastification';
-import PlayerSettingsVue from '@/components/Profile/PlayerSettings.vue';
+import type LeaderboardUser from '@/types/Leaderboard';
+import type { UserStatus} from '@/types/User';
+import Toogle from '@/components/Divers/ToogleButton.vue';
+import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 
 const userStore = useUserStore();
-const toast = useToast();
-const users = ref<Leaderboard[] | null>(null);
-const friends = ref<Leaderboard[] | null>(null);
-const playerToDisplay = ref<Leaderboard[] | null>(null);
-const error = ref('')
-const playerName = ref('')
+const router = useRouter();
+const route = useRoute();
+const users = ref<LeaderboardUser[]>();
+const friends = ref<LeaderboardUser[]>();
+const playerToDisplay = ref<LeaderboardUser[]>();
+const error = ref('');
+const playerName = ref('');
 const type = ref('All');
 
-function searchPlayer()
-{
-    if (playerName.value != '' && playerToDisplay.value)
-    {
-        return playerToDisplay.value.filter((player) =>
-        player.username.toLowerCase().includes(playerName.value.toLowerCase()))
-    }
-    else
-        return playerToDisplay.value
+function searchPlayer() {
+	if (playerName.value != '' && playerToDisplay.value) {
+		return playerToDisplay.value.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
+	} else return playerToDisplay.value;
 }
 
 watch(
@@ -81,23 +78,21 @@ function statusOrder() {
 }
 
 function switchDysplayUsers() {
-    if (type.value === 'All') {
-        type.value = 'Friends';
-    } else {
-        type.value = 'All';
-    }
+	if (type.value === 'All') {
+		type.value = 'Friends';
+	} else {
+		type.value = 'All';
+	}
 }
 
 function fetchLeaderboard() {
 	UserService.getLeaderboard()
 		.then((response) => {
-				console.log(response.data)
-				playerToDisplay.value = users.value = response.data.leaderBoard
-				friends.value = response.data.leaderBoardFriends
+			playerToDisplay.value = users.value = response.data.leaderBoard;
+			friends.value = response.data.leaderBoardFriends;
 		})
-		.catch((e) => {
-			error.value = e.response.data.message
-			toast.error(error.value);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
 }
 
@@ -107,33 +102,38 @@ const displayUser = computed(() => {
 	else return friends.value;
 });
 
-function changeUserStatus(data: string) {
-	console.log(data);
+function updateStatus(data: UserStatus) {
+	if (users.value) {
+		const index = users.value.findIndex((user) => user.id === data.id);
+		if (index !== -1) users.value[index].status = data.status;
+	}
+	if (friends.value) {
+		const index = friends.value.findIndex((user) => user.id === data.id);
+		if (index !== -1) friends.value[index].status = data.status;
+	}
 }
 
-const isLoading = computed(() => {
-	console.log(friends.value)
-	if (friends.value && users.value || error.value !== '')
-		return false;
-	return true;
+const isLoaded = computed(() => {
+	if (friends.value && users.value && userStore.isLoaded) return true;
+	return false;
 });
 
 onBeforeMount(() => {
 	fetchLeaderboard();
-	socket.on('statusChange', (data) => {
-		changeUserStatus(data);
+	socket.on('update_status', (data) => {
+		updateStatus(data);
 	});
 });
 
 onBeforeUnmount(() => {
-	socket.off('statusChange', (data) => {
-		changeUserStatus(data);
+	socket.off('update_status', (data) => {
+		updateStatus(data);
 	});
 });
 </script>
 
 <template>
-	<base-ui :isLoading="isLoading">
+	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col justify-between bg-slate-900 w-full h-1/4">
 			<div class="flex flex-col w-full pt-3 px-3 sm:pt-5 sm:px-5 sm:flex-row h-full justify-between">
 				<div class="flex items-center">
@@ -144,9 +144,17 @@ onBeforeUnmount(() => {
 					<form>
 						<div class="relative">
 							<div class="flex absolute inset-y-0 left-0 items-center pl-2 pointer-events-none">
-								<svg aria-hidden="true" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+								<svg aria-hidden="true" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+								</svg>
 							</div>
-							<input type="search" v-model="playerName" class="block p-0.5 pl-8 w-full text-sm text-white placeholder:text-slate-600 bg-slate-800 rounded-lg border border-slate-500 focus:ring-blue-500 focus:border-blue-500" placeholder="Search User" required>
+							<input
+								type="search"
+								v-model="playerName"
+								class="block p-0.5 pl-8 w-full text-sm text-white placeholder:text-slate-600 bg-slate-800 rounded-lg border border-slate-500 focus:ring-blue-500 focus:border-blue-500"
+								placeholder="Search User"
+								required
+							/>
 						</div>
 					</form>
 					<div class="flex items-center">
@@ -157,9 +165,9 @@ onBeforeUnmount(() => {
 				</div>
 			</div>
 			<div class="grid [grid-template-columns:_2fr_1fr_1fr] items-end text-base sm:text-lg text-slate-700 h-full sm:pb-3 px-3">
-					<base-button @click="nameOrder()">Player</base-button>
-					<base-button @click="statusOrder()" class="flex">Status</base-button>
-					<base-button @click="rankOrder()">Rank</base-button>
+				<base-button @click="nameOrder()">Player</base-button>
+				<base-button @click="statusOrder()" class="flex">Status</base-button>
+				<base-button @click="rankOrder()">Rank</base-button>
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-3/4 bg-slate-900">

@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { toBase64, isNumberPositive, fromBase64 } from "src/utils/utils";
+import { toBase64, isNumberPositive, fromBase64 } from "../utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
 import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
@@ -23,7 +23,7 @@ export class UsersService {
 	lambdaGetUser = (user: User, identifier: any) => {
 		if (!user)
 			throw new NotFoundException(`The user '${identifier}' does not exist.`);
-		user.defineAvatar();
+		delete user.avatar_64;
 		return user;
 	};
 
@@ -107,7 +107,7 @@ export class UsersService {
 		if (!login42 || login42.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty 42login.");
 		}
-		return await this.usersRepository.findOne({ where: {login_42 : login42 } }).then((user: User) => {
+		return await this.usersRepository.findOne({ where: { login_42: login42 } }).then((user: User) => {
 			return this.lambdaGetUser(user, login42);
 		}, this.lambdaDatabaseUnvailable);
 	}
@@ -163,15 +163,14 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
-	async update(userId: number, user: UserDTO) {
-		// const userBefore: User = await this.findOne(userId);
-		await this.usersRepository.update(userId, user);
-		const userAfter: User = await this.findOne(userId);
+	async updateUsername(userId: number, username: string): Promise<User> {
+		await this.usersRepository.update(userId, { username: username });
+		return await this.findOne(userId);
+	}
 
-//		if (isEquals(userBefore, userAfter)) {
-//			throw new BadRequestException();
-//		}
-		return userAfter;
+	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
+		await this.usersRepository.update(userId, { avatar_64: avatar_64 });
+		return await this.findOne(userId);
 	}
 
 	async register(userId: number, user: UserDTO) {
@@ -179,41 +178,43 @@ export class UsersService {
 		if (userBefore.username !== null)
 			throw new BadRequestException(`User ${userBefore.username} already register.`);
 
-		// const succes = (imageBase64: string) => {
-		// 	console.log('YESSS', imageBase64);
-		// 	user.avatar = imageBase64;
-		// 	this.usersRepository.update(userId, user);
-		// }
-		// const error = (reason: string): Promise<void> => {
-		// 	console.log('update1');
-		// 	this.usersRepository.update(userId, user);
-		// 	return;
-		// }
-		// const onfinally = () => {
-		// 	console.log('update2');
-		// 	delete user.avatar;
-		// 	this.usersRepository.update(userId, user);
-		// 	return;
-		// }
 		if (user.avatar_64 != null) {
 			try {
 				user.avatar_64 = await toBase64(user.avatar_64);
+				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username });
 			} catch (err) {
-				console.log('DEBUG', 'user.service.ts avatar', err);
+				console.log('ERROR', 'user.service.ts avatar', err);
 			}
+		} else {
+			this.usersRepository.update(userId, { username: user.username });
 		}
-
-		this.usersRepository.update(userId, user);
 		return await this.findOne(userId);
 	}
 
 	async findAvatar(selectUser: UserSelectDTO, @Res() res: Response) {
-		const target: User = await selectUser.resolveUser(this);
+		let target: User;
+		if (selectUser.id != null) {
+			target = await this.usersRepository.findOneBy({ id: selectUser.id });
+			if (!target)
+				throw new NotFoundException(`The user '${selectUser.id}' didn't exist.`)
+		} else if (selectUser.username != null) {
+			target = await this.usersRepository.findOneBy({ username: selectUser.username });
+			if (!target)
+				throw new NotFoundException(`The user '${selectUser.username}' didn't exist.`)
+		} else
+			throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
+
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);
-		res.writeHead(200, {
-			'Content-Type': avatar.imageType,
-			'Content-Length': avatar.imageBuffer.length
-		});
+
+		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
+	}
+
+	async arrayIdsToUsers(array: number[]): Promise<User[]> {
+		const users: User[] = new Array();
+		for (const [index, id] of array.entries()) {
+			users.push(await this.findOne(id));
+		}
+		return users;
 	}
 }

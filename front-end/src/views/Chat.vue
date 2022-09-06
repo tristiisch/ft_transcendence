@@ -1,215 +1,184 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
-import { useRoute } from 'vue-router';
-import { useToast } from 'vue-toastification';
-import { ref, onBeforeMount, computed } from 'vue';
-import UserService from '@/services/UserService';
+import { useChatStore } from '@/stores/chatStore';
+import { useGlobalStore } from '@/stores/globalStore';
+import { ref, onBeforeMount, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import socket from '@/plugin/socketInstance';
+import PartToDisplay from '@/types/ChatPartToDisplay';
+import type Message from '@/types/Message';
+import ChatStatus from '@/types/ChatStatus';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
-import ChannelStatus from '@/types/ChannelStatus';
-import Status from '@/types/Status';
-import CardLeft from '@/components/CardLeft.vue';
-import CardRight from '@/components/CardRight.vue';
+import type Discussion from '@/types/Discussion';
 import ChannelsList from '@/components/Chat/ChannelsList.vue';
-import AddChannel from '@/components/Chat/AddChannel.vue';
-import ButtonPlus from '@/components/Chat/ButtonPlus.vue';
-import ButtonDelete from '@/components/Chat/ButtonDelete.vue';
-import AddSearchPlayer from '@/components/Chat/AddSearchPlayer.vue';
+import ChannelAdd from '@/components/Chat/AddChannel/ChannelAdd.vue';
+import DiscussionAdd from '@/components/Chat/DiscussionAdd.vue';
+import ButtonPlus from '@/components/Button/ButtonPlus.vue';
+import ButtonDelete from '@/components/Button/ButtonDelete.vue';
 import ChannelPasswordQuery from '@/components/Chat/ChannelPasswordQuery.vue';
-import ChannelSettings from '@/components/Chat/ChannelSettings/ChannelSettings.vue';
-import PlayerDiscussion from '@/components/Chat/PlayerDiscussion.vue';
-import ChatPart from '@/components/Chat/ChatPart.vue';
+import SettingsChannel from '@/components/Chat/ChannelSettings/SettingsChannel.vue';
+import DiscussionList from '@/components/Chat/DiscussionList.vue';
+import Chat from '@/components/Chat/ChatRoot.vue';
 
-const toast = useToast();
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
+const chatStore = useChatStore();
 const route = useRoute();
-const users = ref<User[] | null>(null);
-const channels = ref<Channel[] | null>(null);
-const friends = ref<User[] | null>(null);
-const leftPartToDisplay = ref('discussions');
-const rightCardTitle = ref('CHAT');
-const rightPartToDisplay = ref('chat');
-const inChatWith = ref<User | null>(null);
-const inChannel = ref<Channel | null>(null);
-const rightClick = ref([] as boolean[]);
-const isRegistered = ref(false);
-const error = ref('');
+const router = useRouter();
+const displayDelete = ref([] as boolean[]);
 
-//socket.auth = [userStore.userData.username];
-//socket.connect();
-
-function showFriends() {
-	if (leftPartToDisplay.value != 'discussions') leftPartToDisplay.value = 'discussions';
-	if (rightPartToDisplay.value != 'chat') rightPartToDisplay.value = 'chat';
-	setRightCardTitle(rightPartToDisplay.value);
-}
-
-function showChannels() {
-	if (leftPartToDisplay.value != 'channels') leftPartToDisplay.value = 'channels';
-	if (rightPartToDisplay.value != 'chat') rightPartToDisplay.value = 'chat';
-	setRightCardTitle(rightPartToDisplay.value);
-}
-
-function searchUser(id: number) {
-	if (users.value) {
-		for (const user of users.value) {
-			if (user.id === id) return user;
-		}
-	}
-	return null;
-}
-
-function fetchUsers() {
-	UserService.getUsers()
-		.then((response) => {
-			users.value = response.data;
-			if (route.query.discussion) {
-				const user = searchUser(parseInt(route.query.discussion as string));
-				console.log(user)
-				if (user) loadDiscussion(user);
-			}
-		})
-		.catch((e) => {
-			error.value = e.response.data.message
-			toast.error(error.value);
-		});
-}
-
-function fetchfriends() {
-	UserService.getUserfriends(userStore.userData.id)
-		.then((response) => {
-				friends.value = response.data
-		})
-		.catch((e) => {
-			error.value = e.response.data.message
-			toast.error(error.value);
-		});
-}
-
-function fetchChannels() {
-	UserService.getChannels()
-		.then((response) => {
-			channels.value = response.data;
-		})
-		.catch((e) => {
-			error.value = e.response.data.message
-			toast.error(error.value);
-		});
-}
-
-function setRightCardTitle(displayPart: string) {
-	if (displayPart === 'chat') rightCardTitle.value = 'CHAT';
-	else if (displayPart === 'addDiscussion') rightCardTitle.value = 'DISCUSSION';
-	else if (displayPart === 'channelSettings') rightCardTitle.value = 'SETTINGS';
-	else rightCardTitle.value = 'CHANNEL';
-}
-
-function setPartToDisplay(name: string | null) {
-	if (name) {
-		rightPartToDisplay.value = name;
-	} else {
-		if (leftPartToDisplay.value === 'discussions') rightPartToDisplay.value = 'addDiscussion';
-		else if (leftPartToDisplay.value === 'channels') rightPartToDisplay.value = 'createChannel';
-		else rightPartToDisplay.value = 'chat';
-	}
-	setRightCardTitle(rightPartToDisplay.value);
-}
-
-function invitePlayer() {
-	setRightCardTitle('chat');
-	rightPartToDisplay.value = 'chat';
-}
-
-function addButtonText() {
-	if (leftPartToDisplay.value === 'discussions') return 'Add discussion';
+function addButton() {
+	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
 	else return 'Add channel';
 }
 
-function loadDiscussion(user: User) {
-	if (inChannel.value) inChannel.value = null;
-	inChatWith.value = user;
-	rightPartToDisplay.value = 'chat';
+function memberInChannel(channel: Channel) {
+	return channel.type != ChatStatus.PRIVATE || (channel.type === ChatStatus.PRIVATE && channel.users.find((user) => user.id === userStore.userData.id));
 }
 
-function loadChannel(channel: Channel) {
-	if (inChatWith.value) inChatWith.value = null;
-	inChannel.value = channel;
-	rightPartToDisplay.value = 'chat';
-	if (inChannel.value.type === ChannelStatus.PROTECTED) {
-		for (const user of inChannel.value.users)
-			if (user.id === userStore.userData.id)
-				isRegistered.value = true;
-	}
+function setDisplayDelete(index: number) {
+	displayDelete.value[index] = true;
 }
 
-function deleteChannelDiscussion(index: number) {
-	// let index = channels.value.findIndex(channel)
-	// channels.value.splice(index, 1)
-	console.log('yo');
+function unsetDisplayDelete(index: number) {
+	displayDelete.value[index] = false;
 }
 
-const isLoading = computed(() => {
-	console.log(friends.value);
-	if ((friends.value && users.value && channels.value) || error.value !== '') return false;
-	return true;
+// socket.on("chatDiscussionCreate", (discussion: Discussion) => {
+// 	chatStore.addNewDiscussion(discussion);
+// });
+
+socket.on("chatChannelCreate", (creator: User, channel: Channel) => {
+	chatStore.addNewChannel(creator, channel);
 });
 
-function registration()
-{
-	isRegistered.value = true
+socket.on("chatChannelDelete", (channel: Channel) => {
+	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.name));
+});
 
+socket.on("chatChannelJoin", (channel: Channel, joinedUser: User) => {
+	chatStore.addUsersToChannel(channel, [joinedUser]);
+});
 
-}
+socket.on("chatChannelInvitation", (channel: Channel, invitedUsers: User[], inviter: User) => {
+	chatStore.addUsersToChannel(channel, invitedUsers, inviter);
+});
+
+socket.on("chatChannelLeave", (channel: Channel, user: User) => {
+	chatStore.leaveChannel(channel, user);
+});
+
+socket.on("chatChannelBan", (channel: Channel, newBanList: { newList: User[], userWhoSelect: User}) => {
+	chatStore.updateBanList(channel, null, newBanList)
+});
+
+socket.on("chatChannelAdmin", (channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => {
+	chatStore.updateAdminList(channel, null, newAdminList)
+});
+
+socket.on("chatChannelMute", (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User}) => {
+	chatStore.updateMuteList(channel, null, newMuteList)
+});
+
+socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
+	chatStore.addDiscussionMessage(discussion, data);
+});
+
+socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
+	chatStore.addChannelMessage(channel, data);
+});
+
+socket.on('chatChannelName', (channel: Channel, newName: { name: string, userWhoChangeName: User }) => {
+	chatStore.UpdateChannelName(channel, newName, false);
+});
+const isLoaded = computed(() => {
+	if (!chatStore.isLoading && userStore.isLoaded) return true;
+	return false;
+})
 
 onBeforeMount(() => {
-	fetchUsers();
-	fetchfriends();
-	fetchChannels();
+	chatStore.isLoading = true
+	chatStore
+		.fetchAll()
+		.then(() => {
+			if (route.query.discussion) {
+				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
+				if (discussion) chatStore.loadDiscussion(discussion);
+				else {
+					const user = globalStore.getUser(parseInt(route.query.discussion as string));
+					if (user) {
+						const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
+						if (!chatStore.isNewDiscussion(newDiscussion))
+							chatStore.createNewDiscussion(newDiscussion, true);
+					}
+				}
+			}
+			chatStore.isLoading = false
+		})
+		.catch((error) => {
+			console.log(error)
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
 });
-
-// onbeforeunload = () => {
-// 	socket.emit("leave", username);
-// 	};
 </script>
 
 <template>
-	<base-ui :isLoading="isLoading">
+	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full px-8">
 					<div class="flex w-full justify-around gap-2 flex-wrap sm:pb-5 sm:border-b-[1px] sm:border-slate-700">
-						<button @click="showFriends" class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">DISCUSSIONS</button>
-						<button @click="showChannels" class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CHANNELS</button>
+						<button
+							@click="chatStore.setLeftPartToDisplay('discussion')"
+							class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500"
+						>
+							DISCUSSIONS
+						</button>
+						<button
+							@click="chatStore.setLeftPartToDisplay('channels')"
+							class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500"
+						>
+							CHANNELS
+						</button>
 					</div>
 					<div class="flex flex-col justify-between h-full w-full">
 						<div class="overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-[300px] w-full">
-							<div v-if="leftPartToDisplay === 'discussions'" v-for="(friend, index) in friends" :key="friend.id" class="relative">
-								<player-discussion @click.right="rightClick[index] = !rightClick[index]" @click.left="loadDiscussion(friend)" :user="friend"></player-discussion>
-								<button-delete v-if="rightClick[index]" @delete="deleteChannelDiscussion(index)" @close="rightClick[index] = !rightClick[index]"></button-delete>
+							<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative">
+								<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
+								<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 							</div>
-							<div v-else v-for="(channel, index) in channels" :key="channel.name" class="relative">
-								<channels-list @click.right="rightClick[index] = !rightClick[index]" @click.left="loadChannel(channel)" :channel="channel"></channels-list>
-								<button-delete v-if="rightClick[index]" @delete="deleteChannelDiscussion(index)" @close="rightClick[index] = !rightClick[index]"></button-delete>
+							<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative">
+								<channels-list
+									v-if="memberInChannel(channel)"
+									@click.right="setDisplayDelete(index)"
+									@click.left="chatStore.loadChannel(channel)"
+									:channel="channel"
+									:index="index"
+								></channels-list>
+								<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="true"></button-delete>
 							</div>
 						</div>
 						<div class="flex self-start items-center gap-4 ml-2">
-							<button-plus @click="setPartToDisplay(null)"></button-plus>
-							<label class="text-slate-700">{{ addButtonText() }}</label>
+							<button-plus @click="chatStore.setRightPartToDisplay(null)"></button-plus>
+							<label class="text-slate-700">{{ addButton() }}</label>
 						</div>
 					</div>
 				</div>
 			</card-left>
-			<card-right :title="rightCardTitle">
-				<div v-if="rightPartToDisplay === 'chat'" class="w-11/12 px-8 3xl:px-10 h-full">
-					<div v-if="inChatWith || inChannel" class="h-full">
-						<ChannelPasswordQuery v-if="inChannel && inChannel.type === ChannelStatus.PROTECTED && !isRegistered" @registered="registration()" :inChannel="inChannel"></ChannelPasswordQuery>
-						<chat-part v-else @channelSettings="setPartToDisplay('channelSettings')" :inChatWith="inChatWith" :inChannel="inChannel" :users="users"></chat-part>
+			<card-right :title="chatStore.cardRightTitle">
+				<div v-if="chatStore.displayChat" class="w-11/12 px-8 3xl:px-10 h-full">
+					<div v-if="chatStore.inDiscussion || chatStore.inChannel" class="h-full">
+						<channel-password-query v-if="chatStore.isProtectedChannel"></channel-password-query>
+						<chat v-else></chat>
 					</div>
-					<img v-else class="flex justify-center items-center h-full" src="@/assets/42.png" />
+					<div v-else class="shrink-0 flex justify-center items-center h-full w-full">
+						<img   class="w-[90%]" src="@/assets/42.png" />
+					</div>
 				</div>
-				<channel-settings v-else-if="rightPartToDisplay === 'channelSettings' && inChannel" @return="setPartToDisplay('chat')" @validate="invitePlayer" :inChannel="inChannel"></channel-settings>
-				<AddSearchPlayer v-else-if="rightPartToDisplay === 'addDiscussion'" @close="setPartToDisplay('chat')" @validate="invitePlayer"></AddSearchPlayer>
-				<add-channel v-else-if="rightPartToDisplay === 'createChannel'" @close="setPartToDisplay('chat')" @validate="invitePlayer"></add-channel>
+				<settings-channel v-else-if="chatStore.displayChannelSettings"></settings-channel>
+				<channel-add v-else-if="chatStore.displayAddChannel"></channel-add>
+				<discussion-add v-else-if="chatStore.displayAddDiscussion"></discussion-add>
 			</card-right>
 		</div>
 	</base-ui>

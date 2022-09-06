@@ -3,6 +3,12 @@ module.exports = {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+	  spacing: {
+		'p1.5' : "1.5%",
+		'p5' : "5%",
+		'p10' : "10%",
+		'20vh' : "20vh"
+	  },
       mode: 'jit',
       backgroundImage: {
         'brick': "url(@/assets/brick.jpg)",
@@ -14,9 +20,14 @@ module.exports = {
       fontFamily: {
         Noir: ["Noir", "sans-serif"],
         BPNeon:["Neon", "ns-serif"],
+        VS:["VS", "ns-serif"],
+        skyfont:["skyfont", "ns-serif"],
         Arlon:["Arlon", "sans-serif"],
 		Vibur:["Vibur", "sans-serif"]
       },
+	  fontSize: {
+		'xxs': '.5rem'
+	  },
       screens: {
         'tvxs': { 'raw': '(max-height: 375px)' },
         // => @media (max-height: 800px),(min-width: 375px) { ... }
@@ -25,6 +36,8 @@ module.exports = {
         'tvlg': { 'raw': '(max-height: 1024px),(min-width: 1024px)' },
         // => @media (max-height: 800px),(min-width: 375px) { ... }
         '3xl': { 'raw': '(min-width: 1792px)' },
+		// => @media (min-width: 1792px) { ... }
+		'4xl': { 'raw': '(min-width: 2048px)' }
 		// => @media (min-width: 1792px) { ... }
       },
     },

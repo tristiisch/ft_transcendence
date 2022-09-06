@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import UsersService from '@/services/UserService';
-import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
 import { ref, onBeforeMount, computed } from 'vue';
-import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
+import { useRouter, useRoute } from 'vue-router';
+import UsersService from '@/services/UserService';
+import type Notification from '@/types/Notification';
 
 const notifications = ref<Notification[] | null>(null);
 const isLoading = ref(false);
-const userStore = useUserStore();
 const toast = useToast();
+const router = useRouter();
+const route = useRoute();
 
 function fetchNotifications() {
 	isLoading.value = true;
@@ -19,9 +20,8 @@ function fetchNotifications() {
 			console.log(notifications.value)
 			isLoading.value = false;
 		})
-		.catch((e: Error) => {
-			isLoading.value = false;
-			toast.error(e);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 }
 
@@ -34,16 +34,15 @@ function acceptInvitation(notification: Notification) {
 	console.log('accept');
 	if (notification.type === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.acceptFriendRequest(userStore.userData.id, notification.from_userId)
+		UsersService.notificationAction(notification.id, true)
 		.then(() => {
 			if (notifications.value) {
-				for (let i = 0; i < notifications.value.length; i++) {
-					if (notifications.value[i].id === notification.id) notifications.value.splice(i, 1);
-				}
+				const index = notifications.value.findIndex((element) => element.id === notification.id);
+				if(index !== -1) notifications.value.splice(index, 1)
 			}
 		})
-		.catch((e: Error) => {
-			toast.error(e);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }
@@ -52,16 +51,15 @@ function declineInvitation(notification: Notification) {
 	console.log('decline');
 	if (notification.type === NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.refuseFriendRequest(userStore.userData.id, notification.from_userId)
+		UsersService.notificationAction(notification.id, false)
 		.then(() => {
 			if (notifications.value) {
-				for (let i = 0; i < notifications.value.length; i++) {
-					if (notifications.value[i].id === notification.id) notifications.value.splice(i, 1);
-				}
+				const index = notifications.value.findIndex((element) => element.id === notification.id);
+				if(index !== -1) notifications.value.splice(index, 1)
 			}
 		})
-		.catch((e: Error) => {
-			toast.error(e);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }
@@ -72,7 +70,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div v-if="isLoading" class="flex items-center justify-center h-full font-Arlon text-white text-6xl">Loading</div>
+	<base-spinner small v-if="isLoading"></base-spinner>
 	<div v-else class="flex flex-col items-center justify-center h-full w-full">
 		<p class="text-red-200 text-sm pb-3 sm:pb-5">
 			You have <span class="text-red-700">{{ size }}</span> notifications

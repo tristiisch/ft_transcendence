@@ -1,7 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
-  rank?: number
-}>()
+defineProps<{ rank?: number }>()
 </script>
 
 <template>
