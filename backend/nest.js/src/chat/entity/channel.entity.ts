@@ -14,7 +14,7 @@ export class Channel extends Chat {
 	muted_ids: number[];
 	banned_ids: number[];
 
-	public async toFront?(chatService: ChatService): Promise<ChannelFront> {
+	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront> {
 		const chFront: ChannelFront = {
 			name: this.name,
 			owner: await chatService.getUserService().findOne(this.owner_id),
@@ -80,8 +80,8 @@ export class ChannelProtected extends Channel {
 	@Column()
 	password: string | null;
 
-	public async toFront?(chatService: ChatService): Promise<ChannelFront> {
-		const chFront: ChannelFront = await super.toFront(chatService);
+	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront> {
+		const chFront: ChannelFront = await super.toFront(chatService, user);
 		chFront.password = this.password;
 		return chFront;
 	}

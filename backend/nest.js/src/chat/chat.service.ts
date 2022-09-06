@@ -1,5 +1,5 @@
 /** @prettier */
-import { Inject, Injectable, NotAcceptableException, NotImplementedException, Res } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotAcceptableException, NotImplementedException, Res, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
 import { ArrayContains, Repository } from 'typeorm';
@@ -11,6 +11,7 @@ import { Discussion, DiscussionFront } from './entity/discussion.entity';
 import { fromBase64 } from '../utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { ChannelFetchDTO } from './entity/channel-dto';
 
 @Injectable()
 export class ChatService {
@@ -48,7 +49,7 @@ export class ChatService {
 			.then(async (chs: ChannelPublic[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this));
+					chsFront.push(await ch.toFront(this, null));
 				return chsFront;
 			}
 		);
@@ -56,7 +57,7 @@ export class ChatService {
 			.then(async (chs: ChannelProtected[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this));
+					chsFront.push(await ch.toFront(this, null));
 				return chsFront;
 			}
 		);
@@ -68,7 +69,7 @@ export class ChatService {
 			.then(async (chs: ChannelPublic[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this));
+					chsFront.push(await ch.toFront(this, user));
 				return chsFront;
 			}
 		);
@@ -76,7 +77,7 @@ export class ChatService {
 			.then(async (chs: ChannelProtected[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this));
+					chsFront.push(await ch.toFront(this, user));
 				return chsFront;
 			}
 		);
@@ -104,6 +105,49 @@ export class ChatService {
 				return msgsFront;
 			}
 		);
+	}
+
+	async fetchMessageSafe(channelDTO: ChannelFetchDTO) : Promise<MessageFront[]> {
+		if (!Object.values(ChatStatus).includes(channelDTO.type))
+			throw new NotAcceptableException(`Enum ${channelDTO.type} didn't exist in ChatStatus.`)
+		if (channelDTO.password && channelDTO.type !== ChatStatus.PROTECTED)
+			throw new NotAcceptableException(`You need to add a password to open chat type ${channelDTO.type}.`)
+		if (channelDTO.type === ChatStatus.PROTECTED) {
+			if (!channelDTO.password)
+				throw new UnauthorizedException(`Can't use password '${channelDTO.password}' on chat type ${channelDTO.type}.`)
+			const protectedChannel: ChannelProtected = await this.channelProtectedRepo.findOneBy({ id: channelDTO.id });
+			if (protectedChannel.password !== channelDTO.password)
+				throw new UnauthorizedException(`Wrong password for protected channel ${protectedChannel.name}.`)
+		}
+		return this.fetchMessage(channelDTO.id);
+	}
+
+	async fetchChannel(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | Discussion | ChannelPublic> {
+		let chat: ChannelPublic | ChannelProtected | Discussion;
+	
+		switch (channelType) {
+			case ChatStatus.PUBLIC:
+				chat = await this.channelPublicRepo.findOneBy({ id: channelId });
+				break;
+			case ChatStatus.PROTECTED:
+				chat = await this.channelProtectedRepo.findOneBy({ id: channelId });
+				break;
+			case ChatStatus.PRIVATE:
+				chat = await this.discussionRepo.findOneBy({ id: channelId });
+				break;
+			default:
+				throw new NotAcceptableException(`Unknown chat type ${channelType}.`)
+		}
+		/*if (chat instanceof Channel) {
+			const channel: Channel = chat as Channel;
+			if (channel.users_ids.indexOf(user.id) === -1) {
+				delete channel.banned_ids;
+				delete channel.muted_ids;
+				delete channel.users_ids;
+				delete channel.owner_id;
+			}
+		}*/
+		return chat;
 	}
 
 	async addMessage(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]) {

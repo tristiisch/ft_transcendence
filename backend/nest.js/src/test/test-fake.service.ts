@@ -240,6 +240,8 @@ export class TestFakeService {
 					return null;
 				}
 				break;
+			default:
+				throw new NotAcceptableException(`Unknown chat type ${type}.`)
 		}
 		this.sendFakeMsg(chat);
 		return chat;
