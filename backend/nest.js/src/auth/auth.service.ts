@@ -158,4 +158,14 @@ export class AuthService {
 		const imagePath = await toDataURL(otpauthUrl);
 		return imagePath;
 	}
+
+	public async getUserFromAuthenticationToken(token: string) {
+		const payload = this.jwtService.verify(token, {
+			secret: process.env.JWT_SECRET
+		});
+		console.log(payload)
+		if (payload.id) {
+		  return this.usersService.findOne(payload.id);
+		}
+	}
 }

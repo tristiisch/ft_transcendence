@@ -84,6 +84,8 @@ onBeforeMount(() => {
 		socket.on('AddPendingFriend', (pendingFriend: User) => {
 			globalStore.addPendingFriend(pendingFriend);
 		});
+
+		socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
 	}
 });
 

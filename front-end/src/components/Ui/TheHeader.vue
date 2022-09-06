@@ -20,7 +20,7 @@ const isProfilePage = computed(() => {
 				<img class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 object-cover border-neutral-100 hover:border-[#f1cf3b]" :src="userStore.userData.avatar" alt="Rounded avatar" />
 			</base-button>
 			<base-button v-if="globalStore.notifications.length" class="absolute top-16 left-12 sm:top-[104px] sm:left-16" link :to="{ name: 'Profile', params: { id: userStore.userData.id },  query: { notification: userStore.userData.id } }">
-				<div  class="flex justify-center items-center bg-red-600 w-5 h-5 border border-red-300 rounded-full text-xs text-neutral-100 hover:border-[#f1cf3b]">4</div>
+				<div  class="flex justify-center items-center bg-red-600 w-5 h-5 border border-red-300 rounded-full text-xs text-neutral-100 hover:border-[#f1cf3b]">{{ globalStore.notifications.length }}</div>
 			</base-button>
 		</div>
 		<div>
