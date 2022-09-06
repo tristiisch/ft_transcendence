@@ -3,6 +3,7 @@ import { useUserStore } from '@/stores/userStore'
 import { useChatStore } from '@/stores/chatStore';
 import { computed, ref, watch } from 'vue';
 import type Discussion from '@/types/Discussion'
+import type Message from '@/types/Message'
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -11,8 +12,9 @@ const props = defineProps<{
     index: number;
 }>();
 
-// TODO fix -> props.discussion.messages can be undefined
-const lastMessage = ref(props.discussion.messages[props.discussion.messages.length - 1]);
+const lastMessage = ref<Message>();
+if (props.discussion.messages.length)
+    lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1];
 
 function prefix()
 {
@@ -36,7 +38,6 @@ const numberOfUnreadedMessage = computed(() => {
 watch(props.discussion.messages, () => {
 	lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1]
 });
-
 
 </script>
 
