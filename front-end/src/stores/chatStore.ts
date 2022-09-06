@@ -35,6 +35,9 @@ export const useChatStore = defineStore('chatStore', {
 		displayAddDiscussion: (state) => state.cardRightPartToDisplay === PartToDisplay.ADD_DISCUSSION,
 		displayChat: (state) => state.cardRightPartToDisplay === PartToDisplay.CHAT,
 		isProtectedChannel: (state) => state.inChannel?.type === ChatStatus.PROTECTED && !state.inChannelRegistration,
+		userIsInChannel: (state) => {
+			return (userToCheck: User) => state.inChannel?.users.includes(userToCheck)
+		},
 		getIndexChannels: (state) => {
 			return  (channelName: string) => state.channels.findIndex((channel) => channel.name === channelName);
 		},
@@ -120,10 +123,10 @@ export const useChatStore = defineStore('chatStore', {
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
 			this.shiftPositionUserDiscussion(discussion);
 		},
-		addNewChannel(creator: User, channel: Channel) {
+		addNewChannel(user: User, channel: Channel) {
 			this.userChannels.push(channel);
 			const toast = useToast();
-			toast.info('you have been added in ' + channel.name + " by " + creator.username);	
+			toast.info('you have been added in ' + channel.name + " by " + user.username);	
 		},
 		addNewDiscussion(discussion: Discussion) {
 			this.userDiscussions.push(discussion);
@@ -135,34 +138,57 @@ export const useChatStore = defineStore('chatStore', {
 			if (load === true)
 				this.loadDiscussion(this.userDiscussions[0]);
 		},
-		addUserToChannel(channelName: string, user: User) {
-			const index = this.getIndexUserChannels(channelName);
-			if (index >= 0) {
-				this.userChannels[index].users.push(user)
-				this.userChannels[index].messages.push({
-					date: new Date().toLocaleString(),
-					message: '⚪️　' + user.username + ' just joined the channel',
-					idSender: -1,
-					read: false
-				});
+		addUsersToChannel(channel: Channel, users: User[], inviter?: User) {
+			if (this.inChannel && this.inChannel.name === channel.name)
+				for(const user of users)
+					this.inChannel.users.push(user);
+			else {
+				const index = this.getIndexUserChannels(channel.name);
+				if (index < 0) {
+					if (inviter) this.addNewChannel(inviter, channel)
+					for(const user of users)
+						this.userChannels[this.userChannels.length - 1].users.push(user);
+				}
+				else {
+					for(const user of users)
+						this.userChannels[index].users.push(user);
+				}
 			}
 		},
 		createNewChannel(newChannel: Channel, selection: User[]) {
 			const userStore = useUserStore();
 			this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
+			newChannel.users.unshift(userStore.userData);
+			socket.emit('chatChannelCreate', userStore.userData, newChannel);
 			const type = this.channelTypeToString(newChannel);
 			this.addAutomaticMessage(newChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
 				, 'have been added to ' + newChannel.name + ' by ' + userStore.userData.username);
-			newChannel.users.unshift(userStore.userData);
-			socket.emit('chatChannelCreate', userStore.userData, newChannel);
 			this.loadChannel(this.userChannels[0]);
 		},
 		joinNewChannel(channel : Channel) {
 			const userStore = useUserStore();
 			this.userChannels.length ? this.userChannels.unshift(channel) : this.userChannels.push(channel);
 			this.inChannel = this.userChannels[0];
-			socket.emit('chatChannelJoin', channel.name, userStore.userData.id);
+			socket.emit('chatChannelJoin', channel, userStore.userData);
+			this.addAutomaticMessage(channel, { unlisted: [], listed: [userStore.userData]}, '', ' just joined the channel')
 			this.setRightPartToDisplay(PartToDisplay.CHAT);
+		},
+		inviteUserToPrivateChannel(channel: Channel, users: User[]) {
+			const userStore = useUserStore();
+			socket.emit('chatChannelInvitation', channel, users, userStore.userData);
+			if (this.inChannel && this.inChannel.name === channel.name) {
+				for(const user of users)
+					this.inChannel.users.push(user)
+				this.addAutomaticMessage(channel, { unlisted: [], listed: users}, '', ' have been invited into the channel')
+			}
+			else {
+				const index = this.getIndexUserChannels(channel.name);
+				if (index >= 0) {
+					for(const user of users)
+						this.userChannels[index].users.push(user);
+					this.addAutomaticMessage(this.userChannels[index], { unlisted: [], listed: users}, '', ' have been invited into the channel')
+				}
+			}
 		},
 		deleteUserFromChannel(channel: Channel, userToDelete: User) {
 			let index = channel.admins.findIndex((user) => user.id === userToDelete.id);
@@ -329,10 +355,14 @@ export const useChatStore = defineStore('chatStore', {
 			}
 			if (selection.listed.length !== 0) {
 				let userNameInListed = '';
+				const userStore = useUserStore();
 				let i = -1;
-				while(++i < selection.listed.length - 1)
-					userNameInListed += selection.listed[i].username + ",  ";
-				userNameInListed += selection.listed[i].username + " ";
+				while(++i < selection.listed.length - 1) {
+					if (selection.listed[i].username !== userStore.userData.username)
+						userNameInListed += selection.listed[i].username + ",  ";
+				}
+				if (selection.listed[i].username !== userStore.userData.username)
+					userNameInListed += selection.listed[i].username + " ";
 				const newMessage = {
 					date: new Date().toLocaleString(),
 					message: '⚪️　' + userNameInListed + messageListed,
@@ -389,17 +419,11 @@ export const useChatStore = defineStore('chatStore', {
 				this.userDiscussions[index].messages.push(data);
 		},
 		addChannelMessage(channel: Channel, data: Message) {
-			const newMessage = {
-				date: data.date,
-				message: data.message,
-				idSender: data.idSender,
-				read: false
-			};
 			if (this.inChannel?.name === channel.name)
-				this.inChannel.messages.push(newMessage)
+				this.inChannel.messages.push(data)
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].messages.push(newMessage);
+				this.userChannels[index].messages.push(data);
 			}
 		},
 		nbUnreadMessageInDiscussion(discussion: Discussion) {
@@ -454,6 +478,16 @@ export const useChatStore = defineStore('chatStore', {
 				return 'PROTECTED';
 			else
 				return 'PUBLIC';
+		},
+		UsersNotInChannels() {
+			const globalStore = useGlobalStore();
+			let userNotInChannel: User[] = [];
+			for(const user of globalStore.users) {
+				if (!this.userIsInChannel(user))
+					userNotInChannel.push(user);
+			}
+			const userStore = useUserStore();
+			return userNotInChannel.filter(user => user.id != userStore.userData.id);
 		}
 	},
 });

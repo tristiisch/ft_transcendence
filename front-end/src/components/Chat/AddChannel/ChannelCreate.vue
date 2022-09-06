@@ -31,17 +31,17 @@ function uploadImage(imageData: string): void {
 }
 
 function clickOnButtonPublic() {
-	newChannelType.value=ChatStatus.PUBLIC
+	newChannelType.value = ChatStatus.PUBLIC
 	newAvatar.value = 'src/assets/ChannelDefaultPublic.png'
 }
 
 function clickOnButtonPrivate() {
-	newChannelType.value=ChatStatus.PRIVATE
+	newChannelType.value = ChatStatus.PRIVATE
 	newAvatar.value = 'src/assets/ChannelDefaultPrivate.png'
 }
 
 function clickOnButtonProtected() {
-	newChannelType.value=ChatStatus.PROTECTED
+	newChannelType.value = ChatStatus.PROTECTED
 	newAvatar.value = 'src/assets/ChannelDefaultProtected.png'
 }
 

@@ -57,8 +57,12 @@ socket.on("chatChannelDelete", (channel: Channel) => {
 	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.name));
 });
 
-socket.on("chatChannelJoin", (channelName: string, joinedUser: User) => {
-	chatStore.addUserToChannel(channelName, joinedUser);
+socket.on("chatChannelJoin", (channel: Channel, joinedUser: User) => {
+	chatStore.addUsersToChannel(channel, [joinedUser]);
+});
+
+socket.on("chatChannelInvitation", (channel: Channel, invitedUsers: User[], inviter: User) => {
+	chatStore.addUsersToChannel(channel, invitedUsers, inviter);
 });
 
 socket.on("chatChannelLeave", (channel: Channel, user: User) => {

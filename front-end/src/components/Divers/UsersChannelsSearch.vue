@@ -72,6 +72,10 @@ onBeforeMount(() => {
 		itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
 		isLoading.value = false;
 	}
+	else if (props.type === 'usersNotInChannel') {
+		itemsToDisplay.value = chatStore.UsersNotInChannels();
+		isLoading.value = false;
+	}
 	else {
 		chatStore.fetchChannels()
 		.then(() => {
