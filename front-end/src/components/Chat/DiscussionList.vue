@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const lastMessage = ref<Message>();
-if (props.discussion.messages.length)
+if (props.discussion.messages && props.discussion.messages.length)
     lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1];
 
 function prefix()
