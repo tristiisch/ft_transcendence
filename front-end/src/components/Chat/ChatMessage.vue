@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { onUpdated, onBeforeMount} from 'vue';
-import type Message from '@/types/Message';
+import { onUpdated } from 'vue';
 import BaseButton from '@/components/Ui/BaseButton.vue';
 
 const globalStore = useGlobalStore();
@@ -34,6 +33,7 @@ function chooseArray() {
 	else if (chatStore.inDiscussion)
 		return chatStore.inDiscussion.messages;
 };
+
 </script>
 
 <template>

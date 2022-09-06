@@ -8,6 +8,7 @@ import SettingsBanMuteAdmin from '@/components/Chat/ChannelSettings/SettingsBanM
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import SettingsPasswordName from '@/components/Chat/ChannelSettings/SettingsPasswordName.vue';
 import UsersChannelsNameImage from '@/components/Chat/UsersChannelNameImages.vue';
+import SettingsInvite from '@/components/Chat/ChannelSettings/SettingsInvite.vue';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -15,6 +16,7 @@ const displayPasswordPage = ref(false);
 const displayAdminPage = ref(false);
 const displayMutePage = ref(false);
 const displayBanPage = ref(false);
+const displayInvitePage = ref(false);
 
 
 function playerStatus() {
@@ -45,7 +47,7 @@ function isAdmin() {
 }
 
 function setColSpan() {
-	if (isOwner() || (!isOwner() && !isAdmin()))
+	if ((!isOwner() && isAdmin()) || (!isOwner() && !isAdmin()))
 		return 'col-span-2'
 	return 'col-span-auto'
 }
@@ -66,11 +68,7 @@ function muteStatus() { return chatStore.inChannel?.muted.length }
 function banStatus() { return chatStore.inChannel?.banned.length }
 
 function displayButton() {
-	return !displayAdminPage.value && !displayMutePage.value && !displayBanPage.value  && !displayPasswordPage.value 
-}
-
-function displayBanMuteAdmin() {
-	return (displayAdminPage.value || displayMutePage.value || displayBanPage.value)
+	return !displayAdminPage.value && !displayMutePage.value && !displayBanPage.value  && !displayPasswordPage.value && !displayInvitePage.value
 }
 
 function resetDisplayPage() {
@@ -81,8 +79,10 @@ function resetDisplayPage() {
 		displayMutePage.value = !displayMutePage.value
 	else if (displayBanPage.value)
 		displayBanPage.value = !displayBanPage.value
-	else
+	else if (displayPasswordPage.value)
 		displayPasswordPage.value = !displayPasswordPage.value
+	else
+		displayInvitePage.value = !displayInvitePage.value
 }
 
 function isType()
@@ -103,7 +103,7 @@ function leaveChannel() {
 
 <template>
 	<div class="flex flex-col justify-between h-full w-full px-8 3xl:px-10">
-		<users-channels-name-image></users-channels-name-image>
+		<users-channels-name-image v-if="!displayInvitePage"></users-channels-name-image>
 		<div v-if="displayButton()" class="flex flex-col justify-center h-full items-center gap-5">
 			<div class="text-center">
 				<p class="text-red-200 text-xs sm:text-sm">your are <span class="text-red-800">{{ playerStatus() }}</span> of this channel.</p>
@@ -123,11 +123,15 @@ function leaveChannel() {
 				<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Ban
 				</button>
-				<button :class="setColSpan()" @click="leaveChannel()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">Leave channel</button>
+				<button v-if="isAdmin()" @click="displayInvitePage = !displayInvitePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+					Invite
+				</button>
+				<button :class="setColSpan()" @click="leaveChannel()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">LEAVE</button>
 			</div>
 		</div>
 		<button-return-next v-if="displayButton()" :side="'previous'" @click="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)" class="self-end"></button-return-next>
 		<settings-password-name v-else-if="displayPasswordPage" @close="resetDisplayPage()"></settings-password-name>
+		<settings-invite v-else-if="displayInvitePage" @close="resetDisplayPage()"></settings-invite>
 		<settings-ban-mute-admin v-else @validate="resetDisplayPage()" @close="resetDisplayPage()" :type="isType()"></settings-ban-mute-admin>
 	</div>
 </template>

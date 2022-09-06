@@ -168,7 +168,9 @@ onBeforeMount(() => {
 						<channel-password-query v-if="chatStore.isProtectedChannel"></channel-password-query>
 						<chat v-else></chat>
 					</div>
-					<img v-else class="flex justify-center items-center h-full" src="@/assets/42.png" />
+					<div v-else class="shrink-0 flex justify-center items-center h-full w-full">
+						<img   class="w-[90%]" src="@/assets/42.png" />
+					</div>
 				</div>
 				<settings-channel v-else-if="chatStore.displayChannelSettings"></settings-channel>
 				<channel-add v-else-if="chatStore.displayAddChannel"></channel-add>
