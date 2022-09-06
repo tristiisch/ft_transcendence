@@ -75,7 +75,7 @@ interface ServerToClientEvents {
 	userAdd: (user: User) => void;
 	userRemove: (user: User) => void;
 	chatDiscussionCreate: (discussion: Discussion) => void;
-	chatChannelCreate: (channel: Channel) => void;
+	chatChannelCreate: (creator: User, channel: Channel) => void;
 	chatChannelDelete: (channel: Channel) => void;
 	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
@@ -95,7 +95,7 @@ interface ClientToServerEvents {
 	//others
 	update_status: (status: Status) => void;
 	chatDiscussionCreate: (user: User, discussion: Discussion) => void;
-	chatChannelCreate: (userId: number, channel: Channel) => void;
+	chatChannelCreate: (creator: User, channel: Channel) => void;
 	chatChannelDelete: (channel: Channel) => void;
 	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
@@ -250,14 +250,14 @@ export async function createSocketServer(serverPort: number) {
 			// socket.to(discussion.user.username).emit("chatDiscussionCreate", (discussion));
 		});
 
-		socket.on("chatChannelCreate", (userId, channel) => {
+		socket.on("chatChannelCreate", (creator, channel) => {
 			socket.join(channel.name);
 			// socket.id
 			// socket.join(channel.name);users[socket.handshake.auth.token]
 			//need to add each socket id of members in join
 			
 			//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
-			socket.broadcast.emit("chatChannelCreate", (channel))  //to delete when join you have implemented join
+			socket.broadcast.emit("chatChannelCreate", creator, channel)  //to delete when join you have implemented join
 			});
 
 		socket.on("chatChannelDelete", (channel) => {

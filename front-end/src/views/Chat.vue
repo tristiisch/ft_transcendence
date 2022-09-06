@@ -49,8 +49,8 @@ function unsetDisplayDelete(index: number) {
 // 	chatStore.addNewDiscussion(discussion);
 // });
 
-socket.on("chatChannelCreate", (channel: Channel) => {
-	chatStore.addNewChannel(channel);
+socket.on("chatChannelCreate", (creator: User, channel: Channel) => {
+	chatStore.addNewChannel(creator, channel);
 });
 
 socket.on("chatChannelDelete", (channel: Channel) => {
