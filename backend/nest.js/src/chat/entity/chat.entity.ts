@@ -11,14 +11,13 @@ export enum ChatStatus {
 }
 
 @Entity()
-@TableInheritance({ column: { type: "varchar", name: "type" } })
+@TableInheritance({ column: { type: 'enum', enum: ChatStatus, name: 'type' } })
 export class Chat {
 
 	@PrimaryGeneratedColumn()
-	@IsInt()
 	id?: number;
 
-	@Column({ type: 'enum', enum: ChatStatus, default: ChatStatus.PUBLIC })
+	@Column({ type: 'enum', enum: ChatStatus, default: ChatStatus.PUBLIC, name: 'type' })
 	type: ChatStatus;
 
 	@Column("int", { nullable: true, array: true })

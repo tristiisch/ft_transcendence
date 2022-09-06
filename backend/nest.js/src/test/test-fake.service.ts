@@ -49,7 +49,6 @@ export class TestFakeService {
 		const user: User = await this.initUser();
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
-		//const stats: UserStats = await this.initStats(user);
 		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, await this.friendsService.findAllRelationsId(user.id));
 
@@ -60,7 +59,6 @@ export class TestFakeService {
 	async addFakeData(user: User): Promise<{ statusCode: number; message: string }> {
 		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
 
-		// const stats: UserStats = await this.initStats(user);
 		let iMatchs = -1;
 		while (++iMatchs < allUserIdsExceptUser.length) {
 			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
@@ -69,7 +67,6 @@ export class TestFakeService {
 		const userWithRelationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
 		let usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, userWithRelationsIds);
 
-		// console.log('debug usersWithoutRelation', usersWithoutRelation);
 		for (const u of userWithRelationsIds) {
 
 			if (usersWithoutRelation.indexOf(u) != -1) {
@@ -83,9 +80,14 @@ export class TestFakeService {
 			if (!target) break;
 			removeFromArray(usersWithoutRelation, target.id);
 		}
-		// await this.createFakeChannel(user, allUserIdsExceptUser);
-		// await this.createFakeDiscussion(user, allUserIdsExceptUser);
 		return { statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` };
+	}
+
+	async addChats(user: User) {
+		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
+
+
+		return await this.createFakeChannel(user, allUserIdsExceptUser);
 	}
 
 	async initUser(): Promise<User> {
@@ -101,21 +103,12 @@ export class TestFakeService {
 		user = await this.usersService.add(user);
 		userAuth = new UserAuth(user.id);
 		userAuth.token_jwt = await this.authService.createToken(user.id);
-		this.authService.save(userAuth);
+		await this.authService.save(userAuth);
 
 		userStats = new UserStats(user.id);
-		this.statsService.add(userStats);
+		await this.statsService.add(userStats);
 
 		return user;
-	}
-
-	async initStats(user: User): Promise<UserStats> {
-		const userStats: UserStats = new UserStats(user.id);
-
-	 	//userStats.victories = random(0, this.randomMaxStats);
-	 	//userStats.defeats = random(0, this.randomMaxStats);
-		await this.statsService.add(userStats);
-	 	return userStats;
 	}
 
 	async initMatchHistory(user: User, userIds: number[]): Promise<MatchStats> {
@@ -201,7 +194,7 @@ export class TestFakeService {
 			type: ChatStatus.PUBLIC,
 			users_ids: [...randomElements(userIds, random(1, 20)), user.id]
 		}
-		await this.chatService.addChat(channel);
+		return await this.chatService.addChat(channel);
 	}
 
 	private async createFakeDiscussion(user: User, userIds: number[]): Promise<any> {
@@ -210,6 +203,6 @@ export class TestFakeService {
 			users_ids: [randomElement(userIds), user.id]
 		}
 		console.log('Discussion', discussion)
-		await this.chatService.addChat(discussion);
+		return await this.chatService.addChat(discussion);
 	}
 }

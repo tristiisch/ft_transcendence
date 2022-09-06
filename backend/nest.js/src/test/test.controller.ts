@@ -1,7 +1,5 @@
 /** @prettier */
-import { Body, Controller, Get, Inject, Param, Post, Req } from '@nestjs/common';
-import { Request } from 'express';
-import { UserSelectDTO } from '../users/entity/user-select.dto';
+import { Controller, Get, Inject, Param, } from '@nestjs/common';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { isNumberPositive } from '../utils/utils';
@@ -31,5 +29,11 @@ export class TestController {
 	clearAllTables() {
 		this.dbService.clearAllTables();
 		return { statusCode: 200, message: 'All tables has been cleared.' };
+	}
+
+	@Get('generateChannels/:username')
+	async createChannels(@Param('username') username: string) {
+		const target: User = await this.usersService.findOneByUsername(username);
+		return this.fakeService.addChats(target);
 	}
 }

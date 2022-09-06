@@ -1,8 +1,8 @@
 import { ChildEntity, Column } from "typeorm";
 import { User } from "users/entity/user.entity";
-import { Chat, ChatFront } from "./chat.entity";
+import { Chat, ChatFront, ChatStatus } from "./chat.entity";
 
-@ChildEntity()
+@ChildEntity(ChatStatus.PUBLIC)
 export class Channel extends Chat {
 
 	@Column({ unique: true })

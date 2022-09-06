@@ -48,26 +48,18 @@ export class StatsService {
 		return userStats;
     }
 
-	/**
-	 * Can be optimize in one SQL Request
-	 */
     async addDefeat(userId: number) {
-		const userStats: UserStats = await this.findOrCreate(userId);
-
-		//return await this.statsRepository.update(userId, { defeats: userStats.defeats + 1 });
-		++userStats.defeats;
-		return await this.statsRepository.save(userStats);
+		await this.statsRepository.createQueryBuilder()
+			.update(UserStats).where({ user_id: userId })
+			.set({ defeats: () => "defeats + 1" })
+			.execute()
     }
 
-	/**
-	 * Can be optimize in one SQL Request
-	 */
     async addVictory(userId: number) {
-		const userStats: UserStats = await this.findOrCreate(userId);
-
-		//return await this.statsRepository.update(userId, { victories: userStats.victories + 1 });
-		++userStats.victories;
-		return await this.statsRepository.save(userStats);
+		await this.statsRepository.createQueryBuilder()
+			.update(UserStats).where({ user_id: userId })
+			.set({ victories: () => "victories + 1" })
+			.execute()
     }
 
     async add(stats: UserStats) {
@@ -142,22 +134,10 @@ export class StatsService {
     }
 
 	async getRank(user: User): Promise<number> {
-
-		const sqlStatement: SelectQueryBuilder<UserStats> = this.statsRepository.createQueryBuilder('userstats');
-
-		// SELECT position
-		// FROM (SELECT *, row_number() over(order by score DESC) as position from public.user_stats) result
-		// where user_id = 7778;
-
-		// sqlStatement.select('i.*');
-		// sqlStatement.from(subQuery => {
-		// 	return subQuery.select('*').addSelect('row_number() over (order by score DESC) as position');
-		// }, "i");
-
-		// sqlStatement.orderBy('userstats.score', 'DESC', 'NULLS LAST');
-		// return await sqlStatement.getOne().then((rank) => {
-		// 	return rank.score;
-		// }, this.userService.lambdaDatabaseUnvailable);
-		return 1;
+		const rank = await this.statsRepository.query(`SELECT position FROM (SELECT *, row_number() over (order by score DESC) ` +
+			`as position from public.user_stats) result where user_id = ${user.id};`);
+		if (rank == null || rank.length != 1) 
+			return -1;
+		return parseInt(rank[0].position);
 	}
 }

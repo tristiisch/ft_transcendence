@@ -1,5 +1,6 @@
 /** @prettier */
 import { Inject, Injectable } from '@nestjs/common';
+import { ChatService } from '../chat/chat.service';
 import { AuthService } from '../auth/auth.service';
 import { FriendsService } from '../friends/friends.service';
 import { MatchStatsService } from '../game/matchs/matchs.service';
@@ -18,33 +19,15 @@ export class TestDbService {
 	private readonly matchHistoryService: MatchStatsService;
 	@Inject(AuthService)
 	private readonly authService: AuthService;
+	@Inject(ChatService)
+	private readonly chatService: ChatService;
 
 	async clearAllTables() {
-		await this.clearTableUser();
-		await this.clearTableFriends();
-		await this.clearTableStats();
-		await this.clearTableMatchHistory();
-		await this.clearTableMatchHistory();
-		await this.clearTableAuth();
-	}
-
-	async clearTableUser() {
 		await this.usersService.getRepo().clear();
-	}
-
-	async clearTableFriends() {
 		await this.friendsService.getRepo().clear();
-	}
-
-	async clearTableStats() {
 		await this.statsService.getRepo().clear();
-	}
-
-	async clearTableMatchHistory() {
 		await this.matchHistoryService.getRepo().clear();
-	}
-
-	async clearTableAuth() {
 		await this.authService.getRepo().clear();
+		await this.chatService.getRepoChat().clear();
 	}
 }
