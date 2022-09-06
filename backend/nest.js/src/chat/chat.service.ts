@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
 import { ArrayContains, Repository } from 'typeorm';
 import { Channel, ChannelFront, ChannelProtected, ChannelPublic } from './entity/channel.entity';
-import { Chat } from './entity/chat.entity';
+import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
@@ -43,12 +43,24 @@ export class ChatService {
 		return this.msgRepo;
 	}
 
-    async findAllChannels() : Promise<Chat[]> {
-		try {
-			return await this.chatRepo.find();
-		} catch (reason) {
-			return this.userService.lambdaDatabaseUnvailable(reason);
-		}
+    async findAllChannels() : Promise<ChatFront[]> {
+		const publicChannels: ChannelFront[] = await this.channelPublicRepo.find()
+			.then(async (chs: ChannelPublic[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					chsFront.push(await ch.toFront(this));
+				return chsFront;
+			}
+		);
+		const protectedChannels: ChannelFront[] = await this.channelProtectedRepo.find()
+			.then(async (chs: ChannelProtected[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					chsFront.push(await ch.toFront(this));
+				return chsFront;
+			}
+		);
+		return publicChannels.concat(protectedChannels);
     }
 
     async findUserChannel(user: User) : Promise<ChannelFront[]> {
@@ -72,12 +84,12 @@ export class ChatService {
     }
 
     async findUserDiscussion(user: User) : Promise<DiscussionFront[]> {
-		return new Array(); // TODO remove this line
+		// return new Array(); // TODO remove this line
 		return await this.discussionRepo.findBy({ users_ids: ArrayContains([user.id]) })
 			.then(async (chs: Discussion[]) => {
 				const chsFront: DiscussionFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this.userService, user));
+					chsFront.push(await ch.toFront(this, user));
 				return chsFront;
 			}
 		);
@@ -129,7 +141,10 @@ export class ChatService {
 		return this.channelProtectedRepo.save(channel);
 	}
 
-	async addDiscussion(discu: Discussion) {
-		return this.discussionRepo.save(discu);
+	async addDiscussion(newDiscu: Discussion) {
+		const discu: Discussion = await this.discussionRepo.findOneBy({ users_ids: ArrayContains(newDiscu.users_ids) })
+		if (!discu)
+			throw new NotAcceptableException(`They is already a discussion between ${newDiscu.users_ids[0]} and ${newDiscu.users_ids[1]}.`);
+		return this.discussionRepo.save(newDiscu);
 	}
 }

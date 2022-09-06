@@ -85,15 +85,6 @@ export class TestFakeService {
 		return { statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` };
 	}
 
-	async addChats(user: User, nb: number) {
-		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
-		
-		if (Number.isNaN(nb) || nb <= 0)
-			nb = 1
-		for (let i = 0; i < nb; ++i)
-			await this.createFakeChannel(user, allUserIdsExceptUser);
-	}
-
 	async initUser(): Promise<User> {
 		let user: User = new User();
 		let userAuth: UserAuth;
@@ -186,6 +177,20 @@ export class TestFakeService {
 		}, this.usersService.lambdaDatabaseUnvailable);
 	}
 
+	async addChats(user: User, nb: number) {
+		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
+		const chatCreated: Chat[] = new Array();
+		
+		if (Number.isNaN(nb) || nb <= 0)
+			nb = 1
+		for (let i = 0; i < nb; ++i) {
+			const ch: Chat = await this.createFakeChannel(user, allUserIdsExceptUser);
+			if (ch)
+				chatCreated.push(ch);
+		}
+		return { statusCode: 200, message: `${chatCreated.length} chats created.` };
+	}
+
 	private async createFakeChannel(user: User, usersIds: number[]): Promise<Chat> {
 		const type: ChatStatus = randomEnum(ChatStatus);
 		let chat: ChannelPublic | ChannelProtected | Discussion;
@@ -227,7 +232,13 @@ export class TestFakeService {
 					type: type,
 					users_ids: [randomElement(usersIds), user.id]
 				}
-				chat = await this.chatService.addDiscussion(chat as Discussion);
+				try {
+					chat = await this.chatService.addDiscussion(chat as Discussion);
+				} catch (err) {
+					if (!(err instanceof NotAcceptableException))
+						throw err;
+					return null;
+				}
 				break;
 		}
 		this.sendFakeMsg(chat);
