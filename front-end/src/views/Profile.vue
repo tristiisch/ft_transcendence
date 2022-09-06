@@ -85,6 +85,11 @@ onBeforeMount(() => {
 	else user.value = globalStore.getUser(userId.value)
 	if (!user.value) router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: 404 }});
 	else fetchAll()
+	if (route.query.notification)
+	{
+		partToDisplay.value = 'Notifications'
+		rightCardTitle.value = 'NOTIFICTIONS'
+	}
 });
 </script>
 
