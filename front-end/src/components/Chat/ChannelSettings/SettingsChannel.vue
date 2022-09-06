@@ -47,7 +47,7 @@ function isAdmin() {
 }
 
 function setColSpan() {
-	if ((!isOwner() && isAdmin()) || (!isOwner() && !isAdmin()))
+	if ((isOwner() && chatStore.inChannel?.type !== ChatStatus.PRIVATE) || (!isOwner() && !isAdmin()) || (!isOwner() && isAdmin() && (chatStore.inChannel?.type === ChatStatus.PRIVATE)))
 		return 'col-span-2'
 	return 'col-span-auto'
 }
@@ -123,7 +123,7 @@ function leaveChannel() {
 				<button v-if="isAdmin()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Ban
 				</button>
-				<button v-if="isAdmin()" @click="displayInvitePage = !displayInvitePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+				<button v-if="isAdmin() && chatStore.inChannel?.type === ChatStatus.PRIVATE" @click="displayInvitePage = !displayInvitePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Invite
 				</button>
 				<button :class="setColSpan()" @click="leaveChannel()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">LEAVE</button>

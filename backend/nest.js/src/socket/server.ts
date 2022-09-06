@@ -77,7 +77,8 @@ interface ServerToClientEvents {
 	chatDiscussionCreate: (discussion: Discussion) => void;
 	chatChannelCreate: (creator: User, channel: Channel) => void;
 	chatChannelDelete: (channel: Channel) => void;
-	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
+	chatChannelJoin: (channel: Channel, joinedUser: User) => void;
+	chatChannelInvitation: (channel: Channel, invitedUsers: User[], inviter: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
 	chatChannelBan: (channel: Channel, newBanList:{ newList: User[], userWhoSelect: User}) => void;
 	chatChannelAdmin:(channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => void;
@@ -97,7 +98,8 @@ interface ClientToServerEvents {
 	chatDiscussionCreate: (user: User, discussion: Discussion) => void;
 	chatChannelCreate: (creator: User, channel: Channel) => void;
 	chatChannelDelete: (channel: Channel) => void;
-	chatChannelJoin: (chanelName: string, joinedUser: User) => void;
+	chatChannelJoin: (chanel: Channel, joinedUser: User) => void;
+	chatChannelInvitation: (channel: Channel, invitedUsers: User[], inviter: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
 	chatChannelBan: (channel: Channel, newBanList:{ newList: User[], userWhoSelect: User}) => void;
 	chatChannelAdmin:(channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => void;
@@ -258,16 +260,20 @@ export async function createSocketServer(serverPort: number) {
 			
 			//socket.to(channel.name).emit("chatChannelCreate", (channel));   socket id not added to join => so for test i use broadcast
 			socket.broadcast.emit("chatChannelCreate", creator, channel)  //to delete when join you have implemented join
-			});
+		});
+
+		socket.on("chatChannelInvitation", (channel, invitedUsers, inviter) => {
+			socket.broadcast.emit("chatChannelInvitation", channel, invitedUsers, inviter); //need to join esach invited user to room then emit to room
+		});
 
 		socket.on("chatChannelDelete", (channel) => {
 			//socket.to(channel.name).emit("chatChannelDelete", (channel)); // need room implementation, no broadcast
 			socket.broadcast.emit("chatChannelDelete", (channel));
 		});
 
-		socket.on("chatChannelJoin", (channelName, joinedUser) => {
+		socket.on("chatChannelJoin", (channel, joinedUser) => {
 			// socket.join(channelName)       										// need room implementation, no broadcast
-			socket.broadcast.emit("chatChannelJoin", channelName, joinedUser);
+			socket.broadcast.emit("chatChannelJoin", channel, joinedUser);
 		});
 
 		socket.on("chatChannelLeave", (channel, user) => {
@@ -314,6 +320,5 @@ export async function createSocketServer(serverPort: number) {
 	});
 
 	io.listen(serverPort);
-	console.log('[SOCKET.IO]', 'SERVER', "Server socket.io is started !")
-
+	console.log('[SOCKET.IO]', 'SERVER', "Server socket.io is started !");
 }
