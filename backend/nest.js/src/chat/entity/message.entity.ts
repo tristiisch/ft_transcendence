@@ -5,8 +5,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 export class Message {
 
 	@PrimaryGeneratedColumn()
-	@IsInt()
-	id: number;
+	id?: number;
 
 	@Column()
 	id_sender: number;
@@ -15,10 +14,21 @@ export class Message {
 	id_channel: number;
 
 	@Column({ type: 'timestamptz', precision: null, default: () => 'CURRENT_TIMESTAMP' })
-	date: Date;
+	date?: Date;
 
 	@Column()
 	message: string;
+
+	public toFront?(): MessageFront {
+		const msgFront: MessageFront = {
+			idMessage: this.id,
+			idChat: this.id_channel,
+			idSender: this.id_sender,
+			message: this.message,
+			date: this.date.toLocaleTimeString(),
+		}
+		return msgFront;
+	}
 }
 
 export class MessageFront {

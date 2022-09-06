@@ -38,8 +38,13 @@ export function isNumberPositive(nb: number, actionMsg: string): boolean {
 /**
  * Get a random number
  */
-export function random(startNumber: number, nbPosibility: number) : number {
+export function randomNumber(startNumber: number, nbPosibility: number) : number {
 	return Math.floor(Math.random() * nbPosibility) + startNumber;
+}
+
+export function randomWord(length: number) {
+	const dico: string = "abcdefghijklmnopqrstuvwxyz0123456789";
+	return Array(length).join().split(',').map(function() { return dico.charAt(Math.floor(Math.random() * dico.length)); }).join('');
 }
 
 /**

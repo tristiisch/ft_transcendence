@@ -205,4 +205,12 @@ export class UsersService {
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
 	}
+
+	async arrayIdsToUsers(array: number[]): Promise<User[]> {
+		const users: User[] = new Array();
+		for (const [index, id] of array.entries()) {
+			users.push(await this.findOne(id));
+		}
+		return users;
+	}
 }

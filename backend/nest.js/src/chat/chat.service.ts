@@ -1,13 +1,16 @@
 /** @prettier */
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { Inject, Injectable, NotAcceptableException, NotImplementedException, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
-import { Repository } from 'typeorm';
-import { Channel, ChannelFront } from './entity/channel.entity';
-import { Chat, ChatStatus } from './entity/chat.entity';
+import { ArrayContains, Repository } from 'typeorm';
+import { Channel, ChannelFront, ChannelProtected, ChannelPublic } from './entity/channel.entity';
+import { Chat } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
-import { DiscussionFront } from './entity/discussion.entity';
+import { Discussion, DiscussionFront } from './entity/discussion.entity';
+import { fromBase64 } from '../utils/utils';
+import { Response } from 'express';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 @Injectable()
 export class ChatService {
@@ -15,8 +18,12 @@ export class ChatService {
 	constructor(
 		@InjectRepository(Chat)
 		private chatRepo: Repository<Chat>,
-		@InjectRepository(Channel)
-		private channelRepo: Repository<Channel>,
+		@InjectRepository(ChannelPublic)
+		private channelPublicRepo: Repository<ChannelPublic>,
+		@InjectRepository(ChannelProtected)
+		private channelProtectedRepo: Repository<ChannelProtected>,
+		@InjectRepository(Discussion)
+		private discussionRepo: Repository<Discussion>,
 		@InjectRepository(Message)
 		private msgRepo: Repository<Message>
 	) {}
@@ -24,12 +31,12 @@ export class ChatService {
 	@Inject(UsersService)
 	private readonly userService: UsersService;
 
-	public getRepoChat() {
-		return this.chatRepo;
+	public getUserService() {
+		return this.userService;
 	}
 
-	public getRepoChannel() {
-		return this.channelRepo;
+	public getRepoChat() {
+		return this.chatRepo;
 	}
 
 	public getRepoMsg() {
@@ -45,61 +52,84 @@ export class ChatService {
     }
 
     async findUserChannel(user: User) : Promise<ChannelFront[]> {
-		const msg: MessageFront = new MessageFront();
-		const channels: ChannelFront[] = new Array();
-		let channel: ChannelFront = new ChannelFront();
-
-		msg.idSender = user.id;
-		msg.idMessage = 0;
-		msg.date = new Date().toLocaleTimeString();
-		msg.message = 'Hello world !';
-		msg.idChat = 0;
-	
-		channel = {
-			id: 0,
-			name: 'Exemple Fake Channel',
-			owner: user,
-			avatar: 'https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png',
-			password: undefined,
-			users: [user],
-			admins: [user],
-			muted: [],
-			banned: [],
-			type: ChatStatus.PUBLIC,
-			messages: [msg]
-		}
-		channels.push(channel);
-		return channels;
+		const publicChannels: ChannelFront[] = await this.channelPublicRepo.findBy({ users_ids: ArrayContains([user.id]) })
+			.then(async (chs: ChannelPublic[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					chsFront.push(await ch.toFront(this));
+				return chsFront;
+			}
+		);
+		const protectedChannels: ChannelFront[] = await this.channelProtectedRepo.findBy({ users_ids: ArrayContains([user.id]) })
+			.then(async (chs: ChannelProtected[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					chsFront.push(await ch.toFront(this));
+				return chsFront;
+			}
+		);
+		return publicChannels.concat(protectedChannels);
     }
 
     async findUserDiscussion(user: User) : Promise<DiscussionFront[]> {
-		const discussions: DiscussionFront[] = new Array();
-		const msg: MessageFront = new MessageFront();
-
-		msg.idSender = user.id;
-		msg.idMessage = 0;
-		msg.date = new Date().toLocaleTimeString();
-		msg.message = 'Hello world !';
-		msg.idChat = 0;
-
-		discussions.push({
-			id: 0,
-			type: ChatStatus.DISCUSSION,
-			user: user,
-			messages: [msg]
-		})
-		return discussions;
+		return new Array(); // TODO remove this line
+		return await this.discussionRepo.findBy({ users_ids: ArrayContains([user.id]) })
+			.then(async (chs: Discussion[]) => {
+				const chsFront: DiscussionFront[] = new Array();
+				for (const ch of chs)
+					chsFront.push(await ch.toFront(this.userService, user));
+				return chsFront;
+			}
+		);
     }
 
-	/**
-[Nest] 474  - 09/05/2022, 4:43:27 AM   ERROR [ExceptionsHandler] invalid input value for enum chat_type_enum: "Chat"
-QueryFailedError: invalid input value for enum chat_type_enum: "Chat"
-	 */
-	async addChat(chat: Chat) {
-		return this.chatRepo.insert(chat);
+	async fetchMessage(channelId: number) : Promise<MessageFront[]> {
+		return await this.msgRepo.findBy({ id_channel: channelId })
+			.then(async (msgs: Message[]) => {
+				const msgsFront: MessageFront[] = new Array();
+				for (const msg of msgs)
+					msgsFront.push(msg.toFront());
+				return msgsFront;
+			}
+		);
 	}
 
-	async addMessage(msg: Message) {
+	async addMessage(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]) {
 		return this.msgRepo.insert(msg);
+	}
+
+	private async findChannelAvatar(channel: Channel, @Res() res: Response) {
+		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(channel.avatar_64);
+
+		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
+		res.end(avatar.imageBuffer);
+	}
+
+	async findChannelPublicAvatar(id: number, @Res() res: Response) {
+		const channel: Channel = await this.channelPublicRepo.findOneBy({ id: id });
+		if (!channel)
+			throw new NotAcceptableException(`The public channel ${id} didn't exist.`);
+
+		return this.findChannelAvatar(channel, res);
+	}
+
+	async findChannelProtectedAvatar(id: number, @Res() res: Response) {
+		const channel: Channel = await this.channelProtectedRepo.findOneBy({ id: id });
+		if (!channel)
+			throw new NotAcceptableException(`The protected channel ${id} didn't exist.`);
+
+		return this.findChannelAvatar(channel, res);
+	}
+
+	async addChannelPublic(channel: ChannelPublic) {
+		return this.channelPublicRepo.save(channel);
+	}
+
+	async addChannelProtected(channel: ChannelPublic) {
+		return this.channelProtectedRepo.save(channel);
+	}
+
+	async addDiscussion(discu: Discussion) {
+		return this.discussionRepo.save(discu);
 	}
 }

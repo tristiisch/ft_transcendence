@@ -4,7 +4,7 @@ import { FriendsService } from '../../friends/friends.service';
 import { User } from '../../users/entity/user.entity';
 import { UsersService } from '../../users/users.service';
 import { isEquals, isNumberPositive } from '../../utils/utils';
-import { InsertResult, Repository, SelectQueryBuilder, UpdateResult } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { LeaderboardUser } from './entity/leaderboard.entity';
 import { UserStats } from './entity/userstats.entity';
 

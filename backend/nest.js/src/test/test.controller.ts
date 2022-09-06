@@ -34,6 +34,12 @@ export class TestController {
 	@Get('generateChannels/:username')
 	async createChannels(@Param('username') username: string) {
 		const target: User = await this.usersService.findOneByUsername(username);
-		return this.fakeService.addChats(target);
+		return this.fakeService.addChats(target, 1);
+	}
+
+	@Get('generateChannels/:username/:nb')
+	async createManyChannels(@Param('username') username: string, @Param('nb') nb: number) {
+		const target: User = await this.usersService.findOneByUsername(username);
+		return this.fakeService.addChats(target, nb);
 	}
 }

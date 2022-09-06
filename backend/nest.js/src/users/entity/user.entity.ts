@@ -18,7 +18,7 @@ export class User extends BaseEntity {
 	@IsNotEmpty()
 	login_42: string;
 
-	@Column({ unique: true, nullable: true, length: 32 })
+	@Column({ unique: true, nullable: true })
 	@IsNotEmpty()
 	username: string;
 

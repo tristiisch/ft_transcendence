@@ -6,10 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Chat } from './entity/chat.entity';
 import { UsersModule } from '../users/users.module';
 import { Message } from './entity/message.entity';
-import { Channel } from './entity/channel.entity';
+import { Channel, ChannelProtected, ChannelPublic } from './entity/channel.entity';
+import { Discussion } from './entity/discussion.entity';
 
 @Module({
-	imports: [UsersModule, TypeOrmModule.forFeature([Chat, Channel, Message])],
+	imports: [UsersModule, TypeOrmModule.forFeature([Chat, ChannelPublic, ChannelProtected, Discussion, Message])],
 	providers: [ChatService],
 	controllers: [ChatController],
 	exports: [ChatService],

@@ -1,13 +1,13 @@
 /** @prettier */
 import { IsInt } from 'class-validator';
-import { Column, Entity, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
+import { User } from 'users/entity/user.entity';
 import { MessageFront } from './message.entity';
 
 export enum ChatStatus {
 	PUBLIC,
 	PRIVATE,
-	PROTECTED,
-	DISCUSSION
+	PROTECTED
 }
 
 @Entity()
@@ -22,6 +22,9 @@ export class Chat {
 
 	@Column("int", { nullable: true, array: true })
 	users_ids: number[];
+	// @ManyToMany(() => User)
+	// @JoinTable()
+	// users_ids: User[];
 }
 
 export class ChatFront {

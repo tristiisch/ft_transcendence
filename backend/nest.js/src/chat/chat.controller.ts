@@ -1,8 +1,7 @@
 /** @prettier */
-import { Body, Controller, Get, Inject, NotImplementedException, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotImplementedException, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard';
 import { User } from '../users/entity/user.entity';
-import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
 import { ChannelFront } from './entity/channel.entity';
 import { DiscussionFront } from './entity/discussion.entity';
@@ -111,5 +110,15 @@ export class ChatController {
 		const users_ids: number[] = body.users;
 		console.log('kick users', users_ids, 'body', body);
 		throw new NotImplementedException('This feature is under developpement.');
+	}
+
+	@Get('avatar-public/:id')
+	channelAvatarPublic(@Res() res, @Param('id') id: number) {
+		return this.chatService.findChannelPublicAvatar(id, res);
+	}
+
+	@Get('avatar-protected/:id')
+	channelAvatarProtected(@Res() res, @Param('id') id: number) {
+		return this.chatService.findChannelProtectedAvatar(id, res);
 	}
 }

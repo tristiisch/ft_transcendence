@@ -9,12 +9,14 @@ import { StatsService } from '../game/stats/stats.service';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User, UserStatus } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { random, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64 } from '../utils/utils';
+import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from '../auth/entity/user-auth.entity';
-import { Channel } from 'chat/entity/channel.entity';
+import { Channel, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
 import { Chat, ChatStatus } from '../chat/entity/chat.entity';
 import { ChatService } from '../chat/chat.service';
+import { Discussion } from 'chat/entity/discussion.entity';
+import { Message } from 'chat/entity/message.entity';
 
 @Injectable()
 export class TestFakeService {
@@ -83,11 +85,13 @@ export class TestFakeService {
 		return { statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` };
 	}
 
-	async addChats(user: User) {
+	async addChats(user: User, nb: number) {
 		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
-
-
-		return await this.createFakeChannel(user, allUserIdsExceptUser);
+		
+		if (Number.isNaN(nb) || nb <= 0)
+			nb = 1
+		for (let i = 0; i < nb; ++i)
+			await this.createFakeChannel(user, allUserIdsExceptUser);
 	}
 
 	async initUser(): Promise<User> {
@@ -95,8 +99,8 @@ export class TestFakeService {
 		let userAuth: UserAuth;
 		let userStats: UserStats;
 	
-		user.username = Math.random().toString(36).substring(2, 9);
-		user.login_42 = Math.random().toString(36).substring(2, 9);
+		user.username = randomWord(randomNumber(7, 32));
+		user.login_42 = randomWord(32);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
 	
@@ -119,7 +123,7 @@ export class TestFakeService {
 		const targetId: number = randomElement(userIds);
 		const matchHistory: MatchStats = new MatchStats();
 
-		if (random(0, 2) === 1) {
+		if (randomNumber(0, 2) === 1) {
 			matchHistory.user2_id = user.id;
 			matchHistory.user1_id = targetId;
 		} else {
@@ -127,16 +131,16 @@ export class TestFakeService {
 			matchHistory.user2_id = targetId;
 		}
 
-		if (random(0, 4) >= 1) {
+		if (randomNumber(0, 4) >= 1) {
 			const scoreWinner: number = this.randomMaxScoreGame;
-			const scoreLoser: number = random(0, this.randomMaxScoreGame);
-			if (random(0, 2) === 1) {
+			const scoreLoser: number = randomNumber(0, this.randomMaxScoreGame);
+			if (randomNumber(0, 2) === 1) {
 				matchHistory.score = [scoreWinner, scoreLoser];
 			} else {
 				matchHistory.score = [scoreLoser, scoreWinner];
 			}
 			matchHistory.timestamp_ended = new Date();
-			matchHistory.timestamp_ended.setMinutes(matchHistory.timestamp_ended.getMinutes() + random(5, 60));
+			matchHistory.timestamp_ended.setMinutes(matchHistory.timestamp_ended.getMinutes() + randomNumber(5, 60));
 
 			if (matchHistory.getWinner() === user.id) {
 				await this.statsService.addVictory(user.id)
@@ -148,8 +152,8 @@ export class TestFakeService {
 				throw new NotAcceptableException(`They is no winner in the match ${JSON.stringify(matchHistory)}.`);
 			}
 		} else {
-			const scoreUser1: number = random(0, this.randomMaxScoreGame);;
-			const scoreUser2: number = random(0, this.randomMaxScoreGame);
+			const scoreUser1: number = randomNumber(0, this.randomMaxScoreGame);;
+			const scoreUser2: number = randomNumber(0, this.randomMaxScoreGame);
 			matchHistory.score = [scoreUser1, scoreUser2];
 		}
 		return await this.matchHistoryService.add(matchHistory);
@@ -182,27 +186,67 @@ export class TestFakeService {
 		}, this.usersService.lambdaDatabaseUnvailable);
 	}
 
-	private async createFakeChannel(user: User, userIds: number[]): Promise<any> {
-		const channel: Channel = {
-			name: 'random',
-			owner_id: user.id,
-			avatar_64: await toBase64('https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png'),
-			password: null,
-			admins_ids: [user.id],
-			muted_ids: [],
-			banned_ids: [],
-			type: ChatStatus.PUBLIC,
-			users_ids: [...randomElements(userIds, random(1, 20)), user.id]
+	private async createFakeChannel(user: User, usersIds: number[]): Promise<Chat> {
+		const type: ChatStatus = randomEnum(ChatStatus);
+		let chat: ChannelPublic | ChannelProtected | Discussion;
+
+		switch (type) {
+			case ChatStatus.PUBLIC:
+				chat = {
+					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+					owner_id: user.id,
+					avatar_64: await toBase64('https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png'),
+					password: null,
+					admins_ids: [user.id],
+					muted_ids: [],
+					banned_ids: [],
+					type: type,
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
+				}
+				chat = await this.chatService.addChannelPublic(chat as ChannelPublic);
+				break;
+
+			case ChatStatus.PROTECTED:
+				chat = {
+					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+					owner_id: user.id,
+					avatar_64: await toBase64('https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png'),
+					password: 'bob',
+					admins_ids: [user.id],
+					muted_ids: [],
+					banned_ids: [],
+					type: type,
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
+				}
+				chat = await this.chatService.addChannelProtected(chat as ChannelProtected);
+				break;
+			case ChatStatus.PRIVATE:
+				if (usersIds.length === 0)
+					return null;
+				chat = {
+					type: type,
+					users_ids: [randomElement(usersIds), user.id]
+				}
+				chat = await this.chatService.addDiscussion(chat as Discussion);
+				break;
 		}
-		return await this.chatService.addChat(channel);
+		this.sendFakeMsg(chat);
+		return chat;
 	}
 
-	private async createFakeDiscussion(user: User, userIds: number[]): Promise<any> {
-		const discussion: Chat = {
-			type: ChatStatus.DISCUSSION,
-			users_ids: [randomElement(userIds), user.id]
+	private async sendFakeMsg(chat: Chat) {
+		if (chat.id == null || chat.id <= 0)
+			throw new NotAcceptableException(`Chat id ${chat.id} is not acceptable.`);
+
+		const msgs: Message[] = new Array();
+		for (let userId of chat.users_ids) {
+			const msg: Message = {
+				id_sender: userId,
+				id_channel: chat.id,
+				message: 'Hello world !'
+			};
+			msgs.push(msg);
 		}
-		console.log('Discussion', discussion)
-		return await this.chatService.addChat(discussion);
+		this.chatService.addMessage(msgs);
 	}
 }
