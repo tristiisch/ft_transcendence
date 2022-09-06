@@ -193,11 +193,15 @@ export class UsersService {
 
 	async findAvatar(selectUser: UserSelectDTO, @Res() res: Response) {
 		let target: User;
-		if (selectUser.id != null)
+		if (selectUser.id != null) {
 			target = await this.usersRepository.findOneBy({ id: selectUser.id });
-		else if (selectUser.username != null)
+			if (!target)
+				throw new NotFoundException(`The user '${selectUser.id}' didn't exist.`)
+		} else if (selectUser.username != null) {
 			target = await this.usersRepository.findOneBy({ username: selectUser.username });
-		else
+			if (!target)
+				throw new NotFoundException(`The user '${selectUser.username}' didn't exist.`)
+		} else
 			throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
 
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);

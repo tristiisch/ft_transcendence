@@ -200,7 +200,7 @@ export class TestFakeService {
 				chat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
-					avatar_64: await toBase64('https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png'),
+					avatar_64: await toBase64('https://api.lorem.space/image/movie?w=256&h=256'),
 					password: null,
 					admins_ids: [user.id],
 					muted_ids: [],
@@ -215,7 +215,7 @@ export class TestFakeService {
 				chat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
-					avatar_64: await toBase64('https://s2.coinmarketcap.com/static/img/coins/64x64/8537.png'),
+					avatar_64: await toBase64('https://api.lorem.space/image/movie?w=256&h=256'),
 					password: 'bob',
 					admins_ids: [user.id],
 					muted_ids: [],

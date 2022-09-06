@@ -31,6 +31,12 @@ export class TestController {
 		return { statusCode: 200, message: 'All tables has been cleared.' };
 	}
 
+	@Get('clear-chat')
+	clearChat() {
+		this.dbService.clearChat();
+		return { statusCode: 200, message: 'All chat has been cleared.' };
+	}
+
 	@Get('generateChannels/:username')
 	async createChannels(@Param('username') username: string) {
 		const target: User = await this.usersService.findOneByUsername(username);

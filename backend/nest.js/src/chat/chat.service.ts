@@ -143,7 +143,7 @@ export class ChatService {
 
 	async addDiscussion(newDiscu: Discussion) {
 		const discu: Discussion = await this.discussionRepo.findOneBy({ users_ids: ArrayContains(newDiscu.users_ids) })
-		if (!discu)
+		if (discu)
 			throw new NotAcceptableException(`They is already a discussion between ${newDiscu.users_ids[0]} and ${newDiscu.users_ids[1]}.`);
 		return this.discussionRepo.save(newDiscu);
 	}
