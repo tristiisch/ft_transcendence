@@ -16,5 +16,5 @@ export default interface Channel extends Chat {
 	admins: User[],
 	owner: User,
 	muted: User[],
-	banned: User[]
+	banned: User[],
 }

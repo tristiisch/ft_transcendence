@@ -23,6 +23,13 @@ function isUserMessage(idSender: number) {
 	return true;
 }
 
+function sizeText(idSender: number) {
+	if (isUserMessage(idSender))
+		return 'text-sm'
+	else 
+		return 'text-xs mb-2'
+}
+
 onUpdated(()=> {
     emit('scroll')
 });
@@ -33,11 +40,10 @@ function chooseArray() {
 	else if (chatStore.inDiscussion)
 		return chatStore.inDiscussion.messages;
 };
-
 </script>
 
 <template>
-    <div v-for="message in chooseArray()" :key="message.date" class="flex gap-2 w-full mt-3 mb-1.5 pl-8">
+    <div v-for="message in chooseArray()" :key="message.date" class="flex gap-2 w-full mb-4 pl-8">
 		<BaseButton v-if="isUserMessage(message.idSender)" link :to="redirectTo(message.idSender)" class="shrink-0">
 			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="globalStore.getUserAvatar(message.idSender)">
 		</BaseButton>
@@ -46,7 +52,7 @@ function chooseArray() {
 				<p class="text-sm ">{{ globalStore.getUserName(message.idSender) }}</p>
 				<p class="text-xs">{{ message.date }}</p>
 			</div> 
-			<div v-if="message.type !== 'game'" class="text-sm min-w-0 text-red-200 break-words">{{ message.message,  message.read = true }}</div>
+			<div v-if="message.type !== 'game'" :class="sizeText(message.idSender)" class="min-w-0 text-red-200 break-words">{{ message.message,  message.read = true }}</div>
 			<div v-else class="bg-red-600 w-full h-[20px]">{{ message.message, message.read = true}} </div>
 		</div>
     </div>

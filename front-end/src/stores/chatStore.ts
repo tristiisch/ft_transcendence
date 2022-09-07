@@ -11,7 +11,6 @@ import type Discussion from '@/types/Discussion';
 import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
-import ChannelsListVue from '@/components/Chat/ChannelsList.vue';
 
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
@@ -51,7 +50,7 @@ export const useChatStore = defineStore('chatStore', {
 			return  (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
 		},
 	},
-	actions: {
+	actions: {    
 		async fetchAll() {
 			try {
 				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
@@ -252,16 +251,16 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		updateBanList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
-				newBanList: {newList: User[], userWhoSelect: User }) {
+				newBanned: {list: User[], userWhoSelect: User }) {
 			if (selection) {
-				this.addAutomaticMessage(channel, selection, '->got unBanned by ' + newBanList.userWhoSelect.username,
-					'-> got Banned by ' + newBanList.userWhoSelect.username)
-				socket.emit('chatChannelBan', channel, newBanList);
+				this.addAutomaticMessage(channel, selection, '->got unBanned by ' + newBanned.userWhoSelect.username,
+					'-> got Banned by ' + newBanned.userWhoSelect.username)
+				socket.emit('chatChannelBan', channel, newBanned);
 			}
 			
 			/////////////////////////////////////////////////////////////////// best to do in back
 			if (this.inChannel && this.inChannel.name === channel.name) {
-				this.inChannel.banned = newBanList.newList
+				this.inChannel.banned = newBanned.list
 				for (const banned of channel.banned)
 					this.deleteUserFromChannel(this.inChannel, banned);
 				if (selection && selection.listed)
@@ -269,7 +268,7 @@ export const useChatStore = defineStore('chatStore', {
 			}
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].banned = newBanList.newList;
+				this.userChannels[index].banned = newBanned.list;
 				for (const banned of channel.banned)
 					this.deleteUserFromChannel(this.userChannels[index], banned);
 				if (selection && selection.listed)
@@ -277,43 +276,63 @@ export const useChatStore = defineStore('chatStore', {
 			}
 			///////////////////////////////////////////////////////////////////
 			const userStore = useUserStore();
-			const indexUser = newBanList.newList.findIndex(user => user.id === userStore.userData.id)
+			const indexUser = newBanned.list.findIndex(user => user.id === userStore.userData.id)
 			if (indexUser >= 0) {
 				const toast = useToast();
 				if (this.inChannel && this.inChannel.name === channel.name) this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
-				toast.info('you have been banned from channel ' + channel.name + " by " + newBanList.userWhoSelect.username);
+				toast.info('you have been banned from channel ' + channel.name + " by " + newBanned.userWhoSelect.username);
 			}
 		},
 		updateMuteList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
-				newMutedList: {newList: User[], userWhoSelect: User }) {
+				newMuted: {list: User[], userWhoSelect: User }) {
 			if (selection) {
-				this.addAutomaticMessage(channel, selection, '->got unMuted by ' + newMutedList.userWhoSelect.username,
-					'-> got Muted by ' + newMutedList.userWhoSelect.username);
-				socket.emit('chatChannelMute', channel, newMutedList);
+				this.addAutomaticMessage(channel, selection, '->got unMuted by ' + newMuted.userWhoSelect.username,
+					'-> got Muted by ' + newMuted.userWhoSelect.username);
+				socket.emit('chatChannelMute', channel, newMuted);
 			}
 			if (this.inChannel && this.inChannel.name === channel.name)
-				this.inChannel.muted = newMutedList.newList
+				this.inChannel.muted = newMuted.list
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].muted = newMutedList.newList;
+				this.userChannels[index].muted = newMuted.list;
 			}
 		},
 		updateAdminList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
-				newAdminList: {newList: User[], userWhoSelect: User }) {
+				newAdmin: {list: User[], userWhoSelect: User }) {
 			if (selection) {
-				this.addAutomaticMessage(channel, selection, '->loose Admin status by ' + newAdminList.userWhoSelect.username,
-					'-> got Admin status by ' + newAdminList.userWhoSelect.username);
-				socket.emit('chatChannelAdmin', channel, newAdminList);
+				this.addAutomaticMessage(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
+					'-> got Admin status by ' + newAdmin.userWhoSelect.username);
+				socket.emit('chatChannelAdmin', channel, newAdmin);
 			}
 			if (this.inChannel && this.inChannel.name === channel.name)
-				this.inChannel.admins = newAdminList.newList;
+				this.inChannel.admins = newAdmin.list;
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].admins = newAdminList.newList;
+				this.userChannels[index].admins = newAdmin.list;
 			}
 			
+		},
+		KickUsers(channel: Channel, newKicked: {list: User[], userWhoSelect: User }) {
+			const userStore = useUserStore();
+			if (newKicked.userWhoSelect.id === userStore.userData.id && this.inChannel) {
+				socket.emit('chatChannelKick', channel, newKicked);
+				this.addAutomaticMessage(channel, { unlisted: [], listed: newKicked.list }, '',
+					'-> ' + ' kicked by ' + newKicked.userWhoSelect.username);
+			for (const user of newKicked.list)
+				this.deleteUserFromChannel(this.inChannel, user);
+			}
+			else {
+				if (this.inChannel && this.inChannel.name === channel.name)
+					this.inChannel = null;
+				const index = this.getIndexUserChannels(channel.name);
+				if (index >= 0) {
+					this.deleteUserChannel(index);
+					const toast = useToast();
+					toast.info('you have been kicked from ' + channel.name + " by " + newKicked.userWhoSelect.username);	
+				}
+			}
 		},
 		setChannelOwner(channel: Channel, selection: User[]) {
 			////////////////////////////////////////////////////////////////////////////// best to do in back
@@ -423,7 +442,7 @@ export const useChatStore = defineStore('chatStore', {
 				this.inChannel.messages.push(data)
 			else {
 				const index = this.getIndexUserChannels(channel.name);
-				this.userChannels[index].messages.push(data);
+				if (index >= 0) this.userChannels[index].messages.push(data);
 			}
 		},
 		nbUnreadMessageInDiscussion(discussion: Discussion) {

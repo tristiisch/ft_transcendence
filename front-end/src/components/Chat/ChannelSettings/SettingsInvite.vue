@@ -9,13 +9,14 @@ const globalStore = useGlobalStore();
 
 const emit = defineEmits<{ 
     (e: 'close'): void
+    (e: 'validate'): void
 }>()
 
 function invitePlayer() {
     if (chatStore.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems))
         chatStore.inviteUserToPrivateChannel(chatStore.inChannel, globalStore.selectedItems);
     globalStore.resetSelectedItems();
-    emit('close')
+    emit('validate');
 }
 </script>
 
