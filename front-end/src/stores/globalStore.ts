@@ -120,11 +120,14 @@ export const useGlobalStore = defineStore('globalStore', {
 		addUser(user: User) {
 			this.users.push(user);
 		},
-		addFriend(friend: User) {
-			this.friends.push(friend);
+		addFriend(friendId: number) {
+			this.removePendingFriend(friendId)
+			const friend = this.getUser(friendId)
+			if (friend) this.friends.push(friend);
 		},
-		addPendingFriend(pendingFriend: User) {
-			this.friends.push(pendingFriend);
+		addPendingFriend(pendingFriendId: number) {
+			const pendingFriend = this.getUser(pendingFriendId)
+			if (pendingFriend) this.pendingFriends.push(pendingFriend);
 		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
@@ -134,16 +137,17 @@ export const useGlobalStore = defineStore('globalStore', {
 			this.users.splice(index, 1);
 		},
 		removeFriend(friendToRemoveId: number) {
+			this.removePendingFriend(friendToRemoveId)
 			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
 			this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
 			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
-			this.friends.splice(index, 1);
+			this.pendingFriends.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
-			this.friends.splice(index, 1);
+			this.notifications.splice(index, 1);
 		},
 		updateUser(userToChange: User) {
 			const index = this.users.findIndex(user => user.id === userToChange.id);

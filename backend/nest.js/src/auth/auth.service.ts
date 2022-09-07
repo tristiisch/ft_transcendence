@@ -163,7 +163,6 @@ export class AuthService {
 		const payload = this.jwtService.verify(token, {
 			secret: process.env.JWT_SECRET
 		});
-		console.log(payload)
 		if (payload.id) {
 		  return this.usersService.findOne(payload.id);
 		}

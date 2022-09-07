@@ -8,6 +8,7 @@ import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { Brackets, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { Friendship, FriendshipStatus } from './entity/friendship.entity';
+import { SocketService } from '../socket/socket.service';
 
 @Injectable()
 export class FriendsService {
@@ -20,6 +21,8 @@ export class FriendsService {
 	private readonly userService: UsersService;
 	@Inject(NotificationService)
 	private readonly notifService: NotificationService;
+	@Inject(SocketService)
+	private readonly socketService: SocketService;
 
 	public getRepo() {
 		return this.friendsRepository;
@@ -61,6 +64,7 @@ export class FriendsService {
 			notif.is_deleted = false;
 			notif.type = NotificationType.FRIEND_REQUEST
 			await this.notifService.addNotif(notif);
+			this.socketService.FriendRequest(user.id, target.id, notif);
 			return { statusCode: 200, message: `You asked as a friend ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
@@ -86,6 +90,8 @@ export class FriendsService {
 
 		friendship.status = FriendshipStatus.ACCEPTED;
 
+		this.socketService.AddFriend(user.id, target.id);
+
 		return await this.friendsRepository.save(friendship).then((fs: Friendship) => {
 			return { statusCode: 200, message: `You are now friend with ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -109,6 +115,8 @@ export class FriendsService {
 		if (friendship === null) {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
+
+		this.socketService.RemoveFriend(user.id, target.id);
 
 		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) throw new InternalServerErrorException(`Can't remove friendship of ${friendship.user1_id} and ${friendship.user2_id}.`);

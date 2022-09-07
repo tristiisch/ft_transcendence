@@ -47,7 +47,6 @@ function setPartToDisplay(displayPart: string) {
 function fetchAll() {
 	Promise.all([UsersService.getMatchsHistory(userId.value), UsersService.getStats(userId.value)])
 	.then((result) => {
-		console.log(result)
 		matchsHistory.value = result[0].data
 		userStats.value = result[1].data
 		isLoading.value = false

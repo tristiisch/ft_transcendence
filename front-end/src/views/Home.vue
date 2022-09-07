@@ -3,6 +3,7 @@ import { ref, onUnmounted, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 import socket from '@/plugin/socketInstance';
 import type Notification from '@/types/Notification';
 import type User from '@/types/User';
@@ -14,6 +15,7 @@ const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 function tvSize() {
 	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.6_*_100vw)]';
@@ -69,20 +71,26 @@ onBeforeMount(() => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 			});
 
-		socket.on('updateUser', (user: User) => {
-			globalStore.updateUser(user);
+		socket.on('AddUser', (user: User) => {
+			globalStore.addUser(user);
 		});
 
-		socket.on('AddFriend', (friend: User) => {
-			globalStore.addFriend(friend);
-		});
-
-		socket.on('AddNotification', (notification: Notification) => {
+		socket.on('FriendRequest', (senderId: number, notification: Notification) => {
 			globalStore.addNotification(notification);
+			globalStore.addPendingFriend(senderId)
+			toast.info(notification.message)
 		});
 
-		socket.on('AddPendingFriend', (pendingFriend: User) => {
-			globalStore.addPendingFriend(pendingFriend);
+		socket.on('AddFriend', (targetId: number) => {
+			//globalStore.addNotification(notification);
+			globalStore.addFriend(targetId)
+			//toast.info(notification.message)
+		});
+
+		socket.on('RemoveFriend', (targetId: number) => {
+			//globalStore.addNotification(notification);
+			globalStore.removeFriend(targetId)
+			//toast.info(notification.message)
 		});
 
 		socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));

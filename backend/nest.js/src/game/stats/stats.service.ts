@@ -1,4 +1,4 @@
-import { Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from '../../friends/friends.service';
 import { User } from '../../users/entity/user.entity';
@@ -22,7 +22,7 @@ export class StatsService {
 
     @Inject(UsersService)
     private readonly userService: UsersService;
-    @Inject(FriendsService)
+    @Inject(forwardRef(() => FriendsService))
     private readonly friendsService: FriendsService;
 
 	/**
@@ -136,7 +136,7 @@ export class StatsService {
 	async getRank(user: User): Promise<number> {
 		const rank = await this.statsRepository.query(`SELECT position FROM (SELECT *, row_number() over (order by score DESC) ` +
 			`as position from public.user_stats) result where user_id = ${user.id};`);
-		if (rank == null || rank.length != 1) 
+		if (rank == null || rank.length != 1)
 			return -1;
 		return parseInt(rank[0].position);
 	}

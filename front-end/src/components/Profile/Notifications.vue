@@ -19,11 +19,14 @@ const size = computed(() => {
 
 function acceptInvitation(notification: Notification) {
 	console.log('accept');
-	if (notification.type === NotificationType.FRIEND_REQUEST)
+	console.log(notification.type)
+	if (notification.type == NotificationType.FRIEND_REQUEST)
 	{
 		UsersService.notificationAction(notification.id, true)
-		.then(() => {
+		.then((response) => {
 			globalStore.removeNotification(notification.id)
+			globalStore.addFriend(notification.from_user_id)
+			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
@@ -33,11 +36,13 @@ function acceptInvitation(notification: Notification) {
 
 function declineInvitation(notification: Notification) {
 	console.log('decline');
-	if (notification.type === NotificationType.FRIEND_REQUEST)
+	if (notification.type == NotificationType.FRIEND_REQUEST)
 	{
 		UsersService.notificationAction(notification.id, false)
-		.then(() => {
+		.then((response) => {
 			globalStore.removeNotification(notification.id)
+			globalStore.removePendingFriend(notification.from_user_id)
+			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});

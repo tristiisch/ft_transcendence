@@ -3,6 +3,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
 import { computed, ref, onMounted, onUnmounted, onBeforeUpdate } from 'vue';
+import { useToast } from 'vue-toastification';
 import type Leaderboard from '@/types/Leaderboard';
 import Status from '@/types/Status';
 import PlayerStatus from '@/components/Divers/PlayerStatus.vue';
@@ -17,7 +18,7 @@ const sizeAvatar = ref<HTMLInputElement | null>(null);
 const avatarWidth = ref(sizeAvatar.value?.width.toString() as string);
 const windowHeight = ref(window.innerHeight);
 const props = defineProps<{ user?: Leaderboard }>();
-const pending = ref<User>()
+const toast = useToast();
 
 const userStatus = computed(() => {
 	if (props.user?.status === Status.INGAME) return 'Ingame';
@@ -51,11 +52,9 @@ function friendRequest() {
 	{
 		if (!globalStore.isFriend(props.user?.id)) {
 		UsersService.sendFriendRequest(props.user?.id)
-			.then(() => {
-				/*UsersService.getPendingFriends().then((response) => {
-					pending.value = response.data
-					console.log(pending.value)
-				}*/
+			.then((response) => {
+				if (response.data) toast.info(response.data.message)
+				if (props.user) globalStore.addPendingFriend(props.user.id)
 			})
 			.catch((error) => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
