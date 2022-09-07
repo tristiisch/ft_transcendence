@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, onUpdated, ref } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
-import { useUserStore } from '@/stores/userStore';
-import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import UsersChannelsNameImage from '@/components/Chat/UsersChannelNameImages.vue';
 import message from '@/components/Chat/ChatMessage.vue';
 
 const chatStore = useChatStore();
-const userStore = useUserStore();
 const scroll = ref<HTMLInputElement | null>(null);
 const newMessage = ref('');
 
@@ -27,6 +24,10 @@ function sendMessage() {
 	newMessage.value = ''
 	scrollToEnd()
 }
+
+onMounted(() => {
+    scrollToEnd()
+});
 </script>
 
 <template>

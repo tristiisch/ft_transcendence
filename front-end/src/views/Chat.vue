@@ -69,16 +69,20 @@ socket.on("chatChannelLeave", (channel: Channel, user: User) => {
 	chatStore.leaveChannel(channel, user);
 });
 
-socket.on("chatChannelBan", (channel: Channel, newBanList: { newList: User[], userWhoSelect: User}) => {
-	chatStore.updateBanList(channel, null, newBanList)
+socket.on("chatChannelBan", (channel: Channel, newBanned: { list: User[], userWhoSelect: User}) => {
+	chatStore.updateBanList(channel, null, newBanned)
 });
 
-socket.on("chatChannelAdmin", (channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => {
-	chatStore.updateAdminList(channel, null, newAdminList)
+socket.on("chatChannelAdmin", (channel: Channel, newAdmin: { list: User[], userWhoSelect: User}) => {
+	chatStore.updateAdminList(channel, null, newAdmin)
 });
 
-socket.on("chatChannelMute", (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User}) => {
-	chatStore.updateMuteList(channel, null, newMuteList)
+socket.on("chatChannelMute", (channel: Channel, newMuted: { list: User[], userWhoSelect: User}) => {
+	chatStore.updateMuteList(channel, null, newMuted)
+});
+
+socket.on("chatChannelKick", (channel: Channel, newKicked: { list: User[], userWhoSelect: User}) => {
+	chatStore.KickUsers(channel, newKicked)
 });
 
 socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
