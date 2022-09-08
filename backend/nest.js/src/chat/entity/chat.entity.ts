@@ -30,7 +30,7 @@ export class Chat {
 	// @JoinTable()
 	// users_ids: User[];
 
-	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront | DiscussionFront> { return null }
+	//public async toFront?(chatService: ChatService, user: User | null, usersCached: User[] | null): Promise<ChannelFront | DiscussionFront> { return null }
 }
 
 export class ChatFront {

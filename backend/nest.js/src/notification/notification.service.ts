@@ -31,9 +31,10 @@ export class NotificationService {
 		sqlStatement.orderBy('notif.id', 'DESC', 'NULLS LAST');
 		return await sqlStatement.getMany().then(async (notifs: Notification[]) => {
 			const allNotifsFront: NotificationFront[] = new Array();
+			const userCaches: User[] = new Array();
 			for (let notif of notifs) {
 				const notifFront: NotificationFront = new NotificationFront();
-				const target: User = await this.userService.findOne(notif.from_user_id);
+				const target: User = await this.userService.findOneWithCache(notif.from_user_id, userCaches);
 				notifFront.id = notif.id;
 				notifFront.from_user_id = notif.from_user_id;
 				if (notif.type === NotificationType.FRIEND_REQUEST) {

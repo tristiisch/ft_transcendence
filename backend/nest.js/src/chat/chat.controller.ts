@@ -102,6 +102,11 @@ export class ChatController {
 		return this.chatService.findChannelProtectedAvatar(id, res);
 	}
 
+	@Get('avatar-private/:id')
+	channelAvatarPrivate(@Res() res, @Param('id') id: number) {
+		return this.chatService.findChannelPrivateAvatar(id, res);
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Post('fetch-messsages')
 	fetchMessages(@Req() req, @Body() channelDTO: ChannelFetchDTO) : Promise<MessageFront[]>  {
@@ -115,6 +120,6 @@ export class ChatController {
 	async fetchChat(@Req() req, @Body() channelDTO: ChannelFetchDTO) : Promise<ChannelFront | DiscussionFront>  {
 		const user: User = req.user;
 		const chat = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
-		return chat.toFront(this.chatService, user);
+		return chat.toFront(this.chatService, user, null);
 	}
 }

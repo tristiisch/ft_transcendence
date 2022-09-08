@@ -11,7 +11,8 @@ import { Discussion, DiscussionFront } from './entity/discussion.entity';
 import { fromBase64 } from '../utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { ChannelFetchDTO } from './entity/channel-dto';
+import { ChannelCreateDTO, ChannelFetchDTO } from './entity/channel-dto';
+import { hashPassword } from '../utils/bcrypt';
 
 @Injectable()
 export class ChatService {
@@ -47,11 +48,12 @@ export class ChatService {
 	}
 
     async findAllChannels() : Promise<ChatFront[]> {
+		const userCached: User[] = new Array();
 		const publicChannels: ChannelFront[] = await this.channelPublicRepo.find()
 			.then(async (chs: ChannelPublic[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this, null));
+					chsFront.push(await ch.toFront(this, null, userCached));
 				return chsFront;
 			}
 		);
@@ -59,7 +61,7 @@ export class ChatService {
 			.then(async (chs: ChannelProtected[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this, null));
+					chsFront.push(await ch.toFront(this, null, userCached));
 				return chsFront;
 			}
 		);
@@ -67,11 +69,12 @@ export class ChatService {
     }
 
     async findUserChannel(user: User) : Promise<ChannelFront[]> {
+		const userCached: User[] = new Array();
 		const publicChannels: ChannelFront[] = await this.channelPublicRepo.findBy({ users_ids: ArrayContains([user.id]) })
 			.then(async (chs: ChannelPublic[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this, user));
+					chsFront.push(await ch.toFront(this, user, userCached));
 				return chsFront;
 			}
 		);
@@ -79,11 +82,19 @@ export class ChatService {
 			.then(async (chs: ChannelProtected[]) => {
 				const chsFront: ChannelFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this, user));
+					chsFront.push(await ch.toFront(this, user, userCached));
 				return chsFront;
 			}
 		);
-		return publicChannels.concat(protectedChannels);
+		const privateChannels: ChannelFront[] = await this.channelPrivateRepo.findBy({ users_ids: ArrayContains([user.id]) })
+			.then(async (chs: ChannelPrivate[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					chsFront.push(await ch.toFront(this, user, userCached));
+				return chsFront;
+			}
+		);
+		return publicChannels.concat(protectedChannels, privateChannels);
     }
 
     async findUserDiscussion(user: User) : Promise<DiscussionFront[]> {
@@ -182,16 +193,55 @@ export class ChatService {
 		return this.findChannelAvatar(channel, res);
 	}
 
-	async addChannelPublic(channel: ChannelPublic) {
-		return this.channelPublicRepo.save(channel);
+	async findChannelPrivateAvatar(id: number, @Res() res: Response) {
+		const channel: Channel = await this.channelPrivateRepo.findOneBy({ id: id });
+		if (!channel)
+			throw new NotAcceptableException(`The private channel ${id} didn't exist.`);
+
+		return this.findChannelAvatar(channel, res);
 	}
 
-	async addChannelProtected(channel: ChannelProtected) {
-		return this.channelProtectedRepo.save(channel);
+	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
+		let channel: Channel;
+
+		switch (channelDTO.type) {
+			case ChatStatus.PUBLIC:
+				channel = new ChannelPublic();
+				break;
+			case ChatStatus.PROTECTED:
+				channel = new ChannelProtected();
+				(channel as ChannelProtected).password = await hashPassword(channelDTO.password);
+				break;
+			case ChatStatus.PRIVATE:
+				channel = new ChannelPrivate();
+				break;
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channelDTO.type}.`)
+		}
+		channel.name = channelDTO.name;
+		channel.avatar_64 = channelDTO.avatar_64;
+		channel.type = channelDTO.type;
+		channel.users_ids = channelDTO.users_ids;
+
+		channel.owner_id = user.id;
+		if (channel.users_ids.indexOf(user.id) == -1)
+			channel.users_ids.push(user.id);
+		return await this.addChatToDB(channel) as Channel;
 	}
 
-	async addChannelPrivate(channel: ChannelPrivate) {
-		return this.channelPrivateRepo.save(channel);
+	async addChatToDB(chat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion): Promise<Chat> {
+		switch (chat.type) {
+			case ChatStatus.PUBLIC:
+				return this.channelPublicRepo.save(chat as ChannelPublic);
+			case ChatStatus.PROTECTED:
+				return this.channelProtectedRepo.save(chat as ChannelProtected);
+			case ChatStatus.PRIVATE:
+				return this.channelPrivateRepo.save(chat as ChannelPrivate);
+			case ChatStatus.DISCUSSION:
+				return this.addDiscussion(chat as Discussion);
+			default:
+				throw new NotAcceptableException(`Unknown chat type ${chat.type}.`)
+		}
 	}
 
 	async addDiscussion(newDiscu: Discussion) {

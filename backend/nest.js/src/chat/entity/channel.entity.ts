@@ -2,6 +2,7 @@ import { ChatService } from "chat/chat.service";
 import { ChildEntity, Column } from "typeorm";
 import { User } from "users/entity/user.entity";
 import { UsersService } from "users/users.service";
+import { ChannelCreateDTO } from "./channel-dto";
 import { Chat, ChatFront, ChatStatus } from "./chat.entity";
 
 export class Channel extends Chat {
@@ -14,31 +15,23 @@ export class Channel extends Chat {
 	muted_ids: number[];
 	banned_ids: number[];
 
-	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront> {
+	public async toFront?(chatService: ChatService, user: User | null, usersCached: User[] | null): Promise<ChannelFront> {
+		if (!usersCached)
+			usersCached = new Array();
 		const chFront: ChannelFront = {
 			name: this.name,
-			owner: await chatService.getUserService().findOne(this.owner_id),
+			owner: await chatService.getUserService().findOneWithCache(this.owner_id, usersCached),
 			avatar: `http://${'localhost'}:${process.env.PORT}/api/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
 			password: null,
-			users: await chatService.getUserService().arrayIdsToUsers(this.users_ids),
+			users: await chatService.getUserService().arrayIdsToUsersWithCache(this.users_ids, usersCached),
 			// users: this.users_ids,
-			admins: await chatService.getUserService().arrayIdsToUsers(this.admins_ids),
-			muted: await chatService.getUserService().arrayIdsToUsers(this.muted_ids),
-			banned: await chatService.getUserService().arrayIdsToUsers(this.banned_ids),
+			admins: await chatService.getUserService().arrayIdsToUsersWithCache(this.admins_ids, usersCached),
+			muted: await chatService.getUserService().arrayIdsToUsersWithCache(this.muted_ids, usersCached),
+			banned: await chatService.getUserService().arrayIdsToUsersWithCache(this.banned_ids, usersCached),
 			id: this.id,
 			type: this.type,
 			messages: await chatService.fetchMessage(this.id)
 		}
-		return chFront;
-	}
-}
-export class ChannelPassword extends Channel {
-
-	password: string | null;
-
-	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront> {
-		const chFront: ChannelFront = await super.toFront(chatService, user);
-		chFront.password = this.password;
 		return chFront;
 	}
 }
@@ -67,7 +60,7 @@ export class ChannelPublic extends Channel {
 }
 
 @ChildEntity(ChatStatus.PROTECTED)
-export class ChannelProtected extends ChannelPassword {
+export class ChannelProtected extends Channel {
 
 	@Column({ unique: true })
 	name: string;
@@ -90,10 +83,15 @@ export class ChannelProtected extends ChannelPassword {
 	@Column()
 	password: string;
 
+	public async toFront?(chatService: ChatService, user: User | null, usersCached: User[] | null): Promise<ChannelFront> {
+		const chFront: ChannelFront = await super.toFront(chatService, user, usersCached);
+		chFront.password = this.password;
+		return chFront;
+	}
 }
 
 @ChildEntity(ChatStatus.PRIVATE)
-export class ChannelPrivate extends ChannelPassword {
+export class ChannelPrivate extends Channel {
 
 	@Column({ unique: true })
 	name: string;
@@ -112,10 +110,6 @@ export class ChannelPrivate extends ChannelPassword {
 
 	@Column("int", { nullable: true, array: true })
 	banned_ids: number[];
-
-	@Column()
-	password: string | null;
-
 }
 
 export class ChannelFront extends ChatFront {

@@ -27,6 +27,7 @@ export class UsersController {
 		return this.usersService.add(newUser);
 	}
 
+	/*
 	@Get('name/:name')
 	getUserByUsername(@Param('name') name: string): Promise<User> {
 		return this.usersService.findOneByUsername(name);
@@ -36,6 +37,7 @@ export class UsersController {
 	getUserBy42Login(@Param('login') login: string): Promise<User> {
 		return this.usersService.findOneBy42Login(login);
 	}
+	*/
 
 	@UseGuards(JwtAuthGuard)
 	@Patch('register')

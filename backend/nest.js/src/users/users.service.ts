@@ -72,6 +72,16 @@ export class UsersService {
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
+	async findOneWithCache(id: number, usersCached: User[]): Promise<User> {
+		isNumberPositive(id, 'get a user');
+		let user: User = usersCached.find((user: User) => user.id === id);
+		if (user !== undefined)
+			return user;
+		user = await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
+		usersCached.push(user);
+		return user;
+	}
+
 	async findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
 			throw new PreconditionFailedException("Can't get a user by an empty name.");
@@ -172,6 +182,21 @@ export class UsersService {
 		const users: User[] = new Array();
 		for (const [index, id] of array.entries()) {
 			users.push(await this.findOne(id));
+		}
+		return users;
+	}
+
+	async arrayIdsToUsersWithCache(array: number[], usersCached: User[]): Promise<User[]> {
+		const users: User[] = new Array();
+		for (const [index, id] of array.entries()) {
+			let cacheUser: User = usersCached.find((user: User) => user.id === id);
+			if (cacheUser !== undefined) {
+				users.push(cacheUser);
+			} else {
+				cacheUser = await this.findOne(id);
+				users.push(cacheUser);
+				usersCached.push(cacheUser);
+			}
 		}
 		return users;
 	}

@@ -28,16 +28,12 @@ export class ChannelFetchDTO {
 
 export class ChannelCreateDTO {
 
-    @IsInt()
-    @IsPositive()
-    id: number;
-
-    @IsOptional()
+    //@IsOptional()
     @IsString()
     @IsNotEmpty()
     name: string;
     
-    @IsOptional()
+    //@IsOptional()
     @IsString()
     @IsNotEmpty()
 	avatar_64: string;

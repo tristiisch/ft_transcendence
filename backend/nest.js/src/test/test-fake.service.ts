@@ -90,7 +90,7 @@ export class TestFakeService {
 		let userAuth: UserAuth;
 		let userStats: UserStats;
 	
-		user.username = randomWord(randomNumber(7, 32));
+		user.username = randomWord(randomNumber(3, 16));
 		user.login_42 = randomWord(32);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
@@ -193,11 +193,11 @@ export class TestFakeService {
 
 	private async createFakeChannel(user: User, usersIds: number[]): Promise<Chat> {
 		const type: ChatStatus = randomEnum(ChatStatus);
-		let chat: ChannelPublic | ChannelProtected | Discussion;
+		let newChat: ChannelPublic | ChannelProtected | Discussion;
 
 		switch (type) {
 			case ChatStatus.PUBLIC:
-				chat = {
+				newChat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
 					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
@@ -208,11 +208,10 @@ export class TestFakeService {
 					type: type,
 					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				}
-				chat = await this.chatService.addChannelPublic(chat as ChannelPublic);
 				break;
 
 			case ChatStatus.PRIVATE:
-				chat = {
+				newChat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
 					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
@@ -223,10 +222,9 @@ export class TestFakeService {
 					type: type,
 					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				}
-				chat = await this.chatService.addChannelPrivate(chat as ChannelPrivate);
 				break;
 			case ChatStatus.PROTECTED:
-				chat = {
+				newChat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
 					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
@@ -237,28 +235,29 @@ export class TestFakeService {
 					type: type,
 					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				}
-				chat = await this.chatService.addChannelProtected(chat as ChannelProtected);
 				break;
 			case ChatStatus.DISCUSSION:
 				if (usersIds.length === 0)
 					return null;
-				chat = {
+				newChat = {
 					type: type,
 					users_ids: [randomElement(usersIds), user.id]
-				}
-				try {
-					chat = await this.chatService.addDiscussion(chat as Discussion);
-				} catch (err) {
-					if (!(err instanceof NotAcceptableException))
-						throw err;
-					return null;
 				}
 				break;
 			default:
 				throw new NotAcceptableException(`Unknown chat type ${type}.`)
 		}
-		this.sendFakeMsg(chat);
-		return chat;
+
+		let chat: Chat;
+		try {
+			chat = await this.chatService.addChatToDB(newChat);
+		} catch (err) {
+			if (err instanceof NotAcceptableException)
+				return null;
+			throw err;
+		}
+		this.sendFakeMsg(newChat);
+		return newChat;
 	}
 
 	private async sendFakeMsg(chat: Chat) {
