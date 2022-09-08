@@ -12,7 +12,7 @@ import { UsersService } from '../users/users.service';
 import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from '../auth/entity/user-auth.entity';
-import { Channel, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
+import { Channel, ChannelPrivate, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
 import { Chat, ChatStatus } from '../chat/entity/chat.entity';
 import { ChatService } from '../chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
@@ -211,6 +211,20 @@ export class TestFakeService {
 				chat = await this.chatService.addChannelPublic(chat as ChannelPublic);
 				break;
 
+			case ChatStatus.PRIVATE:
+				chat = {
+					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+					owner_id: user.id,
+					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
+					password: 'bob',
+					admins_ids: [user.id],
+					muted_ids: [],
+					banned_ids: [],
+					type: type,
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
+				}
+				chat = await this.chatService.addChannelPrivate(chat as ChannelPrivate);
+				break;
 			case ChatStatus.PROTECTED:
 				chat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
@@ -225,7 +239,7 @@ export class TestFakeService {
 				}
 				chat = await this.chatService.addChannelProtected(chat as ChannelProtected);
 				break;
-			case ChatStatus.PRIVATE:
+			case ChatStatus.DISCUSSION:
 				if (usersIds.length === 0)
 					return null;
 				chat = {

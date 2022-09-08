@@ -3,7 +3,7 @@ import { ForbiddenException, Inject, Injectable, NotAcceptableException, NotImpl
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
 import { ArrayContains, Repository } from 'typeorm';
-import { Channel, ChannelFront, ChannelProtected, ChannelPublic } from './entity/channel.entity';
+import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
@@ -21,6 +21,8 @@ export class ChatService {
 		private chatRepo: Repository<Chat>,
 		@InjectRepository(ChannelPublic)
 		private channelPublicRepo: Repository<ChannelPublic>,
+		@InjectRepository(ChannelPrivate)
+		private channelPrivateRepo: Repository<ChannelPrivate>,
 		@InjectRepository(ChannelProtected)
 		private channelProtectedRepo: Repository<ChannelProtected>,
 		@InjectRepository(Discussion)
@@ -133,6 +135,9 @@ export class ChatService {
 				chat = await this.channelProtectedRepo.findOneBy({ id: channelId });
 				break;
 			case ChatStatus.PRIVATE:
+				chat = await this.channelPrivateRepo.findOneBy({ id: channelId });
+				break;
+			case ChatStatus.DISCUSSION:
 				chat = await this.discussionRepo.findOneBy({ id: channelId });
 				break;
 			default:
@@ -181,8 +186,12 @@ export class ChatService {
 		return this.channelPublicRepo.save(channel);
 	}
 
-	async addChannelProtected(channel: ChannelPublic) {
+	async addChannelProtected(channel: ChannelProtected) {
 		return this.channelProtectedRepo.save(channel);
+	}
+
+	async addChannelPrivate(channel: ChannelPrivate) {
+		return this.channelPrivateRepo.save(channel);
 	}
 
 	async addDiscussion(newDiscu: Discussion) {

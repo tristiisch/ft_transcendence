@@ -10,7 +10,8 @@ import { MessageFront } from './message.entity';
 export enum ChatStatus {
 	PUBLIC,
 	PRIVATE,
-	PROTECTED
+	PROTECTED,
+	DISCUSSION
 }
 
 @Entity()

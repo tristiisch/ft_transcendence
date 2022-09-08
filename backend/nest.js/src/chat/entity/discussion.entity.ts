@@ -7,7 +7,7 @@ import { Chat, ChatStatus } from "./chat.entity";
 import { MessageFront } from "./message.entity";
 
 
-@ChildEntity(ChatStatus.PRIVATE)
+@ChildEntity(ChatStatus.DISCUSSION)
 export class Discussion extends Chat {
 
 	public async toFront?(chatService: ChatService, user: User): Promise<DiscussionFront> {
@@ -18,7 +18,7 @@ export class Discussion extends Chat {
 		const target: User = await chatService.getUserService().findOne(targetId);
 	
 		const discuFront: DiscussionFront = {
-			type: ChatStatus.PRIVATE,
+			type: ChatStatus.DISCUSSION,
 			user: target,
 			messages: await chatService.fetchMessage(this.id)
 		}

@@ -1,8 +1,6 @@
 /** @prettier */
 import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { AuthService } from '../auth/auth.service';
-import { UserAuth } from '../auth/entity/user-auth.entity';
 import { JwtAuthGuard } from '../auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
@@ -18,6 +16,7 @@ export class UsersController {
 	// @Inject(forwardRef(() => AuthService))
 	// private readonly authService: AuthService;
 
+	@UseGuards(JwtAuthGuard)
 	@Get()
 	getAllUsers(): Promise<User[]> {
 		return this.usersService.findAll();

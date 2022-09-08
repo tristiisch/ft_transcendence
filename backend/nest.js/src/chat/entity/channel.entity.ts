@@ -32,6 +32,16 @@ export class Channel extends Chat {
 		return chFront;
 	}
 }
+export class ChannelPassword extends Channel {
+
+	password: string | null;
+
+	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront> {
+		const chFront: ChannelFront = await super.toFront(chatService, user);
+		chFront.password = this.password;
+		return chFront;
+	}
+}
 
 @ChildEntity(ChatStatus.PUBLIC)
 export class ChannelPublic extends Channel {
@@ -57,7 +67,33 @@ export class ChannelPublic extends Channel {
 }
 
 @ChildEntity(ChatStatus.PROTECTED)
-export class ChannelProtected extends Channel {
+export class ChannelProtected extends ChannelPassword {
+
+	@Column({ unique: true })
+	name: string;
+
+	@Column()
+	owner_id: number;
+
+	@Column()
+	avatar_64: string;
+
+	@Column("int", { nullable: true, array: true })
+	admins_ids: number[];
+
+	@Column("int", { nullable: true, array: true })
+	muted_ids: number[];
+
+	@Column("int", { nullable: true, array: true })
+	banned_ids: number[];
+
+	@Column()
+	password: string;
+
+}
+
+@ChildEntity(ChatStatus.PRIVATE)
+export class ChannelPrivate extends ChannelPassword {
 
 	@Column({ unique: true })
 	name: string;
@@ -80,11 +116,6 @@ export class ChannelProtected extends Channel {
 	@Column()
 	password: string | null;
 
-	public async toFront?(chatService: ChatService, user: User | null): Promise<ChannelFront> {
-		const chFront: ChannelFront = await super.toFront(chatService, user);
-		chFront.password = this.password;
-		return chFront;
-	}
 }
 
 export class ChannelFront extends ChatFront {

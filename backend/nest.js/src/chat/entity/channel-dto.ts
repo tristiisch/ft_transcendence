@@ -83,8 +83,5 @@ export class ChannelEditUsersDTO {
     id: number;
 
     @IsNumber({},{each: true})
-	remove_users_ids: number[];
-
-    @IsNumber({},{each: true})
-	add_users_ids: number[];
+	users_ids: number[];
 }

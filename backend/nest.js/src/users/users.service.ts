@@ -60,27 +60,17 @@ export class UsersService {
 	];*/
 
 	async findAll(): Promise<User[]> {
-		try {
-			return await this.usersRepository.find();
-		} catch (reason) {
-			return this.lambdaDatabaseUnvailable(reason);
-		}
+		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user')
+			.where('user.username IS NOT NULL');
+		return await sqlStatement.getMany().then(async (users: User[]) => {
+			return users;
+		}, this.lambdaDatabaseUnvailable);
 	}
 
 	async findOne(id: number): Promise<User> {
 		isNumberPositive(id, 'get a user');
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
-
-	// async findOneAvatar(id: number): Promise<User> {
-	// 	isNumberPositive(id, "get a user's avatar");
-	// 	return await this.usersRepository.findOneBy({ id }).then((user: User) => {
-	// 		if (!user)
-	// 			throw new NotFoundException(`The user '${id}' does not exist.`);
-	// 		// user.setAvatar();
-	// 		return user;
-	// 	}, this.lambdaDatabaseUnvailable);
-	// }
 
 	async findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
@@ -90,18 +80,6 @@ export class UsersService {
 			return this.lambdaGetUser(user, name);
 		}, this.lambdaDatabaseUnvailable);
 	}
-
-	// async findOneAvatarByUsername(name: string): Promise<User> {
-	// 	if (!name || name.length == 0) {
-	// 		throw new PreconditionFailedException("Can't get a user's avatar by an empty name.");
-	// 	}
-	// 	return await this.usersRepository.findOne({ where: {username : name }}).then((user: User) => {
-	// 		if (!user)
-	// 			throw new NotFoundException(`The user '${name}' does not exist.`);
-	// 		// user.setAvatar();
-	// 		return user;
-	// 	}, this.lambdaDatabaseUnvailable);
-	// }
 
 	async findOneBy42Login(login42: string): Promise<User> {
 		if (!login42 || login42.length == 0) {
@@ -123,30 +101,11 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
-	/*async saveMany(users: User[]) {
-		const queryRunner = this.dataSource.createQueryRunner();
-
-		await queryRunner.connect();
-		await queryRunner.startTransaction();
-		try {
-			users.map(async u => await queryRunner.manager.save(u))
-
-			await queryRunner.commitTransaction();
-		} catch (err) {
-			// since we have errors lets rollback the changes we made
-			await queryRunner.rollbackTransaction();
-		} finally {
-			// you need to release a queryRunner which was manually instantiated
-			await queryRunner.release();
-		}
-	}*/
-
 	async add(newUser: User): Promise<User> {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder("user")
 			.where("user.id = :id", { id: newUser.id })
 			.orWhere("user.username = :username", { username: newUser.username });
 
-		//console.log("SQL", sql.getQueryAndParameters());
 		await sqlStatement.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
 				throw new ConflictException(`User ${checkUserExist.username} already exist with same id, email or username.`); // TODO Change msg for client
@@ -158,7 +117,6 @@ export class UsersService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + " rows was modify instead of one.");
 			}
-			// console.log('new user added : ', newUser)
 			return newUser;
 		}, this.lambdaDatabaseUnvailable);
 	}
