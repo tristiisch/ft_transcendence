@@ -7,7 +7,11 @@ import {
 	OnGatewayDisconnect,
 	ConnectedSocket,
 } from '@nestjs/websockets';
+import { ChatService } from '../chat/chat.service';
+import { ChannelCreateDTO } from '../chat/entity/channel-dto';
+import { Channel } from '../chat/entity/channel.entity';
 import { Server, Socket } from 'socket.io';
+import { User } from '../users/entity/user.entity';
 import { SocketService } from './socket.service';
 
 @WebSocketGateway({
@@ -21,7 +25,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	server: Server;
 
 	constructor(
-		private socketService: SocketService
+		private socketService: SocketService,
+		private readonly chatService: ChatService
 	) {}
 
 	afterInit(server: Server): void {
@@ -52,4 +57,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		//console.log(message)
 		client.broadcast.emit("chatDiscussionMessage", discussion, message);
 	}
+
+	@SubscribeMessage('channel-create')
+	async createChannel(@MessageBody() channel: ChannelCreateDTO, @ConnectedSocket() client: Socket): Promise<Channel> {
+		const user: User | null = await this.socketService.getUserFromSocket(client);
+		return this.chatService.createChannel(user, channel);
+	}
+
 }

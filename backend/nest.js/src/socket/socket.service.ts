@@ -17,14 +17,14 @@ export class SocketService {
 
 	usersSocket: Map<number, string> = new Map<number, string>()
 
-	async getUserFromSocket(socket: Socket) {
-	const token = socket.handshake.auth.token;
-	const user = await this.authService.getUserFromAuthenticationToken(token);
-	if (!user) {
-		console.log('Invalid credentials.')
-		//throw new WsException('Invalid credentials.');
-	}
-	return user;
+	async getUserFromSocket(socket: Socket) : Promise<User | null> {
+		const token = socket.handshake.auth.token;
+		const user = await this.authService.getUserFromAuthenticationToken(token);
+		if (!user) {
+			console.log('Invalid credentials.')
+			//throw new WsException('Invalid credentials.');
+		}
+		return user;
 	}
 
 	saveClientSocket(user: User, clientSocketId: string) {

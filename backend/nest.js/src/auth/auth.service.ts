@@ -159,12 +159,12 @@ export class AuthService {
 		return imagePath;
 	}
 
-	public async getUserFromAuthenticationToken(token: string) {
+	public async getUserFromAuthenticationToken(token: string): Promise<User> {
 		const payload = this.jwtService.verify(token, {
 			secret: process.env.JWT_SECRET
 		});
 		if (payload.id) {
-		  return this.usersService.findOne(payload.id);
+			return this.usersService.findOne(payload.id);
 		}
 	}
 }
