@@ -62,6 +62,7 @@ export class UsersService {
 	async findAll(): Promise<User[]> {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user')
 			.where('user.username IS NOT NULL');
+		// Remove user.avatar64
 		return await sqlStatement.getMany().then(async (users: User[]) => {
 			return users;
 		}, this.lambdaDatabaseUnvailable);
