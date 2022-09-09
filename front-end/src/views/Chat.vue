@@ -146,27 +146,25 @@ onBeforeMount(() => {
 							CHANNELS
 						</button>
 					</div>
-					<div class="flex flex-col justify-between h-full w-full">
-						<div class="overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-[300px] w-full">
-							<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative">
-								<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
-								<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
-							</div>
-							<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative">
-								<channels-list
-									v-if="memberInChannel(channel)"
-									@click.right="setDisplayDelete(index)"
-									@click.left="chatStore.loadChannel(channel)"
-									:channel="channel"
-									:index="index"
-								></channels-list>
-								<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="true"></button-delete>
-							</div>
+					<div class="overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-full w-full">
+						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative h-full sm:h-[calc(100%_/_6)] lg:h-[calc(100%_/_7)]">
+							<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
+							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
-						<div class="flex self-start items-center gap-4 ml-2">
-							<button-plus @click="chatStore.setRightPartToDisplay(null)"></button-plus>
-							<label class="text-slate-700">{{ addButton() }}</label>
+						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_6)] lg:h-[calc(100%_/_7)]">
+							<channels-list
+								v-if="memberInChannel(channel)"
+								@click.right="setDisplayDelete(index)"
+								@click.left="chatStore.loadChannel(channel)"
+								:channel="channel"
+								:index="index"
+							></channels-list>
+							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="true"></button-delete>
 						</div>
+					</div>
+					<div class="flex self-start items-center gap-4 ml-2 pt-3">
+						<button-plus @click="chatStore.setRightPartToDisplay(null)"></button-plus>
+						<label class="text-slate-700">{{ addButton() }}</label>
 					</div>
 				</div>
 			</card-left>

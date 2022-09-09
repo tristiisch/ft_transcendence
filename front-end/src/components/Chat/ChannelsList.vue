@@ -56,9 +56,9 @@ const numberOfUnreadedMessage = computed(() => {
 </script>
 
 <template>
-     <button class="flex justify-between items-center w-full h-[60px] border-b-[1px] border-slate-600 pr-2">
+     <button class="flex justify-between items-center w-full h-full border-b-[1px] border-slate-600 pr-2">
         <div class="shrink-0 flex items-center h-full">
-            <img class="w-8 h-8 sm:h-12 sm:w-12 rounded object-cover border-[1px] border-slate-400" :src="channelAvatar()" alt="Rounded avatar">
+            <img class="aspect-[1/1] h-8 sm:h-[80%] rounded object-cover border-[1px] border-slate-400" :src="channelAvatar()" alt="Rounded avatar">
         </div>
         <p class="px-2 break-words truncate" :class="colorText()">{{ channel.name }}</p>
         <div v-if="numberOfUnreadedMessage" class="bg-red-600 rounded-full px-1 py-1 text-xs text-white">{{ numberOfUnreadedMessage }}</div>

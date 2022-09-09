@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE:-ft_transcendance}
       PGDATA: /data/postgres
     volumes:
-    - db_postgres:/data/postgres
+    - postgres_data:/data/postgres
     restart: always
     ports:
     - 5432:5432
@@ -28,7 +28,7 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: "False" # Required to have more permission in containers, but remove connection with email & password to pgAdmin
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False" # If this is set to false, no one needs a "master password" to log in
     volumes:
-    - db_pgadmin:/var/lib/pgadmin
+    - pgadmin_data:/var/lib/pgadmin
     - ./pgAdmin/servers.json:/pgadmin4/servers.json
     - ./pgAdmin/.pgpass:/pgadmin4/.pgpass
     restart: always
@@ -65,18 +65,18 @@ services:
 #    volumes: pas sûr de si il ya besoin de déclarer un volume ici
 #
 volumes:
-  db_postgres:
+  postgres_data:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ${HOME}/ft_transcendence_volumes/db_postgres
-  db_pgadmin:
+      device: ${HOME}/ft_transcendence_volumes/postgres_data
+  pgadmin_data:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ${HOME}/ft_transcendence_volumes/db_pgadmin
+      device: ${HOME}/ft_transcendence_volumes/pgadmin_data
 
 networks:
   ft_transcendence_network:
