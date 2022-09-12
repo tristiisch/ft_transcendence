@@ -61,10 +61,10 @@ export class ChannelEditDTO {
     @IsNotEmpty()
     name: string;
     
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-	avatar_64: string;
+    // @IsOptional()
+    // @IsString()
+    // @IsNotEmpty()
+	// avatar_64: string;
 
     @IsOptional()
     @IsString()

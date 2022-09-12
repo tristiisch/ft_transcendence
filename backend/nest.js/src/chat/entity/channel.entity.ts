@@ -110,6 +110,9 @@ export class ChannelPrivate extends Channel {
 
 	@Column("int", { nullable: true, array: true })
 	banned_ids: number[];
+
+	@Column("int", { nullable: true, array: true })
+	invited_ids: number[];
 }
 
 export class ChannelFront extends ChatFront {

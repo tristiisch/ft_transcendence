@@ -21,8 +21,8 @@ export class SocketService {
 		const token = socket.handshake.auth.token;
 		const user = await this.authService.getUserFromAuthenticationToken(token);
 		if (!user) {
-			console.log('Invalid credentials.')
-			//throw new WsException('Invalid credentials.');
+			// console.log('Invalid credentials.')
+			throw new WsException('Invalid credentials.');
 		}
 		return user;
 	}

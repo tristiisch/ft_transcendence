@@ -2,7 +2,7 @@
 import { ForbiddenException, Inject, Injectable, NotAcceptableException, NotImplementedException, Res, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains, InsertResult, Repository } from 'typeorm';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
@@ -11,7 +11,7 @@ import { Discussion, DiscussionFront } from './entity/discussion.entity';
 import { fromBase64 } from '../utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { ChannelCreateDTO, ChannelFetchDTO } from './entity/channel-dto';
+import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
 import { hashPassword } from '../utils/bcrypt';
 
 @Injectable()
@@ -166,10 +166,6 @@ export class ChatService {
 		return chat;
 	}
 
-	async addMessage(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]) {
-		return this.msgRepo.insert(msg);
-	}
-
 	private async findChannelAvatar(channel: Channel, @Res() res: Response) {
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(channel.avatar_64);
 
@@ -244,10 +240,124 @@ export class ChatService {
 		}
 	}
 
-	async addDiscussion(newDiscu: Discussion) {
+	async addDiscussion(newDiscu: Discussion): Promise<Discussion> {
 		const discu: Discussion = await this.discussionRepo.findOneBy({ users_ids: ArrayContains(newDiscu.users_ids) })
 		if (discu)
 			throw new NotAcceptableException(`They is already a discussion between ${newDiscu.users_ids[0]} and ${newDiscu.users_ids[1]}.`);
 		return this.discussionRepo.save(newDiscu);
+	}
+
+	async addMessage(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]): Promise<InsertResult> {
+		return this.msgRepo.insert(msg);
+	}
+
+	async setAdmin(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				this.channelPublicRepo.update(channel.id, { admins_ids: users_ids });
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				this.channelProtectedRepo.update(channel.id, { admins_ids: users_ids });
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				this.channelPrivateRepo.update(channel.id, { admins_ids: users_ids });
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
+	}
+
+	async setMuted(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				this.channelPublicRepo.update(channel.id, { muted_ids: users_ids });
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				this.channelProtectedRepo.update(channel.id, { muted_ids: users_ids });
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				this.channelPrivateRepo.update(channel.id, { muted_ids: users_ids });
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
+	}
+
+	async setBanned(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				this.channelPublicRepo.update(channel.id, { banned_ids: users_ids });
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				this.channelProtectedRepo.update(channel.id, { banned_ids: users_ids });
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				this.channelPrivateRepo.update(channel.id, { banned_ids: users_ids });
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
+	}
+
+	async inviteUsers(channel: ChannelPrivate, users_ids: number[]): Promise<ChannelPrivate> {
+		let invited_ids: number[];
+		if (channel.invited_ids == null)
+			invited_ids = new Array();
+		else
+			channel.invited_ids;
+		invited_ids = [...invited_ids, ...users_ids]
+
+		this.channelPrivateRepo.update(channel.id, { invited_ids: invited_ids });
+		return this.channelPrivateRepo.findOneBy({ id: channel.id });
+	}
+
+	async updateProtectedChannel(channel: ChannelEditDTO): Promise<ChannelProtected> {
+		let dataUpdate: QueryDeepPartialEntity<ChannelProtected>;
+
+		if (channel.name != null)
+			dataUpdate.name = channel.name
+		if (channel.password != null)
+			dataUpdate.password = channel.password
+
+		this.channelProtectedRepo.update(channel.id, dataUpdate);
+		return this.channelProtectedRepo.findOneBy({ id: channel.id });
+	}
+
+	async leaveChannel(user: User, channel: Channel): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		let dataUpdate: QueryDeepPartialEntity<Channel>;
+
+		dataUpdate.users_ids = channel.users_ids.filter(id => id !== user.id)
+		if (channel.admins_ids.indexOf(user.id) !== -1)
+			dataUpdate.admins_ids = channel.admins_ids.filter(id => id !== user.id)
+	
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				this.channelPublicRepo.update(channel.id, dataUpdate);
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				this.channelProtectedRepo.update(channel.id, dataUpdate);
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				this.channelPrivateRepo.update(channel.id, dataUpdate);
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
+	}
+
+	async saveMessageToDiscussion(user: User, targetUser: User, msg: string): Promise<Discussion> {
+		let discu: Discussion = await this.discussionRepo.findOneBy({ users_ids: ArrayContains([user.id, targetUser.id]) })
+		const message: Message = new Message();
+
+		if (!discu) {
+			discu = new Discussion();
+			discu.users_ids = [user.id, targetUser.id];
+			discu.type = ChatStatus.DISCUSSION;
+			discu = await this.discussionRepo.save(discu);
+		}
+		message.id_sender = user.id;
+		message.id_channel = discu.id;
+		this.addMessage(message);
+		return discu;
 	}
 }

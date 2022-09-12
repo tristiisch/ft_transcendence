@@ -58,8 +58,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.broadcast.emit("chatDiscussionMessage", discussion, message);
 	}
 
-	@SubscribeMessage('channel-create')
+	@SubscribeMessage('chatChannelCreate')
 	async createChannel(@MessageBody() channel: ChannelCreateDTO, @ConnectedSocket() client: Socket): Promise<Channel> {
+		console.log('channel', channel)
 		const user: User | null = await this.socketService.getUserFromSocket(client);
 		return this.chatService.createChannel(user, channel);
 	}
