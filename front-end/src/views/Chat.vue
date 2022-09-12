@@ -2,7 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref, onBeforeMount, computed, watch } from 'vue';
+import { ref, onBeforeMount, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
@@ -146,12 +146,12 @@ onBeforeMount(() => {
 							CHANNELS
 						</button>
 					</div>
-					<div class="overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-full w-full">
-						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative h-full sm:h-[calc(100%_/_6)] lg:h-[calc(100%_/_7)]">
+					<div class="flex flex-col overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-full w-full">
+						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
 							<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
 							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
-						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_6)] lg:h-[calc(100%_/_7)]">
+						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
 							<channels-list
 								v-if="memberInChannel(channel)"
 								@click.right="setDisplayDelete(index)"

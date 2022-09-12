@@ -95,7 +95,7 @@ onUnmounted(() => {
 			</div>
 			<div v-else class="inline-flex items-center justify-center p-[1px]">
 				<button v-if="!isPendingFriend">
-					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-blue-600 hover:text-white hover:border-white" @click="friendRequest()" >Add friend</span>
+					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="friendRequest()" >Add friend</span>
 				</button>
 				<span v-else class="pl-2 text-slate-800">Pending</span>
 			</div>

@@ -76,7 +76,7 @@ onBeforeMount(() => {
 	<base-ui :isLoaded="isLoaded">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
-				<div class="flex justify-between items-center h-full flex-wrap sm:flex-col sm:flex-nowrap px-6 lg:px-8">
+				<div class="flex flex-col justify-between items-center h-full px-6 lg:px-8">
 					<h1 class="w-full text-center font-Arlon tracking-tight text-lg sm:text-xl pb-2 sm:pb-5 border-b-[1px] border-slate-700 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">CURRENT GAMES</h1>
 					<current-game @next="rightPartToDisplay = 'invitePlayer'" v-if="matchs" :matchs="matchs"></current-game>
 				</div>
