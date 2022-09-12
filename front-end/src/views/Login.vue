@@ -5,7 +5,6 @@ import { useToast } from 'vue-toastification';
 import { ref, watch, onBeforeMount, ErrorCodes } from 'vue';
 import socket from '@/plugin/socketInstance';
 import BaseCard from '@/components/Ui/BaseCard.vue';
-import BaseSpinner from '@/components/Ui/BaseSpinner.vue';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 
@@ -108,6 +107,7 @@ onBeforeMount(() => {
 		})
 		.catch((error) => {
 			isLoading.value = false;
+			if (error.response) toast.error(error.response.data.message)
 			router.replace({ name: 'Login' });
 		});
 	}
@@ -152,5 +152,4 @@ onBeforeMount(() => {
 			</form>
 		</BaseCard>
 	</div>
-	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]"></div>
 </template>

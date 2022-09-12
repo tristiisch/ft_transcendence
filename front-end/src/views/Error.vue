@@ -3,14 +3,9 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
-import { useGlobalStore } from '@/stores/globalStore';
 
 const route = useRoute();
 const userStore = useUserStore();
-const globalStore = useGlobalStore();
-
-if (globalStore.isLoading = true)
-	globalStore.isLoading = false
 
 const error = computed(() => {
 	if (route.query.code)
@@ -34,5 +29,4 @@ const error = computed(() => {
 			@click="userStore.handleLogout">Logout</base-button>
 		</div>
 	</div>
-	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]"></div>
 </template>

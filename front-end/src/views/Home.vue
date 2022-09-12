@@ -11,6 +11,7 @@ import type User from '@/types/User';
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 const imageLoaded = ref(false);
+const isLoading = ref(false);
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const route = useRoute();
@@ -47,11 +48,6 @@ function handleResize() {
 	windowHeight.value = window.innerHeight;
 }
 
-const isLoaded = computed(() => {
-	if (!globalStore.isLoading && userStore.isLoaded) return true;
-	return false;
-});
-
 function onImageLoad() {
 	imageLoaded.value = true;
 }
@@ -59,43 +55,40 @@ function onImageLoad() {
 onBeforeMount(() => {
 	window.addEventListener('resize', handleResize);
 
-	if (!globalStore.isLoading)
-	{
-		globalStore.isLoading = true;
-		globalStore
-			.fetchAll()
-			.then(() => {
-				globalStore.isLoading = false;
-			})
-			.catch((error) => {
-				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-			});
-
-		socket.on('AddUser', (user: User) => {
-			globalStore.addUser(user);
+	isLoading.value = true;
+	globalStore
+		.fetchAll()
+		.then(() => {
+			isLoading.value = false;
+		})
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
 
-		socket.on('FriendRequest', (senderId: number, notification: Notification) => {
-			globalStore.addNotification(notification);
-			globalStore.addPendingFriend(senderId)
-			toast.info(notification.message)
-		});
+	socket.on('AddUser', (user: User) => {
+		globalStore.addUser(user);
+	});
 
-		socket.on('AddFriend', (targetId: number) => {
-			//globalStore.addNotification(notification);
-			globalStore.addFriend(targetId)
-			//toast.info(notification.message)
-		});
+	socket.on('FriendRequest', (senderId: number, notification: Notification) => {
+		globalStore.addNotification(notification);
+		globalStore.addPendingFriend(senderId)
+		toast.info(notification.message)
+	});
 
-		socket.on('RemoveFriend', (targetId: number) => {
-			//globalStore.addNotification(notification);
-			globalStore.removeFriend(targetId)
-			//toast.info(notification.message)
-		});
+	socket.on('AddFriend', (targetId: number) => {
+		//globalStore.addNotification(notification);
+		globalStore.addFriend(targetId)
+		//toast.info(notification.message)
+	});
 
-		socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
-	}
-});
+	socket.on('RemoveFriend', (targetId: number) => {
+		//globalStore.addNotification(notification);
+		globalStore.removeFriend(targetId)
+		//toast.info(notification.message)
+	});
+
+	socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
+})
 
 onUnmounted(() => {
 	window.removeEventListener('resize', handleResize);
@@ -103,7 +96,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<base-spinner v-if="!isLoaded"></base-spinner>
+	<base-spinner v-if="isLoading"></base-spinner>
 	<div v-else class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
@@ -135,7 +128,6 @@ onUnmounted(() => {
 		</div>
 		<the-footer v-if="!smallScreen()" class="absolute m-auto left-0 right-0 min-h-0 bottom-0 text-xs"></the-footer>
 	</div>
-	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>
 
 <style scoped>

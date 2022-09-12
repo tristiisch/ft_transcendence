@@ -24,7 +24,6 @@ export const useChatStore = defineStore('chatStore', {
 		cardLeftPartToDisplay: PartToDisplay.DISCUSSIONS,
 		cardRightTitle: 'CHAT',
 		messages: [],
-		isLoading: false
 	}),
 	getters: {
 		leftPartIsDiscussion: (state) => state.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS,
@@ -50,7 +49,7 @@ export const useChatStore = defineStore('chatStore', {
 			return  (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
 		},
 	},
-	actions: {    
+	actions: {
 		async fetchAll() {
 			try {
 				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
@@ -125,7 +124,7 @@ export const useChatStore = defineStore('chatStore', {
 		addNewChannel(user: User, channel: Channel) {
 			this.userChannels.push(channel);
 			const toast = useToast();
-			toast.info('you have been added in ' + channel.name + " by " + user.username);	
+			toast.info('you have been added in ' + channel.name + " by " + user.username);
 		},
 		addNewDiscussion(discussion: Discussion) {
 			this.userDiscussions.push(discussion);
@@ -257,7 +256,7 @@ export const useChatStore = defineStore('chatStore', {
 					'-> got Banned by ' + newBanned.userWhoSelect.username)
 				socket.emit('chatChannelBan', channel, newBanned);
 			}
-			
+
 			/////////////////////////////////////////////////////////////////// best to do in back
 			if (this.inChannel && this.inChannel.name === channel.name) {
 				this.inChannel.banned = newBanned.list
@@ -312,7 +311,7 @@ export const useChatStore = defineStore('chatStore', {
 				const index = this.getIndexUserChannels(channel.name);
 				this.userChannels[index].admins = newAdmin.list;
 			}
-			
+
 		},
 		KickUsers(channel: Channel, newKicked: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
@@ -330,7 +329,7 @@ export const useChatStore = defineStore('chatStore', {
 				if (index >= 0) {
 					this.deleteUserChannel(index);
 					const toast = useToast();
-					toast.info('you have been kicked from ' + channel.name + " by " + newKicked.userWhoSelect.username);	
+					toast.info('you have been kicked from ' + channel.name + " by " + newKicked.userWhoSelect.username);
 				}
 			}
 		},
@@ -360,7 +359,7 @@ export const useChatStore = defineStore('chatStore', {
 					message: '🔴　' + userNameInUnListed + messageUnListed,
 					idSender: -1,
 					read: false
-				};	
+				};
 				if (this.inChannel && this.inChannel.name === channel.name) {
 					this.inChannel.messages.push(newMessage);
 					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
@@ -370,7 +369,7 @@ export const useChatStore = defineStore('chatStore', {
 					this.userChannels[index].messages.push(newMessage);
 					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
 				}
-				
+
 			}
 			if (selection.listed.length !== 0) {
 				let userNameInListed = '';

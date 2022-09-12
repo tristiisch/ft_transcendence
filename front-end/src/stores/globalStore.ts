@@ -15,7 +15,6 @@ export const useGlobalStore = defineStore('globalStore', {
 		pendingFriends: [],
 		notifications: [],
 		selectedItems: [],
-		isLoading: false
 	}),
 	getters: {
 		isTypeArrayUsers: (state) => {

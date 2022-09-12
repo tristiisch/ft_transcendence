@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { useToast } from 'vue-toastification';
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
-import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
@@ -10,13 +8,12 @@ import type { UserStatus} from '@/types/User';
 import Toogle from '@/components/Divers/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 
-const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
 const users = ref<LeaderboardUser[]>();
 const friends = ref<LeaderboardUser[]>();
 const playerToDisplay = ref<LeaderboardUser[]>();
-const error = ref('');
+const isLoading = ref(false);
 const playerName = ref('');
 const type = ref('All');
 
@@ -86,10 +83,12 @@ function switchDysplayUsers() {
 }
 
 function fetchLeaderboard() {
+	isLoading.value = true
 	UserService.getLeaderboard()
 		.then((response) => {
 			playerToDisplay.value = users.value = response.data.leaderBoard;
 			friends.value = response.data.leaderBoardFriends;
+			isLoading.value = false
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
@@ -113,11 +112,6 @@ function updateStatus(data: UserStatus) {
 	}
 }
 
-const isLoaded = computed(() => {
-	if (friends.value && users.value && userStore.isLoaded) return true;
-	return false;
-});
-
 onBeforeMount(() => {
 	fetchLeaderboard();
 	socket.on('update_status', (data) => {
@@ -133,7 +127,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<base-ui :isLoaded="isLoaded">
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col justify-between bg-slate-900 w-full h-1/4">
 			<div class="flex flex-col w-full pt-3 px-3 sm:pt-5 sm:px-5 sm:flex-row h-full justify-between">
 				<div class="flex items-center">

@@ -27,6 +27,7 @@ const chatStore = useChatStore();
 const route = useRoute();
 const router = useRouter();
 const displayDelete = ref([] as boolean[]);
+const isLoading = ref(false);
 
 function addButton() {
 	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
@@ -102,7 +103,7 @@ const isLoaded = computed(() => {
 })
 
 onBeforeMount(() => {
-	chatStore.isLoading = true
+	isLoading.value = true
 	chatStore
 		.fetchAll()
 		.then(() => {
@@ -118,7 +119,7 @@ onBeforeMount(() => {
 					}
 				}
 			}
-			chatStore.isLoading = false
+			isLoading.value = false
 		})
 		.catch((error) => {
 			console.log(error)
@@ -128,7 +129,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<base-ui :isLoaded="isLoaded">
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full px-8">
