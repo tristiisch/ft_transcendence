@@ -4,10 +4,11 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useRouter, useRoute } from 'vue-router';
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 
 const isLoading = ref(false);
+const notifications = ref<Notification[]>();
 const globalStore = useGlobalStore();
 const toast = useToast();
 const router = useRouter();
@@ -22,7 +23,7 @@ function acceptInvitation(notification: Notification) {
 	console.log(notification.type)
 	if (notification.type == NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.notificationAction(notification.id, true)
+		UserService.notificationAction(notification.id, true)
 		.then((response) => {
 			globalStore.removeNotification(notification.id)
 			globalStore.addFriend(notification.from_user_id)
@@ -38,7 +39,7 @@ function declineInvitation(notification: Notification) {
 	console.log('decline');
 	if (notification.type == NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.notificationAction(notification.id, false)
+		UserService.notificationAction(notification.id, false)
 		.then((response) => {
 			globalStore.removeNotification(notification.id)
 			globalStore.removePendingFriend(notification.from_user_id)
@@ -49,6 +50,22 @@ function declineInvitation(notification: Notification) {
 		});
 	}
 }
+
+function fetchNotifications() {
+	isLoading.value = true
+	UserService.getNotifications()
+	.then((response) => {
+		notifications.value = response.data;
+		isLoading.value = false
+	})
+	.catch((error) => {
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+	})
+}
+
+onBeforeMount(() => {
+	fetchNotifications()
+})
 </script>
 
 <template>

@@ -47,8 +47,14 @@ export class AuthController {
 	async fakeLogin(@Req() req: Request, @Param('username') username: string) {
 		const user: User = await this.usersService.findOneByUsername(username);
 		const userAuth: UserAuth = await this.authService.findOne(user.id);
-		
+
 		return { auth: userAuth, user: user };
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('jwt-check')
+	async checkJwtToken(@Res() res: Response) {
+		res.status(HttpStatus.ACCEPTED).send();
 	}
 
 	@UseGuards(JwtAuthGuard)

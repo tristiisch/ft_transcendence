@@ -8,7 +8,6 @@ export interface GlobalState {
 	pendingFriends: User[],
 	notifications: Notification[],
 	selectedItems: User[] | Channel[];
-	isLoading: boolean
 }
 
 export default GlobalState;
