@@ -267,13 +267,12 @@ export class TestFakeService {
 
 		const msgs: Message[] = new Array();
 		for (let userId of chat.users_ids) {
-			const msg: Message = {
-				id_sender: userId,
-				id_channel: chat.id,
-				message: 'Hello world !'
-			};
+			const msg: Message = new Message();
+			msg.id_sender = userId;
+			msg.id_channel =  chat.id;
+			msg.message = 'Hello world !';
 			msgs.push(msg);
 		}
-		this.chatService.addMessage(msgs);
+		this.chatService.addMessages(msgs);
 	}
 }

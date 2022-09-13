@@ -52,11 +52,28 @@ export const useChatStore = defineStore('chatStore', {
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
+				// await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
+				await Promise.all([this.fetchUserChats(null, null)])
 			} catch (error: any) {
 				throw error;
 			}
 		},
+		async fetchUserChats(func: { (discu: Discussion[], channel: Channel[]): any } | null, err: { (error: any): any } | null) {
+			if (!this.userDiscussions.length || !this.userChannels.length)
+			{
+				socket.emit('chatFindAll', (body: any[]) => {
+					this.userDiscussions = body[0];
+					this.userChannels = body[1];
+					if (func)
+						func(this.userDiscussions, this.userChannels);
+				});
+				// if (err)
+				// 	err(null);
+			}
+		},
+		/**
+		 * @Deprecated
+		 */
 		async fetchUserChannels() {
 			if (!this.userChannels.length)
 			{
@@ -68,6 +85,9 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 		},
+		/**
+		 * @Deprecated
+		 */
 		async fetchUserDiscussions() {
 			if (!this.userDiscussions.length)
 			{
@@ -157,8 +177,8 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		createNewChannel(newChannel: Channel, selection: User[]) {
 			const userStore = useUserStore();
-			this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
-			newChannel.users.unshift(userStore.userData);
+			// this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
+			// newChannel.users.unshift(userStore.userData);
 			socket.emit('chatChannelCreate', userStore.userData, {
 				name: newChannel.name,
 				avatar_64: newChannel.avatar,
@@ -168,12 +188,11 @@ export const useChatStore = defineStore('chatStore', {
 			}, (channelCreated: Channel) => {
 				console.log('channelCreated', channelCreated)
 				const type = this.channelTypeToString(channelCreated);
+				this.inChannel = channelCreated; // TODO check this 
 				this.addAutomaticMessage(channelCreated, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
 					, 'have been added to ' + channelCreated.name + ' by ' + userStore.userData.username);
 				this.loadChannel(channelCreated);
-			}, (error: any) => {
-				console.log('channelCreated error', error)
-				
+				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
 			});
 		},
 		joinNewChannel(channel : Channel) {
@@ -232,6 +251,7 @@ export const useChatStore = defineStore('chatStore', {
 				};
 				channel.messages.push(leaveMessage);
 				socket.emit('chatChannelMessage', channel, channel.messages[channel.messages.length - 1]);
+				socket.emit('chatChannelLeave', channel, userStore.userData);
 				this.setChannelOwner(channel, [user])
 				this.deleteUserChannel(this.getIndexUserChannels(channel.name));
 				this.inChannel = null;
@@ -415,7 +435,7 @@ export const useChatStore = defineStore('chatStore', {
 			const userStore = useUserStore();
 			if (newMessage != '') {
 				const now = new Date().toLocaleString();
-				const data: Message = {
+				const messageDTO: Message = {
 					date: now,
 					message: newMessage,
 					idSender: userStore.userData.id,
@@ -423,14 +443,27 @@ export const useChatStore = defineStore('chatStore', {
 					type: type
 				};
 				if (this.inDiscussion) {
-					data['idChat'] = this.inDiscussion.id;
-					this.inDiscussion.messages.push(data);
-					socket.emit('chatDiscussionMessage', this.inDiscussion, this.inDiscussion.messages[this.inDiscussion.messages.length - 1]);
+					messageDTO['idChat'] = this.inDiscussion.id;
+					const chat: Discussion = this.inDiscussion;
+					socket.emit('chatDiscussionMessage', this.inDiscussion, messageDTO, (body: any[]) => {
+						const msg: Message = body[0];
+						const discu: Discussion = body[1];;
+						console.log('chatDiscussionMessage', msg, 'Discussion', discu);
+						// this.inDiscussion = discu;
+						chat.messages.push(msg)
+					});
 				}
 				else if (this.inChannel) {
-					data['idChat'] = this.inChannel.id;
-					this.inChannel.messages.push(data)
-					socket.emit('chatChannelMessage', this.inChannel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+					messageDTO['idChat'] = this.inChannel.id;
+					// this.inChannel.messages.push(data)
+					const chat: Channel = this.inChannel;
+					socket.emit('chatChannelMessage', this.inChannel, messageDTO, (msg: Message) => {
+						console.log('channel Message', msg);
+						if (!msg) {
+							console.log('ERROR chatChannelMessage', this.inChannel, 'messageDTO', messageDTO);
+						}
+						chat.messages.push(msg)
+					});
 				}
 			}
 		},

@@ -12,5 +12,7 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function comparePassword(password: string, hash: string): Promise<boolean> {
+	if (!password)
+		return false;
 	return await bcrypt.compare(password, hash);
 }
