@@ -1,8 +1,10 @@
 {
+  "requirePragma": false,
   "useTabs": true,
   "tabWidth": 4,
   "singleQuote": true,
+  "quoteProps": "as-needed",
   "bracketSameLine": true,
-  "requirePragma": true,
-  "printWidth": 200
+  "printWidth": 100,
+  "arrowParens": "avoid"
 }
