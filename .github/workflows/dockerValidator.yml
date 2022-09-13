@@ -1,0 +1,14 @@
+
+name: DockerFile Validator
+
+on: [push, pull_request]
+jobs:
+  dockerfile-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Run dockerfile-validator
+        uses: ghe-actions/dockerfile-validator@v1
+        with:
+          dockerfile: "backend/nest.js/Dockerfile"
