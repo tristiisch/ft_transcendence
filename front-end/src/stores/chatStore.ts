@@ -132,7 +132,7 @@ export const useChatStore = defineStore('chatStore', {
 		createNewDiscussion(newDiscussion: Discussion, load: boolean) {
 			const userStore = useUserStore();
 			this.userDiscussions.length ? this.userDiscussions.unshift(newDiscussion) : this.userDiscussions.push(newDiscussion)
-			socket.emit('chatDiscussionCreate', userStore.userData, newDiscussion)
+			socket.emit('chatDiscussionCreate', userStore.userData, newDiscussion) // TODO Delete this
 			if (load === true)
 				this.loadDiscussion(this.userDiscussions[0]);
 		},
@@ -166,10 +166,14 @@ export const useChatStore = defineStore('chatStore', {
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, (channelCreated: Channel) => {
+				console.log('channelCreated', channelCreated)
 				const type = this.channelTypeToString(channelCreated);
 				this.addAutomaticMessage(channelCreated, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
 					, 'have been added to ' + channelCreated.name + ' by ' + userStore.userData.username);
 				this.loadChannel(channelCreated);
+			}, (error: any) => {
+				console.log('channelCreated error', error)
+				
 			});
 		},
 		joinNewChannel(channel : Channel) {

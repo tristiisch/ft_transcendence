@@ -1,9 +1,9 @@
-import { forwardRef, Inject,Injectable } from '@nestjs/common';
+import { forwardRef, Inject,Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
-import { Notification } from '../notification/entity/notification.entity';
+import { Notification, NotificationFront } from '../notification/entity/notification.entity';
 import { User, UserStatus } from '../users/entity/user.entity';
 
 @Injectable()
@@ -19,7 +19,12 @@ export class SocketService {
 
 	async getUserFromSocket(socket: Socket) : Promise<User | null> {
 		const token = socket.handshake.auth.token;
-		const user = await this.authService.getUserFromAuthenticationToken(token);
+		let user;
+		try {
+			user = await this.authService.getUserFromAuthenticationToken(token);
+		} catch (err) {
+			throw new WsException(err.message);
+		}
 		if (!user) {
 			// console.log('Invalid credentials.')
 			throw new WsException('Invalid credentials.');
@@ -41,19 +46,19 @@ export class SocketService {
 		return this.server.sockets.sockets.get(socketID)
 	}
 
-	FriendRequest(senderId: number, targetId: number, notification: Notification) {
+	FriendRequest(senderId: number, targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
 		if (clientSocket) clientSocket.emit('FriendRequest', senderId, notification);
 	};
 
-	AddFriend(senderId: number, targetId: number) {
+	AddFriend(senderId: number, targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('AddFriend', senderId);
+		if (clientSocket) clientSocket.emit('AddFriend', senderId, notification);
 	};
 
-	RemoveFriend(senderId: number, targetId: number) {
+	RemoveFriend(senderId: number, targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('RemoveFriend', senderId);
+		if (clientSocket) clientSocket.emit('RemoveFriend', senderId, notification);
 	};
 
 	AddUser(user: User) {

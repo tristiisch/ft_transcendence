@@ -30,6 +30,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
+	debug: boolean = false;
+
 	constructor(
 		private socketService: SocketService,
 		private readonly chatService: ChatService
@@ -40,7 +42,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleConnection(clientSocket: Socket) {
-		console.log('[SOCKET.IO]', 'SERVER', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
+		if (this.debug)
+			console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
 		const user = await this.socketService.getUserFromSocket(clientSocket);
 		if (!user) return clientSocket.disconnect();
 		else this.socketService.saveClientSocket(user, clientSocket.id);
@@ -53,7 +56,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('test')
 	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket): string {
-		console.log(client.id);
+		// if (this.debug)
+		console.log('[SOCKET.IO]', 'SERVER', 'DEBUG', 'client id :', client.id);
 		return data;
 	}
 
@@ -79,12 +83,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async createChannel(@MessageBody() body: User, @ConnectedSocket() client: Socket): Promise<ChannelFront> {
 		const user: User = body[0];
 		const channelDTO: ChannelCreateDTO = body[1];
-		// try {
-			// const user: User | null = await this.socketService.getUserFromSocket(client);
-		return await (await this.chatService.createChannel(user, channelDTO)).toFront(this.chatService, user, null);
-		// } catch (err) {
-		// 	throw new WsException(err.message);
-		// }
+		try {
+			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
+			return await channel.toFront(this.chatService, user, null);
+		} catch (err) {
+			throw new WsException(err.message);
+		}
 	}
 
 	@SubscribeMessage('chatDiscussionCreate')
@@ -104,7 +108,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			throw err;
 		}
-		console.log('DEBUG', newDiscu);
+		if (this.debug)
+			console.log('[SOCKET.IO]', 'SERVER', 'chatDiscussionCreate', 'Discussion:', newDiscu);
 		const finalDiscu: Discussion = await this.chatService.fetchChannel(user, newDiscu.id, newDiscu.type) as Discussion;
 		return finalDiscu.toFront(this.chatService, user);
 	}

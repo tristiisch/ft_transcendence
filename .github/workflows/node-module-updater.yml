@@ -34,6 +34,9 @@ jobs:
     - name: Update outdated Node module
       run: |
        npm update
+    - name: Check git
+      run: |
+       git status
     - name: Build project
       run: |
        cd backend/nest.js
@@ -68,6 +71,9 @@ jobs:
     - name: Update outdated Node module
       run: |
        npm update
+    - name: Check git
+      run: |
+       git status
     - name: Build project
       run: |
        cd front-end

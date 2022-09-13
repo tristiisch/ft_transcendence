@@ -23,8 +23,7 @@ async function bootstrap() {
 
 	await app.listen(port, async () => {
 		console.log('[WEB]', `http://localhost:${port}/api`);
-		createSocketServer(3001);
-		// createClient('localhost', 3001);
+		//createSocketServer(3001);
 	});
 }
 bootstrap();

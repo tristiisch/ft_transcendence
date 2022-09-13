@@ -1,12 +1,12 @@
 /** @prettier */
 import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notification, NotificationType } from '../notification/entity/notification.entity';
+import { Notification, NotificationFront, NotificationType } from '../notification/entity/notification.entity';
 import { NotificationService } from '../notification/notification.service';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { Brackets, DeleteResult, InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, DeleteResult, InsertResult, RemoveOptions, Repository, SaveOptions, SelectQueryBuilder } from 'typeorm';
 import { Friendship, FriendshipStatus } from './entity/friendship.entity';
 import { SocketService } from '../socket/socket.service';
 
@@ -39,7 +39,7 @@ export class FriendsService {
 	 * @throws {NotAcceptableException} When they are already friends or waiting for one of them to accept a friend request.
 	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async addFriendRequest(user: User, target: UserSelectDTO): Promise<{ statusCode: number; message: string }> {
+	async addFriendRequest(user: User, target: User): Promise<{ statusCode: number; message: string }> {
 		if (user.id == target.id) throw new PreconditionFailedException("You can't be friends with yourself.");
 
 		const friendshipCheck: Friendship = await this.findOne(user.id, target.id, false);
@@ -58,13 +58,16 @@ export class FriendsService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + ' rows was modify instead of one.');
 			}
-			const notif: Notification = new Notification();
+			let notif: Notification = {
+				user_id: friendship.user2_id,
+				from_user_id: friendship.user1_id,
+				type: NotificationType.FRIEND_REQUEST
+			};
 			notif.user_id = friendship.user2_id;
-			notif.from_user_id= friendship.user1_id
-			notif.is_deleted = false;
+			notif.from_user_id= friendship.user1_id;
 			notif.type = NotificationType.FRIEND_REQUEST
-			await this.notifService.addNotif(notif);
-			this.socketService.FriendRequest(user.id, target.id, notif);
+			notif = await this.notifService.addNotif(notif);
+			this.socketService.FriendRequest(user.id, target.id, await notif.toFront(this.userService, [user, target]));
 			return { statusCode: 200, message: `You asked as a friend ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
@@ -80,7 +83,7 @@ export class FriendsService {
 	 * @throws {NotAcceptableException} When they are already friends or waiting for one of them to accept a friend request.
 	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async acceptFriendRequest(user: UserSelectDTO, target: User): Promise<{ statusCode: number; message: string }> {
+	async acceptFriendRequest(user: User, target: User): Promise<{ statusCode: number; message: string }> {
 		if (target.id == user.id) throw new PreconditionFailedException("You can't be friends with yourself.");
 		const friendship: Friendship = await this.findOne(target.id, user.id, true);
 
@@ -90,7 +93,13 @@ export class FriendsService {
 
 		friendship.status = FriendshipStatus.ACCEPTED;
 
-		this.socketService.AddFriend(user.id, target.id);
+		let notif: Notification = {
+			user_id: friendship.user1_id,
+			from_user_id: friendship.user2_id,
+			type: NotificationType.FRIEND_ACCEPT,
+		};
+		notif = await this.notifService.addNotif(notif);
+		this.socketService.AddFriend(user.id, target.id, await notif.toFront(this.userService, [user, target]));
 
 		return await this.friendsRepository.save(friendship).then((fs: Friendship) => {
 			return { statusCode: 200, message: `You are now friend with ${target.username}.` };
@@ -107,7 +116,7 @@ export class FriendsService {
 	 * @throws {InternalServerErrorException} When the value in database can't be changed.
 	 * @throws {ServiceUnavailableException} When database is not reachable or an error occurred during the SQL query.
 	 */
-	async removeFriendship(user: UserSelectDTO, target: User): Promise<{ statusCode: number; message: string }> {
+	async removeFriendship(user: User, target: User): Promise<{ statusCode: number; message: string }> {
 		if (target.id == user.id) throw new PreconditionFailedException('Unable to suppress a friendship with oneself.');
 
 		const friendship: Friendship = await this.findOne(user.id, target.id, false);
@@ -116,7 +125,13 @@ export class FriendsService {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
-		this.socketService.RemoveFriend(user.id, target.id);
+		let notif: Notification = {
+			user_id: friendship.user1_id,
+			from_user_id: friendship.user2_id,
+			type: NotificationType.FRIEND_DECLINE,
+		};
+		notif = await this.notifService.addNotif(notif);
+		this.socketService.RemoveFriend(user.id, target.id, await notif.toFront(this.userService, [user, target]));
 
 		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) throw new InternalServerErrorException(`Can't remove friendship of ${friendship.user1_id} and ${friendship.user2_id}.`);
@@ -279,4 +294,6 @@ export class FriendsService {
 			return this.userService.lambdaDatabaseUnvailable(err);
 		}
 	}
+
+	
 }

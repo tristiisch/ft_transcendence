@@ -184,6 +184,9 @@ interface Match {
 	p2_ypos: number
 }
 
+/**
+ * @Deprecated
+ */
 export async function createSocketServer(serverPort: number) {
 	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 

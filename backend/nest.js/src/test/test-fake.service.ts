@@ -155,18 +155,19 @@ export class TestFakeService {
 			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
 			return null;
 		}
-		const randomUser: UserSelectDTO = new UserSelectDTO();
-		randomUser.id = randomElement(userIds);
-		randomUser.username = randomUser.id.toString();
+		const randomTarget: UserSelectDTO = new UserSelectDTO();
+		randomTarget.id = randomElement(userIds);
 
-		await this.friendsService.addFriendRequest(user, randomUser);
+		const target: User = await randomTarget.resolveUser(this.usersService);
+
+		await this.friendsService.addFriendRequest(user, target);
 
 		/* Only to test notif friendship. Should be uncommented later
 		const randomNb: number = random(1, 4);
 
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);*/
-		return randomUser;
+		return randomTarget;
 	}
 
 	private async getUsersIds(): Promise<number[]> {
