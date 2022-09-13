@@ -75,7 +75,7 @@ function onlyLettersAndNumbers(str: string) {
 }
 
 function submitRegistrationForm() {
-	if (!username.value || !(username.value.length > 1 && username.value.length < 9)) toast.error('Username should have at least 2 and at most 9 characters.');
+	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.error('Username should have at least 2 and at most 16 characters.');
 	else if (!onlyLettersAndNumbers(username.value)) toast.error('Username can only contain alphanumeric characters.');
 	else {
 		isLoading.value = true;

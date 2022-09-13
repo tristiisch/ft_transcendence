@@ -157,7 +157,13 @@ export const useChatStore = defineStore('chatStore', {
 			const userStore = useUserStore();
 			this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
 			newChannel.users.unshift(userStore.userData);
-			socket.emit('chatChannelCreate', userStore.userData, newChannel);
+			socket.emit('chatChannelCreate', userStore.userData, {
+				name: newChannel.name,
+				avatar_64: newChannel.avatar,
+				password: newChannel.password,
+				type: newChannel.type,
+				users_ids: newChannel.users.map((user: User) => user.id)
+			});
 			const type = this.channelTypeToString(newChannel);
 			this.addAutomaticMessage(newChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
 				, 'have been added to ' + newChannel.name + ' by ' + userStore.userData.username);

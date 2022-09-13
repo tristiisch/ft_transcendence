@@ -12,7 +12,7 @@ import { UsersService } from '../users/users.service';
 import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from '../auth/entity/user-auth.entity';
-import { Channel, ChannelPrivate, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
+import { ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
 import { Chat, ChatStatus } from '../chat/entity/chat.entity';
 import { ChatService } from '../chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';

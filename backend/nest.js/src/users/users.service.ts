@@ -62,8 +62,8 @@ export class UsersService {
 	async findAll(): Promise<User[]> {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user')
 			.where('user.username IS NOT NULL');
-		// Remove user.avatar64
 		return await sqlStatement.getMany().then(async (users: User[]) => {
+			for (const user of users) delete user.avatar_64;
 			return users;
 		}, this.lambdaDatabaseUnvailable);
 	}
@@ -133,29 +133,40 @@ export class UsersService {
 	}
 
 	async updateUsername(userId: number, username: string): Promise<User> {
-		await this.usersRepository.update(userId, { username: username });
+		try {
+			await this.usersRepository.update(userId, { username: username }).catch(this.lambdaDatabaseUnvailable);
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+				throw new PreconditionFailedException('Username already taken.');
+			else
+				throw err;
+		}
 		return await this.findOne(userId);
 	}
 
 	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
-		await this.usersRepository.update(userId, { avatar_64: avatar_64 });
+		fromBase64(avatar_64);
+		if (!fromBase64(avatar_64))
+			throw new PreconditionFailedException(`Unable to accept '${avatar_64.substring(0, 16) + (avatar_64.length > 16 ? '...' : '')}' as avatar_64.`);
+		await this.usersRepository.update(userId, { avatar_64: avatar_64 }).catch(this.lambdaDatabaseUnvailable);
 		return await this.findOne(userId);
 	}
 
 	async register(userId: number, user: UserDTO) {
 		const userBefore: User = await this.findOne(userId);
 		if (userBefore.username !== null)
-			throw new BadRequestException(`User ${userBefore.username} already register.`);
+			throw new BadRequestException(`You are already registered.`);
 
-		if (user.avatar_64 != null) {
-			try {
-				user.avatar_64 = await toBase64(user.avatar_64);
-				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username });
-			} catch (err) {
-				console.log('ERROR', 'user.service.ts avatar', err);
-			}
-		} else {
-			this.usersRepository.update(userId, { username: user.username });
+		try {
+			if (user.avatar_64 != null && (user.avatar_64 = await toBase64(user.avatar_64)) != null)
+				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
+			else
+				this.usersRepository.update(userId, { username: user.username }).catch(this.lambdaDatabaseUnvailable);
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+				throw new PreconditionFailedException('Username already taken.');
+			else
+				throw err;
 		}
 		return await this.findOne(userId);
 	}
@@ -189,16 +200,17 @@ export class UsersService {
 
 	async arrayIdsToUsersWithCache(array: number[], usersCached: User[]): Promise<User[]> {
 		const users: User[] = new Array();
-		for (const [index, id] of array.entries()) {
-			let cacheUser: User = usersCached.find((user: User) => user.id === id);
-			if (cacheUser !== undefined) {
-				users.push(cacheUser);
-			} else {
-				cacheUser = await this.findOne(id);
-				users.push(cacheUser);
-				usersCached.push(cacheUser);
+		if (array != null)
+			for (const [index, id] of array.entries()) {
+				let cacheUser: User = usersCached.find((user: User) => user.id === id);
+				if (cacheUser !== undefined) {
+					users.push(cacheUser);
+				} else {
+					cacheUser = await this.findOne(id);
+					users.push(cacheUser);
+					usersCached.push(cacheUser);
+				}
 			}
-		}
 		return users;
 	}
 }

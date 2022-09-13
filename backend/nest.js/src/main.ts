@@ -16,8 +16,8 @@ async function bootstrap() {
 	// setting localhost:3000 to localhost:3000/api
 	app.setGlobalPrefix('api');
 
-	// For avatar, max JSON to 50mb (should be better if this rules is only for avatar request)
-	app.use(bodyParser.json({ limit: '50mb' }));
+	// For avatar, max JSON (should be better if this rules is only for avatar request)
+	app.use(bodyParser.json({ limit: '10mb' }));
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

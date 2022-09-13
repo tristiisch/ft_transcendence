@@ -1,5 +1,5 @@
 /** @prettier */
-import { ForbiddenException, Inject, Injectable, NotAcceptableException, NotImplementedException, Res, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
 import { ArrayContains, InsertResult, Repository } from 'typeorm';
@@ -8,11 +8,13 @@ import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
-import { fromBase64 } from '../utils/utils';
+import { fromBase64, removeFromArray, toBase64, validateDTOforHttp } from '../utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
 import { hashPassword } from '../utils/bcrypt';
+import { validate, validateOrReject, ValidationError, Validator } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ChatService {
@@ -168,7 +170,8 @@ export class ChatService {
 
 	private async findChannelAvatar(channel: Channel, @Res() res: Response) {
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(channel.avatar_64);
-
+		if (!avatar)
+			throw new UnprocessableEntityException(`Can't get a picture from channel ${channel.name}.`);
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
 	}
@@ -200,6 +203,7 @@ export class ChatService {
 	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
 		let channel: Channel;
 
+		await validateDTOforHttp(plainToInstance(ChannelCreateDTO, channelDTO));
 		switch (channelDTO.type) {
 			case ChatStatus.PUBLIC:
 				channel = new ChannelPublic();
@@ -215,12 +219,20 @@ export class ChatService {
 				throw new NotAcceptableException(`Unknown channel type ${channelDTO.type}.`)
 		}
 		channel.name = channelDTO.name;
-		channel.avatar_64 = channelDTO.avatar_64;
+		if (channelDTO.avatar_64.startsWith('src/assets/')) {
+			channel.avatar_64 = await toBase64(`${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
+			if (!channel.avatar_64)
+				throw new PreconditionFailedException(`Bad channel avatar '${channelDTO.avatar_64}'`);
+		} else {
+			channel.avatar_64 = channelDTO.avatar_64;
+		}
 		channel.type = channelDTO.type;
-		channel.users_ids = channelDTO.users_ids;
+		channel.users_ids = channelDTO.users_ids; // Is null
 
 		channel.owner_id = user.id;
-		if (channel.users_ids.indexOf(user.id) == -1)
+		if (channel.users_ids == null)
+			channel.users_ids = [user.id];
+		else if (channel.users_ids.indexOf(user.id) == -1)
 			channel.users_ids.push(user.id);
 		return await this.addChatToDB(channel) as Channel;
 	}
@@ -245,6 +257,16 @@ export class ChatService {
 		if (discu)
 			throw new NotAcceptableException(`They is already a discussion between ${newDiscu.users_ids[0]} and ${newDiscu.users_ids[1]}.`);
 		return this.discussionRepo.save(newDiscu);
+	}
+
+	async createMessage(channel: ChannelFront, msgFront: MessageFront) {
+		const msg: Message = {
+			id_channel: channel.id,
+			id_sender: msgFront.idSender,
+			message: msgFront.message
+		};
+		// await validateDTOforHttp(plainToInstance(ChannelCreateDTO, Message));
+		return await this.addMessage(msg);
 	}
 
 	async addMessage(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]): Promise<InsertResult> {
@@ -326,9 +348,10 @@ export class ChatService {
 	async leaveChannel(user: User, channel: Channel): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		let dataUpdate: QueryDeepPartialEntity<Channel>;
 
-		dataUpdate.users_ids = channel.users_ids.filter(id => id !== user.id)
+		
+		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
 		if (channel.admins_ids.indexOf(user.id) !== -1)
-			dataUpdate.admins_ids = channel.admins_ids.filter(id => id !== user.id)
+			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
 	
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
