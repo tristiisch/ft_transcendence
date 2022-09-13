@@ -35,19 +35,12 @@ function fetchCurrentMatchs() {
 	UsersService.getCurrentMatchs()
 		.then((response) => {
 			matchs.value = response.data;
+			console.log(matchs.value)
 			isLoading.value = false
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
-}
-
-function side()
-{
-	if (rightPartToDisplay.value === 'gameSettings')
-		return 'next'
-	else
-		return 'previous'
 }
 
 function invitePlayer()
@@ -78,10 +71,10 @@ onBeforeMount(() => {
 			<card-right title="CUSTOM GAME">
 				<div class="flex flex-col justify-between items-center w-11/12 h-full px-8">
 					<game-settings v-if="rightPartToDisplay === 'gameSettings'" @next="rightPartToDisplay = 'selectPlayer'"></game-settings>
-					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation" :invitedUser="invitedUser"></select-player>
+					<button-return-next v-if="rightPartToDisplay === 'gameSettings'" @click="setRightPartToDisplay()" side="next" class="self-end mb-1"></button-return-next>
+					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="setRightPartToDisplay()" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation" :invitedUser="invitedUser"></select-player>
 					<users-search v-if="rightPartToDisplay === 'invitePlayer'" :singleSelection="true" :type="'users'"></users-search>
-					<button-return-next v-if="rightPartToDisplay != 'invitePlayer'" @click="setRightPartToDisplay()" :side="side()" class="self-end mt-2"></button-return-next>
-					<button-close-validate v-else @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></button-close-validate>
+					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></button-close-validate>
 				</div>
 			</card-right>
 		</div>

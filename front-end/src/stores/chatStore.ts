@@ -143,9 +143,11 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				const index = this.getIndexUserChannels(channel.name);
 				if (index < 0) {
-					if (inviter) this.addNewChannel(inviter, channel)
+					if (inviter) {
+					this.addNewChannel(inviter, channel)
 					for(const user of users)
 						this.userChannels[this.userChannels.length - 1].users.push(user);
+					}
 				}
 				else {
 					for(const user of users)
@@ -264,7 +266,7 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelBan', channel, newBanned);
 			}
 
-			/////////////////////////////////////////////////////////////////// best to do in back
+			///////////////////////////////////////////////////////////////////BACK best to do in back
 			if (this.inChannel && this.inChannel.name === channel.name) {
 				this.inChannel.banned = newBanned.list
 				for (const banned of channel.banned)
@@ -341,7 +343,7 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		setChannelOwner(channel: Channel, selection: User[]) {
-			////////////////////////////////////////////////////////////////////////////// best to do in back
+			////////////////////////////////////////////////////////////////////////////// BACK best to do in back
 			const indexOwner = selection.findIndex(user => user.id === channel.owner.id)
 			if (indexOwner >= 0) {
 				if (channel.admins.length) {
@@ -428,7 +430,7 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 		},
-		addDiscussionMessage(discussion: Discussion, data: Message) {
+		addDiscussionMessage(discussion: Discussion, data: Message) {   //BACK need to send User if new Discussion
 			const globalStore = useGlobalStore();
 			const index = this.getIndexUserDiscussions(data.idSender);
 			if (index < 0)  {
@@ -506,7 +508,7 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				return 'PUBLIC';
 		},
-		UsersNotInChannels() {
+		UsersNotInChannels() {  						//BACK need to be done with a fetch
 			const globalStore = useGlobalStore();
 			let userNotInChannel: User[] = [];
 			for(const user of globalStore.users) {
