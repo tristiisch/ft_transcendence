@@ -18,6 +18,7 @@ import { Message, MessageFront } from '../chat/entity/message.entity';
 import { ChatFront, ChatStatus } from '../chat/entity/chat.entity';
 import { Discussion, DiscussionFront } from '../chat/entity/discussion.entity';
 import { NotAcceptableException } from '@nestjs/common';
+import { comparePassword } from '../utils/bcrypt';
 
 @WebSocketGateway({
 	cors: {
@@ -87,7 +88,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatDiscussionCreate')
-	async createDiscussion(@MessageBody() body, @ConnectedSocket() client: Socket): Promise<DiscussionFront> {
+	async chatDiscussionMessage(@MessageBody() body, @ConnectedSocket() client: Socket): Promise<DiscussionFront> {
 		const user: User = body[0];
 		const discussionFront: DiscussionFront = body[1];
 		const discu: Discussion = {
@@ -109,22 +110,84 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatChannelMessage')
-	async receiveMessage(@MessageBody() body, @ConnectedSocket() client: Socket) {
+	async chatChannelMessage(@MessageBody() body, @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
 		const msgFront: MessageFront = body[1];
 		try {
-			console.log('DEBUG2 channel.id', channel.id)
+			const channelId = channel.id;
 			const msg: Message = {
 				id_sender: msgFront.idSender,
-				id_channel: channel.id,
+				id_channel: channelId,
 				message: msgFront.message
 			};
-			console.log('DEBUG', msg)
+			if (channelId == null) // TODO fix: je sais pas quand on vient de crée le channel, c'est null 
+				throw new WsException(`channel.id = ${channel.id} so msg ${JSON.stringify(msg)} can't be send`);
 			await this.chatService.addMessage(msg);
 		} catch (err) {
 			throw new WsException(err.message);
 		}
 		client.broadcast.emit("chatChannelMessage", channel, msgFront);
+	}
+
+	@SubscribeMessage('chatChannelDelete')
+	async chatChannelDelete(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+	}
+
+	@SubscribeMessage('chatChannelJoin')
+	async chatChannelJoin(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const joinedUser: User = body[1];
+	}
+
+	@SubscribeMessage('chatChannelJoin')
+	async chatChannelInvitation(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const invitedUsers: User[] = body[1];
+		const inviter: User = body[2];
+	}
+
+	@SubscribeMessage('chatChannelLeave')
+	async chatChannelLeave(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const user: User = body[1];
+	}
+
+	@SubscribeMessage('chatChannelBan')
+	async chatChannelBan(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const newBanned:{ list: User[], userWhoSelect: User} = body[1];
+	}
+
+	@SubscribeMessage('chatChannelAdmin')
+	async chatChannelAdmin(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
+	}
+
+	@SubscribeMessage('chatChannelMute')
+	async chatChannelMute(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const newMuted:{ list: User[], userWhoSelect: User} = body[1];
+	}
+
+	@SubscribeMessage('chatChannelKick')
+	async chatChannelKick(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const newKicked:{ list: User[], userWhoSelect: User} = body[1];
+	}
+
+	@SubscribeMessage('chatChannelName')
+	async chatChannelName(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const newName: { name: string, userWhoChangeName: User} = body[1];
+	}
+
+	@SubscribeMessage('chatPassCheck')
+	async chatPassCheck(@MessageBody() body, @ConnectedSocket() client: Socket) {
+		const channel: ChannelFront = body[0];
+		const password: string = body[1];
+		return comparePassword(body[1], body[0].password)
 	}
 
 }
