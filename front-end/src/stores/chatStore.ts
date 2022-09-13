@@ -163,11 +163,12 @@ export const useChatStore = defineStore('chatStore', {
 				password: newChannel.password,
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
+			}, (channelCreated: Channel) => {
+				const type = this.channelTypeToString(channelCreated);
+				this.addAutomaticMessage(channelCreated, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
+					, 'have been added to ' + channelCreated.name + ' by ' + userStore.userData.username);
+				this.loadChannel(channelCreated);
 			});
-			const type = this.channelTypeToString(newChannel);
-			this.addAutomaticMessage(newChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
-				, 'have been added to ' + newChannel.name + ' by ' + userStore.userData.username);
-			this.loadChannel(this.userChannels[0]);
 		},
 		joinNewChannel(channel : Channel) {
 			const userStore = useUserStore();
@@ -416,10 +417,12 @@ export const useChatStore = defineStore('chatStore', {
 					type: type
 				};
 				if (this.inDiscussion) {
+					data['idChat'] = this.inDiscussion.id;
 					this.inDiscussion.messages.push(data);
 					socket.emit('chatDiscussionMessage', this.inDiscussion, this.inDiscussion.messages[this.inDiscussion.messages.length - 1]);
 				}
 				else if (this.inChannel) {
+					data['idChat'] = this.inChannel.id;
 					this.inChannel.messages.push(data)
 					socket.emit('chatChannelMessage', this.inChannel, this.inChannel.messages[this.inChannel.messages.length - 1]);
 				}

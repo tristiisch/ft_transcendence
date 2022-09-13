@@ -259,6 +259,10 @@ export class ChatService {
 		return this.discussionRepo.save(newDiscu);
 	}
 
+	async findDiscussion(userId: number, targetId: number): Promise<Discussion> {
+		return await this.discussionRepo.findOneBy({ users_ids: ArrayContains([userId, targetId]) })
+	}
+
 	async createMessage(channel: ChannelFront, msgFront: MessageFront) {
 		const msg: Message = {
 			id_channel: channel.id,
