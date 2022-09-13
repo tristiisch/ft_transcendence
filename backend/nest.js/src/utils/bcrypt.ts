@@ -1,6 +1,9 @@
 import * as bcrypt from 'bcrypt';
+import { isNumberPositive } from './utils';
 
-const salt: number = Number.parseInt(process.env.BCRYPT_SALT_OR_ROUNDS);
+let salt: any = Number.parseInt(process.env.BCRYPT_SALT_OR_ROUNDS);
+if (Number.isNaN(salt))
+	salt = process.env.BCRYPT_SALT_OR_ROUNDS;
 
 export async function hashPassword(password: string): Promise<string> {
 	return await bcrypt.hash(password, salt);
