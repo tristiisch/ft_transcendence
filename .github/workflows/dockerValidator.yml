@@ -11,4 +11,4 @@ jobs:
       - name: Run dockerfile-validator
         uses: ghe-actions/dockerfile-validator@v1
         with:
-          dockerfile: "backend/api/Dockerfile"
+          dockerfile: "api/Dockerfile"

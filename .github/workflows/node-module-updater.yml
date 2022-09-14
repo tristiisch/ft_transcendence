@@ -22,10 +22,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: backend/api/package-lock.json
+        cache-dependency-path: api/package-lock.json
     - name: Install node modules
       run: |
-       cd backend/api
+       cd api
        npm install
     - name: Check outdated Node module
       run: |
@@ -42,11 +42,11 @@ jobs:
        git diff
     - name: Build project
       run: |
-       cd backend/api
+       cd api
        npm run build --if-present
     - name: Unit test Built In
       run: |
-       cd backend/api
+       cd api
        npm test
     - name: "Install Github Cli"
       run: |
@@ -67,7 +67,7 @@ jobs:
 
     - name: "Add Pull Request"
       run: |
-        cd backend/api
+        cd api
         if [[ ! `git status --porcelain` ]]; then
           echo "No changes, not need to commit."
           exit 0
