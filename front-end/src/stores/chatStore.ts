@@ -177,22 +177,20 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		createNewChannel(newChannel: Channel, selection: User[]) {
 			const userStore = useUserStore();
-			// this.userChannels.length ? this.userChannels.unshift(newChannel) : this.userChannels.push(newChannel);
-			// newChannel.users.unshift(userStore.userData);
 			socket.emit('chatChannelCreate', userStore.userData, {
 				name: newChannel.name,
 				avatar_64: newChannel.avatar,
-				password: newChannel.password,
+				hasPassword: newChannel.hasPassword,
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, (channelCreated: Channel) => {
 				console.log('channelCreated', channelCreated)
 				const type = this.channelTypeToString(channelCreated);
-				this.inChannel = channelCreated; // TODO check this 
-				this.addAutomaticMessage(channelCreated, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
-					, 'have been added to ' + channelCreated.name + ' by ' + userStore.userData.username);
-				this.loadChannel(channelCreated);
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
+				this.inChannel = this.userChannels[0]; 
+				this.addAutomaticMessage(this.inChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
+					, 'have been added to ' + this.inChannel.name + ' by ' + userStore.userData.username);
+				this.loadChannel(this.inChannel);
 			});
 		},
 		joinNewChannel(channel : Channel) {
@@ -368,14 +366,17 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		setChannelOwner(channel: Channel, selection: User[]) {
 			////////////////////////////////////////////////////////////////////////////// BACK best to do in back
-			const indexOwner = selection.findIndex(user => user.id === channel.owner.id)
-			if (indexOwner >= 0) {
-				if (channel.admins.length) {
-					channel.owner = channel.admins[0];
-					this.addAutomaticMessage(channel, {unlisted:[], listed: selection}, '', ' is now owner of the channel.')
+			if (channel.owner !== null) {
+				const ownerId = channel.owner.id;
+				const indexOwner = selection.findIndex(user => user.id === ownerId)
+				if (indexOwner >= 0) {
+					if (channel.admins.length) {
+						channel.owner = channel.admins[0];
+						this.addAutomaticMessage(channel, {unlisted:[], listed: selection}, '', ' is now owner of the channel.')
+					}
+					else
+						socket.emit('chatChannelDelete', channel)
 				}
-				else
-					socket.emit('chatChannelDelete', channel)
 			}
 			//////////////////////////////////////////////////////////////////////////////
 		},

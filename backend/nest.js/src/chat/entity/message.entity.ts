@@ -26,8 +26,9 @@ export class Message {
 			idSender: this.id_sender,
 			message: this.message,
 			send: true,
+			read: false,
 			date: `${this.date.toLocaleString()}`,
-		}
+		};
 		return msgFront;
 	}
 }
@@ -35,8 +36,9 @@ export class Message {
 export class MessageFront {
 	idMessage?: number;
 	idChat?: number;
-	send?: boolean;
-	date: string;
-	message: string;
 	idSender: number;
+	message: string;
+	send?: boolean;
+	read: boolean;
+	date: string;
 }
