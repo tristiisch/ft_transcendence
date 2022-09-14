@@ -8,7 +8,7 @@ import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
-import { fromBase64, removeFromArray, toBase64, validateDTOforHttp } from '../utils/utils';
+import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTOforHttp } from '../utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
@@ -49,8 +49,9 @@ export class ChatService {
 		return this.msgRepo;
 	}
 
-    async findAllChannels() : Promise<ChatFront[]> {
-		const userCached: User[] = new Array();
+    async findAllChannels(userCached: User[] | null) : Promise<ChatFront[]> {
+		if (!userCached)
+			userCached = new Array();
 		const publicChannels: ChannelFront[] = await this.channelPublicRepo.find()
 			.then(async (chs: ChannelPublic[]) => {
 				const chsFront: ChannelFront[] = new Array();
@@ -380,6 +381,36 @@ export class ChatService {
 
 		this.channelPrivateRepo.update(channel.id, { invited_ids: invited_ids });
 		return this.channelPrivateRepo.findOneBy({ id: channel.id });
+	}
+
+	async kickUsers(user: User, channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+
+		const leaveMessage = async () => {
+			let leaveMessage: Message = new Message();
+			leaveMessage.message = `🔴　${users_ids.join(', ')} has been kicked by ${user.username}`;
+			leaveMessage.id_sender = user.id;
+			leaveMessage.id_channel = channel.id;
+			leaveMessage = await this.addMessage(leaveMessage);
+		};
+
+		users_ids = removesFromArray(channel.users_ids, users_ids);
+		channel.users_ids = users_ids;
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				this.channelPublicRepo.update(channel.id, { users_ids: users_ids });
+				leaveMessage();
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				this.channelProtectedRepo.update(channel.id, { users_ids: users_ids });
+				leaveMessage();
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				this.channelPrivateRepo.update(channel.id, { users_ids: users_ids });
+				leaveMessage();
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
 	}
 
 	async updateProtectedChannel(channel: ChannelEditDTO): Promise<ChannelProtected> {

@@ -184,7 +184,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatChannelLeave')
-	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
 		const channelDTO: ChannelFront = body[0];
 		// const joinedUser: User = body[1];
 	
@@ -198,46 +198,93 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('chatChannelInvitation')
 	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const invitedUsers: User[] = body[1];
-		const inviter: User = body[2];
+		// const inviter: User = body[2];
+		const clientUser: User = await this.socketService.getUserFromSocket(client);
+		let channelTmp: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+
+		if (!(channelTmp instanceof ChannelPrivate))
+			throw new WsException("Channel is not private, can't invite users.");
+
+		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
+		channel.checkAdminPermission(clientUser);
+		const users: User[] = await this.chatService.getUserService().findMany(body.map(user => user.id));
+		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
+
+		return channel;
 	}
 
 	@SubscribeMessage('chatChannelBan')
 	async chatChannelBan(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const newBanned:{ list: User[], userWhoSelect: User} = body[1];
+		const clientUser: User = await this.socketService.getUserFromSocket(client);
+		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(clientUser);
+		const users: User[] = await this.chatService.getUserService().findMany(newBanned['list'].map(user => user.id));
+		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
+
+		return channel;
 	}
 
 	@SubscribeMessage('chatChannelAdmin')
 	async chatChannelAdmin(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
+	
+		const clientUser: User = await this.socketService.getUserFromSocket(client);
+		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(clientUser);
+		const users: User[] = await this.chatService.getUserService().findMany(newAdmin['list'].map(user => user.id));
+		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
+
+		return channel;
 	}
 
 	@SubscribeMessage('chatChannelMute')
 	async chatChannelMute(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const newMuted:{ list: User[], userWhoSelect: User} = body[1];
+	
+		const clientUser: User = await this.socketService.getUserFromSocket(client);
+		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(clientUser);
+		const users: User[] = await this.chatService.getUserService().findMany(newMuted['list'].map(user => user.id));
+		channel = await this.chatService.setMuted(channel, users.map(user => user.id));
+
+		return channel;
 	}
 
 	@SubscribeMessage('chatChannelKick')
 	async chatChannelKick(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const newKicked:{ list: User[], userWhoSelect: User} = body[1];
+	
+		const clientUser: User = await this.socketService.getUserFromSocket(client);
+		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(clientUser);
+		const users: User[] = await this.chatService.getUserService().findMany(newKicked['list'].map(user => user.id));
+		channel = await this.chatService.kickUsers(clientUser, channel, users.map(user => user.id));
+
+		return channel;
 	}
 
 	@SubscribeMessage('chatChannelName')
 	async chatChannelName(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const newName: { name: string, userWhoChangeName: User} = body[1];
 	}
 
 	@SubscribeMessage('chatPassCheck')
 	async chatPassCheck(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<boolean> {
-		const channel: ChannelFront = body[0];
+		const channelDTO: ChannelFront = body[0];
 		const password: string = body[1];
-		return comparePassword(password, channel.password)
+		return comparePassword(password, channelDTO.password)
 	}
 
 	@SubscribeMessage('chatChannelOtherUsers')
@@ -257,7 +304,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatFindAll')
-	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
+	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket): Promise<any[]> {
 		const user: User = await this.socketService.getUserFromSocket(client);
 		const userCached: User[] = new Array();
 	

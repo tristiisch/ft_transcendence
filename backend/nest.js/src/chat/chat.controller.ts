@@ -17,9 +17,10 @@ export class ChatController {
 	@UseGuards(JwtAuthGuard)
 	@Get('channels')
 	getChannels() {
-		return this.chatService.findAllChannels();
+		return this.chatService.findAllChannels(null);
 	}
 
+	// TODO remove it
 	@UseGuards(JwtAuthGuard)
 	@Get('user-discussions')
 	getUserPrivateMessage(@Req() req) {
@@ -27,6 +28,7 @@ export class ChatController {
 		return this.chatService.findUserDiscussion(user, null);
 	}
 
+	// TODO remove it
 	@UseGuards(JwtAuthGuard)
 	@Get('user-channels')
 	getUserChannels(@Req() req) {
