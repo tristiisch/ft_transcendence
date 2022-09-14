@@ -11,4 +11,4 @@ jobs:
       - name: Run dockerfile-validator
         uses: ghe-actions/dockerfile-validator@v1
         with:
-          dockerfile: "backend/nest.js/Dockerfile"
+          dockerfile: "backend/api/Dockerfile"

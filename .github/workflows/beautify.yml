@@ -19,14 +19,14 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: backend/nest.js/package-lock.json
+        cache-dependency-path: backend/api/package-lock.json
     - name: Install node modules
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm install
     - name: Beautify Code with prettier
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm run format
     - name: Git status
       run: |
@@ -36,11 +36,11 @@ jobs:
        git diff
     - name: Build project
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm run build --if-present
     - name: Unit test Built In
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm test
     - name: "Install Github Cli"
       run: |
@@ -60,7 +60,7 @@ jobs:
         git config --global core.fileMode false
     - name: "Add Pull Request"
       run: |
-        cd backend/nest.js
+        cd backend/api
         if [[ ! `git status --porcelain` ]]; then
           echo "No changes, not need to commit."
           exit 0

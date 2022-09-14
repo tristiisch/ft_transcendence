@@ -22,18 +22,18 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: backend/nest.js/package-lock.json
+        cache-dependency-path: backend/api/package-lock.json
     - name: Install node modules
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm ci
     - name: Build project
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm run build --if-present
     - name: Unit test Built In
       run: |
-       cd backend/nest.js
+       cd backend/api
        npm test
 
   build_frontend:

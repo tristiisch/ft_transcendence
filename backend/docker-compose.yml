@@ -4,7 +4,7 @@ services:
 
   api_dev:
     build:
-      context: ./nest.js/
+      context: ./api/
       target: development
       # target: production
     volumes:
@@ -26,7 +26,7 @@ services:
 
   # api_prod:
   #   build:
-  #     context: ./nest.js/
+  #     context: ./api/
   #     target: production
   #   restart: always
   #   env_file:
@@ -110,7 +110,7 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./nest.js
+      device: ./api
 
   postgres_data:
     driver: local
