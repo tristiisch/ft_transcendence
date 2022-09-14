@@ -1,84 +1,89 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsNumber, IsPositive, IsAlphanumeric, MinLength, MaxLength } from "class-validator";
-import { ChatStatus } from "./chat.entity";
-import { MessageFront } from "./message.entity";
+import {
+	IsInt,
+	IsNotEmpty,
+	IsOptional,
+	IsString,
+	IsNumber,
+	IsPositive,
+	IsAlphanumeric,
+	MinLength,
+	MaxLength,
+} from 'class-validator';
+import { ChatStatus } from './chat.entity';
+import { MessageFront } from './message.entity';
 
 export class ChannelSelectDTO {
+	@IsInt()
+	@IsPositive()
+	id: number;
 
-    @IsInt()
-    @IsPositive()
-    id: number;
-
-    @IsInt()
-    type: ChatStatus;
+	@IsInt()
+	type: ChatStatus;
 }
 
 export class ChannelFetchDTO {
+	@IsInt()
+	@IsPositive()
+	id: number;
 
-    @IsInt()
-    @IsPositive()
-    id: number;
+	@IsOptional()
+	@IsString()
+	@IsNotEmpty()
+	password: string;
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    password: string;
-
-    @IsInt()
-    type: ChatStatus;
+	@IsInt()
+	type: ChatStatus;
 }
 
 export class ChannelCreateDTO {
-
-    @IsString()
-    @IsNotEmpty()
+	@IsString()
+	@IsNotEmpty()
 	@MinLength(3)
 	@MaxLength(16)
-    name: string;
+	name: string;
 
-    @IsString()
-    @IsNotEmpty()
+	@IsString()
+	@IsNotEmpty()
 	avatar_64: string;
 
-    @IsOptional()
-    @IsString()
+	@IsOptional()
+	@IsString()
 	@MaxLength(512)
-    password: string;
+	password: string;
 
-    @IsInt()
-    type: ChatStatus;
+	@IsInt()
+	type: ChatStatus;
 
-    @IsNumber({},{each: true})
+	@IsNumber({}, { each: true })
 	users_ids: number[];
 }
 
 export class ChannelEditDTO {
+	@IsInt()
+	@IsPositive()
+	id: number;
 
-    @IsInt()
-    @IsPositive()
-    id: number;
+	@IsOptional()
+	@IsString()
+	@IsNotEmpty()
+	name: string;
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-    
-    // @IsOptional()
-    // @IsString()
-    // @IsNotEmpty()
+	// @IsOptional()
+	// @IsString()
+	// @IsNotEmpty()
 	// avatar_64: string;
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    password: string;
+	@IsOptional()
+	@IsString()
+	@IsNotEmpty()
+	password: string;
 }
 
 export class ChannelEditUsersDTO {
+	@IsInt()
+	@IsPositive()
+	id: number;
 
-    @IsInt()
-    @IsPositive()
-    id: number;
-
-    @IsNumber({},{each: true})
+	@IsNumber({}, { each: true })
 	users_ids: number[];
 }

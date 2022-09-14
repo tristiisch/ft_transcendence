@@ -1,5 +1,18 @@
 /** @prettier */
-import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	forwardRef,
+	Get,
+	Inject,
+	Param,
+	Patch,
+	Post,
+	Req,
+	Res,
+	UseGuards,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
@@ -9,7 +22,6 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-
 	constructor(private readonly usersService: UsersService) {}
 
 	// TODO: this work

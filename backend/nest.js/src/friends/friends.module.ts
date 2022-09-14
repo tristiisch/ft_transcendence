@@ -9,7 +9,12 @@ import { NotificationModule } from '../notification/notification.module';
 import { SocketModule } from '../socket/socket.module';
 
 @Module({
-	imports: [UsersModule, TypeOrmModule.forFeature([Friendship]), NotificationModule, SocketModule],
+	imports: [
+		UsersModule,
+		TypeOrmModule.forFeature([Friendship]),
+		NotificationModule,
+		SocketModule,
+	],
 	providers: [FriendsService],
 	controllers: [FriendsController],
 	exports: [FriendsService],

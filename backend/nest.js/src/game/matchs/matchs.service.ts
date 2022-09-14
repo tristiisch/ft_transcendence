@@ -9,13 +9,12 @@ import { Match } from './entity/match.entity';
 
 @Injectable()
 export class MatchStatsService {
-
 	constructor(
 		@InjectRepository(MatchStats)
-		private matchsHistoryRepository: Repository<MatchStats>,
+		private matchsHistoryRepository: Repository<MatchStats>
 	) {}
 
-	private readonly matches = new Map<number, Match>()
+	private readonly matches = new Map<number, Match>();
 
 	@Inject(UsersService)
 	private readonly userService: UsersService;
@@ -32,13 +31,16 @@ export class MatchStatsService {
 		return this.matchsHistoryRepository.save(matchHistory);
 	}
 
-	async findHistory(userId: number) : Promise<MatchOwn[]> {
-		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
+	async findHistory(userId: number): Promise<MatchOwn[]> {
+		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository
+			.createQueryBuilder('matchhistory')
 			.where('matchhistory.timestamp_ended is NOT NULL')
-			.andWhere(new Brackets(web => {
-				web.where('matchhistory.user1_id = :id', { id: userId }),
-				web.orWhere('matchhistory.user2_id = :id')
-			}))
+			.andWhere(
+				new Brackets(web => {
+					web.where('matchhistory.user1_id = :id', { id: userId }),
+						web.orWhere('matchhistory.user2_id = :id');
+				})
+			)
 			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
 		try {
 			return await sqlStatement.getMany().then(async (matchs: MatchStats[]) => {
@@ -50,7 +52,9 @@ export class MatchStatsService {
 					matchFormatted.date = m.timestamp_started;
 					matchFormatted.end = m.timestamp_ended;
 					matchFormatted.score = m.score;
-					matchFormatted.opponent = (await this.userService.findOneWithCache(opponentId, userCached)).username;
+					matchFormatted.opponent = (
+						await this.userService.findOneWithCache(opponentId, userCached)
+					).username;
 					matchFormatted.won = m.isWinner(userId);
 					if (m.user1_id !== userId) {
 						let tmp = matchFormatted.score[0];
@@ -66,8 +70,9 @@ export class MatchStatsService {
 		}
 	}
 
-	async findOnlineMatchs() : Promise<MatchStats[]> {
-		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository.createQueryBuilder('matchhistory')
+	async findOnlineMatchs(): Promise<MatchStats[]> {
+		const sqlStatement: SelectQueryBuilder<MatchStats> = this.matchsHistoryRepository
+			.createQueryBuilder('matchhistory')
 			.where('matchhistory.timestamp_ended IS NULL')
 			.andWhere('matchhistory.score IS NOT NULL')
 			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
@@ -87,6 +92,6 @@ export class MatchStatsService {
 	}
 
 	async save(match: MatchStats) {
-		return this.matchsHistoryRepository.save(match)
+		return this.matchsHistoryRepository.save(match);
 	}
 }

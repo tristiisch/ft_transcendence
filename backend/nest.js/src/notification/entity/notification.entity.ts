@@ -9,7 +9,7 @@ export enum NotificationType {
 	FRIEND_REQUEST,
 	MATCH_REQUEST,
 	FRIEND_ACCEPT,
-	FRIEND_DECLINE
+	FRIEND_DECLINE,
 }
 
 @Entity()
@@ -34,12 +34,16 @@ export class Notification {
 	@Column({ type: 'enum', enum: NotificationType, default: NotificationType.UNKNOWN })
 	type: NotificationType;
 
-	@Column({ type: 'timestamptz', precision: null, nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+	@Column({
+		type: 'timestamptz',
+		precision: null,
+		nullable: true,
+		default: () => 'CURRENT_TIMESTAMP',
+	})
 	date?: Date;
 
 	async toFront?(userService: UsersService, userCached: User[]): Promise<NotificationFront> {
-		if (!userCached)
-			userCached = new Array();
+		if (!userCached) userCached = new Array();
 		const notifFront: NotificationFront = new NotificationFront();
 		notifFront.from_user = await userService.findOneWithCache(this.from_user_id, userCached);
 
