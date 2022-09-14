@@ -4,8 +4,8 @@ import type Notification from '@/types/Notification';
 
 export interface GlobalState {
 	users: User[];
-	friends: User[];
-	pendingFriends: User[],
+	friends: number[];
+	pendingFriends: number[],
 	notifications: Notification[],
 	selectedItems: User[] | Channel[];
 }

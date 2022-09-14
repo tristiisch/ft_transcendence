@@ -26,24 +26,21 @@ export class SocketService {
 			throw new WsException(err.message);
 		}
 		if (!user) {
-			// console.log('Invalid credentials.')
-			throw new WsException('Invalid credentials.');
+			console.log('Invalid credentials.')
+			//throw new WsException('Invalid credentials.');
 		}
 		return user;
 	}
 
 	saveClientSocket(user: User, clientSocketId: string) {
 		if (!this.usersSocket.has(user.id))
-		{
-			this.usersSocket.set(user.id, clientSocketId)
-			this.AddUser(user)
-		}
+			this.usersSocket[user.id] = clientSocketId
 		else this.usersSocket.set(user.id, clientSocketId)
 	}
 
 	getSocketToEmit(targetId: number) {
-		const socketID = this.usersSocket.get(targetId);
-		return this.server.sockets.sockets.get(socketID)
+		const socketId = this.usersSocket[targetId];
+		return this.server.sockets.sockets.get(socketId)
 	}
 
 	FriendRequest(senderId: number, targetId: number, notification: NotificationFront) {

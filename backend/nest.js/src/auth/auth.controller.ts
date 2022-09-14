@@ -60,12 +60,6 @@ export class AuthController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('jwt-check')
-	async checkJwtToken(@Res() res: Response) {
-		res.status(HttpStatus.ACCEPTED).send();
-	}
-
-	@UseGuards(JwtAuthGuard)
 	@Get('me')
 	async getOwnInfo(@Req() req) {
 		const user: User = req.user;

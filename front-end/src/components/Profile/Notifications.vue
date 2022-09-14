@@ -7,8 +7,6 @@ import { useRouter, useRoute } from 'vue-router';
 import UserService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 
-const isLoading = ref(false);
-const notifications = ref<Notification[]>();
 const globalStore = useGlobalStore();
 const toast = useToast();
 const router = useRouter();
@@ -17,6 +15,12 @@ const route = useRoute();
 const size = computed(() => {
 	return globalStore.notifications.length;
 });
+
+function isActionNotification(notification: Notification) {
+	if (notification.type == NotificationType.FRIEND_ACCEPT || notification.type == NotificationType.FRIEND_DECLINE)
+		return false
+	return true
+}
 
 function acceptInvitation(notification: Notification) {
 	console.log('accept');
@@ -50,27 +54,10 @@ function declineInvitation(notification: Notification) {
 		});
 	}
 }
-
-function fetchNotifications() {
-	isLoading.value = true
-	UserService.getNotifications()
-	.then((response) => {
-		notifications.value = response.data;
-		isLoading.value = false
-	})
-	.catch((error) => {
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-	})
-}
-
-onBeforeMount(() => {
-	fetchNotifications()
-})
 </script>
 
 <template>
-	<base-spinner small v-if="isLoading"></base-spinner>
-	<div v-else class="flex flex-col items-center justify-center h-full w-full">
+	<div class="flex flex-col items-center justify-center h-full w-full">
 		<p class="text-red-200 text-sm pb-3 sm:pb-5">
 			You have <span class="text-red-700">{{ size }}</span> notifications
 		</p>
@@ -84,13 +71,13 @@ onBeforeMount(() => {
 							{{ notification.message }}
 						</p>
 					</div>
-					<div class="flex gap-1">
-						<button @click="acceptInvitation(notification)" class="bg-blue-600 rounded-md text-red-200 hover:text-neutral-100 p-1">
+					<div v-if="isActionNotification(notification)" class="flex gap-1">
+						<button @click="acceptInvitation(notification)" class="bg-blue-600 rounded text-red-200 hover:text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
   								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 							</svg>
 						</button>
-						<button @click="declineInvitation(notification)" class="bg-red-600 rounded-md text-red-200 hover:text-neutral-100 p-1">
+						<button @click="declineInvitation(notification)" class="bg-red-600 rounded text-red-200 hover:text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
 								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
 							</svg>

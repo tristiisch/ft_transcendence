@@ -6,6 +6,7 @@ import TokenService from '@/services/TokenService';
 import type User from '@/types/User';
 import status from '@/types/Status';
 import socket from '@/plugin/socketInstance';
+import router from '@/router/index'
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -23,6 +24,11 @@ export const useUserStore = defineStore('userStore', {
 			TokenService.setLocalToken(this.userAuth.token_jwt)
 			this.userToken = this.userAuth.token_jwt
 			console.log(this.userToken)
+		},
+		resetAll() {
+			localStorage.clear()
+			this.$reset()
+			router.replace({ name: 'Login' });
 		},
 		verifyState(state: string) {
 			const randomString = localStorage.getItem('state')
