@@ -54,20 +54,17 @@ watch(
 );
 
 function submit2faForm() {
-	if (twoFaCode.value)
-	{
-		userStore
-		.handleLogin2Fa(twoFaCode.value)
-		.then(() => {
-			socket.connect()
-			router.replace({ name: 'Home' });
-		})
-		.catch((error) => {
-			console.log(error)
-			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-			else router.replace({ name: 'Login' });
-		});
-	}
+	userStore
+	.handleLogin2Fa(twoFaCode.value)
+	.then(() => {
+		socket.connect()
+		router.replace({ name: 'Home' });
+	})
+	.catch((error) => {
+		console.log(error)
+		if (error.response && error.response.status === 403) toast.error(error.response.data.message)
+		else userStore.resetAll()
+	});
 }
 
 function onlyLettersAndNumbers(str: string) {
@@ -89,7 +86,7 @@ function submitRegistrationForm() {
 				isLoading.value = false;
 				//check for name already exist in database --> Code === 403 ?
 				if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-				else router.replace({ name: 'Login' });
+				else userStore.resetAll()
 			});
 	}
 }
@@ -107,7 +104,7 @@ onBeforeMount(() => {
 		})
 		.catch((error) => {
 			isLoading.value = false;
-			if (error.response) toast.error(error.response.data.message)
+			if (error.response && error.response.data) toast.error(error.response.data.message)
 			router.replace({ name: 'Login' });
 		});
 	}

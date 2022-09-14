@@ -62,8 +62,8 @@ function validate2FA() {
 				<Toogle twoFa @switch-button="toogle2FA"></Toogle>
 				<span class="text-red-200 pl-2">ON</span>
 			</div>
-			<p v-if="!userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is disable</p>
-			<p v-if="userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is Enable</p>
+			<p v-if="!userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is <span class="text-red-700">disable</span></p>
+			<p v-if="userStore.userAuth.has_2fa" class="text-center text-red-200 text-xs sm:text-sm">Your 2FA is <span class="text-red-700">enable</span></p>
 		</div>
 		<div v-if="qrCode && !isLoading" class="flex justify-center w-full">
 			<img :src="qrCode" alt="QR code" class="w-20 sm:w-32" />

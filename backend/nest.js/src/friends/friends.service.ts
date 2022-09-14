@@ -89,14 +89,12 @@ export class FriendsService {
 
 		friendship.status = FriendshipStatus.ACCEPTED;
 
-		let notif: Notification = {
-			user_id: friendship.user1_id,
-			from_user_id: friendship.user2_id,
-			type: NotificationType.FRIEND_ACCEPT,
-		};
+		let notif: Notification = new Notification();
+		notif.user_id = friendship.user1_id;
+		notif.from_user_id = friendship.user2_id;
+		notif.type = NotificationType.FRIEND_ACCEPT;
 		notif = await this.notifService.addNotif(notif);
 		this.socketService.AddFriend(user.id, target.id, await notif.toFront(this.userService, [user, target]));
-
 		return await this.friendsRepository.save(friendship).then((fs: Friendship) => {
 			return { statusCode: 200, message: `You are now friend with ${target.username}.` };
 		}, this.userService.lambdaDatabaseUnvailable);
@@ -121,11 +119,10 @@ export class FriendsService {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
-		let notif: Notification = {
-			user_id: friendship.user1_id,
-			from_user_id: friendship.user2_id,
-			type: NotificationType.FRIEND_DECLINE,
-		};
+		let notif: Notification = new Notification();
+		notif.user_id = friendship.user1_id;
+		notif.from_user_id = friendship.user2_id;
+		notif.type = NotificationType.FRIEND_DECLINE;
 		notif = await this.notifService.addNotif(notif);
 		this.socketService.RemoveFriend(user.id, target.id, await notif.toFront(this.userService, [user, target]));
 
@@ -291,5 +288,5 @@ export class FriendsService {
 		}
 	}
 
-	
+
 }

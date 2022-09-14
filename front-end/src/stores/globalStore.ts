@@ -24,10 +24,10 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
-			return (userId: number) => state.friends.some((friend) => friend.id === userId);
+			return (userId: number) => state.friends.some((friendId) => friendId === userId);
 		},
 		isPendingFriend: (state) => {
-			return (userId: number) => state.pendingFriends.some((pending) => pending.id === userId);
+			return (userId: number) => state.pendingFriends.some((pendingId) => pendingId === userId);
 		},
 		getUserName: (state) => {
 			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
@@ -121,12 +121,10 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		addFriend(friendId: number) {
 			this.removePendingFriend(friendId)
-			const friend = this.getUser(friendId)
-			if (friend) this.friends.push(friend);
+			this.friends.push(friendId);
 		},
 		addPendingFriend(pendingFriendId: number) {
-			const pendingFriend = this.getUser(pendingFriendId)
-			if (pendingFriend) this.pendingFriends.push(pendingFriend);
+			this.pendingFriends.push(pendingFriendId);
 		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
@@ -137,11 +135,11 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
-			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
+			const index = this.friends.findIndex(friendId => friendId === friendToRemoveId);
 			this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
-			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
+			const index = this.pendingFriends.findIndex(pendingFriendId => pendingFriendId === pendingFriendToRemoveId);
 			this.pendingFriends.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {

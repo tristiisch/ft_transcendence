@@ -42,13 +42,17 @@ export class Notification {
 			userCached = new Array();
 		const notifFront: NotificationFront = new NotificationFront();
 		notifFront.from_user = await userService.findOneWithCache(this.from_user_id, userCached);
-	
+
 		notifFront.id = this.id;
 		notifFront.from_user_id = this.from_user_id;
-		if (this.type === NotificationType.FRIEND_REQUEST) {
+		if (this.type == NotificationType.FRIEND_REQUEST) {
 			notifFront.message = `Friend request from ${notifFront.from_user.username}.`;
-		} else if (this.type === NotificationType.MATCH_REQUEST) {
+		} else if (this.type == NotificationType.MATCH_REQUEST) {
 			notifFront.message = `Game request from ${notifFront.from_user.username}.`;
+		} else if (this.type == NotificationType.FRIEND_ACCEPT) {
+			notifFront.message = `${notifFront.from_user.username} is now friend with you.`;
+		} else if (this.type == NotificationType.FRIEND_DECLINE) {
+			notifFront.message = `${notifFront.from_user.username} is no longer friend with you.`;
 		}
 		notifFront.date = this.date.toDateString();
 		notifFront.type = this.type;

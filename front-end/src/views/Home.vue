@@ -75,16 +75,16 @@ onBeforeMount(() => {
 		toast.info(notification.message)
 	});
 
-	socket.on('AddFriend', (targetId: number) => {
-		//globalStore.addNotification(notification);
+	socket.on('AddFriend', (targetId: number, notification: Notification) => {
+		globalStore.addNotification(notification);
 		globalStore.addFriend(targetId)
-		//toast.info(notification.message)
+		toast.info(notification.message)
 	});
 
-	socket.on('RemoveFriend', (targetId: number) => {
-		//globalStore.addNotification(notification);
+	socket.on('RemoveFriend', (targetId: number, notification: Notification) => {
+		globalStore.addNotification(notification);
 		globalStore.removeFriend(targetId)
-		//toast.info(notification.message)
+		toast.info(notification.message)
 	});
 
 	socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
