@@ -3,8 +3,8 @@
 ###################
 FROM node:18-alpine As dev
 
-# Install nest.js
-RUN npm install -g @nestjs/cli
+# Install vue.js
+# RUN npm install -g @vue/cli
 
 # Create app directory
 WORKDIR /usr/src/app

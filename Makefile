@@ -6,7 +6,9 @@ setup:
 #	chmod -R 777 ${HOME}/ft_transcendence_volumes
 
 build:
-	docker-compose up --detach --build
+	./test_appli42.sh
+#	docker-compose up --detach --build
+	docker-compose up --detach
 
 stop:
 	docker-compose stop
@@ -18,6 +20,7 @@ clean:
 	docker-compose down --volumes --remove-orphans
 
 fclean: clean
+	docker-compose down --rmi
 	rm -rf ${HOME}/ft_transcendence_volumes
 
 logs:
