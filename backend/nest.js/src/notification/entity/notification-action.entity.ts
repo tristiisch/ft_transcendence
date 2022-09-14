@@ -1,11 +1,10 @@
-import { IsBoolean, IsInt, IsPositive } from "class-validator";
+import { IsBoolean, IsInt, IsPositive } from 'class-validator';
 
 export class NotificationAction {
+	@IsInt()
+	@IsPositive()
+	id: number;
 
-    @IsInt()
-    @IsPositive()
-    id: number;
-
-    @IsBoolean()
-    accept: boolean;
+	@IsBoolean()
+	accept: boolean;
 }

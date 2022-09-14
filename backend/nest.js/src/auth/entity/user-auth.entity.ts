@@ -1,23 +1,22 @@
-import { Exclude } from "class-transformer";
-import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
+import { Exclude } from 'class-transformer';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class UserAuth extends BaseEntity {
-
-    constructor(user_id: number) {
-        super();
-        this.user_id = user_id;
-    }
+	constructor(user_id: number) {
+		super();
+		this.user_id = user_id;
+	}
 
 	@PrimaryColumn()
 	user_id?: number;
 
-    @Column({ nullable: true })
+	@Column({ nullable: true })
 	token_jwt?: string;
 
-    @Exclude()
+	@Exclude()
 	@Column({ nullable: true })
-  	twoFactorSecret?: string;
+	twoFactorSecret?: string;
 
 	has_2fa?: boolean;
 }

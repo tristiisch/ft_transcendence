@@ -1,4 +1,4 @@
-import { forwardRef, Inject,Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
@@ -11,13 +11,11 @@ export class SocketService {
 	@WebSocketServer()
 	server: Server;
 
-	constructor(
-		private readonly authService: AuthService,
-	) {}
+	constructor(private readonly authService: AuthService) {}
 
-	usersSocket: Map<number, string> = new Map<number, string>()
+	usersSocket: Map<number, string> = new Map<number, string>();
 
-	async getUserFromSocket(socket: Socket) : Promise<User> {
+	async getUserFromSocket(socket: Socket): Promise<User> {
 		const token = socket.handshake.auth.token;
 		let user;
 		try {
@@ -33,36 +31,34 @@ export class SocketService {
 	}
 
 	saveClientSocket(user: User, clientSocketId: string) {
-		if (!this.usersSocket.has(user.id))
-		{
-			this.usersSocket.set(user.id, clientSocketId)
-			this.AddUser(user)
-		}
-		else this.usersSocket.set(user.id, clientSocketId)
+		if (!this.usersSocket.has(user.id)) {
+			this.usersSocket.set(user.id, clientSocketId);
+			this.AddUser(user);
+		} else this.usersSocket.set(user.id, clientSocketId);
 	}
 
 	getSocketToEmit(targetId: number) {
 		const socketID = this.usersSocket.get(targetId);
-		return this.server.sockets.sockets.get(socketID)
+		return this.server.sockets.sockets.get(socketID);
 	}
 
 	FriendRequest(senderId: number, targetId: number, notification: NotificationFront) {
-		const clientSocket = this.getSocketToEmit(targetId)
+		const clientSocket = this.getSocketToEmit(targetId);
 		if (clientSocket) clientSocket.emit('FriendRequest', senderId, notification);
-	};
+	}
 
 	AddFriend(senderId: number, targetId: number, notification: NotificationFront) {
-		const clientSocket = this.getSocketToEmit(targetId)
+		const clientSocket = this.getSocketToEmit(targetId);
 		if (clientSocket) clientSocket.emit('AddFriend', senderId, notification);
-	};
+	}
 
 	RemoveFriend(senderId: number, targetId: number, notification: NotificationFront) {
-		const clientSocket = this.getSocketToEmit(targetId)
+		const clientSocket = this.getSocketToEmit(targetId);
 		if (clientSocket) clientSocket.emit('RemoveFriend', senderId, notification);
-	};
+	}
 
 	AddUser(user: User) {
-		const clientSocket = this.getSocketToEmit(user.id)
+		const clientSocket = this.getSocketToEmit(user.id);
 		clientSocket.broadcast.emit('AddUser', user);
-	};
+	}
 }

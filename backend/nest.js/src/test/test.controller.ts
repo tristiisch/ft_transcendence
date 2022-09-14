@@ -1,5 +1,5 @@
 /** @prettier */
-import { Controller, Get, Inject, Param, } from '@nestjs/common';
+import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { isNumberPositive } from '../utils/utils';
@@ -8,7 +8,10 @@ import { TestFakeService } from './test-fake.service';
 
 @Controller('test')
 export class TestController {
-	constructor(private readonly fakeService: TestFakeService, private readonly dbService: TestDbService) {}
+	constructor(
+		private readonly fakeService: TestFakeService,
+		private readonly dbService: TestDbService
+	) {}
 
 	@Inject(UsersService)
 	private readonly usersService: UsersService;

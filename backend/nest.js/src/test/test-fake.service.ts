@@ -1,5 +1,11 @@
 /** @prettier */
-import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	NotAcceptableException,
+	NotFoundException,
+} from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { FriendsService } from '../friends/friends.service';
 import { MatchStats } from '../game/matchs/entity/matchstats.entity';
@@ -9,7 +15,16 @@ import { StatsService } from '../game/stats/stats.service';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User, UserStatus } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
+import {
+	randomNumber,
+	randomElement,
+	randomElements,
+	randomEnum,
+	removeFromArray,
+	removesFromArray,
+	toBase64,
+	randomWord,
+} from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from '../auth/entity/user-auth.entity';
 import { ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
@@ -40,7 +55,9 @@ export class TestFakeService {
 		const data = new Array();
 		const allUserIds: number[] = await this.getUsersIds();
 		for (let i: number = 1; i <= nbUsers; ++i) {
-			let fakeUser: { user: User; matchs: MatchStats } = await this.createFakeUser(allUserIds);
+			let fakeUser: { user: User; matchs: MatchStats } = await this.createFakeUser(
+				allUserIds
+			);
 			data.push(fakeUser);
 			allUserIds.push(fakeUser.user.id);
 		}
@@ -52,7 +69,10 @@ export class TestFakeService {
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
 		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
-		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, await this.friendsService.findAllRelationsId(user.id));
+		const usersWithoutRelation: number[] = removesFromArray(
+			allUserIdsExceptUser,
+			await this.friendsService.findAllRelationsId(user.id)
+		);
 
 		this.initNewFriendship(user, usersWithoutRelation);
 		return { user, matchs };
@@ -66,13 +86,19 @@ export class TestFakeService {
 			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
 			if (matchs == null) break;
 		}
-		const userWithRelationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
-		let usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, userWithRelationsIds);
+		const userWithRelationsIds: number[] = await this.friendsService.findAllRelationsId(
+			user.id
+		);
+		let usersWithoutRelation: number[] = removesFromArray(
+			allUserIdsExceptUser,
+			userWithRelationsIds
+		);
 
 		for (const u of userWithRelationsIds) {
-
 			if (usersWithoutRelation.indexOf(u) != -1) {
-				throw new NotAcceptableException(`You want to add a relationship between ${user.username} & ${u}, but they already have a relationship.`);
+				throw new NotAcceptableException(
+					`You want to add a relationship between ${user.username} & ${u}, but they already have a relationship.`
+				);
 			}
 		}
 
@@ -82,19 +108,22 @@ export class TestFakeService {
 			if (!target) break;
 			removeFromArray(usersWithoutRelation, target.id);
 		}
-		return { statusCode: 200, message: `${iMatchs} matches and ${iFriends} friend relationships are added.` };
+		return {
+			statusCode: 200,
+			message: `${iMatchs} matches and ${iFriends} friend relationships are added.`,
+		};
 	}
 
 	async initUser(): Promise<User> {
 		let user: User = new User();
 		let userAuth: UserAuth;
 		let userStats: UserStats;
-	
+
 		user.username = randomWord(randomNumber(3, 16));
 		user.login_42 = randomWord(32);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
-	
+
 		user = await this.usersService.add(user);
 		userAuth = new UserAuth(user.id);
 		userAuth.token_jwt = await this.authService.createToken(user.id);
@@ -131,19 +160,23 @@ export class TestFakeService {
 				matchHistory.score = [scoreLoser, scoreWinner];
 			}
 			matchHistory.timestamp_ended = new Date();
-			matchHistory.timestamp_ended.setMinutes(matchHistory.timestamp_ended.getMinutes() + randomNumber(5, 60));
+			matchHistory.timestamp_ended.setMinutes(
+				matchHistory.timestamp_ended.getMinutes() + randomNumber(5, 60)
+			);
 
 			if (matchHistory.getWinner() === user.id) {
-				await this.statsService.addVictory(user.id)
-				await this.statsService.addDefeat(targetId)
+				await this.statsService.addVictory(user.id);
+				await this.statsService.addDefeat(targetId);
 			} else if (matchHistory.getWinner() === targetId) {
-				await this.statsService.addVictory(targetId)
-				await this.statsService.addDefeat(user.id)
+				await this.statsService.addVictory(targetId);
+				await this.statsService.addDefeat(user.id);
 			} else {
-				throw new NotAcceptableException(`They is no winner in the match ${JSON.stringify(matchHistory)}.`);
+				throw new NotAcceptableException(
+					`They is no winner in the match ${JSON.stringify(matchHistory)}.`
+				);
 			}
 		} else {
-			const scoreUser1: number = randomNumber(0, this.randomMaxScoreGame);;
+			const scoreUser1: number = randomNumber(0, this.randomMaxScoreGame);
 			const scoreUser2: number = randomNumber(0, this.randomMaxScoreGame);
 			matchHistory.score = [scoreUser1, scoreUser2];
 		}
@@ -171,23 +204,24 @@ export class TestFakeService {
 	}
 
 	private async getUsersIds(): Promise<number[]> {
-		const sqlStatement: SelectQueryBuilder<User> = this.usersService.getRepo().createQueryBuilder('user').select(['user.id']);
+		const sqlStatement: SelectQueryBuilder<User> = this.usersService
+			.getRepo()
+			.createQueryBuilder('user')
+			.select(['user.id']);
 
 		return await sqlStatement.getMany().then((users: User[]) => {
-			return users.map((u) => u.id);
+			return users.map(u => u.id);
 		}, this.usersService.lambdaDatabaseUnvailable);
 	}
 
 	async addChats(user: User, nb: number) {
 		const allUserIdsExceptUser: number[] = removeFromArray(await this.getUsersIds(), user.id);
 		const chatCreated: Chat[] = new Array();
-		
-		if (Number.isNaN(nb) || nb <= 0)
-			nb = 1
+
+		if (Number.isNaN(nb) || nb <= 0) nb = 1;
 		for (let i = 0; i < nb; ++i) {
 			const ch: Chat = await this.createFakeChannel(user, allUserIdsExceptUser);
-			if (ch)
-				chatCreated.push(ch);
+			if (ch) chatCreated.push(ch);
 		}
 		return { statusCode: 200, message: `${chatCreated.length} chats created.` };
 	}
@@ -207,8 +241,8 @@ export class TestFakeService {
 					muted_ids: [],
 					banned_ids: [],
 					type: type,
-					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
-				}
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id],
+				};
 				break;
 
 			case ChatStatus.PRIVATE:
@@ -221,8 +255,8 @@ export class TestFakeService {
 					muted_ids: [],
 					banned_ids: [],
 					type: type,
-					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
-				}
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id],
+				};
 				break;
 			case ChatStatus.PROTECTED:
 				newChat = {
@@ -234,27 +268,25 @@ export class TestFakeService {
 					muted_ids: [],
 					banned_ids: [],
 					type: type,
-					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
-				}
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id],
+				};
 				break;
 			case ChatStatus.DISCUSSION:
-				if (usersIds.length === 0)
-					return null;
+				if (usersIds.length === 0) return null;
 				newChat = {
 					type: type,
-					users_ids: [randomElement(usersIds), user.id]
-				}
+					users_ids: [randomElement(usersIds), user.id],
+				};
 				break;
 			default:
-				throw new NotAcceptableException(`Unknown chat type ${type}.`)
+				throw new NotAcceptableException(`Unknown chat type ${type}.`);
 		}
 
 		let chat: Chat;
 		try {
 			chat = await this.chatService.addChatToDB(newChat);
 		} catch (err) {
-			if (err instanceof NotAcceptableException)
-				return null;
+			if (err instanceof NotAcceptableException) return null;
 			throw err;
 		}
 		this.sendFakeMsg(newChat);
@@ -269,7 +301,7 @@ export class TestFakeService {
 		for (let userId of chat.users_ids) {
 			const msg: Message = new Message();
 			msg.id_sender = userId;
-			msg.id_channel =  chat.id;
+			msg.id_channel = chat.id;
 			msg.message = 'Hello world !';
 			msgs.push(msg);
 		}

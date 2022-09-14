@@ -8,20 +8,19 @@ import { StatsService } from './stats.service';
 
 @Controller('stats')
 export class StatsController {
-
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 	private readonly userPerPage: number = 10;
 
 	constructor(private readonly statsService: StatsService) {}
 
-    @Get('leaderboard')
+	@Get('leaderboard')
 	getLeaderboard() {
 		return this.statsService.leaderboard();
 	}
 
 	@UseGuards(JwtAuthGuard)
-    @Get('leaderboard-with-friends')
+	@Get('leaderboard-with-friends')
 	async getLeaderboardWithFriends(@Req() req) {
 		const user: User = req.user;
 
@@ -31,21 +30,21 @@ export class StatsController {
 	/**
 	 * Won't be used but worked.
 	 */
-    @Get('leaderboard/:page')
+	@Get('leaderboard/:page')
 	getLeaderboardPage(@Param('page') page: number) {
-        const min: number = (page - 1) * this.userPerPage;
-        const max: number = this.userPerPage;
+		const min: number = (page - 1) * this.userPerPage;
+		const max: number = this.userPerPage;
 		return this.statsService.leaderboardPage(min, max);
 	}
 
 	@Patch(':id')
 	changeStats(@Param('id') id: number, @Body() stats: UserStats) {
-        stats.user_id = id
+		stats.user_id = id;
 		return this.statsService.update(stats);
 	}
 
 	@UseGuards(JwtAuthGuard)
-    @Post()
+	@Post()
 	async getStats(@Req() req, @Body() userSelected: UserSelectDTO) {
 		const target: User = await userSelected.resolveUser(this.usersService);
 		const userStats: UserStats = await this.statsService.findOne(target);

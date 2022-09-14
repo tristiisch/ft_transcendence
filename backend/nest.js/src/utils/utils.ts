@@ -1,26 +1,20 @@
-import { PreconditionFailedException } from "@nestjs/common";
+import { PreconditionFailedException } from '@nestjs/common';
 import axios from 'axios';
-import { validate } from "class-validator";
+import { validate } from 'class-validator';
 
-export function isEquals(entity1: any, entity2: any) : boolean {
-	if (!entity1 && !entity2)
-		return true;
-	if (!entity1 || !entity2)
-		return false;
-	const userFieldsNames1: string[] = Object.keys(entity1)
-	const userFieldsNames2: string[] = Object.keys(entity2)
+export function isEquals(entity1: any, entity2: any): boolean {
+	if (!entity1 && !entity2) return true;
+	if (!entity1 || !entity2) return false;
+	const userFieldsNames1: string[] = Object.keys(entity1);
+	const userFieldsNames2: string[] = Object.keys(entity2);
 
-	if (userFieldsNames1.length != userFieldsNames2.length)
-		return false;
+	if (userFieldsNames1.length != userFieldsNames2.length) return false;
 
 	// Loop of every fields of type entity1
 	for (let field of userFieldsNames1) {
-		if (!entity1[field] && !entity2[field])
-			continue;
-		if (!entity1[field] || !entity2[field])
-			return false;
-		if (entity1[field] !== entity2[field])
-			return false;
+		if (!entity1[field] && !entity2[field]) continue;
+		if (!entity1[field] || !entity2[field]) return false;
+		if (entity1[field] !== entity2[field]) return false;
 	}
 	return true;
 }
@@ -39,23 +33,29 @@ export function isNumberPositive(nb: number, actionMsg: string): boolean {
 /**
  * Get a random number
  */
-export function randomNumber(startNumber: number, nbPosibility: number) : number {
+export function randomNumber(startNumber: number, nbPosibility: number): number {
 	return Math.floor(Math.random() * nbPosibility) + startNumber;
 }
 
 export function randomWord(length: number) {
-	const dico: string = "abcdefghijklmnopqrstuvwxyz0123456789";
-	return Array(length).join().split(',').map(function() { return dico.charAt(Math.floor(Math.random() * dico.length)); }).join('');
+	const dico: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
+	return Array(length)
+		.join()
+		.split(',')
+		.map(function () {
+			return dico.charAt(Math.floor(Math.random() * dico.length));
+		})
+		.join('');
 }
 
 /**
  * Get a random element in array
  */
-export function randomElement<T>(array: Array<T>) : T {
+export function randomElement<T>(array: Array<T>): T {
 	return array[Math.floor(Math.random() * array.length)];
 }
 
-export function randomElements<T>(array: Array<T>, nbElements: number) : T[] {
+export function randomElements<T>(array: Array<T>, nbElements: number): T[] {
 	const shuffled = array.sort(() => 0.5 - Math.random());
 	return shuffled.slice(0, nbElements);
 }
@@ -63,23 +63,21 @@ export function randomElements<T>(array: Array<T>, nbElements: number) : T[] {
 export function randomEnum<T>(enumeration: T) {
 	const values = Object.keys(enumeration)
 		.map(n => Number.parseInt(n))
-		.filter(n => !Number.isNaN(n)) as unknown as T[keyof T][]
+		.filter(n => !Number.isNaN(n)) as unknown as T[keyof T][];
 	return randomElement(values);
 }
 
 export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>): Array<T> {
 	const newArray: T[] = new Array();
 	array.forEach(nb => {
-		if (arrayToSubstract.indexOf(nb) === -1)
-			newArray.push(nb);
+		if (arrayToSubstract.indexOf(nb) === -1) newArray.push(nb);
 	});
 	return newArray;
 }
 
 export function removeFromArray<T>(array: Array<T>, key: T): Array<T> {
 	const index = array.indexOf(key);
-	if (index != -1)
-		array.splice(index, 1);
+	if (index != -1) array.splice(index, 1);
 	return array;
 }
 
@@ -87,7 +85,7 @@ export async function toBase64(url: string): Promise<string | null> {
 	try {
 		let imageBase64: string;
 		const response: any = await axios.get(url, {
-			responseType: 'arraybuffer'
+			responseType: 'arraybuffer',
 		});
 		const header = response.headers['content-type'];
 		const dataBase64 = Buffer.from(response.data, 'binary').toString('base64');
@@ -100,18 +98,18 @@ export async function toBase64(url: string): Promise<string | null> {
 	return null;
 }
 
-export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: any; } | null {
-	if (imageBase64 == null || !imageBase64.startsWith('data:'))
-		return null;
-	const imgType: string = imageBase64.substring('data:'.length, imageBase64.indexOf(';'))
-	if (imgType == null || imgType == '')
-		return null;
-	const imgBase64: string = imageBase64.substring(imageBase64.indexOf(',') + 1, imageBase64.length)
-	if (imgBase64 == null || imgBase64 == '')
-		return null;
+export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: any } | null {
+	if (imageBase64 == null || !imageBase64.startsWith('data:')) return null;
+	const imgType: string = imageBase64.substring('data:'.length, imageBase64.indexOf(';'));
+	if (imgType == null || imgType == '') return null;
+	const imgBase64: string = imageBase64.substring(
+		imageBase64.indexOf(',') + 1,
+		imageBase64.length
+	);
+	if (imgBase64 == null || imgBase64 == '') return null;
 	try {
-		const imgRaw = Buffer.from(imgBase64, 'base64')
-		return { imageType: imgType, imageBuffer : imgRaw };
+		const imgRaw = Buffer.from(imgBase64, 'base64');
+		return { imageType: imgType, imageBuffer: imgRaw };
 	} catch (err) {
 		console.log(`Exception | Can't fromBase64(${imageBase64})`, err.message);
 	}
@@ -131,4 +129,3 @@ export async function validateDTOforHttp<T extends Object>(dto: T) {
 		}
 	});
 }
-
