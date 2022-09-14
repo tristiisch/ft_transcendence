@@ -1,4 +1,10 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	forwardRef,
+	Inject,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from '../users/entity/user.entity';
@@ -13,13 +19,13 @@ import { UserStats } from '../game/stats/entity/userstats.entity';
 
 @Injectable()
 export class AuthService {
-
 	private temp2FASecret: Map<number, string> = new Map();
 
-	constructor(private jwtService: JwtService,
+	constructor(
+		private jwtService: JwtService,
 		@InjectRepository(UserAuth)
-		private authRepository: Repository<UserAuth>){
-	}
+		private authRepository: Repository<UserAuth>
+	) {}
 
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
@@ -30,7 +36,7 @@ export class AuthService {
 		return this.authRepository;
 	}
 
-	async UserConnecting(userInfo42: any): Promise<{ user: User, userAuth: UserAuth }> {
+	async UserConnecting(userInfo42: any): Promise<{ user: User; userAuth: UserAuth }> {
 		let user: User;
 		let userAuth: UserAuth;
 		let userStats: UserStats;
@@ -38,7 +44,7 @@ export class AuthService {
 			user = await this.usersService.findOneBy42Login(userInfo42.data.login);
 		} catch (err) {
 			if (err instanceof NotFoundException) {
-				user = new User;
+				user = new User();
 				// user.username = userInfo42.data.login; Est définie a null tant que l'user n'est pas register
 				user.login_42 = userInfo42.data.login;
 				user.username = null;
@@ -65,7 +71,7 @@ export class AuthService {
 		return { user, userAuth };
 	}
 
-	async UserConnectingTFA(userId: number){
+	async UserConnectingTFA(userId: number) {
 		let user: User;
 		try {
 			user = await this.usersService.findOne(userId);
@@ -96,14 +102,14 @@ export class AuthService {
 		const payload = { id: id };
 		return this.jwtService.signAsync(payload, {
 			secret: process.env.JWT_SECRET_2FA,
-			expiresIn: "2min" // prévoir une variable pour l'expiration du token
+			expiresIn: '2min', // prévoir une variable pour l'expiration du token
 		});
 	}
 
 	public async createTFAToken(id: number): Promise<string> {
 		const payload = {
 			id: id,
-			TFA_auth: true
+			TFA_auth: true,
 		};
 		return this.jwtService.signAsync(payload, {
 			secret: process.env.JWT_SECRET_2FA,
@@ -117,8 +123,7 @@ export class AuthService {
 	async findOne(userId: number): Promise<UserAuth> {
 		isNumberPositive(userId, 'get a auth user');
 		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
-		if (!userAuth)
-			return null;
+		if (!userAuth) return null;
 		/*if (userAuth.twoFactorSecret != null)
 			userAuth.has_2fa = true;
 		else
@@ -126,26 +131,30 @@ export class AuthService {
 		return userAuth;
 	}
 
-	public TFACodeValidationEnable(code: string, userId: number){
+	public TFACodeValidationEnable(code: string, userId: number) {
 		if (!this.temp2FASecret.has(userId))
-			throw new BadRequestException('BadRequest: You should generate a 2FA QRCode before send code.');
+			throw new BadRequestException(
+				'BadRequest: You should generate a 2FA QRCode before send code.'
+			);
 		const twoFactorSecret: string = this.temp2FASecret.get(userId);
 		return authenticator.verify({
 			token: code,
-			secret: twoFactorSecret
-		})
+			secret: twoFactorSecret,
+		});
 	}
 
-	public TFACodeValidationAuthenticate(code: string, userAuth: UserAuth){
+	public TFACodeValidationAuthenticate(code: string, userAuth: UserAuth) {
 		return authenticator.verify({
 			token: code,
-			secret: userAuth.twoFactorSecret
-		})
+			secret: userAuth.twoFactorSecret,
+		});
 	}
 
 	async enableTFA(userId: number) {
 		if (!this.temp2FASecret.has(userId))
-			throw new BadRequestException('BadRequest: You should generate a 2FA QRCode before enable 2FA.');
+			throw new BadRequestException(
+				'BadRequest: You should generate a 2FA QRCode before enable 2FA.'
+			);
 		const secret = this.temp2FASecret.get(userId);
 		return this.authRepository.update(userId, { twoFactorSecret: secret });
 	}
@@ -162,7 +171,7 @@ export class AuthService {
 
 	public async getUserFromAuthenticationToken(token: string): Promise<User> {
 		const payload = this.jwtService.verify(token, {
-			secret: process.env.JWT_SECRET
+			secret: process.env.JWT_SECRET,
 		});
 		if (payload.id) {
 			return this.usersService.findOne(payload.id);

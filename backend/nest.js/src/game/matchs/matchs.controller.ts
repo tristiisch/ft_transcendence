@@ -8,7 +8,6 @@ import { MatchStatsService } from './matchs.service';
 
 @Controller('matchs')
 export class MatchsStatsController {
-
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 

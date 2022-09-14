@@ -10,7 +10,17 @@ import { Channel, ChannelPrivate, ChannelProtected, ChannelPublic } from './enti
 import { Discussion } from './entity/discussion.entity';
 
 @Module({
-	imports: [UsersModule, TypeOrmModule.forFeature([Chat, ChannelPublic, ChannelProtected, ChannelPrivate, Discussion, Message])],
+	imports: [
+		UsersModule,
+		TypeOrmModule.forFeature([
+			Chat,
+			ChannelPublic,
+			ChannelProtected,
+			ChannelPrivate,
+			Discussion,
+			Message,
+		]),
+	],
 	providers: [ChatService],
 	controllers: [ChatController],
 	exports: [ChatService],

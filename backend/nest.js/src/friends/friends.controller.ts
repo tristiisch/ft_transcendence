@@ -1,5 +1,16 @@
 /** @prettier */
-import { Body, Controller, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Inject,
+	NotAcceptableException,
+	NotImplementedException,
+	Param,
+	Post,
+	Req,
+	UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User } from '../users/entity/user.entity';
@@ -14,7 +25,11 @@ export class FriendsController {
 
 	constructor(private readonly friendsService: FriendsService) {}
 
-	async resolveUsers(func: { (user: User, target: User): any }, user: User, targetSelect: UserSelectDTO) {
+	async resolveUsers(
+		func: { (user: User, target: User): any },
+		user: User,
+		targetSelect: UserSelectDTO
+	) {
 		const target: User = await targetSelect.resolveUser(this.usersService);
 
 		return func(user, target);
@@ -39,7 +54,11 @@ export class FriendsController {
 	@UseGuards(JwtAuthGuard)
 	@Post('request/add')
 	addFriendRequest(@Req() req, @Body() targetSelect: UserSelectDTO) {
-		return this.resolveUsers(this.friendsService.addFriendRequest.bind(this.friendsService), req.user, targetSelect);
+		return this.resolveUsers(
+			this.friendsService.addFriendRequest.bind(this.friendsService),
+			req.user,
+			targetSelect
+		);
 	}
 
 	/**
@@ -48,19 +67,31 @@ export class FriendsController {
 	@UseGuards(JwtAuthGuard)
 	@Post('request/remove')
 	removeFriendRequest(@Req() req, @Body() targetSelect: UserSelectDTO) {
-		return this.resolveUsers(this.friendsService.removeFriendship.bind(this.friendsService), req.user, targetSelect);
+		return this.resolveUsers(
+			this.friendsService.removeFriendship.bind(this.friendsService),
+			req.user,
+			targetSelect
+		);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Post('accept')
 	acceptFriend(@Req() req, @Body() targetSelect: UserSelectDTO) {
-		return this.resolveUsers(this.friendsService.acceptFriendRequest.bind(this.friendsService), req.user, targetSelect);
+		return this.resolveUsers(
+			this.friendsService.acceptFriendRequest.bind(this.friendsService),
+			req.user,
+			targetSelect
+		);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Post('remove')
 	removeFriend(@Req() req, @Body() targetSelect: UserSelectDTO) {
-		return this.resolveUsers(this.friendsService.removeFriendship.bind(this.friendsService), req.user, targetSelect);
+		return this.resolveUsers(
+			this.friendsService.removeFriendship.bind(this.friendsService),
+			req.user,
+			targetSelect
+		);
 	}
 
 	@UseGuards(JwtAuthGuard)

@@ -10,6 +10,6 @@ import { FriendsModule } from '../../friends/friends.module';
 	imports: [UsersModule, TypeOrmModule.forFeature([UserStats]), forwardRef(() => FriendsModule)],
 	providers: [StatsService],
 	controllers: [StatsController],
-	exports: [StatsService]
+	exports: [StatsService],
 })
 export class StatsModule {}

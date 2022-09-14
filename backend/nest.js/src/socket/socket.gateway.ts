@@ -10,7 +10,12 @@ import {
 } from '@nestjs/websockets';
 import { ChatService } from '../chat/chat.service';
 import { ChannelCreateDTO } from '../chat/entity/channel-dto';
-import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from '../chat/entity/channel.entity';
+import {
+	Channel,
+	ChannelFront,
+	ChannelPrivate,
+	ChannelProtected,
+} from '../chat/entity/channel.entity';
 import { Server, Socket } from 'socket.io';
 import { User } from '../users/entity/user.entity';
 import { SocketService } from './socket.service';
@@ -22,20 +27,16 @@ import { comparePassword } from '../utils/bcrypt';
 
 @WebSocketGateway({
 	cors: {
-		origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}`
-	}
+		origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}`,
+	},
 })
-
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
 	debug: boolean = false;
 
-	constructor(
-		private socketService: SocketService,
-		private readonly chatService: ChatService
-	) {}
+	constructor(private socketService: SocketService, private readonly chatService: ChatService) {}
 
 	afterInit(server: Server): void {
 		this.socketService.server = server;
@@ -43,7 +44,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(clientSocket: Socket) {
 		if (this.debug)
-			console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
+			console.log(
+				'[SOCKET.IO]',
+				'SERVER DEBUG',
+				'new connection id =>',
+				clientSocket.id,
+				'with jwt =>',
+				clientSocket.handshake.auth.token
+			);
 		const user = await this.socketService.getUserFromSocket(clientSocket);
 		if (!user) return clientSocket.disconnect();
 		else this.socketService.saveClientSocket(user, clientSocket.id);
@@ -62,7 +70,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatChannelCreate')
-	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
+	async createChannel(
+		@MessageBody() body: any[],
+		@ConnectedSocket() client: Socket
+	): Promise<ChannelFront> {
 		// const user: User = body[0];
 		const user = await this.socketService.getUserFromSocket(client);
 		const channelDTO: ChannelCreateDTO = body[1];
@@ -75,14 +86,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatDiscussionCreate')
-	async chatDiscussionCreate(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<DiscussionFront> {
+	async chatDiscussionCreate(
+		@MessageBody() body: any[],
+		@ConnectedSocket() client: Socket
+	): Promise<DiscussionFront> {
 		// const user: User = body[0];
 		const user = await this.socketService.getUserFromSocket(client);
 		const discussionFront: DiscussionFront = body[1];
 		const discu: Discussion = {
 			type: ChatStatus.DISCUSSION,
-			users_ids: [user.id, discussionFront['user'].id]
-		}
+			users_ids: [user.id, discussionFront['user'].id],
+		};
 		let newDiscu: Discussion;
 		try {
 			newDiscu = await this.chatService.addDiscussion(discu);
@@ -94,20 +108,29 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		if (this.debug)
 			console.log('[SOCKET.IO]', 'SERVER', 'chatDiscussionCreate', 'Discussion:', newDiscu);
-		const finalDiscu: Discussion = await this.chatService.fetchChat(user, newDiscu.id, newDiscu.type) as Discussion;
+		const finalDiscu: Discussion = (await this.chatService.fetchChat(
+			user,
+			newDiscu.id,
+			newDiscu.type
+		)) as Discussion;
 		return finalDiscu.toFront(this.chatService, user, [user]);
 	}
 
-
 	@SubscribeMessage('chatDiscussionMessage')
-	async chatDiscussionMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<any[]> {
+	async chatDiscussionMessage(
+		@MessageBody() body: any[],
+		@ConnectedSocket() client: Socket
+	): Promise<any[]> {
 		const user = await this.socketService.getUserFromSocket(client);
 		const discussion: DiscussionFront = body[0];
 		const message: MessageFront = body[1];
 
 		message.idSender = user.id;
 
-		let tempDiscu: Discussion = await this.chatService.findOrCreateDiscussion(message.idSender, discussion.user['id']);
+		let tempDiscu: Discussion = await this.chatService.findOrCreateDiscussion(
+			message.idSender,
+			discussion.user['id']
+		);
 		try {
 			let msg: Message = new Message();
 			msg.id_sender = message.idSender;
@@ -116,8 +139,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const msgFront: MessageFront = msg.toFront();
-			const discuFront: DiscussionFront = await tempDiscu.toFront(this.chatService, user, [user, discussion.user]);
-			client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
+			const discuFront: DiscussionFront = await tempDiscu.toFront(this.chatService, user, [
+				user,
+				discussion.user,
+			]);
+			client.broadcast.emit('chatDiscussionMessage', discussion, msgFront);
 			return [msgFront, discuFront];
 		} catch (err) {
 			throw new WsException(err.message);
@@ -125,16 +151,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatChannelMessage')
-	async chatChannelMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<MessageFront> {
+	async chatChannelMessage(
+		@MessageBody() body: any[],
+		@ConnectedSocket() client: Socket
+	): Promise<MessageFront> {
 		const user = await this.socketService.getUserFromSocket(client);
 		const channelDTO: ChannelFront = body[0];
 		const msgFront: MessageFront = body[1];
 
-		if (channelDTO.id == null) // TODO fix: je sais pas quand on vient de crée le channel, c'est null 
+		if (channelDTO.id == null)
+			// TODO fix: je sais pas quand on vient de crée le channel, c'est null
 			throw new WsException(`channel.id = ${channelDTO.id} so msg ${msgFront} can't be send`);
 
 		msgFront.idSender = user.id;
-		const channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+		const channel: Channel = await this.chatService.fetchChannel(
+			user,
+			channelDTO.id,
+			channelDTO.type
+		);
 		if (channel.banned_ids && channel.banned_ids.indexOf(user.id) !== -1) {
 			throw new UnauthorizedException(`You are banned in channel ${channel.name}`);
 		} else if (channel.muted_ids && channel.muted_ids.indexOf(user.id) !== -1) {
@@ -143,12 +177,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			let msg: Message = new Message();
 			msg.id_sender = user.id;
-			msg.id_channel =  channel.id;
+			msg.id_channel = channel.id;
 			msg.message = msgFront.message;
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront();
-			client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
+			client.broadcast.emit('chatChannelMessage', channel, newMsgFront);
 			return newMsgFront;
 		} catch (err) {
 			throw new WsException(err.message);
@@ -161,22 +195,34 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('chatChannelJoin')
-	async chatChannelJoin(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
+	async chatChannelJoin(
+		@MessageBody() body: any[],
+		@ConnectedSocket() client: Socket
+	): Promise<ChannelFront> {
 		const channelDTO: ChannelFront = body[0];
 		// const joinedUser: User = body[1];
-	
+
 		const joinedUser: User = await this.socketService.getUserFromSocket(client);
 
-		let channel: Channel = await this.chatService.fetchChannel(joinedUser, channelDTO.id, channelDTO.type);
+		let channel: Channel = await this.chatService.fetchChannel(
+			joinedUser,
+			channelDTO.id,
+			channelDTO.type
+		);
 
 		if (channel.banned_ids && channel.banned_ids.indexOf(joinedUser.id) !== -1) {
 			throw new UnauthorizedException(`You are banned in channel ${channel.name}.`);
 		} else if (channel instanceof ChannelProtected && channel.password) {
 			const password: string | null = body.length > 2 ? body[2] : undefined;
-			if (!await comparePassword(password, channel.password)) {
-				throw new UnauthorizedException(`Bad password '${password}' for channel ${channel.name}.`);
+			if (!(await comparePassword(password, channel.password))) {
+				throw new UnauthorizedException(
+					`Bad password '${password}' for channel ${channel.name}.`
+				);
 			}
-		} else if (channel instanceof ChannelPrivate && channel.invited_ids.indexOf(joinedUser.id) === -1) {
+		} else if (
+			channel instanceof ChannelPrivate &&
+			channel.invited_ids.indexOf(joinedUser.id) === -1
+		) {
 			throw new UnauthorizedException(`You are not part of the channel ${channel.name}.`);
 		}
 		channel = await this.chatService.joinChannel(joinedUser, channel);
@@ -187,10 +233,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		// const joinedUser: User = body[1];
-	
+
 		const leaveUser: User = await this.socketService.getUserFromSocket(client);
 
-		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
+		let channel: Channel = await this.chatService.fetchChannel(
+			leaveUser,
+			channelDTO.id,
+			channelDTO.type
+		);
 
 		channel = await this.chatService.leaveChannel(leaveUser, channel);
 		return channel.toFront(this.chatService, leaveUser, [leaveUser]);
@@ -206,52 +256,63 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatChannelBan')
 	async chatChannelBan(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
-		const newBanned:{ list: User[], userWhoSelect: User} = body[1];
+		const newBanned: { list: User[]; userWhoSelect: User } = body[1];
 	}
 
 	@SubscribeMessage('chatChannelAdmin')
 	async chatChannelAdmin(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
-		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
+		const newAdmin: { list: User[]; userWhoSelect: User } = body[1];
 	}
 
 	@SubscribeMessage('chatChannelMute')
 	async chatChannelMute(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
-		const newMuted:{ list: User[], userWhoSelect: User} = body[1];
+		const newMuted: { list: User[]; userWhoSelect: User } = body[1];
 	}
 
 	@SubscribeMessage('chatChannelKick')
 	async chatChannelKick(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
-		const newKicked:{ list: User[], userWhoSelect: User} = body[1];
+		const newKicked: { list: User[]; userWhoSelect: User } = body[1];
 	}
 
 	@SubscribeMessage('chatChannelName')
 	async chatChannelName(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
-		const newName: { name: string, userWhoChangeName: User} = body[1];
+		const newName: { name: string; userWhoChangeName: User } = body[1];
 	}
 
 	@SubscribeMessage('chatPassCheck')
-	async chatPassCheck(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<boolean> {
+	async chatPassCheck(
+		@MessageBody() body: any[],
+		@ConnectedSocket() client: Socket
+	): Promise<boolean> {
 		const channel: ChannelFront = body[0];
 		const password: string = body[1];
-		return comparePassword(password, channel.password)
+		return comparePassword(password, channel.password);
 	}
 
 	@SubscribeMessage('chatChannelOtherUsers')
 	async chatChannelOtherUsers(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		const user: User = await this.socketService.getUserFromSocket(client);
-	
-		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		let channel: Channel = await this.chatService.fetchChannel(
+			user,
+			channelDTO.id,
+			channelDTO.type
+		);
 
 		if (channel.admins_ids.indexOf(user.id) === -1)
 			throw new ForbiddenException("You can't fetch other users, because you are not admin.");
 
 		let usersExceptInChannel: User[] = await this.chatService.getUserService().findAll();
-		usersExceptInChannel = usersExceptInChannel.filter((user: User) => channel.users_ids.indexOf(user.id) === -1 && channel.banned_ids.indexOf(user.id) === -1)
+		usersExceptInChannel = usersExceptInChannel.filter(
+			(user: User) =>
+				channel.users_ids.indexOf(user.id) === -1 &&
+				channel.banned_ids.indexOf(user.id) === -1
+		);
 		// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
 		return [usersExceptInChannel];
 	}
@@ -260,9 +321,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
 		const user: User = await this.socketService.getUserFromSocket(client);
 		const userCached: User[] = new Array();
-	
-		let channelsFront: ChannelFront[] = await this.chatService.findUserChannel(user, userCached);
-		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(user, userCached);
+
+		let channelsFront: ChannelFront[] = await this.chatService.findUserChannel(
+			user,
+			userCached
+		);
+		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(
+			user,
+			userCached
+		);
 
 		return [discussionFront, channelsFront];
 	}

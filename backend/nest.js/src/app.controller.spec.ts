@@ -19,8 +19,8 @@ describe('AppController', () => {
 
 	describe('utils function : test equals', () => {
 		it('test equals 1', () => {
-			const test1 = {id: 42, name: "tglory"};
-			const test2 = {id: 42, name: "tglory"};
+			const test1 = { id: 42, name: 'tglory' };
+			const test2 = { id: 42, name: 'tglory' };
 			expect(isEquals(test1, test2)).toBe(true);
 			expect(isEquals(test2, test1)).toBe(true);
 		});

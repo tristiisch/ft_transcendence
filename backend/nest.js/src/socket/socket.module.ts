@@ -8,6 +8,5 @@ import { SocketService } from './socket.service';
 	imports: [AuthModule, ChatModule],
 	providers: [SocketGateway, SocketService],
 	exports: [SocketService],
-	})
-
+})
 export class SocketModule {}
