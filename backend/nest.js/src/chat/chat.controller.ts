@@ -24,14 +24,14 @@ export class ChatController {
 	@Get('user-discussions')
 	getUserPrivateMessage(@Req() req) {
 		const user: User = req.user;
-		return this.chatService.findUserDiscussion(user);
+		return this.chatService.findUserDiscussion(user, null);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get('user-channels')
 	getUserChannels(@Req() req) {
 		const user: User = req.user;
-		return this.chatService.findUserChannel(user);
+		return this.chatService.findUserChannel(user, null);
 	}
 
 	@Get('avatar-public/:id')
@@ -62,7 +62,7 @@ export class ChatController {
 	@Post('fetch-chat')
 	async fetchChat(@Req() req, @Body() channelDTO: ChannelFetchDTO) : Promise<ChannelFront | DiscussionFront>  {
 		const user: User = req.user;
-		const chat = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+		const chat = await this.chatService.fetchChat(user, channelDTO.id, channelDTO.type);
 		return chat.toFront(this.chatService, user, null);
 	}
 }

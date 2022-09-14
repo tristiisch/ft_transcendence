@@ -4,6 +4,7 @@ export default interface Message {
 	date: string,
 	message: string,
 	idSender: number
+	send?: boolean,
 	read: boolean,
 	type?: string
 }

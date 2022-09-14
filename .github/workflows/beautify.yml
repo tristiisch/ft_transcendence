@@ -1,0 +1,76 @@
+name: Beautify Typescript Code
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  beautify_backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/nest.js/package-lock.json
+    - name: Install node modules
+      run: |
+       cd backend/nest.js
+       npm ci
+    - name: Beautify Code with prettier
+      run: |
+        cd backend/nest.js
+        npm run format
+    - name: Git status
+      run: |
+       git status
+    - name: Git diff
+      run: |
+       git diff
+    - name: Build project
+      run: |
+       cd backend/nest.js
+       npm run build --if-present
+    - name: Unit test Built In
+      run: |
+       cd backend/nest.js
+       npm test
+    - name: "Install Github Cli"
+      run: |
+        cd .github
+        GITHUB_REPO=cli/cli
+        GITHUB_URL_API=https://api.github.com/repos/$GITHUB_REPO/releases
+        GITHUB_FILE=$(curl -LJsS "$GITHUB_URL_API" | jq -r '.[0].assets[] | select(.name | endswith("linux_amd64.deb")).browser_download_url')
+        curl -OL $GITHUB_FILE
+        sudo dpkg -i *.deb
+        echo ${{ secrets.TOKEN }} > token
+        gh auth login --with-token < token
+        rm -rf token
+        git config --global user.email "GitHubBot@localhost"
+        git config --global user.name "$(grep "user:" ~/.config/gh/hosts.yml | awk '{print $2})"
+    - name: "Add Pull Request"
+      run: |
+        cd backend/nest.js
+        COMMIT=$(git rev-parse --verify HEAD)
+        BRANCH_NAME="beautify/$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)"
+        BRANCH_EXIST=`git branch --list $BRANCH_NAME`
+        if [ $BRANCH_EXIST ]; then
+          git checkout $BRANCH_NAME
+          git revert $COMMIT
+        else
+          git checkout -b $BRANCH_NAME
+        fi
+        git add .
+        git commit -m "Formatting code"
+        if [ $BRANCH_EXIST ]; then
+          git push origin beautify/$BRANCH_NAME -f
+        else
+          git push origin beautify/$BRANCH_NAME
+        gh pr create --base $BRANCH_NAME --title "Beautify code of $BRANCH_NAME" --body "Auto created PR"

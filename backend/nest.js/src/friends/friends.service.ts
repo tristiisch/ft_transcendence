@@ -58,11 +58,7 @@ export class FriendsService {
 			} else if (insertResult.identifiers.length > 1) {
 				throw new InternalServerErrorException(insertResult.identifiers.length + ' rows was modify instead of one.');
 			}
-			let notif: Notification = {
-				user_id: friendship.user2_id,
-				from_user_id: friendship.user1_id,
-				type: NotificationType.FRIEND_REQUEST
-			};
+			let notif: Notification = new Notification();
 			notif.user_id = friendship.user2_id;
 			notif.from_user_id= friendship.user1_id;
 			notif.type = NotificationType.FRIEND_REQUEST

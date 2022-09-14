@@ -1,6 +1,6 @@
-import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res } from "@nestjs/common";
+import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res, UnprocessableEntityException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { toBase64, isNumberPositive, fromBase64 } from "../utils/utils";
+import { toBase64, isNumberPositive, fromBase64, removeFromArray } from "../utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
 import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
@@ -191,26 +191,34 @@ export class UsersService {
 	}
 
 	async arrayIdsToUsers(array: number[]): Promise<User[]> {
-		const users: User[] = new Array();
-		for (const [index, id] of array.entries()) {
-			users.push(await this.findOne(id));
-		}
-		return users;
+		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user');
+		const entries: IterableIterator<number[]> = array.entries();
+
+		sqlStatement.where(`user.id = ${entries.next()['value'][1]}`);
+		for (let i: number = 1; i < array.length; ++i)
+			sqlStatement.orWhere(`user.id = ${entries.next()['value'][1]}`);
+
+		return await sqlStatement.getMany().then(async (users: User[]) => {
+			for (const user of users) delete user.avatar_64;
+			return users;
+		}, this.lambdaDatabaseUnvailable);
 	}
 
-	async arrayIdsToUsersWithCache(array: number[], usersCached: User[]): Promise<User[]> {
+	async arrayIdsToUsersWithCache(array: number[], usersCached: User[]): Promise<User[] | null> {
+		if (!array)
+			return null;
 		const users: User[] = new Array();
-		if (array != null)
-			for (const [index, id] of array.entries()) {
-				let cacheUser: User = usersCached.find((user: User) => user.id === id);
-				if (cacheUser !== undefined) {
-					users.push(cacheUser);
-				} else {
-					cacheUser = await this.findOne(id);
-					users.push(cacheUser);
-					usersCached.push(cacheUser);
-				}
-			}
+		const usersToFetch: number[] = array.filter(id => usersCached.find(u => u.id !== id));
+
+		if (usersToFetch && usersToFetch.length > 0)
+			usersCached = [...usersCached, ...await this.arrayIdsToUsers(usersToFetch)]
+	
+		for (const [index, id] of array.entries()) {
+			let cacheUser: User = usersCached.find((user: User) => user.id === id);
+			if (!cacheUser)
+				throw new UnprocessableEntityException(`Can't get user ${array} with cache ${usersCached.map(user => user.id)}.`);
+			users.push(cacheUser);
+		}
 		return users;
 	}
 }

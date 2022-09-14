@@ -31,11 +31,10 @@ jobs:
       run: |
        cd backend/nest.js
        npm run build --if-present
-    - name: Unit test
+    - name: Unit test Built In
       run: |
        cd backend/nest.js
        npm test
-      continue-on-error: true
 
   build_frontend:
     runs-on: ubuntu-latest

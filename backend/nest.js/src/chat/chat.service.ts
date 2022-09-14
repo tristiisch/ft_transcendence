@@ -70,8 +70,9 @@ export class ChatService {
 		return publicChannels.concat(protectedChannels);
     }
 
-    async findUserChannel(user: User) : Promise<ChannelFront[]> {
-		const userCached: User[] = new Array();
+    async findUserChannel(user: User, userCached: User[] | null) : Promise<ChannelFront[]> {
+		if (!userCached)
+			userCached = new Array();
 		const publicChannels: ChannelFront[] = await this.channelPublicRepo.findBy({ users_ids: ArrayContains([user.id]) })
 			.then(async (chs: ChannelPublic[]) => {
 				const chsFront: ChannelFront[] = new Array();
@@ -99,13 +100,15 @@ export class ChatService {
 		return publicChannels.concat(protectedChannels, privateChannels);
     }
 
-    async findUserDiscussion(user: User) : Promise<DiscussionFront[]> {
+    async findUserDiscussion(user: User, usersCached: User[] | null) : Promise<DiscussionFront[]> {
+		if (!usersCached)
+			usersCached = new Array();
 		// return new Array(); // TODO remove this line
 		return await this.discussionRepo.findBy({ users_ids: ArrayContains([user.id]) })
 			.then(async (chs: Discussion[]) => {
 				const chsFront: DiscussionFront[] = new Array();
 				for (const ch of chs)
-					chsFront.push(await ch.toFront(this, user));
+					chsFront.push(await ch.toFront(this, user, usersCached));
 				return chsFront;
 			}
 		);
@@ -137,8 +140,27 @@ export class ChatService {
 		return this.fetchMessage(channelDTO.id);
 	}
 
-	async fetchChannel(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | Discussion | ChannelPublic> {
-		let chat: ChannelPublic | ChannelProtected | Discussion;
+	async fetchChannel(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | ChannelPublic | ChannelPrivate> {
+		let chat: ChannelPublic | ChannelProtected | ChannelPrivate;
+	
+		switch (channelType) {
+			case ChatStatus.PUBLIC:
+				chat = await this.channelPublicRepo.findOneBy({ id: channelId });
+				break;
+			case ChatStatus.PROTECTED:
+				chat = await this.channelProtectedRepo.findOneBy({ id: channelId });
+				break;
+			case ChatStatus.PRIVATE:
+				chat = await this.channelPrivateRepo.findOneBy({ id: channelId });
+				break;
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channelType}.`)
+		}
+		return chat;
+	}
+
+	async fetchChat(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | Discussion | ChannelPublic | ChannelPrivate> {
+		let chat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion;
 	
 		switch (channelType) {
 			case ChatStatus.PUBLIC:
@@ -227,14 +249,22 @@ export class ChatService {
 			channel.avatar_64 = channelDTO.avatar_64;
 		}
 		channel.type = channelDTO.type;
-		channel.users_ids = channelDTO.users_ids; // Is null
-
+		channel.users_ids = channelDTO.users_ids;
+	
 		channel.owner_id = user.id;
 		if (channel.users_ids == null)
 			channel.users_ids = [user.id];
 		else if (channel.users_ids.indexOf(user.id) == -1)
 			channel.users_ids.push(user.id);
-		return await this.addChatToDB(channel) as Channel;
+		channel = await this.addChatToDB(channel) as Channel;
+
+
+		let msg: Message = new Message();
+		msg.message = `[DEBUG MSG CREATED BY BACK] ⚪️　${user.username} been added to ${channel.name} by ${user.username}`;
+		msg.id_sender = user.id;
+		msg.id_channel = channel.id;
+		msg = await this.addMessage(msg);
+		return channel;
 	}
 
 	async addChatToDB(chat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion): Promise<Chat> {
@@ -252,6 +282,18 @@ export class ChatService {
 		}
 	}
 
+	async findOrCreateDiscussion(userId: number, targetId: number): Promise<Discussion> {
+		let discu: Discussion = await this.findDiscussion(userId, targetId);
+		if (!discu) {
+			discu = {
+				type: ChatStatus.DISCUSSION,
+				users_ids: [userId, targetId]
+			}
+			discu = await this.addDiscussion(discu);
+		}
+		return discu;
+	}
+
 	async addDiscussion(newDiscu: Discussion): Promise<Discussion> {
 		const discu: Discussion = await this.discussionRepo.findOneBy({ users_ids: ArrayContains(newDiscu.users_ids) })
 		if (discu)
@@ -264,16 +306,19 @@ export class ChatService {
 	}
 
 	async createMessage(channel: ChannelFront, msgFront: MessageFront) {
-		const msg: Message = {
-			id_channel: channel.id,
-			id_sender: msgFront.idSender,
-			message: msgFront.message
-		};
+		const msg: Message = new Message();
+		msg.id_sender = channel.id;
+		msg.id_channel =  msgFront.idSender;
+		msg.message = msgFront.message;
 		// await validateDTOforHttp(plainToInstance(ChannelCreateDTO, Message));
 		return await this.addMessage(msg);
 	}
 
-	async addMessage(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]): Promise<InsertResult> {
+	async addMessage(msg: Message): Promise<Message> {
+		return this.msgRepo.save(msg);
+	}
+
+	async addMessages(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]): Promise<InsertResult> {
 		return this.msgRepo.insert(msg);
 	}
 
@@ -349,23 +394,68 @@ export class ChatService {
 		return this.channelProtectedRepo.findOneBy({ id: channel.id });
 	}
 
-	async leaveChannel(user: User, channel: Channel): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
-		let dataUpdate: QueryDeepPartialEntity<Channel>;
+	async joinChannel(user: User, channel: Channel): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		let dataUpdate: QueryDeepPartialEntity<Channel> = {};
 
-		
-		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
-		if (channel.admins_ids.indexOf(user.id) !== -1)
-			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
-	
+		if (channel.users_ids) {
+			if (channel.users_ids.indexOf(user.id) !== -1)
+				throw new NotAcceptableException(`${user.username} is already in ${channel.name}.`)
+			dataUpdate.users_ids = [...channel.users_ids, user.id];
+		} else 
+			dataUpdate.users_ids = [user.id];
+
+		const joinMessage = async () => {
+			let msg: Message = new Message();
+			msg.message = '[DEBUG MSG CREATED BY BACK] ⚪️　' + user.username + ' just joined the channel';
+			msg.id_sender = user.id;
+			msg.id_channel = channel.id;
+			msg = await this.addMessage(msg);
+		};
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				this.channelPublicRepo.update(channel.id, dataUpdate);
+				await this.channelPublicRepo.update(channel.id, dataUpdate);
+				await joinMessage();
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				this.channelProtectedRepo.update(channel.id, dataUpdate);
+				await this.channelProtectedRepo.update(channel.id, dataUpdate);
+				await joinMessage();
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				this.channelPrivateRepo.update(channel.id, dataUpdate);
+				await this.channelPrivateRepo.update(channel.id, dataUpdate);
+				await joinMessage();
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
+	}
+
+	async leaveChannel(user: User, channel: Channel): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		let dataUpdate: QueryDeepPartialEntity<Channel> = {};
+
+		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
+		if (channel.admins_ids && channel.admins_ids.indexOf(user.id) !== -1)
+			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
+
+		const leaveMessage = async () => {
+			let leaveMessage: Message = new Message();
+			leaveMessage.message = '[DEBUG MSG CREATED BY BACK] 🔴　' + user.username + ' just leaved the channel';
+			leaveMessage.id_sender = user.id;
+			leaveMessage.id_channel = channel.id;
+			leaveMessage = await this.addMessage(leaveMessage);
+		};
+
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				await this.channelPublicRepo.update(channel.id, dataUpdate);
+				await leaveMessage();
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				await this.channelProtectedRepo.update(channel.id, dataUpdate);
+				await leaveMessage();
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				await this.channelPrivateRepo.update(channel.id, dataUpdate);
+				await leaveMessage();
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)

@@ -17,7 +17,7 @@ export class SocketService {
 
 	usersSocket: Map<number, string> = new Map<number, string>()
 
-	async getUserFromSocket(socket: Socket) : Promise<User | null> {
+	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
 		let user;
 		try {

@@ -104,27 +104,43 @@ const isLoaded = computed(() => {
 
 onBeforeMount(() => {
 	isLoading.value = true
-	chatStore
-		.fetchAll()
-		.then(() => {
-			if (route.query.discussion) {
-				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-				if (discussion) chatStore.loadDiscussion(discussion);
-				else {
-					const user = globalStore.getUser(parseInt(route.query.discussion as string));
-					if (user) {
-						const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-						if (!chatStore.isNewDiscussion(newDiscussion))
-							chatStore.createNewDiscussion(newDiscussion, true);
-					}
+	/*chatStore.fetchUserChats((discu: Discussion[], channels: Channel[]) => {
+		if (route.query.discussion) {
+			const discussion = discu.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
+			if (discussion) chatStore.loadDiscussion(discussion);
+			else {
+				const user = globalStore.getUser(parseInt(route.query.discussion as string));
+				if (user) {
+					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
+					if (!chatStore.isNewDiscussion(newDiscussion))
+						chatStore.createNewDiscussion(newDiscussion, true);
 				}
 			}
-			isLoading.value = false
-		})
-		.catch((error) => {
-			console.log(error)
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-		})
+		}
+		isLoading.value = false
+	}, (error: any) => {
+		console.log(error)
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+	});*/
+	chatStore.fetchAll().then(() => {
+		if (route.query.discussion) {
+			const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
+			if (discussion) chatStore.loadDiscussion(discussion);
+			else {
+				const user = globalStore.getUser(parseInt(route.query.discussion as string));
+				if (user) {
+					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
+					if (!chatStore.isNewDiscussion(newDiscussion))
+						chatStore.createNewDiscussion(newDiscussion, true);
+				}
+			}
+		}
+		isLoading.value = false
+	})
+	.catch((error) => {
+		console.log(error)
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+	})
 });
 </script>
 

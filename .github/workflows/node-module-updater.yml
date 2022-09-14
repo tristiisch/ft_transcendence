@@ -34,18 +34,20 @@ jobs:
     - name: Update outdated Node module
       run: |
        npm update
-    - name: Check git
+    - name: Git status
       run: |
        git status
+    - name: Git diff
+      run: |
+       git diff
     - name: Build project
       run: |
        cd backend/nest.js
        npm run build --if-present
-    - name: Unit test
+    - name: Unit test Built In
       run: |
        cd backend/nest.js
        npm test
-      continue-on-error: true
 
   build_frontend:
     runs-on: ubuntu-latest
