@@ -1,10 +1,10 @@
 export default interface Message {
 	idMessage?: number,
 	idChat?: number,
-	date: string,
+	idSender: number,
 	message: string,
-	idSender: number
 	send?: boolean,
 	read: boolean,
+	date: string,
 	type?: string
 }

@@ -21,7 +21,7 @@ const displayKickPage = ref(false);
 
 
 function playerStatus() {
-	if (chatStore.inChannel) {
+	if (chatStore.inChannel && chatStore.inChannel.owner) {
 		if (chatStore.inChannel.owner.id === userStore.userData.id) return 'OWNER'
 		else {
 			for (const member of chatStore.inChannel.admins)
@@ -33,18 +33,18 @@ function playerStatus() {
 }
 
 function isOwner() { 
-	if (chatStore.inChannel) {
+	if (chatStore.inChannel && chatStore.inChannel.owner) {
 		return chatStore.inChannel?.owner.id === userStore.userData.id
 	}
 }
 
 function isAdmin() { 
-	if (chatStore.inChannel) {
+	if (chatStore.inChannel && chatStore.inChannel.admins) {
 		for(const user of chatStore.inChannel.admins)
 			if (user.id === userStore.userData.id)
-				return true
-		return false
+				return true	
 	}
+	return false
 }
 
 function setColSpan() {
@@ -64,9 +64,9 @@ function passwordStatus() {
 	}
 }
 
-function administratorStatus() { return chatStore.inChannel?.admins.length }
-function muteStatus() { return chatStore.inChannel?.muted.length }
-function banStatus() { return chatStore.inChannel?.banned.length }
+function administratorStatus() { return chatStore.inChannel && chatStore.inChannel.admins ? chatStore.inChannel.admins.length : 0 }
+function muteStatus() { return chatStore.inChannel && chatStore.inChannel.muted ? chatStore.inChannel.muted.length : 0 }
+function banStatus() { return chatStore.inChannel && chatStore.inChannel.banned ? chatStore.inChannel.banned.length : 0 }
 
 function displayButton() {
 	return !displayAdminPage.value && !displayMutePage.value && !displayBanPage.value
