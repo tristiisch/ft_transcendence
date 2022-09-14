@@ -10,11 +10,12 @@ export interface Chat {
 
 export default interface Channel extends Chat {
 	name: string,
+	owner: User | null,
 	avatar: string,
-	users: User[],
 	password: string | null
+	hasPassword: boolean,
+	users: User[],
 	admins: User[],
-	owner: User,
 	muted: User[],
 	banned: User[],
 }

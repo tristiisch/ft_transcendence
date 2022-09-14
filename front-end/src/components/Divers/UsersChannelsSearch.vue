@@ -104,7 +104,7 @@ onBeforeMount(() => {
 				</svg>
 			</button>
 			<div v-show="userToggle" class="absolute z-10 w-44 bg-red-100 rounded shadow">
-				<ul v-if="type === 'users'" class="py-1 text-sm text-gray-700">
+				<ul v-if="type === 'users' || type === 'usersNotInChannel'" class="py-1 text-sm text-gray-700">
                     <li v-if="filterButton === 'All'">
                         <button @click="changeDisplayToFriends(), (userToggle = !userToggle)" type="button" class="inline-flex py-2 px-4 w-full hover:bg-gray-100">Friends</button>
                     </li>

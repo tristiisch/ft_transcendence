@@ -12,7 +12,7 @@ import { UsersService } from '../users/users.service';
 import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from '../auth/entity/user-auth.entity';
-import { Channel, ChannelPrivate, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
+import { ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
 import { Chat, ChatStatus } from '../chat/entity/chat.entity';
 import { ChatService } from '../chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
@@ -155,18 +155,19 @@ export class TestFakeService {
 			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
 			return null;
 		}
-		const randomUser: UserSelectDTO = new UserSelectDTO();
-		randomUser.id = randomElement(userIds);
-		randomUser.username = randomUser.id.toString();
+		const randomTarget: UserSelectDTO = new UserSelectDTO();
+		randomTarget.id = randomElement(userIds);
 
-		await this.friendsService.addFriendRequest(user, randomUser);
+		const target: User = await randomTarget.resolveUser(this.usersService);
+
+		await this.friendsService.addFriendRequest(user, target);
 
 		/* Only to test notif friendship. Should be uncommented later
 		const randomNb: number = random(1, 4);
 
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);*/
-		return randomUser;
+		return randomTarget;
 	}
 
 	private async getUsersIds(): Promise<number[]> {
@@ -266,13 +267,12 @@ export class TestFakeService {
 
 		const msgs: Message[] = new Array();
 		for (let userId of chat.users_ids) {
-			const msg: Message = {
-				id_sender: userId,
-				id_channel: chat.id,
-				message: 'Hello world !'
-			};
+			const msg: Message = new Message();
+			msg.id_sender = userId;
+			msg.id_channel =  chat.id;
+			msg.message = 'Hello world !';
 			msgs.push(msg);
 		}
-		this.chatService.addMessage(msgs);
+		this.chatService.addMessages(msgs);
 	}
 }

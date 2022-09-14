@@ -1,3 +1,4 @@
+import { UnauthorizedException } from "@nestjs/common";
 import { ChatService } from "chat/chat.service";
 import { ChildEntity, Column } from "typeorm";
 import { User } from "users/entity/user.entity";
@@ -23,16 +24,38 @@ export class Channel extends Chat {
 			owner: await chatService.getUserService().findOneWithCache(this.owner_id, usersCached),
 			avatar: `http://${'localhost'}:${process.env.PORT}/api/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
 			password: null,
-			users: await chatService.getUserService().arrayIdsToUsersWithCache(this.users_ids, usersCached),
+			hasPassword: false,
+			users: await chatService.getUserService().findManyWithCache(this.users_ids, usersCached),
 			// users: this.users_ids,
-			admins: await chatService.getUserService().arrayIdsToUsersWithCache(this.admins_ids, usersCached),
-			muted: await chatService.getUserService().arrayIdsToUsersWithCache(this.muted_ids, usersCached),
-			banned: await chatService.getUserService().arrayIdsToUsersWithCache(this.banned_ids, usersCached),
+			admins: await chatService.getUserService().findManyWithCache(this.admins_ids, usersCached),
+			muted: await chatService.getUserService().findManyWithCache(this.muted_ids, usersCached),
+			banned: await chatService.getUserService().findManyWithCache(this.banned_ids, usersCached),
 			id: this.id,
 			type: this.type,
 			messages: await chatService.fetchMessage(this.id)
 		}
 		return chFront;
+	}
+
+	public checkAdminPermission?(user: User) {
+		if (!this.hasAdminPermission(user))
+			throw new UnauthorizedException('You are not admin.');
+	}
+
+	public hasAdminPermission?(user: User): boolean {
+		return this.owner_id == user.id || this.isAdmin(user);
+	}
+
+	public isAdmin?(user: User): boolean {
+		return this.admins_ids.indexOf(user.id) !== -1;
+	}
+
+	public isMute?(user: User): boolean {
+		return this.muted_ids.indexOf(user.id) !== -1;
+	}
+
+	public isBanned?(user: User): boolean {
+		return this.banned_ids.indexOf(user.id) !== -1;
 	}
 }
 
@@ -85,7 +108,8 @@ export class ChannelProtected extends Channel {
 
 	public async toFront?(chatService: ChatService, user: User | null, usersCached: User[] | null): Promise<ChannelFront> {
 		const chFront: ChannelFront = await super.toFront(chatService, user, usersCached);
-		chFront.password = this.password;
+		chFront.password = this.password; // TODO remove this
+		chFront.hasPassword = true;
 		return chFront;
 	}
 }
@@ -110,6 +134,13 @@ export class ChannelPrivate extends Channel {
 
 	@Column("int", { nullable: true, array: true })
 	banned_ids: number[];
+
+	@Column("int", { nullable: true, array: true })
+	invited_ids: number[];
+
+	public isInvited?(user: User) {
+		return this.invited_ids.indexOf(user.id) !== -1;
+	}
 }
 
 export class ChannelFront extends ChatFront {
@@ -118,6 +149,7 @@ export class ChannelFront extends ChatFront {
 	owner: User;
 	avatar: string;
 	password: string | null;
+	hasPassword: boolean;
 	users: User[];
 	admins: User[];
 	muted: User[];

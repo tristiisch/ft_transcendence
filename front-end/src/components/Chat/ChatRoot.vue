@@ -37,8 +37,12 @@ onMounted(() => {
             <message @scroll="scrollToEnd"></message>
         </div>
         <div class="w-full flex justify-between gap-3">
-            <form @submit.prevent="sendMessage()" class="w-full">
-                <input v-model="newMessage" class="text-sm w-full p-2 bg-gray-700 rounded-lg text-white" />
+            <form @submit.prevent="sendMessage()" class="flex w-full">
+                <input v-model="newMessage" class="p-2 outline-none border border-slate-600 text-sm w-full bg-slate-700 rounded-l-lg text-white"/>
+                <button type="submit" class="p-2.5 text-sm font-medium text-white border border-t border-b border-r border-slate-600 bg-slate-700 rounded-r-lg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f5f5f5" class="w-4 h-4">
+  <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+</svg>
+</button>
             </form>
             <button v-if="chatStore.inDiscussion" class="bg-lime-400 rounded-lg px-2" @click="sendGameInvitation()">
                 <img src="@/assets/inGame.png" class="w-10" />

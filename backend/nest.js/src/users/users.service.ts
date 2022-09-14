@@ -1,6 +1,6 @@
-import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res } from "@nestjs/common";
+import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res, UnprocessableEntityException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { toBase64, isNumberPositive, fromBase64 } from "../utils/utils";
+import { toBase64, isNumberPositive, fromBase64, removeFromArray } from "../utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
 import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
@@ -63,6 +63,7 @@ export class UsersService {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user')
 			.where('user.username IS NOT NULL');
 		return await sqlStatement.getMany().then(async (users: User[]) => {
+			for (const user of users) delete user.avatar_64;
 			return users;
 		}, this.lambdaDatabaseUnvailable);
 	}
@@ -100,6 +101,38 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
+	async findMany(array: number[]): Promise<User[]> {
+		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user');
+		const entries: IterableIterator<number[]> = array.entries();
+
+		sqlStatement.where(`user.id = ${entries.next()['value'][1]}`);
+		for (let i: number = 1; i < array.length; ++i)
+			sqlStatement.orWhere(`user.id = ${entries.next()['value'][1]}`);
+
+		return await sqlStatement.getMany().then(async (users: User[]) => {
+			for (const user of users) delete user.avatar_64;
+			return users;
+		}, this.lambdaDatabaseUnvailable);
+	}
+
+	async findManyWithCache(array: number[], usersCached: User[]): Promise<User[] | null> {
+		if (!array)
+			return null;
+		const users: User[] = new Array();
+		const usersToFetch: number[] = array.filter(id => usersCached.find(u => u.id !== id));
+
+		if (usersToFetch && usersToFetch.length > 0)
+			usersCached = [...usersCached, ...await this.findMany(usersToFetch)]
+	
+		for (const [index, id] of array.entries()) {
+			let cacheUser: User = usersCached.find((user: User) => user.id === id);
+			if (!cacheUser)
+				throw new UnprocessableEntityException(`Can't get user ${array} with cache ${usersCached.map(user => user.id)}.`);
+			users.push(cacheUser);
+		}
+		return users;
+	}
+
 	async remove(id: number) {
 		isNumberPositive(id, 'remove a user');
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
@@ -132,29 +165,40 @@ export class UsersService {
 	}
 
 	async updateUsername(userId: number, username: string): Promise<User> {
-		await this.usersRepository.update(userId, { username: username });
+		try {
+			await this.usersRepository.update(userId, { username: username }).catch(this.lambdaDatabaseUnvailable);
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+				throw new PreconditionFailedException('Username already taken.');
+			else
+				throw err;
+		}
 		return await this.findOne(userId);
 	}
 
 	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
-		await this.usersRepository.update(userId, { avatar_64: avatar_64 });
+		fromBase64(avatar_64);
+		if (!fromBase64(avatar_64))
+			throw new PreconditionFailedException(`Unable to accept '${avatar_64.substring(0, 16) + (avatar_64.length > 16 ? '...' : '')}' as avatar_64.`);
+		await this.usersRepository.update(userId, { avatar_64: avatar_64 }).catch(this.lambdaDatabaseUnvailable);
 		return await this.findOne(userId);
 	}
 
 	async register(userId: number, user: UserDTO) {
 		const userBefore: User = await this.findOne(userId);
 		if (userBefore.username !== null)
-			throw new BadRequestException(`User ${userBefore.username} already register.`);
+			throw new BadRequestException(`You are already registered.`);
 
-		if (user.avatar_64 != null) {
-			try {
-				user.avatar_64 = await toBase64(user.avatar_64);
-				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username });
-			} catch (err) {
-				console.log('ERROR', 'user.service.ts avatar', err);
-			}
-		} else {
-			this.usersRepository.update(userId, { username: user.username });
+		try {
+			if (user.avatar_64 != null && (user.avatar_64 = await toBase64(user.avatar_64)) != null)
+				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
+			else
+				this.usersRepository.update(userId, { username: user.username }).catch(this.lambdaDatabaseUnvailable);
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+				throw new PreconditionFailedException('Username already taken.');
+			else
+				throw err;
 		}
 		return await this.findOne(userId);
 	}
@@ -176,28 +220,5 @@ export class UsersService {
 
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
-	}
-
-	async arrayIdsToUsers(array: number[]): Promise<User[]> {
-		const users: User[] = new Array();
-		for (const [index, id] of array.entries()) {
-			users.push(await this.findOne(id));
-		}
-		return users;
-	}
-
-	async arrayIdsToUsersWithCache(array: number[], usersCached: User[]): Promise<User[]> {
-		const users: User[] = new Array();
-		for (const [index, id] of array.entries()) {
-			let cacheUser: User = usersCached.find((user: User) => user.id === id);
-			if (cacheUser !== undefined) {
-				users.push(cacheUser);
-			} else {
-				cacheUser = await this.findOne(id);
-				users.push(cacheUser);
-				usersCached.push(cacheUser);
-			}
-		}
-		return users;
 	}
 }

@@ -2,6 +2,7 @@
 import { onMounted, ref} from 'vue';
 import type User from '@/types/User';
 import ButtonPlus from '@/components/Button/ButtonPlus.vue';
+import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 
 const mode = ref('random')
 
@@ -20,6 +21,7 @@ function changeMode() {
 }
 const emit = defineEmits<{
 	(e: 'invitePlayer'): void,
+    (e: 'return'): void,
 }>()
 
 </script>
@@ -50,11 +52,14 @@ const emit = defineEmits<{
             </div>
         </div>
     </div>
-    <div class="flex flex-col items-center w-full">
-        <img src="@/assets/rocket.png" class="-mb-[calc(0.01_*_100vh)] sm:-mb-[calc(0.014_*_100vh)] h-[calc(0.14_*_100vh)] w-[calc(0.12_*_100vh)] min-h-[100px] min-w-[100px] sm:h-[calc(0.12_*_100vh)] sm:w-[calc(0.14_*_100vh)] sm:min-h-[140px] sm:min-w-[140px]">
-        <div class="flex w-3/4 justify-center items-center">
-            <button class="bg-neutral-100 py-1 sm:py-2 w-full border border-blue-600 text-blue-600 hover:text-neutral-100 hover:bg-blue-600 rounded-md tracking-[0.5em]">LAUNCH</button>
+    <div class="flex w-full pl-8">
+        <div class="flex flex-col items-center w-full">
+            <img src="@/assets/rocket.png" class="-mb-[calc(0.01_*_100vh)] sm:-mb-[calc(0.014_*_100vh)] h-[calc(0.14_*_100vh)] w-[calc(0.12_*_100vh)] min-h-[100px] min-w-[100px] sm:h-[calc(0.12_*_100vh)] sm:w-[calc(0.14_*_100vh)] sm:min-h-[140px] sm:min-w-[140px]">
+            <div class="flex w-[95%] justify-center items-center">
+                <button class="bg-neutral-100 py-1 sm:py-2 w-full border border-blue-600 text-blue-600 hover:text-neutral-100 hover:bg-blue-600 rounded-md tracking-[0.5em]">LAUNCH</button>
+            </div>
         </div>
+        <button-return-next  @click="emit('return')" side="previous" class="self-end mb-1"></button-return-next>
     </div>
 </template>
     
