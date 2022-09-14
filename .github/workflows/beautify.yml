@@ -56,4 +56,4 @@ jobs:
     - name: "Add Pull Request"
       run: |
         BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
-        gh pr create --base $BRANCH_NAME/beautify --title "Beautify code of $BRANCH_NAME" --repo tristiisch/ft_transcendence --project ft_transcendence
+        gh pr create --base $BRANCH_NAME/beautify --title "Beautify code of $BRANCH_NAME" --body "Auto created PR"
