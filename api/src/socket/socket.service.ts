@@ -73,6 +73,8 @@ export class SocketService {
 
 	emitId(userId: number, room: string, ...args: any) {
 		const socket: Socket = this.getSocketToEmit(userId);
+		if (!socket)
+			return;
 		socket.emit(room, ...args);
 	}
 

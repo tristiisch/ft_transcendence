@@ -3,6 +3,7 @@ import { ChatService } from "chat/chat.service";
 import { SocketService } from "socket/socket.service";
 import { ChildEntity, Column } from "typeorm";
 import { User } from "users/entity/user.entity";
+import { removeFromArray } from "utils/utils";
 import { Chat, ChatFront, ChatStatus } from "./chat.entity";
 
 export class Channel extends Chat {
@@ -57,8 +58,16 @@ export class Channel extends Chat {
 		return this.banned_ids.indexOf(user.id) !== -1;
 	}
 
-	public sendMessage(sockerService: SocketService, room: string, ...args: any) {
+	public isIn?(user: User): boolean {
+		return this.users_ids.indexOf(user.id) !== -1;
+	}
+
+	public sendMessage?(sockerService: SocketService, room: string, ...args: any) {
 		sockerService.emitIds(this.users_ids, room, ...args);
+	}
+
+	public sendMessageExcept?(sockerService: SocketService, user: User, room: string, ...args: any) {
+		sockerService.emitIds(removeFromArray(this.users_ids, user.id), room, ...args);
 	}
 }
 

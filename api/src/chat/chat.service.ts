@@ -16,6 +16,7 @@ import { hashPassword } from '../utils/bcrypt';
 import { validate, validateOrReject, ValidationError, Validator } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { SocketService } from 'socket/socket.service';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class ChatService {
@@ -51,6 +52,31 @@ export class ChatService {
 	public getRepoMsg() {
 		return this.msgRepo;
 	}
+
+    async findOtherChannels(user: User, userCached: User[] | null) : Promise<ChatFront[]> {
+		if (!userCached)
+			userCached = new Array();
+		const publicChannels: ChannelFront[] = await this.channelPublicRepo.find()
+			.then(async (chs: ChannelPublic[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs) {
+					if (!ch.isIn(user))
+						chsFront.push(await ch.toFront(this, null, userCached));
+				}
+				return chsFront;
+			}
+		);
+		const protectedChannels: ChannelFront[] = await this.channelProtectedRepo.find()
+			.then(async (chs: ChannelProtected[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					if (!ch.isIn(user))
+						chsFront.push(await ch.toFront(this, null, userCached));
+				return chsFront;
+			}
+		);
+		return publicChannels.concat(protectedChannels);
+    }
 
     async findAllChannels(userCached: User[] | null) : Promise<ChatFront[]> {
 		if (!userCached)
@@ -242,19 +268,25 @@ export class ChatService {
 				break;
 			case ChatStatus.PROTECTED:
 				channel = new ChannelProtected();
-				(channel as ChannelProtected).password = await hashPassword(channelDTO.password);
+				if (!channelDTO.password)
+					throw new WsException(`Password is empty.`);
+				try {
+					(channel as ChannelProtected).password = await hashPassword(channelDTO.password);
+				} catch (err) {
+					throw new WsException(`Can't hash password : ${err.message}.`);
+				}
 				break;
 			case ChatStatus.PRIVATE:
 				channel = new ChannelPrivate();
 				break;
 			default:
-				throw new NotAcceptableException(`Unknown channel type ${channelDTO.type}.`)
+				throw new WsException(`Unknown channel type ${channelDTO.type}.`)
 		}
 		channel.name = channelDTO.name;
 		if (channelDTO.avatar_64.startsWith('src/assets/')) {
 			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
 			if (!channel.avatar_64)
-				throw new PreconditionFailedException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
+				throw new WsException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
 		} else {
 			channel.avatar_64 = channelDTO.avatar_64;
 		}
@@ -271,7 +303,7 @@ export class ChatService {
 
 		let msg: Message = new Message();
 		msg.message = `[DEBUG MSG CREATED BY BACK] ⚪️　${user.username} been added to ${channel.name} by ${user.username}`;
-		msg.id_sender = user.id;
+		msg.id_sender = -1;
 		msg.id_channel = channel.id;
 		msg = await this.addMessage(msg);
 		return channel;
@@ -400,6 +432,7 @@ export class ChatService {
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
+			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront());
 		};
 
 		users_ids = removesFromArray(channel.users_ids, users_ids);
@@ -447,9 +480,10 @@ export class ChatService {
 		const joinMessage = async () => {
 			let msg: Message = new Message();
 			msg.message = '[DEBUG MSG CREATED BY BACK] ⚪️　' + user.username + ' just joined the channel';
-			msg.id_sender = user.id;
+			msg.id_sender = -1;
 			msg.id_channel = channel.id;
 			msg = await this.addMessage(msg);
+			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront());
 		};
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
@@ -482,6 +516,7 @@ export class ChatService {
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
+			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront());
 		};
 
 		switch (channel.type) {
@@ -515,6 +550,7 @@ export class ChatService {
 		message.id_sender = user.id;
 		message.id_channel = discu.id;
 		this.addMessage(message);
+		// discu.sendMessage(this.socketService, 'chatChannelMessage', discu, message.toFront());
 		return discu;
 	}
 }

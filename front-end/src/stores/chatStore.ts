@@ -181,6 +181,7 @@ export const useChatStore = defineStore('chatStore', {
 				name: newChannel.name,
 				avatar_64: newChannel.avatar,
 				hasPassword: newChannel.hasPassword,
+				password: newChannel.password,
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, (channelCreated: Channel) => {
@@ -447,8 +448,8 @@ export const useChatStore = defineStore('chatStore', {
 					messageDTO['idChat'] = this.inDiscussion.id;
 					const chat: Discussion = this.inDiscussion;
 					socket.emit('chatDiscussionMessage', this.inDiscussion, messageDTO, (body: any[]) => {
-						const msg: Message = body[0];
-						const discu: Discussion = body[1];;
+						const discu: Discussion = body[0];
+						const msg: Message = body[1];
 						console.log('chatDiscussionMessage', msg, 'Discussion', discu);
 						// this.inDiscussion = discu;
 						chat.messages.push(msg)
@@ -458,7 +459,9 @@ export const useChatStore = defineStore('chatStore', {
 					messageDTO['idChat'] = this.inChannel.id;
 					// this.inChannel.messages.push(data)
 					const chat: Channel = this.inChannel;
-					socket.emit('chatChannelMessage', this.inChannel, messageDTO, (msg: Message) => {
+					socket.emit('chatChannelMessage', this.inChannel, messageDTO, (body: any[]) => {
+						const channel: Channel = body[0];
+						const msg: Message = body[1];
 						console.log('channel Message', msg);
 						if (!msg) {
 							console.log('ERROR chatChannelMessage', this.inChannel, 'messageDTO', messageDTO);

@@ -16,8 +16,9 @@ export class ChatController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('channels')
-	getChannels() {
-		return this.chatService.findAllChannels(null);
+	getChannels(@Req() req) {
+		const user: User = req.user;
+		return this.chatService.findOtherChannels(user, [user]);
 	}
 
 	// TODO remove it
@@ -25,7 +26,7 @@ export class ChatController {
 	@Get('user-discussions')
 	getUserPrivateMessage(@Req() req) {
 		const user: User = req.user;
-		return this.chatService.findUserDiscussion(user, null);
+		return this.chatService.findUserDiscussion(user, [user]);
 	}
 
 	// TODO remove it
@@ -33,7 +34,7 @@ export class ChatController {
 	@Get('user-channels')
 	getUserChannels(@Req() req) {
 		const user: User = req.user;
-		return this.chatService.findUserChannel(user, null);
+		return this.chatService.findUserChannel(user, [user]);
 	}
 
 	@Get('avatar-public/:id')

@@ -1,4 +1,5 @@
 import { NotAcceptableException } from "@nestjs/common";
+import { WsException } from "@nestjs/websockets";
 import { ChatService } from "chat/chat.service";
 import { SocketService } from "socket/socket.service";
 import { ChildEntity } from "typeorm";
@@ -26,8 +27,17 @@ export class Discussion extends Chat {
 		return discuFront;
 	}
 
-	public sendMessage?(socketService: SocketService, room: string, discu: Discussion, ...args: any) {
-		socketService.emitIds(this.users_ids, room, discu, ...args);
+	public sendMessage?(socketService: SocketService, sender: User, room: string, ...args: any) {
+		socketService.emitId(this.getTarget(sender), room, ...args);
+	}
+
+	public getTarget?(user: User): number {
+		if (!this.users_ids || this.users_ids.length < 2) {
+			throw new WsException('Discussion length is not 2.');
+		}
+		if (this.users_ids[0] !== user.id)
+			return this.users_ids[0]
+		return this.users_ids[1]
 	}
 }
 
