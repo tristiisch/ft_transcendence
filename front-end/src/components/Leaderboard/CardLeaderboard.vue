@@ -53,8 +53,8 @@ function friendRequest() {
 		if (!globalStore.isFriend(props.user?.id)) {
 		UsersService.sendFriendRequest(props.user?.id)
 			.then((response) => {
-				if (response.data) toast.info(response.data.message)
-				if (props.user) globalStore.addPendingFriend(props.user.id)
+				globalStore.addPendingFriend(response.data.user)
+				toast.info(response.data.message)
 			})
 			.catch((error) => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});

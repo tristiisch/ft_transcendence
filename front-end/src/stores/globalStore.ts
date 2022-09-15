@@ -25,10 +25,10 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
-			return (userId: number) => state.friends.some((friendId) => friendId === userId);
+			return (userId: number) => state.friends.some((friend) => friend.id === userId);
 		},
 		isPendingFriend: (state) => {
-			return (userId: number) => state.pendingFriends.some((pendingId) => pendingId === userId);
+			return (userId: number) => state.pendingFriends.some((pendingFriend) => pendingFriend.id === userId);
 		},
 		getUserName: (state) => {
 			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
@@ -120,12 +120,12 @@ export const useGlobalStore = defineStore('globalStore', {
 		addUser(user: User) {
 			this.users.push(user);
 		},
-		addFriend(friendId: number) {
-			this.removePendingFriend(friendId)
-			this.friends.push(friendId);
+		addFriend(friend: User) {
+			this.removePendingFriend(friend.id)
+			this.friends.push(friend);
 		},
-		addPendingFriend(pendingFriendId: number) {
-			this.pendingFriends.push(pendingFriendId);
+		addPendingFriend(pendingFriend: User) {
+			this.pendingFriends.push(pendingFriend);
 		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
@@ -136,11 +136,11 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
-			const index = this.friends.findIndex(friendId => friendId === friendToRemoveId);
+			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
 			this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
-			const index = this.pendingFriends.findIndex(pendingFriendId => pendingFriendId === pendingFriendToRemoveId);
+			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
 			this.pendingFriends.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {

@@ -43,20 +43,20 @@ function uploadImage(imageData: string): void {
 }
 
 function startListenSocket() {
-	socket.on('FriendRequest', (senderId: number, notification: Notification) => {
+	socket.on('FriendRequest', (sender: User, notification: Notification) => {
 		globalStore.addNotification(notification);
-		globalStore.addPendingFriend(senderId)
+		globalStore.addPendingFriend(sender)
 		toast.info(notification.message)
 	});
 
-	socket.on('AddFriend', (targetId: number, notification: Notification) => {
+	socket.on('AddFriend', (target: User, notification: Notification) => {
 		globalStore.addNotification(notification);
-		globalStore.addFriend(targetId)
+		globalStore.addFriend(target)
 		toast.info(notification.message)
 	});
 
-	socket.on('RemoveFriend', (targetId: number) => {
-		globalStore.removeFriend(targetId)
+	socket.on('RemoveFriend', (target: User) => {
+		globalStore.removeFriend(target)
 	});
 }
 
