@@ -7,11 +7,14 @@ import socket from '@/plugin/socketInstance';
 import BaseCard from '@/components/Ui/BaseCard.vue';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
+import { useGlobalStore } from '@/stores/globalStore';
+import type Notification from '@/types/Notification';
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 const toast = useToast();
+const globalStore = useGlobalStore();
 
 const username = ref(userStore.userData.login_42);
 const image = ref(userStore.userData.avatar);
@@ -39,6 +42,26 @@ function uploadImage(imageData: string): void {
 	image.value = imageData;
 }
 
+function startListenSocket() {
+	socket.on('FriendRequest', (senderId: number, notification: Notification) => {
+		globalStore.addNotification(notification);
+		globalStore.addPendingFriend(senderId)
+		toast.info(notification.message)
+	});
+
+	socket.on('AddFriend', (targetId: number, notification: Notification) => {
+		globalStore.addNotification(notification);
+		globalStore.addFriend(targetId)
+		toast.info(notification.message)
+	});
+
+	socket.on('RemoveFriend', (targetId: number, notification: Notification) => {
+		globalStore.addNotification(notification);
+		globalStore.removeFriend(targetId)
+		toast.info(notification.message)
+	});
+}
+
 watch(
 	() => userStore.userData.login_42,
 	() => {
@@ -58,6 +81,7 @@ function submit2faForm() {
 	.handleLogin2Fa(twoFaCode.value)
 	.then(() => {
 		socket.connect()
+		startListenSocket()
 		router.replace({ name: 'Home' });
 	})
 	.catch((error) => {
@@ -80,6 +104,7 @@ function submitRegistrationForm() {
 			.registerUser(username.value, image.value)
 			.then(() => {
 				socket.connect()
+				startListenSocket()
 				router.replace({ name: 'Home' });
 			})
 			.catch((error) => {
@@ -98,6 +123,7 @@ onBeforeMount(() => {
 		.then(() => {
 			if (userStore.isRegistered && !userStore.userAuth.has_2fa) {
 				socket.connect()
+				startListenSocket()
 				router.replace({ name: 'Home' });
 			}
 			else isLoading.value = false;

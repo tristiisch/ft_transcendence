@@ -65,29 +65,7 @@ onBeforeMount(() => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
 
-	socket.on('AddUser', (user: User) => {
-		globalStore.addUser(user);
-	});
 
-	socket.on('FriendRequest', (senderId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
-		globalStore.addPendingFriend(senderId)
-		toast.info(notification.message)
-	});
-
-	socket.on('AddFriend', (targetId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
-		globalStore.addFriend(targetId)
-		toast.info(notification.message)
-	});
-
-	socket.on('RemoveFriend', (targetId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
-		globalStore.removeFriend(targetId)
-		toast.info(notification.message)
-	});
-
-	socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
 })
 
 onUnmounted(() => {
