@@ -243,7 +243,7 @@ export class ChatService {
 		}
 		channel.name = channelDTO.name;
 		if (channelDTO.avatar_64.startsWith('src/assets/')) {
-			channel.avatar_64 = await toBase64(`${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
+			channel.avatar_64 = await toBase64(`${process.env.FRONT_URL}/${channelDTO.avatar_64}`);
 			if (!channel.avatar_64)
 				throw new PreconditionFailedException(`Bad channel avatar '${channelDTO.avatar_64}'`);
 		} else {

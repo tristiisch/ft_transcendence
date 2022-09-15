@@ -192,7 +192,7 @@ export async function createSocketServer(serverPort: number) {
 
 	const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
 		{
-			cors: { origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}` }
+			cors: { origin: `${process.env.FRONT_URL}` }
 		}
 	);
 

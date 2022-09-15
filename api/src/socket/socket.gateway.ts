@@ -22,7 +22,7 @@ import { comparePassword } from '../utils/bcrypt';
 
 @WebSocketGateway({
 	cors: {
-		origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}`
+		origin: `${process.env.FRONT_URL}`
 	}
 })
 

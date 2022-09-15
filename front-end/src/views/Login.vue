@@ -19,13 +19,13 @@ const twoFaCode = ref('');
 const isLoading = ref(false);
 
 function redirectTo42LoginPage(): void {
-	const baseUrl = import.meta.env.VITE_42_API_URL;
+	const baseUrl = import.meta.env.FT_API_OAUTH;
 	const randomString = (Math.random() + 1).toString(36).substring(2);
 	localStorage.setItem('state', JSON.stringify(randomString))
 
 	const options = {
-		client_id: import.meta.env.VITE_CLIENT_ID,
-		redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT,
+		client_id: import.meta.env.FT_UID,
+		redirect_uri: `${import.meta.env.FRONT_URL}`,
 		scope: 'public',
 		state: randomString,
 		response_type: 'code',

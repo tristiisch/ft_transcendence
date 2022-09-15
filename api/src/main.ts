@@ -12,7 +12,7 @@ dotenv.config();
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const port = process.env.API_PORT;
-	app.enableCors({ origin: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}` });
+	app.enableCors({ origin: `${process.env.FRONT_URL}` });
 	app.setGlobalPrefix('api');
 
 	// For avatar, max JSON (should be better if this rules is only for avatar request)
@@ -21,7 +21,7 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
 	await app.listen(port, async () => {
-		console.log('[WEB]', `http://localhost:${port}/api`);
+		console.log('[WEB]', `${process.env.API_URL}`);
 		//createSocketServer(3001);
 	});
 }

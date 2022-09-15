@@ -24,6 +24,6 @@ fclean: clean
 	rm -rf ${HOME}/ft_transcendence_volumes
 
 logs:
-	docker-compose logs --follow
+	docker-compose logs --follow api front postgreSQL
 
 re: clean all

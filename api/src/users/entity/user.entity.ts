@@ -35,6 +35,6 @@ export class User extends BaseEntity {
 	}
 
 	public getAvatarURL() {
-		return `http://${'localhost'}:${process.env.API_PORT}/api/users/avatar/${this.id}/id`;
+		return `${process.env.API_URL}/users/avatar/${this.id}/id`;
 	}
 }

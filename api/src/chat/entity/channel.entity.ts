@@ -22,7 +22,7 @@ export class Channel extends Chat {
 		const chFront: ChannelFront = {
 			name: this.name,
 			owner: await chatService.getUserService().findOneWithCache(this.owner_id, usersCached),
-			avatar: `http://${'localhost'}:${process.env.API_PORT}/api/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
+			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
 			password: null,
 			hasPassword: false,
 			users: await chatService.getUserService().findManyWithCache(this.users_ids, usersCached),
