@@ -1,5 +1,6 @@
 import { NotAcceptableException } from "@nestjs/common";
 import { ChatService } from "chat/chat.service";
+import { SocketService } from "socket/socket.service";
 import { ChildEntity } from "typeorm";
 import { User } from "users/entity/user.entity";
 import { UsersService } from "users/users.service";
@@ -23,6 +24,10 @@ export class Discussion extends Chat {
 			messages: await chatService.fetchMessage(this.id)
 		}
 		return discuFront;
+	}
+
+	public sendMessage?(socketService: SocketService, room: string, discu: Discussion, ...args: any) {
+		socketService.emitIds(this.users_ids, room, discu, ...args);
 	}
 }
 

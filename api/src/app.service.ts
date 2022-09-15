@@ -10,11 +10,12 @@ export class AppService {
 		const frontURL = getFrontRelativeURL(req);
 		return { message: `Welcome at ${process.env.NAME}. Some useful GET requests to control the api:`,
 			front: `${frontURL}`,
-			addFakeData: `${backURL}/addFakeData/:username`,
-			generateFakeUsers: `${backURL}/generateFakeUsers/:username`,
-			cleardb: `${backURL}/cleardb`,
-			clearChat: `${backURL}/clear-chat`,
-			generateChannels: `${backURL}/generateChannels/:username`,
-			generateChannelsNb: `${backURL}/generateChannels/:username/:nb` }
+			frontFakeLogin: `${frontURL}/fakeLogin/:username`,
+			addFakeData: `${backURL}/api/test/addFakeData/:username`,
+			generateFakeUsers: `${backURL}/api/test/generateFakeUsers/:nb`,
+			cleardb: `${backURL}/api/test/cleardb`,
+			clearChat: `${backURL}/api/test/clear-chat`,
+			generateChannels: `${backURL}/api/test/generateChannels/:username`,
+			generateChannelsNb: `${backURL}/api/test/generateChannels/:username/:nb` }
 	}
 }

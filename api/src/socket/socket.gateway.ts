@@ -17,8 +17,9 @@ import { SocketService } from './socket.service';
 import { Message, MessageFront } from '../chat/entity/message.entity';
 import { ChatFront, ChatStatus } from '../chat/entity/chat.entity';
 import { Discussion, DiscussionFront } from '../chat/entity/discussion.entity';
-import { ForbiddenException, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { comparePassword } from '../utils/bcrypt';
+import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 
 @WebSocketGateway({
 	cors: {
@@ -51,20 +52,23 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleDisconnect(clientSocket: Socket) {
 		const user = await this.socketService.getUserFromSocket(clientSocket);
-		this.socketService.usersSocket.delete(user.id);
+		this.socketService.deleteClientSocket(user.id);
 	}
 
+
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('test')
-	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket): string {
+	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket, @Req() req): string {
 		// if (this.debug)
-		console.log('[SOCKET.IO]', 'SERVER', 'DEBUG', 'client id :', client.id);
+		console.log('[SOCKET.IO]', 'SERVER', 'DEBUG', 'client id :', client.id, req.user.username);
 		return data;
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelCreate')
-	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
+	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
 		// const user: User = body[0];
-		const user = await this.socketService.getUserFromSocket(client);
+		const user: User = req.user;
 		const channelDTO: ChannelCreateDTO = body[1];
 		try {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
@@ -74,10 +78,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatDiscussionCreate')
-	async chatDiscussionCreate(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<DiscussionFront> {
-		// const user: User = body[0];
-		const user = await this.socketService.getUserFromSocket(client);
+	async chatDiscussionCreate(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<DiscussionFront> {
+		const user: User = req.user;
 		const discussionFront: DiscussionFront = body[1];
 		const discu: Discussion = {
 			type: ChatStatus.DISCUSSION,
@@ -99,9 +103,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatDiscussionMessage')
-	async chatDiscussionMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<any[]> {
-		const user = await this.socketService.getUserFromSocket(client);
+	async chatDiscussionMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<any[]> {
+		const user: User = req.user;
 		const discussion: DiscussionFront = body[0];
 		const message: MessageFront = body[1];
 
@@ -117,16 +122,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			msg = await this.chatService.addMessage(msg);
 			const msgFront: MessageFront = msg.toFront();
 			const discuFront: DiscussionFront = await tempDiscu.toFront(this.chatService, user, [user, discussion.user]);
-			client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
+			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
+			tempDiscu.sendMessage(this.socketService, "chatDiscussionMessage", tempDiscu, msgFront);
 			return [msgFront, discuFront];
 		} catch (err) {
 			throw new WsException(err.message);
 		}
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelMessage')
-	async chatChannelMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<MessageFront> {
-		const user = await this.socketService.getUserFromSocket(client);
+	async chatChannelMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
+		const user: User = req.user;
 		const channelDTO: ChannelFront = body[0];
 		const msgFront: MessageFront = body[1];
 
@@ -148,24 +155,25 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront();
-			client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
-			return newMsgFront;
+			channel.sendMessage(this.socketService, "chatChannelMessage", channel, newMsgFront);
+			// client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
+			// return newMsgFront;
 		} catch (err) {
 			throw new WsException(err.message);
 		}
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelDelete')
 	async chatChannelDelete(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channel: ChannelFront = body[0];
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelJoin')
-	async chatChannelJoin(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
+	async chatChannelJoin(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
 		const channelDTO: ChannelFront = body[0];
-		// const joinedUser: User = body[1];
-	
-		const joinedUser: User = await this.socketService.getUserFromSocket(client);
+		const joinedUser: User = req.user;
 
 		let channel: Channel = await this.chatService.fetchChannel(joinedUser, channelDTO.id, channelDTO.type);
 
@@ -183,12 +191,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return channel.toFront(this.chatService, joinedUser, [joinedUser]);
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelLeave')
-	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
+	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
 		const channelDTO: ChannelFront = body[0];
-		// const joinedUser: User = body[1];
-	
-		const leaveUser: User = await this.socketService.getUserFromSocket(client);
+		const leaveUser: User = req.user;
 
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
 
@@ -196,90 +203,98 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return channel.toFront(this.chatService, leaveUser, [leaveUser]);
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelInvitation')
-	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const invitedUsers: User[] = body[1];
 		// const inviter: User = body[2];
-		const clientUser: User = await this.socketService.getUserFromSocket(client);
-		let channelTmp: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+		const user: User = req.user;
+		let channelTmp: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		if (!(channelTmp instanceof ChannelPrivate))
 			throw new WsException("Channel is not private, can't invite users.");
 
 		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
-		channel.checkAdminPermission(clientUser);
+		channel.checkAdminPermission(user);
 		const users: User[] = await this.chatService.getUserService().findMany(body.map(user => user.id));
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
 		return channel;
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelBan')
-	async chatChannelBan(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelBan(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const newBanned:{ list: User[], userWhoSelect: User} = body[1];
-		const clientUser: User = await this.socketService.getUserFromSocket(client);
-		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+		const user: User = req.user;
 
-		channel.checkAdminPermission(clientUser);
+		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(user);
 		const users: User[] = await this.chatService.getUserService().findMany(newBanned['list'].map(user => user.id));
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
 
 		return channel;
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelAdmin')
-	async chatChannelAdmin(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelAdmin(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
-	
-		const clientUser: User = await this.socketService.getUserFromSocket(client);
-		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+		const user: User = req.user;
 
-		channel.checkAdminPermission(clientUser);
+		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(user);
 		const users: User[] = await this.chatService.getUserService().findMany(newAdmin['list'].map(user => user.id));
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
 
 		return channel;
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelMute')
-	async chatChannelMute(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelMute(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const newMuted:{ list: User[], userWhoSelect: User} = body[1];
-	
-		const clientUser: User = await this.socketService.getUserFromSocket(client);
-		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+		const user: User = req.user;
 
-		channel.checkAdminPermission(clientUser);
+		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(user);
 		const users: User[] = await this.chatService.getUserService().findMany(newMuted['list'].map(user => user.id));
 		channel = await this.chatService.setMuted(channel, users.map(user => user.id));
 
 		return channel;
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelKick')
-	async chatChannelKick(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelKick(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const newKicked:{ list: User[], userWhoSelect: User} = body[1];
-	
-		const clientUser: User = await this.socketService.getUserFromSocket(client);
-		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
+		const user: User = req.user;
 
-		channel.checkAdminPermission(clientUser);
+		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(user);
 		const users: User[] = await this.chatService.getUserService().findMany(newKicked['list'].map(user => user.id));
-		channel = await this.chatService.kickUsers(clientUser, channel, users.map(user => user.id));
+		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id));
 
 		return channel;
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelName')
 	async chatChannelName(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		const newName: { name: string, userWhoChangeName: User} = body[1];
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatPassCheck')
 	async chatPassCheck(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<boolean> {
 		const channelDTO: ChannelFront = body[0];
@@ -287,10 +302,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return comparePassword(password, channelDTO.password)
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelOtherUsers')
-	async chatChannelOtherUsers(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
+	async chatChannelOtherUsers(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
-		const user: User = await this.socketService.getUserFromSocket(client);
+		const user: User = req.user;
 	
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
@@ -303,9 +319,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return [usersExceptInChannel];
 	}
 
+	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatFindAll')
-	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket): Promise<any[]> {
-		const user: User = await this.socketService.getUserFromSocket(client);
+	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<any[]> {
+		const user: User = req.user;
 		const userCached: User[] = new Array();
 	
 		let channelsFront: ChannelFront[] = await this.chatService.findUserChannel(user, userCached);

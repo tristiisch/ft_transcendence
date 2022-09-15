@@ -147,12 +147,15 @@ export class ChatService {
 		switch (channelType) {
 			case ChatStatus.PUBLIC:
 				chat = await this.channelPublicRepo.findOneBy({ id: channelId });
+				delete chat.avatar_64;
 				break;
 			case ChatStatus.PROTECTED:
 				chat = await this.channelProtectedRepo.findOneBy({ id: channelId });
+				delete chat.avatar_64;
 				break;
 			case ChatStatus.PRIVATE:
 				chat = await this.channelPrivateRepo.findOneBy({ id: channelId });
+				delete chat.avatar_64;
 				break;
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channelType}.`)
@@ -166,12 +169,15 @@ export class ChatService {
 		switch (channelType) {
 			case ChatStatus.PUBLIC:
 				chat = await this.channelPublicRepo.findOneBy({ id: channelId });
+				delete chat.avatar_64;
 				break;
 			case ChatStatus.PROTECTED:
 				chat = await this.channelProtectedRepo.findOneBy({ id: channelId });
+				delete chat.avatar_64;
 				break;
 			case ChatStatus.PRIVATE:
 				chat = await this.channelPrivateRepo.findOneBy({ id: channelId });
+				delete chat.avatar_64;
 				break;
 			case ChatStatus.DISCUSSION:
 				chat = await this.discussionRepo.findOneBy({ id: channelId });
@@ -243,9 +249,9 @@ export class ChatService {
 		}
 		channel.name = channelDTO.name;
 		if (channelDTO.avatar_64.startsWith('src/assets/')) {
-			channel.avatar_64 = await toBase64(`${process.env.FRONT_URL}/${channelDTO.avatar_64}`);
+			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
 			if (!channel.avatar_64)
-				throw new PreconditionFailedException(`Bad channel avatar '${channelDTO.avatar_64}'`);
+				throw new PreconditionFailedException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
 		} else {
 			channel.avatar_64 = channelDTO.avatar_64;
 		}

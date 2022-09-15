@@ -15,7 +15,7 @@ export class SocketService {
 		private readonly authService: AuthService,
 	) {}
 
-	usersSocket: Map<number, string> = new Map<number, string>()
+	private readonly usersSocket: Map<number, string> = new Map<number, string>()
 
 	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
@@ -38,7 +38,11 @@ export class SocketService {
 		else this.usersSocket.set(user.id, clientSocketId)
 	}
 
-	getSocketToEmit(targetId: number) {
+	deleteClientSocket(userId: number) {
+		this.usersSocket.delete(userId);
+	}
+
+	getSocketToEmit(targetId: number) : Socket {
 		const socketId = this.usersSocket[targetId];
 		return this.server.sockets.sockets.get(socketId)
 	}
@@ -62,4 +66,14 @@ export class SocketService {
 		const clientSocket = this.getSocketToEmit(user.id)
 		clientSocket.broadcast.emit('AddUser', user);
 	};
+
+	emitId(userId: number, room: string, ...args: any) {
+		const socket: Socket = this.getSocketToEmit(userId);
+		socket.emit(room, ...args);
+	}
+
+	emitIds(userIds: number[], room: string, ...args: any) {
+		for (let userId of userIds)
+			this.emitId(userId, room, ...args);
+	}
 }

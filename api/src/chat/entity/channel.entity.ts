@@ -1,9 +1,8 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { ChatService } from "chat/chat.service";
+import { SocketService } from "socket/socket.service";
 import { ChildEntity, Column } from "typeorm";
 import { User } from "users/entity/user.entity";
-import { UsersService } from "users/users.service";
-import { ChannelCreateDTO } from "./channel-dto";
 import { Chat, ChatFront, ChatStatus } from "./chat.entity";
 
 export class Channel extends Chat {
@@ -56,6 +55,10 @@ export class Channel extends Chat {
 
 	public isBanned?(user: User): boolean {
 		return this.banned_ids.indexOf(user.id) !== -1;
+	}
+
+	public sendMessage(sockerService: SocketService, room: string, ...args: any) {
+		sockerService.emitIds(this.users_ids, room, ...args);
 	}
 }
 

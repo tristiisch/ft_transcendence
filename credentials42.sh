@@ -23,9 +23,10 @@ function updateEnv() {
         mv $ENV outdated.env
     fi
     cp $ENV_LOCAL $ENV
-    sed -i "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" .env
-    sed -i "s/$UID_NAME=/$UID_NAME=$FT_UID/g" .env
-    sed -i "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" .env
+    sed -i "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" $ENV
+    sed -i "s/$UID_NAME=/$UID_NAME=$FT_UID/g" $ENV
+    sed -i "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" $ENV
+    echo -e "\033[0;32mYour $ENV as been updated.\033[0m"
 }
 
 function addCredentials() {
@@ -55,7 +56,6 @@ elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ $LOCAL_HOSTNAME !=
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         updateEnv
-        echo -e "\033[0;32mYour .env as been updated.\033[0m"
     else
         echo -e "\033[1;33mYour .env is outdated.\033[0m"
     fi
