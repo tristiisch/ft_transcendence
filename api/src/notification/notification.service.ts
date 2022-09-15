@@ -11,12 +11,15 @@ import { Notification, NotificationFront, NotificationType } from './entity/noti
 @Injectable()
 export class NotificationService {
 
-	@Inject(forwardRef(() => FriendsService))
-	private readonly friendService: FriendsService;
-	@Inject(UsersService)
-	private readonly userService: UsersService;
 
-	constructor(@InjectRepository(Notification) private notifsRepository: Repository<Notification>) {}
+	constructor(
+		@InjectRepository(Notification)
+		private notifsRepository: Repository<Notification>,
+		@Inject(forwardRef(() => FriendsService))
+		private readonly friendService: FriendsService,
+		@Inject(forwardRef(() => UsersService))
+		private readonly userService: UsersService,
+	) {}
 
 	public async addNotif(notif: Notification): Promise<Notification> {
 		return await this.notifsRepository.save(notif);

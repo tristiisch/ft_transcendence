@@ -8,7 +8,7 @@ import { NotificationController } from './notification.controller';
 import { FriendsModule } from '../friends/friends.module';
 
 @Module({
-	imports: [UsersModule, TypeOrmModule.forFeature([Notification]), forwardRef(() => FriendsModule)],
+	imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([Notification]), forwardRef(() => FriendsModule)],
 	providers: [NotificationService],
 	controllers: [NotificationController],
 	exports: [NotificationService],

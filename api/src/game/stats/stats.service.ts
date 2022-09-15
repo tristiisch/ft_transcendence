@@ -20,7 +20,7 @@ export class StatsService {
 		return this.statsRepository;
 	}
 
-    @Inject(UsersService)
+    @Inject(forwardRef(() => UsersService))
     private readonly userService: UsersService;
     @Inject(forwardRef(() => FriendsService))
     private readonly friendsService: FriendsService;

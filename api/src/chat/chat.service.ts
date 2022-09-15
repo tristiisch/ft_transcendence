@@ -1,5 +1,5 @@
 /** @prettier */
-import { ForbiddenException, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
 import { ArrayContains, InsertResult, Repository } from 'typeorm';
@@ -15,6 +15,7 @@ import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/chan
 import { hashPassword } from '../utils/bcrypt';
 import { validate, validateOrReject, ValidationError, Validator } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { SocketService } from 'socket/socket.service';
 
 @Injectable()
 export class ChatService {
@@ -34,8 +35,10 @@ export class ChatService {
 		private msgRepo: Repository<Message>
 	) {}
 
-	@Inject(UsersService)
+	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService;
+	@Inject(forwardRef(() => SocketService))
+	private readonly socketService: SocketService;
 
 	public getUserService() {
 		return this.userService;

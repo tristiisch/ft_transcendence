@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
@@ -13,7 +13,7 @@ import { getFrontRelativeURL } from '../utils/utils';
 export class AuthController {
 	constructor(private authService: AuthService, private jwtService: JwtService) {}
 
-	@Inject(UsersService)
+	@Inject(forwardRef(() => UsersService))
 	private readonly usersService: UsersService;
 
 	@Post('42/redirect')

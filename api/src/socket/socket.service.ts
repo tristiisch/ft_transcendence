@@ -5,6 +5,7 @@ import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Notification, NotificationFront } from '../notification/entity/notification.entity';
 import { User, UserStatus } from '../users/entity/user.entity';
+import { UsersService } from 'users/users.service';
 
 @Injectable()
 export class SocketService {
@@ -12,7 +13,10 @@ export class SocketService {
 	server: Server;
 
 	constructor(
+		@Inject(forwardRef(() => AuthService))
 		private readonly authService: AuthService,
+		@Inject(forwardRef(() => UsersService))
+		private readonly userService: UsersService
 	) {}
 
 	private readonly usersSocket: Map<number, string> = new Map<number, string>()

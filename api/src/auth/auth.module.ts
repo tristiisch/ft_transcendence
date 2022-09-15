@@ -12,7 +12,7 @@ import { StatsModule } from '../game/stats/stats.module';
 dotenv.config();
 
 @Module({
-	imports: [JwtModule, JwtModule.register({ secret: process.env.JWT_SECRET }), UsersModule, TypeOrmModule.forFeature([UserAuth]), StatsModule],
+	imports: [JwtModule, JwtModule.register({ secret: process.env.JWT_SECRET }), forwardRef(() => UsersModule), TypeOrmModule.forFeature([UserAuth]), StatsModule],
 	providers: [AuthService, JwtStrategy, JwtTFAStrategy],
 	controllers: [AuthController, TFAController],
 	exports: [AuthService]

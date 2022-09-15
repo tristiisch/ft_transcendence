@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, forwardRef, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guard';
 import { UserSelectDTO } from '../../users/entity/user-select.dto';
 import { User } from '../../users/entity/user.entity';
@@ -9,7 +9,7 @@ import { StatsService } from './stats.service';
 @Controller('stats')
 export class StatsController {
 
-	@Inject(UsersService)
+	@Inject(forwardRef(() => UsersService))
 	private readonly usersService: UsersService;
 	private readonly userPerPage: number = 10;
 

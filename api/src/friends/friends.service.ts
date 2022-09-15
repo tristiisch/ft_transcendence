@@ -1,5 +1,5 @@
 /** @prettier */
-import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Notification, NotificationFront, NotificationType } from '../notification/entity/notification.entity';
 import { NotificationService } from '../notification/notification.service';
@@ -17,11 +17,11 @@ export class FriendsService {
 		private friendsRepository: Repository<Friendship>
 	) {}
 
-	@Inject(UsersService)
+	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService;
 	@Inject(NotificationService)
 	private readonly notifService: NotificationService;
-	@Inject(SocketService)
+	@Inject(forwardRef(() => SocketService))
 	private readonly socketService: SocketService;
 
 	public getRepo() {

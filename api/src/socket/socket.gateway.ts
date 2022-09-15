@@ -17,9 +17,11 @@ import { SocketService } from './socket.service';
 import { Message, MessageFront } from '../chat/entity/message.entity';
 import { ChatFront, ChatStatus } from '../chat/entity/chat.entity';
 import { Discussion, DiscussionFront } from '../chat/entity/discussion.entity';
-import { ForbiddenException, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { comparePassword } from '../utils/bcrypt';
 import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
+import { UsersService } from 'users/users.service';
+import { AuthService } from 'auth/auth.service';
 
 @WebSocketGateway({
 	cors: {
@@ -35,7 +37,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(
 		private socketService: SocketService,
-		private readonly chatService: ChatService
+		@Inject(forwardRef(() => ChatService))
+		private readonly chatService: ChatService,
+		@Inject(forwardRef(() => UsersService))
+		private readonly userService: UsersService,
+		@Inject(forwardRef(() => AuthService))
+		private readonly authService: AuthService,
 	) {}
 
 	afterInit(server: Server): void {
@@ -217,7 +224,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.chatService.getUserService().findMany(body.map(user => user.id));
+		const users: User[] = await this.userService.findMany(body.map(user => user.id));
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
 		return channel;
@@ -233,7 +240,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.chatService.getUserService().findMany(newBanned['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newBanned['list'].map(user => user.id));
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
 
 		return channel;
@@ -249,7 +256,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.chatService.getUserService().findMany(newAdmin['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newAdmin['list'].map(user => user.id));
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
 
 		return channel;
@@ -265,7 +272,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.chatService.getUserService().findMany(newMuted['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newMuted['list'].map(user => user.id));
 		channel = await this.chatService.setMuted(channel, users.map(user => user.id));
 
 		return channel;
@@ -281,7 +288,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.chatService.getUserService().findMany(newKicked['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newKicked['list'].map(user => user.id));
 		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id));
 
 		return channel;
@@ -313,7 +320,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (channel.admins_ids.indexOf(user.id) === -1)
 			throw new ForbiddenException("You can't fetch other users, because you are not admin.");
 
-		let usersExceptInChannel: User[] = await this.chatService.getUserService().findAll();
+		let usersExceptInChannel: User[] = await this.userService.findAll();
 		usersExceptInChannel = usersExceptInChannel.filter((user: User) => channel.users_ids.indexOf(user.id) === -1 && channel.banned_ids.indexOf(user.id) === -1)
 		// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
 		return [usersExceptInChannel];

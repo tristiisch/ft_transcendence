@@ -7,7 +7,7 @@ import { UsersModule } from '../../users/users.module';
 import { FriendsModule } from '../../friends/friends.module';
 
 @Module({
-	imports: [UsersModule, TypeOrmModule.forFeature([UserStats]), forwardRef(() => FriendsModule)],
+	imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([UserStats]), forwardRef(() => FriendsModule)],
 	providers: [StatsService],
 	controllers: [StatsController],
 	exports: [StatsService]

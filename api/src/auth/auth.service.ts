@@ -21,7 +21,7 @@ export class AuthService {
 		private authRepository: Repository<UserAuth>){
 	}
 
-	@Inject(UsersService)
+	@Inject(forwardRef(() => UsersService))
 	private readonly usersService: UsersService;
 	@Inject(StatsService)
 	private readonly statsService: StatsService;

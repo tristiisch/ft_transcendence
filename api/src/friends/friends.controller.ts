@@ -1,18 +1,18 @@
 /** @prettier */
-import { Body, Controller, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, forwardRef, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard';
 import { UserSelectDTO } from '../users/entity/user-select.dto';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { Friendship } from './entity/friendship.entity';
 import { FriendsService } from './friends.service';
 
 @Controller('friends')
 export class FriendsController {
-	@Inject(UsersService)
-	private readonly usersService: UsersService;
 
 	constructor(private readonly friendsService: FriendsService) {}
+
+	@Inject(forwardRef(() => UsersService))
+	private readonly usersService: UsersService;
 
 	async resolveUsers(func: { (user: User, target: User): any }, user: User, targetSelect: UserSelectDTO) {
 		const target: User = await targetSelect.resolveUser(this.usersService);
