@@ -28,6 +28,7 @@ function updatePasswordName() {
     if (chatStore.inChannel) {
         if (newChannelName.value != '' && newChannelName.value !== chatStore.inChannel.name)
             chatStore.UpdateChannelName(chatStore.inChannel, { name: newChannelName.value, userWhoChangeName:userStore.userData }, true);
+            //TODO set Password;
     }
     emit('close')
 }

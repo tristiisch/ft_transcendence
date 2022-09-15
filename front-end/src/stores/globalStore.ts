@@ -104,15 +104,19 @@ export const useGlobalStore = defineStore('globalStore', {
 		checkChangeInArray(baseArray: User[]) {
 			let unlisted: User[] = [];
 			let listed: User[] = [];
-			for (const userBa of baseArray) {
-				const index = this.getIndexSelectedItems(userBa);
-				if (index < 0) unlisted.push(userBa);
+			if (baseArray) {
+				for (const userBa of baseArray) {
+					const index = this.getIndexSelectedItems(userBa);
+					if (index < 0) unlisted.push(userBa);
+				}
+				for (const selectedUser of this.selectedItems) {
+					const index = baseArray.findIndex((user) => user.id === selectedUser.id);
+					if (index < 0 && this.isTypeUser(selectedUser)) listed.push(selectedUser);
+				}
+				return (unlisted.length || listed.length) ? { unlisted, listed } : null
 			}
-			for (const selectedUser of this.selectedItems) {
-				const index = baseArray.findIndex((user) => user.id === selectedUser.id);
-				if (index < 0 && this.isTypeUser(selectedUser)) listed.push(selectedUser);
-			}
-			return (unlisted.length || listed.length) ? { unlisted, listed } : null
+			if (this.isTypeArrayUsers(this.selectedItems)) listed = this.selectedItems
+			return listed.length ? { unlisted, listed } : null
 		},
 		resetSelectedItems() {
 			this.selectedItems = []
