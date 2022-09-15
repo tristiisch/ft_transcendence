@@ -3,6 +3,9 @@
 ###################
 FROM node:18-alpine As dev
 
+# Install clang and dev tools
+RUN apk add build-base
+
 # Install python3
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
