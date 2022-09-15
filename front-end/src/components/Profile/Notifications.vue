@@ -1,45 +1,37 @@
 <script setup lang="ts">
 import { NotificationType } from '@/types/Notification';
+import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount, computed } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useRouter, useRoute } from 'vue-router';
-import UsersService from '@/services/UserService';
+import UserService from '@/services/UserService';
 import type Notification from '@/types/Notification';
 
-const notifications = ref<Notification[] | null>(null);
-const isLoading = ref(false);
+const globalStore = useGlobalStore();
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
-function fetchNotifications() {
-	isLoading.value = true;
-	UsersService.getNotifications()
-		.then((response) => {
-			notifications.value = response.data;
-			console.log(notifications.value)
-			isLoading.value = false;
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-		});
-}
-
 const size = computed(() => {
-	if (notifications.value) return notifications.value.length;
-	else return 0;
+	return globalStore.notifications.length;
 });
+
+function isActionNotification(notification: Notification) {
+	if (notification.type == NotificationType.FRIEND_ACCEPT || notification.type == NotificationType.FRIEND_DECLINE)
+		return false
+	return true
+}
 
 function acceptInvitation(notification: Notification) {
 	console.log('accept');
-	if (notification.type === NotificationType.FRIEND_REQUEST)
+	console.log(notification.type)
+	if (notification.type == NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.notificationAction(notification.id, true)
-		.then(() => {
-			if (notifications.value) {
-				const index = notifications.value.findIndex((element) => element.id === notification.id);
-				if(index !== -1) notifications.value.splice(index, 1)
-			}
+		UserService.notificationAction(notification.id, true)
+		.then((response) => {
+			globalStore.removeNotification(notification.id)
+			globalStore.addFriend(notification.from_user_id)
+			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
@@ -49,34 +41,28 @@ function acceptInvitation(notification: Notification) {
 
 function declineInvitation(notification: Notification) {
 	console.log('decline');
-	if (notification.type === NotificationType.FRIEND_REQUEST)
+	if (notification.type == NotificationType.FRIEND_REQUEST)
 	{
-		UsersService.notificationAction(notification.id, false)
-		.then(() => {
-			if (notifications.value) {
-				const index = notifications.value.findIndex((element) => element.id === notification.id);
-				if(index !== -1) notifications.value.splice(index, 1)
-			}
+		UserService.notificationAction(notification.id, false)
+		.then((response) => {
+			globalStore.removeNotification(notification.id)
+			globalStore.removePendingFriend(notification.from_user_id)
+			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
 }
-
-onBeforeMount(() => {
-	fetchNotifications();
-});
 </script>
 
 <template>
-	<base-spinner small v-if="isLoading"></base-spinner>
-	<div v-else class="flex flex-col items-center justify-center h-full w-full">
+	<div class="flex flex-col items-center justify-center h-full w-full">
 		<p class="text-red-200 text-sm pb-3 sm:pb-5">
 			You have <span class="text-red-700">{{ size }}</span> notifications
 		</p>
 		<div class="flex flex-col w-full overflow-y-auto gap-3 pr-4">
-			<div v-for="notification in notifications" :key="notification.id">
+			<div v-for="notification in globalStore.notifications" :key="notification.id">
 				<p class="text-xs text-red-300">{{ notification.date }}</p>
 				<div class="flex justify-between items-center w-full p-4 text-blue-600 bg-neutral-100 border border-blue-600 rounded-lg">
 					<div class="flex gap-2">
@@ -85,13 +71,13 @@ onBeforeMount(() => {
 							{{ notification.message }}
 						</p>
 					</div>
-					<div class="flex gap-1">
-						<button @click="acceptInvitation(notification)" class="bg-blue-600 rounded-md text-red-200 hover:text-neutral-100 p-1">
+					<div v-if="isActionNotification(notification)" class="flex gap-1">
+						<button @click="acceptInvitation(notification)" class="bg-blue-600 rounded text-red-200 hover:text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
   								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 							</svg>
 						</button>
-						<button @click="declineInvitation(notification)" class="bg-red-600 rounded-md text-red-200 hover:text-neutral-100 p-1">
+						<button @click="declineInvitation(notification)" class="bg-red-600 rounded text-red-200 hover:text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
 								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
 							</svg>

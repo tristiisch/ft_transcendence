@@ -24,8 +24,10 @@ function alreadySelectedUsers() {
 			return chatStore.inChannel.banned
 		else if (props.type === 'admin')
 			return chatStore.inChannel.admins
-		else 
+		else if (props.type === 'mute')
 			return chatStore.inChannel.muted
+		else
+			return []
 	}
 	return null
 }
@@ -43,8 +45,8 @@ function updateSelectableUsers() {
 
 function updateChangeInChannel() {
 	if (chatStore.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-		let newList: { newList: User[], userWhoSelect: User } = {
-			newList: globalStore.selectedItems,
+		let newList: { list: User[], userWhoSelect: User } = {
+			list: globalStore.selectedItems,
 			userWhoSelect: userStore.userData
 		};
 		let selection: {unlisted: User[], listed: User[]} | null;
@@ -54,6 +56,8 @@ function updateChangeInChannel() {
 			chatStore.updateBanList(chatStore.inChannel, selection, newList);
 		else if (props.type === 'mute' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.muted)))
 			chatStore.updateMuteList(chatStore.inChannel, selection, newList);
+		else if (props.type === 'kick')
+			chatStore.KickUsers(chatStore.inChannel, newList);
 		globalStore.resetSelectedItems();
 	}
 	emit('validate');
@@ -64,6 +68,7 @@ onBeforeMount(() => {
 		selectableUsers.value = chatStore.inChannel.users.filter(user => user.id !== userStore.userData.id)
 	if (props.type === 'ban')
 		updateSelectableUsers()
+	console.log(props.type)
 })
 </script>
 

@@ -2,7 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref, onBeforeMount, computed, watch } from 'vue';
+import { ref, onBeforeMount, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
@@ -27,6 +27,7 @@ const chatStore = useChatStore();
 const route = useRoute();
 const router = useRouter();
 const displayDelete = ref([] as boolean[]);
+const isLoading = ref(false);
 
 function addButton() {
 	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
@@ -69,16 +70,20 @@ socket.on("chatChannelLeave", (channel: Channel, user: User) => {
 	chatStore.leaveChannel(channel, user);
 });
 
-socket.on("chatChannelBan", (channel: Channel, newBanList: { newList: User[], userWhoSelect: User}) => {
-	chatStore.updateBanList(channel, null, newBanList)
+socket.on("chatChannelBan", (channel: Channel, newBanned: { list: User[], userWhoSelect: User}) => {
+	chatStore.updateBanList(channel, null, newBanned)
 });
 
-socket.on("chatChannelAdmin", (channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => {
-	chatStore.updateAdminList(channel, null, newAdminList)
+socket.on("chatChannelAdmin", (channel: Channel, newAdmin: { list: User[], userWhoSelect: User}) => {
+	chatStore.updateAdminList(channel, null, newAdmin)
 });
 
-socket.on("chatChannelMute", (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User}) => {
-	chatStore.updateMuteList(channel, null, newMuteList)
+socket.on("chatChannelMute", (channel: Channel, newMuted: { list: User[], userWhoSelect: User}) => {
+	chatStore.updateMuteList(channel, null, newMuted)
+});
+
+socket.on("chatChannelKick", (channel: Channel, newKicked: { list: User[], userWhoSelect: User}) => {
+	chatStore.KickUsers(channel, newKicked)
 });
 
 socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
@@ -98,33 +103,49 @@ const isLoaded = computed(() => {
 })
 
 onBeforeMount(() => {
-	chatStore.isLoading = true
-	chatStore
-		.fetchAll()
-		.then(() => {
-			if (route.query.discussion) {
-				const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-				if (discussion) chatStore.loadDiscussion(discussion);
-				else {
-					const user = globalStore.getUser(parseInt(route.query.discussion as string));
-					if (user) {
-						const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-						if (!chatStore.isNewDiscussion(newDiscussion))
-							chatStore.createNewDiscussion(newDiscussion, true);
-					}
+	isLoading.value = true
+	/*chatStore.fetchUserChats((discu: Discussion[], channels: Channel[]) => {
+		if (route.query.discussion) {
+			const discussion = discu.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
+			if (discussion) chatStore.loadDiscussion(discussion);
+			else {
+				const user = globalStore.getUser(parseInt(route.query.discussion as string));
+				if (user) {
+					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
+					if (!chatStore.isNewDiscussion(newDiscussion))
+						chatStore.createNewDiscussion(newDiscussion, true);
 				}
 			}
-			chatStore.isLoading = false
-		})
-		.catch((error) => {
-			console.log(error)
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-		})
+		}
+		isLoading.value = false
+	}, (error: any) => {
+		console.log(error)
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+	});*/
+	chatStore.fetchAll().then(() => {
+		if (route.query.discussion) {
+			const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
+			if (discussion) chatStore.loadDiscussion(discussion);
+			else {
+				const user = globalStore.getUser(parseInt(route.query.discussion as string));
+				if (user) {
+					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
+					if (!chatStore.isNewDiscussion(newDiscussion))
+						chatStore.createNewDiscussion(newDiscussion, true);
+				}
+			}
+		}
+		isLoading.value = false
+	})
+	.catch((error) => {
+		console.log(error)
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+	})
 });
 </script>
 
 <template>
-	<base-ui :isLoaded="isLoaded">
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full px-8">
@@ -142,27 +163,25 @@ onBeforeMount(() => {
 							CHANNELS
 						</button>
 					</div>
-					<div class="flex flex-col justify-between h-full w-full">
-						<div class="overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-[300px] w-full">
-							<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative">
-								<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
-								<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
-							</div>
-							<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative">
-								<channels-list
-									v-if="memberInChannel(channel)"
-									@click.right="setDisplayDelete(index)"
-									@click.left="chatStore.loadChannel(channel)"
-									:channel="channel"
-									:index="index"
-								></channels-list>
-								<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="true"></button-delete>
-							</div>
+					<div class="flex flex-col overflow-x-auto sm:overflow-y-auto h-[60px] sm:h-full w-full">
+						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
+							<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
+							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
-						<div class="flex self-start items-center gap-4 ml-2">
-							<button-plus @click="chatStore.setRightPartToDisplay(null)"></button-plus>
-							<label class="text-slate-700">{{ addButton() }}</label>
+						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
+							<channels-list
+								v-if="memberInChannel(channel)"
+								@click.right="setDisplayDelete(index)"
+								@click.left="chatStore.loadChannel(channel)"
+								:channel="channel"
+								:index="index"
+							></channels-list>
+							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="true"></button-delete>
 						</div>
+					</div>
+					<div class="flex self-start items-center gap-4 ml-2 pt-3">
+						<button-plus @click="chatStore.setRightPartToDisplay(null)"></button-plus>
+						<label class="text-slate-700">{{ addButton() }}</label>
 					</div>
 				</div>
 			</card-left>

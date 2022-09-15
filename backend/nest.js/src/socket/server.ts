@@ -80,9 +80,10 @@ interface ServerToClientEvents {
 	chatChannelJoin: (channel: Channel, joinedUser: User) => void;
 	chatChannelInvitation: (channel: Channel, invitedUsers: User[], inviter: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
-	chatChannelBan: (channel: Channel, newBanList:{ newList: User[], userWhoSelect: User}) => void;
-	chatChannelAdmin:(channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => void;
-	chatChannelMute: (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User} ) => void;
+	chatChannelBan: (channel: Channel, newBanned:{ list: User[], userWhoSelect: User}) => void;
+	chatChannelAdmin:(channel: Channel, newAdmin: { list: User[], userWhoSelect: User}) => void;
+	chatChannelMute: (channel: Channel, newMuted: { list: User[], userWhoSelect: User} ) => void;
+	chatChannelKick: (channel: Channel, newKicked: { list: User[], userWhoSelect: User} ) => void;
 	chatChannelName: (channel: Channel, newName: { name: string, userWhoChangeName: User}) => void
 	chatDiscussionMessage: (discussion: Discussion, data: Message) => void;
 	chatChannelMessage: (channel: Channel, data: Message) => void;
@@ -101,9 +102,10 @@ interface ClientToServerEvents {
 	chatChannelJoin: (chanel: Channel, joinedUser: User) => void;
 	chatChannelInvitation: (channel: Channel, invitedUsers: User[], inviter: User) => void;
 	chatChannelLeave: (channel: Channel, user: User) => void;
-	chatChannelBan: (channel: Channel, newBanList:{ newList: User[], userWhoSelect: User}) => void;
-	chatChannelAdmin:(channel: Channel, newAdminList: { newList: User[], userWhoSelect: User}) => void;
-	chatChannelMute: (channel: Channel, newMuteList: { newList: User[], userWhoSelect: User} ) => void;
+	chatChannelBan: (channel: Channel, newBanned:{ list: User[], userWhoSelect: User}) => void;
+	chatChannelAdmin:(channel: Channel, newAdmin: { list: User[], userWhoSelect: User}) => void;
+	chatChannelMute: (channel: Channel, newMuted: { list: User[], userWhoSelect: User} ) => void;
+	chatChannelKick: (channel: Channel, newKicked: { list: User[], userWhoSelect: User} ) => void;
 	chatChannelName: (channel: Channel, newName: { name: string, userWhoChangeName: User}) => void
 	chatDiscussionMessage: (discussion: Discussion, message: Message) => void;
 	chatChannelMessage: (channel: Channel, message: Message) => void;
@@ -182,6 +184,9 @@ interface Match {
 	p2_ypos: number
 }
 
+/**
+ * @Deprecated
+ */
 export async function createSocketServer(serverPort: number) {
 	console.log('[SOCKET.IO]', 'SERVER', "Starting server socket.io ...")
 
@@ -281,19 +286,24 @@ export async function createSocketServer(serverPort: number) {
 			socket.broadcast.emit("chatChannelLeave", channel, user); // need room implementation, no broadcast
 		});
 
-		socket.on("chatChannelBan", (channel, newBanList) => {
+		socket.on("chatChannelBan", (channel, newBanned) => {
 			// socket.to(channel.name).emit("chatChannelName", channel, newBanList);  // need room implementation, no broadcast
-			socket.broadcast.emit("chatChannelBan", channel, newBanList);
+			socket.broadcast.emit("chatChannelBan", channel, newBanned);
 		});
 
-		socket.on("chatChannelAdmin", (channel, newAdminList) => {
+		socket.on("chatChannelAdmin", (channel, newAdmin) => {
 			// socket.to(channel.name).emit("chatChannelAdmin", channel, newAdminList);  // need room implementation, no broadcast
-			socket.broadcast.emit("chatChannelAdmin", channel, newAdminList);
+			socket.broadcast.emit("chatChannelAdmin", channel, newAdmin);
 		});
 
-		socket.on("chatChannelMute", (channel, newMuteList) => {
+		socket.on("chatChannelMute", (channel, newMuted) => {
 			// socket.to(channel.name).emit("chatChannelMute", channel, newMuteList);  // need room implementation, no broadcast
-			socket.broadcast.emit("chatChannelMute", channel, newMuteList);
+			socket.broadcast.emit("chatChannelMute", channel, newMuted);
+		});
+
+		socket.on("chatChannelKick", (channel, newKicked) => {
+			// socket.to(channel.name).emit("chatChannelMute", channel, newMuteList);  // need room implementation, no broadcast
+			socket.broadcast.emit("chatChannelKick", channel, newKicked);
 		});
 
 		socket.on("chatChannelName", (channel, newName) => {

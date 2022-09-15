@@ -6,8 +6,7 @@ import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
-import { NotificationFront } from './entity/notification-front.entity';
-import { Notification, NotificationType } from './entity/notification.entity';
+import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';
 
 @Injectable()
 export class NotificationService {
@@ -19,8 +18,8 @@ export class NotificationService {
 
 	constructor(@InjectRepository(Notification) private notifsRepository: Repository<Notification>) {}
 
-	public async addNotif(notif: Notification): Promise<InsertResult> {
-		return await this.notifsRepository.insert(notif);
+	public async addNotif(notif: Notification): Promise<Notification> {
+		return await this.notifsRepository.save(notif);
 	}
 
 	public async findMany(userId: number): Promise<NotificationFront[]> {
@@ -31,16 +30,9 @@ export class NotificationService {
 		sqlStatement.orderBy('notif.id', 'DESC', 'NULLS LAST');
 		return await sqlStatement.getMany().then(async (notifs: Notification[]) => {
 			const allNotifsFront: NotificationFront[] = new Array();
+			const userCaches: User[] = new Array();
 			for (let notif of notifs) {
-				const notifFront: NotificationFront = new NotificationFront();
-				const target: User = await this.userService.findOne(notif.from_user_id);
-				notifFront.id = notif.id;
-				notifFront.from_user_id = notif.from_user_id;
-				if (notif.type === NotificationType.FRIEND_REQUEST) {
-					notifFront.message = `Friend request from ${target.username}.`;
-				} else if (notif.type === NotificationType.MATCH_REQUEST) {
-					notifFront.message = `Game request from ${target.username}.`;
-				}
+				const notifFront: NotificationFront = await notif.toFront(this.userService, userCaches);
 				allNotifsFront.push(notifFront);
 				notifFront.date = notif.date.toDateString();
 				notifFront.type = notif.type;

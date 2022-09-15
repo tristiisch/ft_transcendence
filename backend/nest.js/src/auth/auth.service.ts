@@ -45,7 +45,8 @@ export class AuthService {
 				user.avatar_64 = await toBase64(userInfo42.data.image_url);
 				user.status = UserStatus.ONLINE;
 				user = await this.usersService.add(user);
-				user.defineAvatar(); // TODO remove it (c'est pour que le front reçoit l'url de l'avatar et non le code en base64)
+				user.defineAvatar();
+				delete user.avatar_64;
 			} else {
 				throw err;
 			}
@@ -157,5 +158,14 @@ export class AuthService {
 	public async QrCodeStream(otpauthUrl: string) {
 		const imagePath = await toDataURL(otpauthUrl);
 		return imagePath;
+	}
+
+	public async getUserFromAuthenticationToken(token: string): Promise<User> {
+		const payload = this.jwtService.verify(token, {
+			secret: process.env.JWT_SECRET
+		});
+		if (payload.id) {
+			return this.usersService.findOne(payload.id);
+		}
 	}
 }

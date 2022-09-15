@@ -12,7 +12,7 @@ import { UsersService } from '../users/users.service';
 import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from '../auth/entity/user-auth.entity';
-import { Channel, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
+import { ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
 import { Chat, ChatStatus } from '../chat/entity/chat.entity';
 import { ChatService } from '../chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
@@ -90,7 +90,7 @@ export class TestFakeService {
 		let userAuth: UserAuth;
 		let userStats: UserStats;
 	
-		user.username = randomWord(randomNumber(7, 32));
+		user.username = randomWord(randomNumber(3, 16));
 		user.login_42 = randomWord(32);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
@@ -155,18 +155,19 @@ export class TestFakeService {
 			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
 			return null;
 		}
-		const randomUser: UserSelectDTO = new UserSelectDTO();
-		randomUser.id = randomElement(userIds);
-		randomUser.username = randomUser.id.toString();
+		const randomTarget: UserSelectDTO = new UserSelectDTO();
+		randomTarget.id = randomElement(userIds);
 
-		await this.friendsService.addFriendRequest(user, randomUser);
+		const target: User = await randomTarget.resolveUser(this.usersService);
+
+		await this.friendsService.addFriendRequest(user, target);
 
 		/* Only to test notif friendship. Should be uncommented later
 		const randomNb: number = random(1, 4);
 
 		if (randomNb == 2) await this.friendsService.removeFriendship(randomUser, user);
 		else if (randomNb >= 3) await this.friendsService.acceptFriendRequest(randomUser, user);*/
-		return randomUser;
+		return randomTarget;
 	}
 
 	private async getUsersIds(): Promise<number[]> {
@@ -193,11 +194,11 @@ export class TestFakeService {
 
 	private async createFakeChannel(user: User, usersIds: number[]): Promise<Chat> {
 		const type: ChatStatus = randomEnum(ChatStatus);
-		let chat: ChannelPublic | ChannelProtected | Discussion;
+		let newChat: ChannelPublic | ChannelProtected | Discussion;
 
 		switch (type) {
 			case ChatStatus.PUBLIC:
-				chat = {
+				newChat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
 					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
@@ -208,11 +209,10 @@ export class TestFakeService {
 					type: type,
 					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				}
-				chat = await this.chatService.addChannelPublic(chat as ChannelPublic);
 				break;
 
-			case ChatStatus.PROTECTED:
-				chat = {
+			case ChatStatus.PRIVATE:
+				newChat = {
 					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 					owner_id: user.id,
 					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
@@ -223,26 +223,42 @@ export class TestFakeService {
 					type: type,
 					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				}
-				chat = await this.chatService.addChannelProtected(chat as ChannelProtected);
 				break;
-			case ChatStatus.PRIVATE:
+			case ChatStatus.PROTECTED:
+				newChat = {
+					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+					owner_id: user.id,
+					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
+					password: 'bob',
+					admins_ids: [user.id],
+					muted_ids: [],
+					banned_ids: [],
+					type: type,
+					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
+				}
+				break;
+			case ChatStatus.DISCUSSION:
 				if (usersIds.length === 0)
 					return null;
-				chat = {
+				newChat = {
 					type: type,
 					users_ids: [randomElement(usersIds), user.id]
 				}
-				try {
-					chat = await this.chatService.addDiscussion(chat as Discussion);
-				} catch (err) {
-					if (!(err instanceof NotAcceptableException))
-						throw err;
-					return null;
-				}
 				break;
+			default:
+				throw new NotAcceptableException(`Unknown chat type ${type}.`)
 		}
-		this.sendFakeMsg(chat);
-		return chat;
+
+		let chat: Chat;
+		try {
+			chat = await this.chatService.addChatToDB(newChat);
+		} catch (err) {
+			if (err instanceof NotAcceptableException)
+				return null;
+			throw err;
+		}
+		this.sendFakeMsg(newChat);
+		return newChat;
 	}
 
 	private async sendFakeMsg(chat: Chat) {
@@ -251,13 +267,12 @@ export class TestFakeService {
 
 		const msgs: Message[] = new Array();
 		for (let userId of chat.users_ids) {
-			const msg: Message = {
-				id_sender: userId,
-				id_channel: chat.id,
-				message: 'Hello world !'
-			};
+			const msg: Message = new Message();
+			msg.id_sender = userId;
+			msg.id_channel =  chat.id;
+			msg.message = 'Hello world !';
 			msgs.push(msg);
 		}
-		this.chatService.addMessage(msgs);
+		this.chatService.addMessages(msgs);
 	}
 }

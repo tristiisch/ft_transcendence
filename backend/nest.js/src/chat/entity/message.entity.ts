@@ -19,14 +19,16 @@ export class Message {
 	@Column()
 	message: string;
 
-	public toFront?(): MessageFront {
+	public toFront(): MessageFront {
 		const msgFront: MessageFront = {
 			idMessage: this.id,
 			idChat: this.id_channel,
 			idSender: this.id_sender,
 			message: this.message,
-			date: this.date.toLocaleTimeString(),
-		}
+			send: true,
+			read: false,
+			date: `${this.date.toLocaleString()}`,
+		};
 		return msgFront;
 	}
 }
@@ -34,7 +36,9 @@ export class Message {
 export class MessageFront {
 	idMessage?: number;
 	idChat?: number;
-	date: string;
-	message: string;
 	idSender: number;
+	message: string;
+	send?: boolean;
+	read: boolean;
+	date: string;
 }

@@ -35,6 +35,10 @@ class AuthService {
 		});
 	}
 
+	checkJwtToken() {
+		return axios.get('auth/jwt-check');
+	}
+
 	getAuth() {
 		return axios.get('auth/me');
 	}

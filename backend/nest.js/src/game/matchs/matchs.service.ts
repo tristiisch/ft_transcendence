@@ -42,14 +42,15 @@ export class MatchStatsService {
 			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
 		try {
 			return await sqlStatement.getMany().then(async (matchs: MatchStats[]) => {
-				const matchsFormatted: MatchOwn[] = new Array()
+				const matchsFormatted: MatchOwn[] = new Array();
+				const userCached: User[] = new Array();
 				for (let m of matchs) {
 					let matchFormatted: MatchOwn = new MatchOwn();
 					let opponentId = m.getOpponent(userId);
 					matchFormatted.date = m.timestamp_started;
 					matchFormatted.end = m.timestamp_ended;
 					matchFormatted.score = m.score;
-					matchFormatted.opponent = (await this.userService.findOne(opponentId)).username;
+					matchFormatted.opponent = (await this.userService.findOneWithCache(opponentId, userCached)).username;
 					matchFormatted.won = m.isWinner(userId);
 					if (m.user1_id !== userId) {
 						let tmp = matchFormatted.score[0];

@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Param, ParseArrayPipe, Post, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
@@ -17,9 +17,10 @@ export class AuthController {
 
 	@Post('42/redirect')
 	async redirect(@Res() res: Response, @Req() req: Request) {
-		try{
-			if (!req.body.code)
-				throw new ForbiddenException("42 Request error")
+		if (!req.body.code)
+			throw new PreconditionFailedException("Unauthorized - Code undefined")
+		let result;
+		try {
 			const postData = {
 				grant_type: 'authorization_code',
 				client_id: process.env.FT_UID,
@@ -28,26 +29,33 @@ export class AuthController {
 				redirect_uri: `${process.env.FRONT_PREFIX}://${process.env.FRONT_HOST}:${process.env.FRONT_PORT}/${process.env.FRONT_REDIRECT}`
 			};
 			const url = process.env.FT_API;
-			const result = await axios.post(url, postData);
-			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
-			const userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
-			const { user, userAuth } = await this.authService.UserConnecting(userInfo);
-			delete userAuth.twoFactorSecret; // TODO Verif this method
-
-			if (user && userAuth.has_2fa === true)
-				res.json({ auth: userAuth }); // il est aussi de basculer sur le bon controller depuis le back
-			else if (user)
-				res.json({ auth: userAuth, user: user });
-		} catch(err42) {
-			throw new ForbiddenException("Unauthorized");
+			result = await axios.post(url, postData);
+		} catch (err42) {
+			console.log('Unable to connect to 42 API', 'Verify UID & Secret env vars')
+			throw new ForbiddenException("Unauthorized - Unable to connect to 42 API");
 		}
+
+		let userInfo;
+		try {
+			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
+			userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });
+		} catch (err42) {
+			throw new ForbiddenException("Unauthorized - Unable to get your infos with 42 API");
+		}
+		const { user, userAuth } = await this.authService.UserConnecting(userInfo);
+		delete userAuth.twoFactorSecret; // TODO Verif this method
+
+		if (user && userAuth.has_2fa === true)
+			res.json({ auth: userAuth });
+		else if (user)
+			res.json({ auth: userAuth, user: user });
 	}
 
 	@Get('fakelogin/:username')
 	async fakeLogin(@Req() req: Request, @Param('username') username: string) {
 		const user: User = await this.usersService.findOneByUsername(username);
 		const userAuth: UserAuth = await this.authService.findOne(user.id);
-		
+
 		return { auth: userAuth, user: user };
 	}
 

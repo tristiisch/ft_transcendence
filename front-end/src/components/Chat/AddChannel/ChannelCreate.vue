@@ -18,7 +18,6 @@ const newPassword = ref('');
 const newAvatar = ref('src/assets/ChannelDefaultPublic.png');
 const selectPlayer = ref(false);
 const error = ref('');
-const placeholder = ref('');
 let isUpload = false;
 
 const emit = defineEmits<{
@@ -32,17 +31,20 @@ function uploadImage(imageData: string): void {
 
 function clickOnButtonPublic() {
 	newChannelType.value = ChatStatus.PUBLIC
-	newAvatar.value = 'src/assets/ChannelDefaultPublic.png'
+    if (!isUpload)
+	    newAvatar.value = 'src/assets/ChannelDefaultPublic.png'
 }
 
 function clickOnButtonPrivate() {
 	newChannelType.value = ChatStatus.PRIVATE
-	newAvatar.value = 'src/assets/ChannelDefaultPrivate.png'
+    if (!isUpload)
+	    newAvatar.value = 'src/assets/ChannelDefaultPrivate.png'
 }
 
 function clickOnButtonProtected() {
 	newChannelType.value = ChatStatus.PROTECTED
-	newAvatar.value = 'src/assets/ChannelDefaultProtected.png'
+    if (!isUpload)
+	    newAvatar.value = 'src/assets/ChannelDefaultProtected.png'
 }
 
 function treatNewChannelData()
@@ -51,18 +53,19 @@ function treatNewChannelData()
         const selection = globalStore.selectedItems;
         const newChannel: Channel = {
             name: newChannelName.value,
-            type: newChannelType.value, 
+            owner: null,
             avatar: newAvatar.value,
-            users: selection,
-            password: newPassword.value,
+            password: null,
+            hasPassword: newPassword.value != '' ? true : false,
             // admins & owner should not be defined here
             // It is the backend that must define this by putting the user who made the request
             // Otherwise anyone could create channels for others
-            admins: [userStore.userData],
-            owner: userStore.userData,
+            users: selection,
+            admins: [],
             muted: [],
             banned: [],
-            messages: []
+            type: newChannelType.value, 
+            messages: [],
         }
         if (!globalStore.isTypeUser(newChannel)) {
             chatStore.createNewChannel(newChannel, selection)

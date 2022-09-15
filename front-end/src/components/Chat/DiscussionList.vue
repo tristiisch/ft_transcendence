@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const lastMessage = ref<Message>();
-if (props.discussion.messages.length)
+if (props.discussion.messages && props.discussion.messages.length)
     lastMessage.value = props.discussion.messages[props.discussion.messages.length - 1];
 
 function prefix()
@@ -42,9 +42,9 @@ watch(props.discussion.messages, () => {
 </script>
 
 <template>
-    <button class="flex w-full gap-2 h-[60px] border-b-[1px] border-slate-600">
+    <button class="flex w-full gap-2 h-full border-b-[1px] border-slate-600">
         <div class="shrink-0 flex items-center h-full">
-            <img class="w-8 h-8 sm:w-12 sm:h-12 rounded-full object-cover border border-slate-400" :src="discussion.user.avatar" alt="Rounded avatar">
+            <img class="aspect[1/1] h-8 sm:h-[80%] rounded-full object-cover border border-slate-400" :src="discussion.user.avatar" alt="Rounded avatar">
         </div>
         <div class="flex flex-col justify-center h-full w-[calc(100%_-_56px)] gap-1">
             <div class="flex justify-between items-center">

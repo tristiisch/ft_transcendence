@@ -5,13 +5,14 @@ import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import UsersService from '@/services/UserService';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const route = useRoute();
 const router = useRouter();
-const pending = ref(false);
 const displayPart = ref('Player Stats');
+const toast = useToast();
 
 const emit = defineEmits<{
 	(e: 'changeDisplay', displayedPart: string): void;
@@ -39,8 +40,9 @@ function setDisplayedPart(button: number) {
 function treatFriendRequest() {
 	if (!globalStore.isFriend(userId.value)) {
 		UsersService.sendFriendRequest(userId.value)
-			.then(() => {
-				pending.value = true;
+			.then((response) => {
+				globalStore.addPendingFriend(userId.value)
+				if (response.data) toast.info(response.data.message)
 			})
 			.catch((error) => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
@@ -48,8 +50,9 @@ function treatFriendRequest() {
 	}
 	else {
 		UsersService.removeFriend(userId.value)
-			.then(() => {
+			.then((response) => {
 				globalStore.removeFriend(userId.value)
+				if (response.data) toast.info(response.data.message)
 			})
 			.catch((error) => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
@@ -58,9 +61,8 @@ function treatFriendRequest() {
 }
 
 const friendButton = computed(() => {
-	console.log(globalStore.isFriend(userId.value))
 	if (globalStore.isFriend(userId.value)) return 'Remove friend';
-	else if (pending.value === true) return 'Pending';
+	else if (globalStore.isPendingFriend(userId.value)) return 'Pending';
 	return 'Add friend';
 });
 

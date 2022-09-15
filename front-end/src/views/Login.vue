@@ -5,7 +5,6 @@ import { useToast } from 'vue-toastification';
 import { ref, watch, onBeforeMount, ErrorCodes } from 'vue';
 import socket from '@/plugin/socketInstance';
 import BaseCard from '@/components/Ui/BaseCard.vue';
-import BaseSpinner from '@/components/Ui/BaseSpinner.vue';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 
@@ -55,20 +54,17 @@ watch(
 );
 
 function submit2faForm() {
-	if (twoFaCode.value)
-	{
-		userStore
-		.handleLogin2Fa(twoFaCode.value)
-		.then(() => {
-			socket.connect()
-			router.replace({ name: 'Home' });
-		})
-		.catch((error) => {
-			console.log(error)
-			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-			else router.replace({ name: 'Login' });
-		});
-	}
+	userStore
+	.handleLogin2Fa(twoFaCode.value)
+	.then(() => {
+		socket.connect()
+		router.replace({ name: 'Home' });
+	})
+	.catch((error) => {
+		console.log(error)
+		if (error.response && error.response.status === 403) toast.error(error.response.data.message)
+		else userStore.resetAll()
+	});
 }
 
 function onlyLettersAndNumbers(str: string) {
@@ -76,7 +72,7 @@ function onlyLettersAndNumbers(str: string) {
 }
 
 function submitRegistrationForm() {
-	if (!username.value || !(username.value.length > 1 && username.value.length < 9)) toast.error('Username should have at least 2 and at most 9 characters.');
+	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.error('Username should have at least 2 and at most 16 characters.');
 	else if (!onlyLettersAndNumbers(username.value)) toast.error('Username can only contain alphanumeric characters.');
 	else {
 		isLoading.value = true;
@@ -90,7 +86,7 @@ function submitRegistrationForm() {
 				isLoading.value = false;
 				//check for name already exist in database --> Code === 403 ?
 				if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-				else router.replace({ name: 'Login' });
+				else userStore.resetAll()
 			});
 	}
 }
@@ -108,6 +104,7 @@ onBeforeMount(() => {
 		})
 		.catch((error) => {
 			isLoading.value = false;
+			if (error.response && error.response.data) toast.error(error.response.data.message)
 			router.replace({ name: 'Login' });
 		});
 	}
@@ -152,5 +149,4 @@ onBeforeMount(() => {
 			</form>
 		</BaseCard>
 	</div>
-	<div class="h-full w-full fixed bg-brick bg-fixed bg-bottom bg-cover top-0 left-0 -z-10 [transform:_scale(1.2)]"></div>
 </template>

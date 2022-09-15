@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
-import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount, watch, computed, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'vue-toastification';
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import type Stats from '@/types/Stats';
@@ -17,21 +15,15 @@ import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
 
 const userStore = useUserStore();
-const globalStore = useGlobalStore();
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 
 const user = ref<User>();
 const userStats = ref<Stats>();
-const matchsHistory = ref<MatchHistory[]>([]);
+const matchsHistory = ref<MatchHistory[]>();
 const isLoading = ref(false)
 const rightCardTitle = ref('PLAYER STATS');
 const partToDisplay = ref('Player Stats');
-
-const userId = computed(() => {
-	return parseInt(route.params.id as string)
-})
 
 function setRightCardTitle(displayPart: string) {
 	if (displayPart === 'Notifications') rightCardTitle.value = 'NOTIFICTIONS';
@@ -45,9 +37,23 @@ function setPartToDisplay(displayPart: string) {
 }
 
 function fetchAll() {
+	isLoading.value = true
+	Promise.all([UsersService.getUser(userId.value), UsersService.getMatchsHistory(userId.value), UsersService.getStats(userId.value)])
+	.then((result) => {
+		user.value = result[0].data
+		matchsHistory.value = result[1].data
+		userStats.value = result[2].data
+		isLoading.value = false
+	})
+	.catch((error) => {
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+	})
+}
+
+function fetchMyStats() {
+	isLoading.value = true
 	Promise.all([UsersService.getMatchsHistory(userId.value), UsersService.getStats(userId.value)])
 	.then((result) => {
-		console.log(result)
 		matchsHistory.value = result[0].data
 		userStats.value = result[1].data
 		isLoading.value = false
@@ -57,33 +63,35 @@ function fetchAll() {
 	})
 }
 
-watch(
-	() => userId.value,
-	() => {
-		if (userId.value)
-		{
-			isLoading.value = true
-			if (isMe.value) user.value = userStore.userData;
-			else user.value = globalStore.getUser(userId.value)
-			fetchAll()
-		}
-	}
-);
+const userId = computed(() => {
+	return parseInt(route.params.id as string)
+})
 
 const isMe = computed(() => {
 	return userId.value === userStore.userData.id;
 });
 
-const isLoaded = computed(() => {
-	if (!isLoading.value && !globalStore.isLoading && userStore.isLoaded) return true;
-	return false;
-});
+watch(
+	() => userId.value,
+	() => {
+		if (userId.value)
+		{
+			if (isMe.value)
+			{
+				user.value = userStore.userData;
+				fetchMyStats()
+			}
+			else fetchAll()
+		}
+	}
+);
 
 onBeforeMount(() => {
-	isLoading.value = true
-	if (isMe.value) user.value = userStore.userData;
-	else user.value = globalStore.getUser(userId.value)
-	if (!user.value) router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: 404 }});
+	if (isMe.value)
+	{
+		user.value = userStore.userData;
+		fetchMyStats()
+	}
 	else fetchAll()
 	if (route.query.notification)
 	{
@@ -94,7 +102,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<base-ui :isLoaded="isLoaded">
+	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">

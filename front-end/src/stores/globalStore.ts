@@ -15,7 +15,6 @@ export const useGlobalStore = defineStore('globalStore', {
 		pendingFriends: [],
 		notifications: [],
 		selectedItems: [],
-		isLoading: false
 	}),
 	getters: {
 		isTypeArrayUsers: (state) => {
@@ -25,7 +24,10 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
-			return (userId: number) => state.friends.some((friend) => friend.id === userId);
+			return (userId: number) => state.friends.some((friendId) => friendId === userId);
+		},
+		isPendingFriend: (state) => {
+			return (userId: number) => state.pendingFriends.some((pendingId) => pendingId === userId);
 		},
 		getUserName: (state) => {
 			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
@@ -49,7 +51,7 @@ export const useGlobalStore = defineStore('globalStore', {
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchUsers(), this.fetchfriends(), this.fetchNotifications()]);
+				await Promise.all([this.fetchUsers(), this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications()]);
 			} catch (error: any) {
 				throw error;
 			}
@@ -117,11 +119,12 @@ export const useGlobalStore = defineStore('globalStore', {
 		addUser(user: User) {
 			this.users.push(user);
 		},
-		addFriend(friend: User) {
-			this.friends.push(friend);
+		addFriend(friendId: number) {
+			this.removePendingFriend(friendId)
+			this.friends.push(friendId);
 		},
-		addPendingFriend(pendingFriend: User) {
-			this.friends.push(pendingFriend);
+		addPendingFriend(pendingFriendId: number) {
+			this.pendingFriends.push(pendingFriendId);
 		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
@@ -131,16 +134,17 @@ export const useGlobalStore = defineStore('globalStore', {
 			this.users.splice(index, 1);
 		},
 		removeFriend(friendToRemoveId: number) {
-			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
+			this.removePendingFriend(friendToRemoveId)
+			const index = this.friends.findIndex(friendId => friendId === friendToRemoveId);
 			this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
-			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
-			this.friends.splice(index, 1);
+			const index = this.pendingFriends.findIndex(pendingFriendId => pendingFriendId === pendingFriendToRemoveId);
+			this.pendingFriends.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
-			this.friends.splice(index, 1);
+			this.notifications.splice(index, 1);
 		},
 		updateUser(userToChange: User) {
 			const index = this.users.findIndex(user => user.id === userToChange.id);

@@ -3,6 +3,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
 import { computed, ref, onMounted, onUnmounted, onBeforeUpdate } from 'vue';
+import { useToast } from 'vue-toastification';
 import type Leaderboard from '@/types/Leaderboard';
 import Status from '@/types/Status';
 import PlayerStatus from '@/components/Divers/PlayerStatus.vue';
@@ -17,7 +18,7 @@ const sizeAvatar = ref<HTMLInputElement | null>(null);
 const avatarWidth = ref(sizeAvatar.value?.width.toString() as string);
 const windowHeight = ref(window.innerHeight);
 const props = defineProps<{ user?: Leaderboard }>();
-const pending = ref<User>()
+const toast = useToast();
 
 const userStatus = computed(() => {
 	if (props.user?.status === Status.INGAME) return 'Ingame';
@@ -42,16 +43,18 @@ const isFriend = computed(() => {
 	if (props.user) return globalStore.isFriend(props.user?.id);
 });
 
+const isPendingFriend = computed(() => {
+	if (props.user) return globalStore.isPendingFriend(props.user?.id)
+});
+
 function friendRequest() {
 	if(props.user?.id)
 	{
 		if (!globalStore.isFriend(props.user?.id)) {
 		UsersService.sendFriendRequest(props.user?.id)
-			.then(() => {
-				/*UsersService.getPendingFriends().then((response) => {
-					pending.value = response.data
-					console.log(pending.value)
-				}*/
+			.then((response) => {
+				if (response.data) toast.info(response.data.message)
+				if (props.user) globalStore.addPendingFriend(props.user.id)
 			})
 			.catch((error) => {
 				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
@@ -90,10 +93,11 @@ onUnmounted(() => {
 				<player-status :userStatus="user?.status"></player-status>
 				<span>{{ userStatus }}</span>
 			</div>
-			<div v-else class="flex gap-3" >
-				<button class="inline-flex items-center justify-center p-[1px] text-xs">
-					<span class=" border border-slate-800 text-slate-800 px-1.5 py-1.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0" @click="friendRequest()" > Add friend </span>
+			<div v-else class="inline-flex items-center justify-center p-[1px]">
+				<button v-if="!isPendingFriend">
+					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="friendRequest()" >Add friend</span>
 				</button>
+				<span v-else class="pl-2 text-slate-800">Pending</span>
 			</div>
 		</div>
 		<div class="flex justify-center items-center">{{ user?.rank }}</div>
