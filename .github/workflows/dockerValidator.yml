@@ -4,11 +4,72 @@ name: DockerFile Validator
 on: [push, pull_request]
 jobs:
   dockerfile-validator:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
+
       - name: Run dockerfile-validator
         uses: ghe-actions/dockerfile-validator@v1
         with:
           dockerfile: "api/Dockerfile"
+
+  docker-compose:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    needs: dockerfile-validator
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Environnement Informations Linux
+        run: |
+          echo OS version
+          lsb_release -a
+          echo
+          echo Linux kernel version
+          uname -r
+          echo
+          echo Current User
+          whoami
+
+      - name: Install Docker
+        run : |
+          DISTRO=`lsb_release -a 2> /dev/null | grep Distributor | awk -F ' ' '{print $3}' | tr '[:upper:]' '[:lower:]'`
+          sudo apt update
+          sudo apt install -y ca-certificates curl gnupg lsb-release
+          curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt update
+          sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose docker-compose-plugin
+        shell: bash
+
+      - name: Docker Infos 
+        run : |
+          docker version
+          docker compose version
+        shell: bash
+
+      - name: Add 42API Credentials
+        run : |
+          ./credentials42.sh ${{ secrets.FT_UID }} ${{ secrets.FT_SECRET }}
+        shell: bash
+
+      - name: Setup containers
+        run : |
+          make setup -i
+        shell: bash
+        continue-on-error: true
+
+      - name: Create containers
+        run : |
+          docker-compose up -d --build
+        shell: bash
+        continue-on-error: true
+

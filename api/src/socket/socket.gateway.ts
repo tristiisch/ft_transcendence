@@ -325,7 +325,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let usersExceptInChannel: User[] = await this.userService.findAll();
 		usersExceptInChannel = usersExceptInChannel.filter((user: User) => channel.users_ids.indexOf(user.id) === -1 && channel.banned_ids.indexOf(user.id) === -1)
 		// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
-		return [usersExceptInChannel];
+		return usersExceptInChannel;
 	}
 
 	@UseGuards(JwtSocketGuard)

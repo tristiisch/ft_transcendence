@@ -29,13 +29,18 @@ function updateEnv() {
     echo -e "\033[0;32mYour $ENV as been updated.\033[0m"
 }
 
-function addCredentials() {
-    while [ -z "$R_FT_UID" ]; do
-        read -p "UID ? " -r R_FT_UID
-    done
-    while [ -z "$R_FT_SECRET" ]; do
-        read -p "SECRET ? " -r R_FT_SECRET
-    done
+function askCredentials() {
+    if [ -z "$2" ]; then
+        while [ -z "$R_FT_UID" ]; do
+            read -p "UID ? " -r R_FT_UID
+        done
+        while [ -z "$R_FT_SECRET" ]; do
+            read -p "SECRET ? " -r R_FT_SECRET
+        done
+    else
+        R_FT_UID=$1
+        R_FT_SECRET=$2
+    fi
     echo "Now we will check them. FT_UID: $R_FT_UID FT_SECRET: ****"
     FT_UID=$R_FT_UID
     FT_SECRET=$R_FT_SECRET
@@ -45,10 +50,10 @@ function addCredentials() {
 
 if ! test -f "$ENV"; then
     echo -e "\033[1;34mYou need to create .env file. Give me your 42API credentials from $APP_URL\033[0m"
-    addCredentials
+    askCredentials $@
 elif [ -z "$FT_UID" ] || [ -z "$FT_SECRET" ]; then
     echo -e "\033[1;34mYou didn't add your 42API credentials. Get it from $APP_URL\033[0m"
-    addCredentials
+    askCredentials $@
 elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ $LOCAL_HOSTNAME != $REAL_HOSTNAME ]; then
     echo -e "\033[1;33mYou need to update your .env.\033[0m"
     diff $ENV $ENV_LOCAL

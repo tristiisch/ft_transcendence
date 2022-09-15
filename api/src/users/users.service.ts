@@ -177,7 +177,6 @@ export class UsersService {
 	}
 
 	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
-		fromBase64(avatar_64);
 		if (!fromBase64(avatar_64))
 			throw new PreconditionFailedException(`Unable to accept '${avatar_64.substring(0, 16) + (avatar_64.length > 16 ? '...' : '')}' as avatar_64.`);
 		await this.usersRepository.update(userId, { avatar_64: avatar_64 }).catch(this.lambdaDatabaseUnvailable);
@@ -190,14 +189,14 @@ export class UsersService {
 			throw new BadRequestException(`You are already registered.`);
 
 		try {
-			if (user.avatar_64 != null && (user.avatar_64 = await toBase64(user.avatar_64)) != null)
+			if (user.avatar_64 != null && fromBase64(user.avatar_64))
 				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
 			else
 				this.usersRepository.update(userId, { username: user.username }).catch(this.lambdaDatabaseUnvailable);
 		} catch (err) {
 			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
 				throw new PreconditionFailedException('Username already taken.');
-			else
+			else 
 				throw err;
 		}
 		return await this.findOne(userId);
