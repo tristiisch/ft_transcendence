@@ -79,7 +79,7 @@ export class AuthService {
 	public async generateTFASecret(user: User) {
 		this.temp2FASecret.delete(user.id);
 		const secret: string = authenticator.generateSecret();
-		const otpauthUrl = authenticator.keyuri(user.login_42, process.env.TFA_APP, secret);
+		const otpauthUrl = authenticator.keyuri(user.login_42, process.env.NAME, secret);
 
 		this.temp2FASecret.set(user.id, secret);
 		return otpauthUrl;

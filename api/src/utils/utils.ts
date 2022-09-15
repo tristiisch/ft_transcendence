@@ -1,4 +1,4 @@
-import { PreconditionFailedException } from "@nestjs/common";
+import { PreconditionFailedException, Req } from "@nestjs/common";
 import axios from 'axios';
 import { validate } from "class-validator";
 
@@ -130,5 +130,9 @@ export async function validateDTOforHttp<T extends Object>(dto: T) {
 			throw new PreconditionFailedException(`${messageJoiner.join(', ')}`);
 		}
 	});
+}
+
+export function getFrontURL(req: any) {
+	return `${req.headers['x-forwarded-proto'] ?? req.protocol}://${req.headers.host.split(':')[0]}:${process.env.FRONT_PORT}`
 }
 

@@ -25,6 +25,7 @@ jobs:
         cache-dependency-path: api/package-lock.json
     - name: Install node modules
       run: |
+       npm install -g @nestjs/cli
        cd api
        npm install
     - name: Check outdated Node module

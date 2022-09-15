@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
 import { UsersService } from '../users/users.service';
+import { getFrontURL } from '../utils/utils';
 
 @Controller("auth")
 export class AuthController {
@@ -26,12 +27,13 @@ export class AuthController {
 				client_id: process.env.FT_UID,
 				client_secret: process.env.FT_SECRET,
 				code: req.body.code,
-				redirect_uri: `${process.env.OAUTH_REDIRECT}`
+				// redirect_uri: process.env.FT_OAUTH_REDIRECT
+				redirect_uri: `${getFrontURL(req)}/login`
 			};
 			const url = process.env.FT_API;
 			result = await axios.post(url, postData);
 		} catch (err42) {
-			console.log('Unable to connect to 42 API', 'Verify UID & Secret env vars')
+			console.log('Unable to connect to 42 API', 'Verify UID & Secret env vars', err42.message)
 			throw new ForbiddenException("Unauthorized - Unable to connect to 42 API");
 		}
 

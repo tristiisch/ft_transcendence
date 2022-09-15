@@ -32,6 +32,12 @@ services:
     restart: always
     env_file:
     - .env
+    environment:
+      VITE_FT_UID: ${FT_UID}
+      VITE_FT_API_OAUTH: ${FT_API_OAUTH}
+      VITE_FT_OAUTH_REDIRECT: ${FT_OAUTH_REDIRECT}
+      VITE_API_URL: ${API_URL}
+      FRONT_PORT: ${FRONT_PORT}
     ports:
     - ${FRONT_PORT}:8001
     networks:

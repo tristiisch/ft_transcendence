@@ -20,7 +20,7 @@ clean:
 	docker-compose down --volumes --remove-orphans
 
 fclean: clean
-	docker-compose down --rmi
+	docker-compose down --rmi all
 	rm -rf ${HOME}/ft_transcendence_volumes
 
 logs:
