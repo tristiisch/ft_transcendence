@@ -31,21 +31,19 @@ function changeDisplayToFriends() {
     filterButton.value = 'Friends';
 }
 function changeDisplayToAllUsers() {
-    itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
+    itemsToDisplay.value = globalStore.users;
     filterButton.value = 'All';
 }
 function changeDisplayToPublic() {
-	const ChannelsUserNotIn= chatStore.getChannelsFiltered(chatStore.userChannels);
-    itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PUBLIC);
+    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PUBLIC);
     filterButton.value = 'Public';
 }
 function changeDisplayToProtected() {
-	const ChannelsUserNotIn = chatStore.getChannelsFiltered(chatStore.userChannels);
-    itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PROTECTED);
+    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PROTECTED);
     filterButton.value = 'Protected';
 }
 function changeDisplayToAllChannels() {
-    itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
+    itemsToDisplay.value = chatStore.channels;
 	filterButton.value = 'All';
 }
 
@@ -68,18 +66,41 @@ watch(
 );
 
 onBeforeMount(() => {
-	if (props.type === 'users') {
-		itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
-		isLoading.value = false;
-	}
-	else if (props.type === 'usersNotInChannel') {
-		itemsToDisplay.value = chatStore.UsersNotInChannels();
-		isLoading.value = false;
+	if (props.type === 'users' || props.type === 'usersNotInChannel') {
+		globalStore.fetchfriends() 
+		.catch((e: Error) => {
+			error.value = e.message;
+			toast.error(error.value);
+		});
+		if (props.type === 'users') {
+			globalStore.fetchUsers()   //TODO client user must not be in
+			.then(() => {
+			itemsToDisplay.value = globalStore.users;
+			isLoading.value = false;
+			})
+			.catch((e: Error) => {
+				error.value = e.message;
+				toast.error(error.value);
+			});
+		}
+		else {
+			itemsToDisplay.value = chatStore.UsersNotInChannels();
+			// globalStore.fetchUsersNotInChannels()   //TODO change to fetch implementation
+			// .then(() => {
+			// itemsToDisplay.value = globalStore.users;
+			// isLoading.value = false;
+			// })
+			// .catch((e: Error) => {
+			// 	error.value = e.message;
+			// 	toast.error(error.value);
+			// });
+			isLoading.value = false;
+		}
 	}
 	else {
 		chatStore.fetchChannels()
 		.then(() => {
-			itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
+			itemsToDisplay.value = chatStore.channels   //TODO check that private channel not sended and channel filtered
 			isLoading.value = false;
 		})
 		.catch((e: Error) => {
