@@ -9,6 +9,7 @@ import ChatStatus from '@/types/ChatStatus';
 import type User from '@/types/User';
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
 import BaseSpinner from '../Ui/BaseSpinner.vue';
+import socket from '@/plugin/socketInstance';
 
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
@@ -84,17 +85,12 @@ onBeforeMount(() => {
 			});
 		}
 		else {
-			itemsToDisplay.value = chatStore.UsersNotInChannels();
-			// globalStore.fetchUsersNotInChannels()   //TODO change to fetch implementation
-			// .then(() => {
-			// itemsToDisplay.value = globalStore.users;
-			// isLoading.value = false;
-			// })
-			// .catch((e: Error) => {
-			// 	error.value = e.message;
-			// 	toast.error(error.value);
-			// });
+			//itemsToDisplay.value = chatStore.UsersNotInChannels();
+			socket.emit('chatChannelOtherUsers', chatStore.inChannel, (usersNotInChannel: User[]) => {
+			globalStore.users = usersNotInChannel;
+			itemsToDisplay.value = globalStore.users;
 			isLoading.value = false;
+			});
 		}
 	}
 	else {

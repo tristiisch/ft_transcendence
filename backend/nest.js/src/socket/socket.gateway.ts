@@ -239,7 +239,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(clientUser);
 		const users: User[] = await this.chatService.getUserService().findMany(newAdmin['list'].map(user => user.id));
-		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
+		channel = await this.chatService.setAdmin(channel, users.map(user => user.id));
 
 		return channel;
 	}
