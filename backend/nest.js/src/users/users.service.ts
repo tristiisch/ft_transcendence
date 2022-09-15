@@ -101,6 +101,38 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
+	async findMany(array: number[]): Promise<User[]> {
+		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user');
+		const entries: IterableIterator<number[]> = array.entries();
+
+		sqlStatement.where(`user.id = ${entries.next()['value'][1]}`);
+		for (let i: number = 1; i < array.length; ++i)
+			sqlStatement.orWhere(`user.id = ${entries.next()['value'][1]}`);
+
+		return await sqlStatement.getMany().then(async (users: User[]) => {
+			for (const user of users) delete user.avatar_64;
+			return users;
+		}, this.lambdaDatabaseUnvailable);
+	}
+
+	async findManyWithCache(array: number[], usersCached: User[]): Promise<User[] | null> {
+		if (!array)
+			return null;
+		const users: User[] = new Array();
+		const usersToFetch: number[] = array.filter(id => usersCached.find(u => u.id !== id));
+
+		if (usersToFetch && usersToFetch.length > 0)
+			usersCached = [...usersCached, ...await this.findMany(usersToFetch)]
+	
+		for (const [index, id] of array.entries()) {
+			let cacheUser: User = usersCached.find((user: User) => user.id === id);
+			if (!cacheUser)
+				throw new UnprocessableEntityException(`Can't get user ${array} with cache ${usersCached.map(user => user.id)}.`);
+			users.push(cacheUser);
+		}
+		return users;
+	}
+
 	async remove(id: number) {
 		isNumberPositive(id, 'remove a user');
 		return await this.usersRepository.delete(id).then((value: DeleteResult) => {
@@ -188,37 +220,5 @@ export class UsersService {
 
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
-	}
-
-	async arrayIdsToUsers(array: number[]): Promise<User[]> {
-		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user');
-		const entries: IterableIterator<number[]> = array.entries();
-
-		sqlStatement.where(`user.id = ${entries.next()['value'][1]}`);
-		for (let i: number = 1; i < array.length; ++i)
-			sqlStatement.orWhere(`user.id = ${entries.next()['value'][1]}`);
-
-		return await sqlStatement.getMany().then(async (users: User[]) => {
-			for (const user of users) delete user.avatar_64;
-			return users;
-		}, this.lambdaDatabaseUnvailable);
-	}
-
-	async arrayIdsToUsersWithCache(array: number[], usersCached: User[]): Promise<User[] | null> {
-		if (!array)
-			return null;
-		const users: User[] = new Array();
-		const usersToFetch: number[] = array.filter(id => usersCached.find(u => u.id !== id));
-
-		if (usersToFetch && usersToFetch.length > 0)
-			usersCached = [...usersCached, ...await this.arrayIdsToUsers(usersToFetch)]
-	
-		for (const [index, id] of array.entries()) {
-			let cacheUser: User = usersCached.find((user: User) => user.id === id);
-			if (!cacheUser)
-				throw new UnprocessableEntityException(`Can't get user ${array} with cache ${usersCached.map(user => user.id)}.`);
-			users.push(cacheUser);
-		}
-		return users;
 	}
 }

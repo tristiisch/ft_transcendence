@@ -95,7 +95,7 @@ jobs:
         echo "Push changes"
         git push origin $BRANCH_NAME -f
         echo "Check if PR exist"
-        TEST=`gh pr view $BRANCH_NAME 2> /dev/null` || true
+        TEST=`gh pr view $BRANCH_NAME 2> /dev/null` &&
         echo $TEST | cat -e
         if test -z $TEST ; then
           echo "Create PR"
