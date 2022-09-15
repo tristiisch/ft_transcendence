@@ -6,7 +6,7 @@ setup:
 #	chmod -R 777 ${HOME}/ft_transcendence_volumes
 
 build:
-	./test_appli42.sh
+	./credentials42.sh
 #	docker-compose up --detach --build
 	docker-compose up --detach
 

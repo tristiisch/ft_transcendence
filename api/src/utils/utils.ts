@@ -132,7 +132,10 @@ export async function validateDTOforHttp<T extends Object>(dto: T) {
 	});
 }
 
-export function getFrontURL(req: any) {
-	return `${req.headers['x-forwarded-proto'] ?? req.protocol}://${req.headers.host.split(':')[0]}:${process.env.FRONT_PORT}`
+export function getBackRelativeURL(req: any) {
+	return `${req.headers['x-forwarded-proto'] ?? req.protocol}://${req.headers.host}`
 }
 
+export function getFrontRelativeURL(req: any) {
+	return `${req.headers['x-forwarded-proto'] ?? req.protocol}://${req.headers.host.split(':')[0]}:${process.env.FRONT_PORT}`
+}

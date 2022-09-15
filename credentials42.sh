@@ -48,15 +48,22 @@ if ! test -f "$ENV"; then
 elif [ -z "$FT_UID" ] || [ -z "$FT_SECRET" ]; then
     echo -e "\033[1;34mYou didn't add your 42API credentials. Get it from $APP_URL\033[0m"
     addCredentials
-elif [ `diff local.env .env | wc -l` -gt 10 ] || [ $LOCAL_HOSTNAME != $REAL_HOSTNAME ]; then
+elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ $LOCAL_HOSTNAME != $REAL_HOSTNAME ]; then
     echo -e "\033[1;33mYou need to update your .env.\033[0m"
-    updateEnv
-    echo -e "\033[0;32mYour .env as been updated.\033[0m"
+    diff $ENV $ENV_LOCAL
+    read -p $'\e[1;92mYour credentials will be preserve. Update .env ? (y/N)'$'\033[0m' -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        updateEnv
+        echo -e "\033[0;32mYour .env as been updated.\033[0m"
+    else
+        echo -e "\033[1;33mYour .env is outdated.\033[0m"
+    fi
 else
     echo -e "\033[0;32mYour .env is up to date.\033[0m"
 fi
 
-source .env
+source $ENV
 
 APP42_UID=$FT_UID
 APP42_SECRET=$FT_SECRET
