@@ -4,6 +4,7 @@ import type GlobalState from '@/types/GlobalState';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
 import type Notification from '@/types/Notification';
+import { NotificationType } from '@/types/Notification';
 
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
@@ -145,6 +146,12 @@ export const useGlobalStore = defineStore('globalStore', {
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
 			this.notifications.splice(index, 1);
+		},
+		removeNotActionNotification() {
+			for (const notification of this.notifications) {
+			if (notification.type == NotificationType.FRIEND_ACCEPT || notification.type == NotificationType.FRIEND_DECLINE)
+				this.removeNotification(notification.id);
+			}
 		},
 		updateUser(userToChange: User) {
 			const index = this.users.findIndex(user => user.id === userToChange.id);

@@ -124,7 +124,7 @@ export class FriendsService {
 		notif.from_user_id = friendship.user2_id;
 		notif.type = NotificationType.FRIEND_DECLINE;
 		notif = await this.notifService.addNotif(notif);
-		this.socketService.RemoveFriend(user.id, target.id, await notif.toFront(this.userService, [user, target]));
+		this.socketService.RemoveFriend(user.id, target.id);
 
 		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) throw new InternalServerErrorException(`Can't remove friendship of ${friendship.user1_id} and ${friendship.user2_id}.`);

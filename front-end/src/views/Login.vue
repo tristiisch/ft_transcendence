@@ -55,10 +55,8 @@ function startListenSocket() {
 		toast.info(notification.message)
 	});
 
-	socket.on('RemoveFriend', (targetId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
+	socket.on('RemoveFriend', (targetId: number) => {
 		globalStore.removeFriend(targetId)
-		toast.info(notification.message)
 	});
 }
 

@@ -22,8 +22,8 @@ function submitProfileForm() {
 		userStore
 		.updateAvatar(newAvatar.value)
 		.catch((error) => {
-			if (error.response && error.response.status === 413) toast.warning('The avatar is too big. The maximum is 10mb.');
-			else if (error.response && error.response.status === 412) toast.warning('Unknown format for avatar');
+			if (error.response.status === 413) toast.warning('The avatar is too big. The maximum is 10mb.');
+			else if (error.response.status === 412) toast.warning('Unknown format for avatar');
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
@@ -36,9 +36,9 @@ function submitProfileForm() {
 		})
 		.catch((error) => {
 			//check for name already exist in database --> Code === 403 ?
-			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-			else if (error.response && error.response.status === 400) toast.warning('Username is not correct : ' + (error.response.data.message as string[]).join(', '));
-			else if (error.response && error.response.status === 412) toast.warning(error.response.data.message);
+			if (error.response.data && error.response.status === 403) toast.error(error.response.data.message)
+			else if (error.response.data && error.response.status === 400) toast.warning('Username is not correct : ' + (error.response.data.message as string[]).join(', '));
+			else if (error.response.data && error.response.status === 412) toast.warning(error.response.data.message);
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status, message: error.response?.data.message }});
 		});
 	}

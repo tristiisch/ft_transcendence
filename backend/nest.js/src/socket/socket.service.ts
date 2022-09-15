@@ -53,9 +53,9 @@ export class SocketService {
 		if (clientSocket) clientSocket.emit('AddFriend', senderId, notification);
 	};
 
-	RemoveFriend(senderId: number, targetId: number, notification: NotificationFront) {
+	RemoveFriend(senderId: number, targetId: number) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('RemoveFriend', senderId, notification);
+		if (clientSocket) clientSocket.emit('RemoveFriend', senderId);
 	};
 
 	AddUser(user: User) {
