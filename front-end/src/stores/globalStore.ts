@@ -149,7 +149,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		removeNotActionNotification() {
 			for (const notification of this.notifications) {
-			if (notification.type == NotificationType.FRIEND_ACCEPT || notification.type == NotificationType.FRIEND_DECLINE)
+			if (notification.type == NotificationType.FRIEND_ACCEPT)
 				this.removeNotification(notification.id);
 			}
 		},

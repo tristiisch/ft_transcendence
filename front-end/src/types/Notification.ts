@@ -10,7 +10,7 @@ export enum NotificationType {
 
 export default interface Notification {
 	id: number,
-	from_user?: User,
+	from_user: User,
 	from_user_id: number
 	date: string,
 	message: string,

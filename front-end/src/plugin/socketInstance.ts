@@ -1,4 +1,8 @@
 import { io } from "socket.io-client";
+import { useGlobalStore } from '@/stores/globalStore';
+import type Notification from '@/types/Notification';
+import type User from '@/types/User';
+import { useToast } from 'vue-toastification';
 
 const URL = "http://localhost:3000";
 const socket = io(URL, {
@@ -6,8 +10,27 @@ const socket = io(URL, {
 	autoConnect: false
 });
 
-// socket.onAny((event, ...args) => {
-//     console.log(event, args);
-//   });
+socket.on("connect", () => {
+
+	console.log(socket.id)
+	const globalStore = useGlobalStore();
+	const toast = useToast();
+
+	socket.on('FriendRequest', (sender: User, notification: Notification) => {
+		globalStore.addNotification(notification);
+		globalStore.addPendingFriend(sender)
+		toast.info(notification.message)
+	});
+
+	socket.on('AddFriend', (target: User, notification: Notification) => {
+		globalStore.addNotification(notification);
+		globalStore.addFriend(target)
+		toast.info(notification.message)
+	});
+
+	socket.on('RemoveFriend', (targetId: number) => {
+		globalStore.removeFriend(targetId)
+	});
+})
 
 export default socket;

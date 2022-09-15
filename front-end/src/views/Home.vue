@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed, onBeforeMount } from 'vue';
-import { useUserStore } from '@/stores/userStore';
+import { ref, onUnmounted, onBeforeMount } from 'vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'vue-toastification';
-import socket from '@/plugin/socketInstance';
-import type Notification from '@/types/Notification';
-import type User from '@/types/User';
 
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 const imageLoaded = ref(false);
 const isLoading = ref(false);
-const userStore = useUserStore();
 const globalStore = useGlobalStore();
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 
 function tvSize() {
 	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.6_*_100vw)]';
@@ -64,8 +57,6 @@ onBeforeMount(() => {
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
-
-
 })
 
 onUnmounted(() => {

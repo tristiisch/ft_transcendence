@@ -60,8 +60,8 @@ export class FriendsService {
 			}
 			let notif: Notification = new Notification();
 			notif.user_id = friendship.user2_id;
-			notif.from_user_id= friendship.user1_id;
-			notif.type = NotificationType.FRIEND_REQUEST
+			notif.from_user_id = friendship.user1_id;
+			notif.type = NotificationType.FRIEND_REQUEST;
 			notif = await this.notifService.addNotif(notif);
 			this.socketService.FriendRequest(user.id, target.id, await notif.toFront(this.userService, [user, target]));
 			return { statusCode: 200, user: target, message: `You asked as a friend ${target.username}.` };
@@ -119,11 +119,11 @@ export class FriendsService {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
-		let notif: Notification = new Notification();
+		/*let notif: Notification = new Notification();
 		notif.user_id = friendship.user1_id;
 		notif.from_user_id = friendship.user2_id;
 		notif.type = NotificationType.FRIEND_DECLINE;
-		notif = await this.notifService.addNotif(notif);
+		notif = await this.notifService.addNotif(notif);*/
 		this.socketService.RemoveFriend(user.id, target.id);
 
 		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {

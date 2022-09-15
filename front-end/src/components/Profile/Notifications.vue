@@ -30,7 +30,7 @@ function acceptInvitation(notification: Notification) {
 		UserService.notificationAction(notification.id, true)
 		.then((response) => {
 			globalStore.removeNotification(notification.id)
-			globalStore.addFriend(notification.from_user_id)
+			globalStore.addFriend(notification.from_user)
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {

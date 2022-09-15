@@ -57,7 +57,7 @@ export class SocketService {
 
 	async RemoveFriend(senderId: number, targetId: number) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('RemoveFriend', await this.userService.findOne(senderId))
+		if (clientSocket) clientSocket.emit('RemoveFriend', senderId)
 	};
 
 	AddUser(user: User) {

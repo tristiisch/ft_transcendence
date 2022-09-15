@@ -6,7 +6,6 @@ import { onBeforeMount, ref, computed } from 'vue';
 import TokenService from '@/services/TokenService';
 import axios from '@/plugin/axiosInstance';
 import socket from '@/plugin/socketInstance';
-import type User from '@/types/User';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
