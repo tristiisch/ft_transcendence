@@ -17,6 +17,7 @@ import { validate, validateOrReject, ValidationError, Validator } from 'class-va
 import { plainToInstance } from 'class-transformer';
 import { SocketService } from 'socket/socket.service';
 import { WsException } from '@nestjs/websockets';
+import { ChatRead } from './entity/chat-read.entity';
 
 @Injectable()
 export class ChatService {
@@ -33,7 +34,9 @@ export class ChatService {
 		@InjectRepository(Discussion)
 		private discussionRepo: Repository<Discussion>,
 		@InjectRepository(Message)
-		private msgRepo: Repository<Message>
+		private msgRepo: Repository<Message>,
+		@InjectRepository(ChatRead)
+		private chatReadRepo: Repository<ChatRead>
 	) {}
 
 	@Inject(forwardRef(() => UsersService))
@@ -52,31 +55,6 @@ export class ChatService {
 	public getRepoMsg() {
 		return this.msgRepo;
 	}
-
-    async findOtherChannels(user: User, userCached: User[] | null) : Promise<ChatFront[]> {
-		if (!userCached)
-			userCached = new Array();
-		const publicChannels: ChannelFront[] = await this.channelPublicRepo.find()
-			.then(async (chs: ChannelPublic[]) => {
-				const chsFront: ChannelFront[] = new Array();
-				for (const ch of chs) {
-					if (!ch.isIn(user))
-						chsFront.push(await ch.toFront(this, null, userCached));
-				}
-				return chsFront;
-			}
-		);
-		const protectedChannels: ChannelFront[] = await this.channelProtectedRepo.find()
-			.then(async (chs: ChannelProtected[]) => {
-				const chsFront: ChannelFront[] = new Array();
-				for (const ch of chs)
-					if (!ch.isIn(user))
-						chsFront.push(await ch.toFront(this, null, userCached));
-				return chsFront;
-			}
-		);
-		return publicChannels.concat(protectedChannels);
-    }
 
     async findAllChannels(userCached: User[] | null) : Promise<ChatFront[]> {
 		if (!userCached)
@@ -144,18 +122,48 @@ export class ChatService {
 		);
     }
 
-	async fetchMessage(channelId: number) : Promise<MessageFront[]> {
-		return await this.msgRepo.findBy({ id_channel: channelId })
+    async findOtherChannels(user: User, userCached: User[] | null) : Promise<ChatFront[]> {
+		if (!userCached)
+			userCached = new Array();
+		const publicChannels: ChannelFront[] = await this.channelPublicRepo.find()
+			.then(async (chs: ChannelPublic[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs) {
+					if (!ch.isIn(user))
+						chsFront.push(await ch.toFront(this, null, userCached));
+				}
+				return chsFront;
+			}
+		);
+		const protectedChannels: ChannelFront[] = await this.channelProtectedRepo.find()
+			.then(async (chs: ChannelProtected[]) => {
+				const chsFront: ChannelFront[] = new Array();
+				for (const ch of chs)
+					if (!ch.isIn(user))
+						chsFront.push(await ch.toFront(this, null, userCached));
+				return chsFront;
+			}
+		);
+		return publicChannels.concat(protectedChannels);
+    }
+
+	async fetchMessage(user: User, chatId: number) : Promise<MessageFront[]> {
+		let chatRead: ChatRead = null;
+
+		if (user)
+			chatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
+	
+		return await this.msgRepo.findBy({ id_channel: chatId })
 			.then(async (msgs: Message[]) => {
 				const msgsFront: MessageFront[] = new Array();
 				for (const msg of msgs)
-					msgsFront.push(msg.toFront());
+					msgsFront.push(msg.toFront(chatRead));
 				return msgsFront;
 			}
 		);
 	}
 
-	async fetchMessageSafe(channelDTO: ChannelFetchDTO) : Promise<MessageFront[]> {
+	async fetchMessageSafe(user: User, channelDTO: ChannelFetchDTO) : Promise<MessageFront[]> {
 		if (!Object.values(ChatStatus).includes(channelDTO.type))
 			throw new NotAcceptableException(`Enum ${channelDTO.type} didn't exist in ChatStatus.`)
 		if (channelDTO.password && channelDTO.type !== ChatStatus.PROTECTED)
@@ -167,7 +175,7 @@ export class ChatService {
 			if (protectedChannel.password !== channelDTO.password)
 				throw new UnauthorizedException(`Wrong password for protected channel ${protectedChannel.name}.`)
 		}
-		return this.fetchMessage(channelDTO.id);
+		return this.fetchMessage(user, channelDTO.id);
 	}
 
 	async fetchChannel(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | ChannelPublic | ChannelPrivate> {
@@ -190,6 +198,10 @@ export class ChatService {
 				throw new NotAcceptableException(`Unknown channel type ${channelType}.`)
 		}
 		return chat;
+	}
+
+	async findChat(channelId: number) {
+		return await this.chatRepo.findOneBy({ id: channelId });
 	}
 
 	async fetchChat(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | Discussion | ChannelPublic | ChannelPrivate> {
@@ -362,6 +374,10 @@ export class ChatService {
 	async addMessages(msg: QueryDeepPartialEntity<Message> | QueryDeepPartialEntity<Message>[]): Promise<InsertResult> {
 		return this.msgRepo.insert(msg);
 	}
+	
+	async findMessage(idMsg: number): Promise<Message> {
+		return await this.msgRepo.findOneBy({ id: idMsg });
+	}
 
 	async setAdmin(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		switch (channel.type) {
@@ -431,7 +447,7 @@ export class ChatService {
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront());
+			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(null));
 		};
 
 		users_ids = removesFromArray(channel.users_ids, users_ids);
@@ -482,7 +498,7 @@ export class ChatService {
 			msg.id_sender = -1;
 			msg.id_channel = channel.id;
 			msg = await this.addMessage(msg);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront());
+			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(null));
 		};
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
@@ -515,7 +531,7 @@ export class ChatService {
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront());
+			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(null));
 		};
 
 		switch (channel.type) {
@@ -551,5 +567,23 @@ export class ChatService {
 		this.addMessage(message);
 		// discu.sendMessage(this.socketService, 'chatChannelMessage', discu, message.toFront());
 		return discu;
+	}
+
+	async setReadMessage(user: User, chatId: number, message: Message) {
+		// if (!chat.users_ids || chat.users_ids.indexOf(user.id) === -1)
+		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');
+		let chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
+		if (!chatRead)
+			await this.chatReadRepo.save({ id_user: user.id, id_chat: chatId, id_message: message.id });
+		else if (message.id > chatRead.id_message)
+			await this.chatReadRepo.update(user.id, { id_chat: chatId, id_message: message.id });
+	}
+
+	async getReadMessage(user: User, channel: Channel) {
+		const chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: channel.id });
+		if (!chatRead)
+			return null;
+
+		return chatRead.id_message;
 	}
 }

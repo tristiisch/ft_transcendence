@@ -32,7 +32,7 @@ export class Channel extends Chat {
 			banned: await chatService.getUserService().findManyWithCache(this.banned_ids, usersCached),
 			id: this.id,
 			type: this.type,
-			messages: await chatService.fetchMessage(this.id)
+			messages: await chatService.fetchMessage(user, this.id)
 		}
 		return chFront;
 	}

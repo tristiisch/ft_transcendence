@@ -15,7 +15,7 @@ import { Server, Socket } from 'socket.io';
 import { User } from '../users/entity/user.entity';
 import { SocketService } from './socket.service';
 import { Message, MessageFront } from '../chat/entity/message.entity';
-import { ChatFront, ChatStatus } from '../chat/entity/chat.entity';
+import { Chat, ChatFront, ChatStatus } from '../chat/entity/chat.entity';
 import { Discussion, DiscussionFront } from '../chat/entity/discussion.entity';
 import { ForbiddenException, forwardRef, Inject, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { comparePassword } from '../utils/bcrypt';
@@ -127,7 +127,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			msg.message = message.message;
 
 			msg = await this.chatService.addMessage(msg);
-			const msgFront: MessageFront = msg.toFront();
+			const msgFront: MessageFront = msg.toFront(null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront);
@@ -151,10 +151,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		msgFront.idSender = user.id;
 		const channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
-		if (channel.banned_ids && channel.banned_ids.indexOf(user.id) !== -1) {
-			throw new UnauthorizedException(`You are banned in channel ${channel.name}`);
+		if (!channel.users_ids || channel.users_ids.indexOf(user.id) === -1) {
+			throw new WsException(`You are not in channel ${channel.name}`);
+		} else if (channel.banned_ids && channel.banned_ids.indexOf(user.id) !== -1) {
+			throw new WsException(`You are banned in channel ${channel.name}`);
 		} else if (channel.muted_ids && channel.muted_ids.indexOf(user.id) !== -1) {
-			throw new ForbiddenException(`You are mute in channel ${channel.name}`);
+			throw new WsException(`You are mute in channel ${channel.name}`);
 		}
 		try {
 			let msg: Message = new Message();
@@ -163,7 +165,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			msg.message = msgFront.message;
 
 			msg = await this.chatService.addMessage(msg);
-			const newMsgFront: MessageFront = msg.toFront();
+			const newMsgFront: MessageFront = msg.toFront(null);
 			channel.sendMessageExcept(this.socketService, user, "chatChannelMessage", channel, newMsgFront);
 			// client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
 			return [ channel, newMsgFront ];
@@ -335,7 +337,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatMsgReaded')
 	async chatMsgReaded(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
-		// TODO
+		const idMsg: number = body[0];
+		const idChannel: number = body[1];
+
+		if (Number.isNaN(idMsg))
+			return;
+		
+		// let chat: Chat = await this.chatService.findChat(idChannel);
+		let msg: Message = await this.chatService.findMessage(idMsg);
+		if (!msg)
+			throw new WsException(`Unable to find message ${idMsg} in channel ${idChannel}.`);
+		await this.chatService.setReadMessage(user, idChannel, msg)
 	}
 
 	@UseGuards(JwtSocketGuard)

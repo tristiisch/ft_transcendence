@@ -57,7 +57,7 @@ export class ChatController {
 	@Post('fetch-messsages')
 	fetchMessages(@Req() req, @Body() channelDTO: ChannelFetchDTO) : Promise<MessageFront[]>  {
 		const user: User = req.user;
-		return this.chatService.fetchMessageSafe(channelDTO);
+		return this.chatService.fetchMessageSafe(user, channelDTO);
 	}
 
 	// TODO remove it
