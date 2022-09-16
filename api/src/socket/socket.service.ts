@@ -4,9 +4,8 @@ import { UsersService } from '../users/users.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
-import { Notification, NotificationFront } from '../notification/entity/notification.entity';
-import { User, UserStatus } from '../users/entity/user.entity';
-import { UsersService } from 'users/users.service';
+import { NotificationFront } from '../notification/entity/notification.entity';
+import { User } from '../users/entity/user.entity';
 
 @Injectable()
 export class SocketService {
