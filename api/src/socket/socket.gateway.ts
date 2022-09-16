@@ -119,18 +119,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		message.idSender = user.id;
 
-		let tempDiscu: Discussion = await this.chatService.findOrCreateDiscussion(message.idSender, discussion.user['id']);
+		const discu: Discussion = await this.chatService.findOrCreateDiscussion(message.idSender, discussion.user['id']);
 		try {
 			let msg: Message = new Message();
 			msg.id_sender = message.idSender;
-			msg.id_channel = tempDiscu.id;
+			msg.id_channel = discu.id;
 			msg.message = message.message;
 
 			msg = await this.chatService.addMessage(msg);
 			const msgFront: MessageFront = msg.toFront();
-			const discuFront: DiscussionFront = await tempDiscu.toFront(this.chatService, user, [user]);
+			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
 
-			tempDiscu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront);
+			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
 			// tempDiscu.sendMessage(this.socketService, "chatDiscussionMessage", discuFront, msgFront);
 			return [discuFront, msgFront];
@@ -244,6 +244,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newBanned['list'].map(user => user.id));
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
+		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id)); // TODO optimize
 
 		return channel;
 	}
@@ -313,18 +314,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelOtherUsers')
-	async chatChannelOtherUsers(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+	async chatChannelOtherUsers(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req) {
+		const channelDTO: ChannelFront = body;
 		const user: User = req.user;
 	
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
-		if (channel.admins_ids.indexOf(user.id) === -1)
+		if (!channel.hasAdminPermission(user))
 			throw new ForbiddenException("You can't fetch other users, because you are not admin.");
 
 		let usersExceptInChannel: User[] = await this.userService.findAll();
-		usersExceptInChannel = usersExceptInChannel.filter((user: User) => channel.users_ids.indexOf(user.id) === -1 && channel.banned_ids.indexOf(user.id) === -1)
-		// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
+		usersExceptInChannel = usersExceptInChannel.filter((user: User) => {
+			return (!channel.users_ids || channel.users_ids.indexOf(user.id) === -1) && (!channel.banned_ids || channel.banned_ids.indexOf(user.id) === -1);
+		});
+			// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
 		return usersExceptInChannel;
 	}
 

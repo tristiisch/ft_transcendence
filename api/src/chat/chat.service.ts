@@ -327,10 +327,9 @@ export class ChatService {
 	async findOrCreateDiscussion(userId: number, targetId: number): Promise<Discussion> {
 		let discu: Discussion = await this.findDiscussion(userId, targetId);
 		if (!discu) {
-			discu = {
-				type: ChatStatus.DISCUSSION,
-				users_ids: [userId, targetId]
-			}
+			discu = new Discussion();
+			discu.type = ChatStatus.DISCUSSION;
+			discu.users_ids = [userId, targetId];
 			discu = await this.addDiscussion(discu);
 		}
 		return discu;

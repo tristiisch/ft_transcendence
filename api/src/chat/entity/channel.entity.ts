@@ -12,9 +12,9 @@ export class Channel extends Chat {
 	owner_id: number;
 	avatar: string;
 	avatar_64: string;
-	admins_ids: number[];
-	muted_ids: number[];
-	banned_ids: number[];
+	admins_ids: number[] | null;
+	muted_ids: number[] | null;
+	banned_ids: number[] | null;
 
 	public async toFront?(chatService: ChatService, user: User | null, usersCached: User[] | null): Promise<ChannelFront> {
 		if (!usersCached)

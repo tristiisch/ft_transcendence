@@ -25,7 +25,7 @@ export class Chat {
 	type: ChatStatus;
 
 	@Column("int", { nullable: true, array: true })
-	users_ids: number[];
+	users_ids: number[] | null;
 	// @ManyToMany(() => User)
 	// @JoinTable()
 	// users_ids: User[];
