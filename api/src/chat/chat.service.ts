@@ -586,4 +586,17 @@ export class ChatService {
 
 		return chatRead.id_message;
 	}
+
+	async deleteChannel(channel: Channel) {
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				return this.channelPublicRepo.delete(channel.id);
+			case ChatStatus.PROTECTED:
+				return this.channelProtectedRepo.delete(channel.id);
+			case ChatStatus.PRIVATE:
+				return this.channelPrivateRepo.delete(channel.id);
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
+	}
 }

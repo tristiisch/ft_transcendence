@@ -176,8 +176,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelDelete')
-	async chatChannelDelete(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+	async chatChannelDelete(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
+		const channelDTO: ChannelFront = body[0];
+		const user: User = req.user;
+		
+		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(user);
+
+		this.chatService.deleteChannel(channel);
 	}
 
 	@UseGuards(JwtSocketGuard)
