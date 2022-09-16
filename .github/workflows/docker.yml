@@ -14,6 +14,11 @@ jobs:
         with:
           dockerfile: "api/Dockerfile"
 
+      - name: Run dockerfile-validator
+        uses: ghe-actions/dockerfile-validator@v1
+        with:
+          dockerfile: "front-end/Dockerfile"
+
   docker-compose:
     strategy:
       matrix:

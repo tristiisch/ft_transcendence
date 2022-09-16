@@ -81,7 +81,7 @@ curl http://localhost:8001
 end=0
 while [[ "$i" -lt "$MAX_SECONDES" ]]; do
 	let "end = $MAX_SECONDES - $i"
-    echo "Waiting $end secondes for down containers."
+    echo "Waiting $end secondes before down containers."
     sleep $TIME_CICLE
 	let "i = i + $TIME_CICLE"
 done

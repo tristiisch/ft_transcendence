@@ -6,6 +6,7 @@ import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
 import { User } from "./entity/user.entity";
 import { Response } from 'express';
+import { WsException } from "@nestjs/websockets";
 
 @Injectable()
 export class UsersService {
@@ -220,4 +221,35 @@ export class UsersService {
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
 	}
+
+	async addBlockedUser(user: User, targetId: number): Promise<User> {
+		if (user.id === targetId)
+			throw new WsException("Can't block yourself");
+		if (!user.blocked_ids) {
+			user.blocked_ids = new Array();
+			await this.usersRepository.update(user.id, { blocked_ids: [targetId] });
+		}
+		if (user.blocked_ids.indexOf(targetId) !== -1)
+			throw new WsException('User is already blocked')
+		user.blocked_ids.push(targetId);
+		await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
+		return user;
+	}
+
+	async removeBlockedUser(user: User, targetId: number): Promise<User> {
+		if (user.id === targetId)
+			throw new WsException("Can't unblock yourself");
+		if (!user.blocked_ids || user.blocked_ids.indexOf(targetId) === -1)
+			throw new NotFoundException('This user is not blocked.');
+		if (user.blocked_ids.length == 1)
+			user.blocked_ids = null;
+		else if (user.blocked_ids.indexOf(targetId) !== -1)
+			throw new WsException('User is not blocked')
+		else
+			user.blocked_ids = removeFromArray(user.blocked_ids, targetId);
+
+		await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
+		return user;
+	}
+	
 }

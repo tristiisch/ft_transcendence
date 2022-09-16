@@ -166,7 +166,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(null);
-			channel.sendMessageExcept(this.socketService, user, "chatChannelMessage", channel, newMsgFront);
+			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channel, newMsgFront);
 			// client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
 			return [ channel, newMsgFront ];
 		} catch (err) {
@@ -176,8 +176,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelDelete')
-	async chatChannelDelete(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
-		const channel: ChannelFront = body[0];
+	async chatChannelDelete(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
+		const channelDTO: ChannelFront = body[0];
+		const user: User = req.user;
+		
+		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+
+		channel.checkAdminPermission(user);
+
+		this.chatService.deleteChannel(channel);
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -244,7 +251,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(newBanned['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newBanned.list.map(user => user.id));
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
 		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id)); // TODO optimize
 
@@ -261,7 +268,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(newAdmin['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
 		channel = await this.chatService.setAdmin(channel, users.map(user => user.id));
 
 		return channel;
@@ -277,7 +284,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(newMuted['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
 		channel = await this.chatService.setMuted(channel, users.map(user => user.id));
 
 		return channel;
@@ -293,7 +300,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(newKicked['list'].map(user => user.id));
+		const users: User[] = await this.userService.findMany(newKicked.list.map(user => user.id));
 		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id));
 
 		return channel;
@@ -360,5 +367,23 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(user, userCached);
 
 		return [discussionFront, channelsFront];
+	}
+
+	@UseGuards(JwtSocketGuard)
+	@SubscribeMessage('blockUser')
+	async blockUser(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<User> {
+		const user: User = req.user;
+		const targetId: number = body;
+
+		return this.userService.addBlockedUser(user, targetId);
+	}
+
+	@UseGuards(JwtSocketGuard)
+	@SubscribeMessage('unblockUser')
+	async unblockUser(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<User> {
+		const user: User = req.user;
+		const targetId: number = body;
+
+		return this.userService.removeBlockedUser(user, targetId);
 	}
 }
