@@ -2,10 +2,10 @@
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGlobalStore } from '@/stores/globalStore';
+import type { UserStatus } from '@/types/User';
 import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
 import type LeaderboardUser from '@/types/Leaderboard';
-import type { UserStatus} from '@/types/User';
 import Toogle from '@/components/Divers/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 
@@ -117,13 +117,13 @@ function updateStatus(data: UserStatus) {
 onBeforeMount(() => {
 	fetchLeaderboard();
 
-	socket.on('update_status', (data) => {
+	socket.on('updateStatus', (data: UserStatus) => {
 		updateStatus(data);
 	});
 });
 
 onBeforeUnmount(() => {
-	socket.off('update_status', (data) => {
+	socket.off('updateStatus', (data) => {
 		updateStatus(data);
 	});
 });

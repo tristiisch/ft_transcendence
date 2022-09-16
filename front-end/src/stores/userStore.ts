@@ -78,7 +78,6 @@ export const useUserStore = defineStore('userStore', {
 			}
 		},
 		handleLogout() {
-			socket.emit('update_status', status.OFFLINE )
 			localStorage.clear()
 			location.reload()
 		},

@@ -185,7 +185,7 @@ function loadMatch() {
 	socket.on("hey", (s: string) => {
 		console.log(s)
 	})
-	
+
 	function startMatch() {
 		ball.visible(true)
 	}
@@ -196,12 +196,12 @@ function loadMatch() {
 }
 
 onMounted(() => {
-	socket.emit('update_status', status.INGAME )
+	socket.emit('updateStatus', status.INGAME )
 	loadMatch()
 })
 
 onBeforeUnmount(() => {
-	socket.emit('update_status', status.ONLINE)
+	socket.emit('updateStatus', status.ONLINE)
 });
 
 </script>

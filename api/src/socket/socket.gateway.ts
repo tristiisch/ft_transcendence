@@ -12,7 +12,7 @@ import { ChatService } from '../chat/chat.service';
 import { ChannelCreateDTO } from '../chat/entity/channel-dto';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from '../chat/entity/channel.entity';
 import { Server, Socket } from 'socket.io';
-import { User } from '../users/entity/user.entity';
+import { User, UserStatus } from '../users/entity/user.entity';
 import { SocketService } from './socket.service';
 import { Message, MessageFront } from '../chat/entity/message.entity';
 import { Chat, ChatFront, ChatStatus } from '../chat/entity/chat.entity';
@@ -54,12 +54,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
 		const user = await this.socketService.getUserFromSocket(clientSocket);
 		if (!user) return clientSocket.disconnect();
-		else this.socketService.saveClientSocket(user, clientSocket.id);
+		else
+		{
+			this.socketService.saveClientSocket(user, clientSocket.id);
+			clientSocket.broadcast.emit('updateStatus', ({id: user.id, status: UserStatus.ONLINE}))
+		}
 	}
 
 	async handleDisconnect(clientSocket: Socket) {
 		const user = await this.socketService.getUserFromSocket(clientSocket);
 		this.socketService.deleteClientSocket(user.id);
+		clientSocket.broadcast.emit('updateStatus', (({id: user.id, status: UserStatus.OFFLINE})))
 	}
 
 
@@ -69,6 +74,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// if (this.debug)
 		console.log('[SOCKET.IO]', 'SERVER', 'DEBUG', 'client id :', client.id, req.user.username);
 		return data;
+	}
+
+	@UseGuards(JwtSocketGuard)
+	@SubscribeMessage('updateStatus')
+	handleUserStatus(@MessageBody() data: number, @ConnectedSocket() client: Socket, @Req() req) {
+		const user: User = req.user;
+		client.broadcast.emit('updateStatus', ({id: user.id, status: data}))
 	}
 
 	@UseGuards(JwtSocketGuard)

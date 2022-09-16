@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch, computed, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import type { UserStatus } from '@/types/User';
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import type Stats from '@/types/Stats';
@@ -13,6 +14,7 @@ import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
+import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -91,8 +93,22 @@ watch(
 	}
 );
 
+function updateStatus(data: UserStatus) {
+	if (user.value) user.value.status = data.status
+}
+
 onBeforeMount(() => {
 	treatAll()
+
+	socket.on('updateStatus', (data: UserStatus) => {
+		updateStatus(data);
+	});
+});
+
+onBeforeUnmount(() => {
+	socket.off('updateStatus', (data) => {
+		updateStatus(data);
+	});
 });
 </script>
 
