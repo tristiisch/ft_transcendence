@@ -55,11 +55,8 @@ function treatNewChannelData()
             name: newChannelName.value,
             owner: null,
             avatar: newAvatar.value,
-            password: null,
+            password: newPassword.value,
             hasPassword: newPassword.value != '' ? true : false,
-            // admins & owner should not be defined here
-            // It is the backend that must define this by putting the user who made the request
-            // Otherwise anyone could create channels for others
             users: selection,
             admins: [],
             muted: [],
