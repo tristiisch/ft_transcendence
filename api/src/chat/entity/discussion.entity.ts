@@ -28,13 +28,15 @@ export class Discussion extends Chat {
 	}
 
 	public sendMessage?(socketService: SocketService, sender: User, room: string, ...args: any) {
-		socketService.emitId(this.getTarget(sender), room, ...args);
+		const targetId: number = this.getTarget(sender);
+		if (sender.isBlockedUser(targetId))
+			return;
+		socketService.emitId(targetId, room, ...args);
 	}
 
 	public getTarget?(user: User): number {
-		if (!this.users_ids || this.users_ids.length < 2) {
+		if (!this.users_ids || this.users_ids.length < 2)
 			throw new WsException('Discussion length is not 2.');
-		}
 		if (this.users_ids[0] !== user.id)
 			return this.users_ids[0]
 		return this.users_ids[1]
