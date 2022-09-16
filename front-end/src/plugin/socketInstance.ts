@@ -5,6 +5,7 @@ import type User from '@/types/User';
 import { useToast } from 'vue-toastification';
 
 const URL = "http://localhost:3000";
+// const URL = import.meta.env.VITE_API_URL;
 const socket = io(URL, {
 	auth: {token: null},
 	autoConnect: false

@@ -3,7 +3,8 @@ import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 
 const instance = axios.create({
-	baseURL: import.meta.env.VITE_API_URL,
+	baseURL: 'http://localhost:3000/api'
+	// baseURL: import.meta.env.VITE_API_URL // It send all env vars to client \!/
 });
 
 instance.defaults.headers.common['Content-Type'] = 'application/json';

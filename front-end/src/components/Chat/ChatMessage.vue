@@ -36,7 +36,7 @@ function sizeText(idSender: number) {
 
 function displayMessage(message: Message) {
 	message.read = true;
-	socket.emit('chatMsgReaded', message.idMessage, userStore.userData.id);
+	socket.emit('chatMsgReaded', message.idMessage, message.idChat);
 	return message.message;
 }
 

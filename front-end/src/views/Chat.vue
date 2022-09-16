@@ -20,8 +20,10 @@ import ChannelPasswordQuery from '@/components/Chat/ChannelPasswordQuery.vue';
 import SettingsChannel from '@/components/Chat/ChannelSettings/SettingsChannel.vue';
 import DiscussionList from '@/components/Chat/DiscussionList.vue';
 import Chat from '@/components/Chat/ChatRoot.vue';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
+const toast = useToast();
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const route = useRoute();
@@ -96,6 +98,10 @@ socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
 
 socket.on('chatChannelName', (channel: Channel, newName: { name: string, userWhoChangeName: User }) => {
 	chatStore.UpdateChannelName(channel, newName, false);
+});
+
+socket.on('exception', (err) => {
+	toast.warning(`Error socket: ${err.message}`)
 });
 
 onBeforeMount(() => {

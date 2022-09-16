@@ -1,7 +1,7 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Node.js CI
+name: Node.js CI Build Check
 
 on:
   push:
@@ -11,48 +11,137 @@ on:
 
 jobs:
   build_backend:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        os: [ubuntu-latest, macos-latest]
+        node-version: [14.x, 16.x, 18.x]
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: backend/nest.js/package-lock.json
+        cache-dependency-path: api/package-lock.json
+
+    - name: Install NestJS
+      run: |
+       npm install -g @nestjs/cli
+
+    - name: Environnement Informations Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        echo OS version
+        lsb_release -a
+        echo
+        echo Linux kernel version
+        uname -r
+        echo
+        echo Current User
+        whoami
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+        echo
+        echo NestJS version
+        nest --version
+  
+    - name: Environnement Informations macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        echo OS version
+        system_profiler SPSoftwareDataType
+        echo
+        echo Current User
+        whoami
+        echo
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+        echo
+        echo NestJS version
+        nest --version
+
     - name: Install node modules
       run: |
-       cd backend/nest.js
+       cd api
        npm ci
     - name: Build project
       run: |
-       cd backend/nest.js
+       cd api
        npm run build --if-present
     - name: Unit test Built In
       run: |
-       cd backend/nest.js
+       cd api
        npm test
 
   build_frontend:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        os: [ubuntu-latest, macos-latest]
+        node-version: [14.x, 16.x, 18.x]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: front-end/package-lock.json
+
+    - name: Environnement Informations Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        echo OS version
+        lsb_release -a
+        echo
+        echo Linux kernel version
+        uname -r
+        echo
+        echo Current User
+        whoami
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+        echo
+        echo NestJS version
+        nest --version
+  
+    - name: Environnement Informations macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        echo OS version
+        system_profiler SPSoftwareDataType
+        echo
+        echo Current User
+        whoami
+        echo
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+        echo
+        echo NestJS version
+        nest --version
+  
     - name: Install node modules
       run: |
        cd front-end
        npm ci
+
     - name: Build project
       run: |
        cd front-end

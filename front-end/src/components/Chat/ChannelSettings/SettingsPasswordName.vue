@@ -26,9 +26,13 @@ const label = computed(() => {
 	
 function updatePasswordName() {
     if (chatStore.inChannel) {
-        if (newChannelName.value != '' && newChannelName.value !== chatStore.inChannel.name)
-            chatStore.UpdateChannelName(chatStore.inChannel, { name: newChannelName.value, userWhoChangeName:userStore.userData }, true);
-            //TODO set Password;
+        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value, userWhoChangeName: userStore.userData });
+        // if (newChannelName.value != '' && newChannelName.value !== chatStore.inChannel.name)
+        //     chatStore.UpdateChannelName(chatStore.inChannel, { name: newChannelName.value, userWhoChangeName: userStore.userData });
+        // if (newPassword.value != '') {
+        //     if ((chatStore.inChannel.password && newPassword.value !== chatStore.inChannel.password) || (!chatStore.inChannel.password))
+        //        chatStore.UpdatePassword(chatStore.inChannel, { password: newPassword.value, userWhoChangeName: userStore.userData });
+        // }
     }
     emit('close')
 }
