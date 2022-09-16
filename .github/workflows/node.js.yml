@@ -115,9 +115,6 @@ jobs:
         echo
         echo NPM version
         npm version
-        echo
-        echo NestJS version
-        nest --version
   
     - name: Environnement Informations macOS
       if: matrix.os == 'macos-latest'
@@ -133,9 +130,6 @@ jobs:
         echo
         echo NPM version
         npm version
-        echo
-        echo NestJS version
-        nest --version
   
     - name: Install node modules
       run: |
