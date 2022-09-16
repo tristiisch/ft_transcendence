@@ -10,7 +10,7 @@ const router = useRouter();
 const toast = useToast()
 const route = useRoute();
 
-userStore.handleFakeLogin(route.params.username).then(() => {
+userStore.handleFakeLogin(route.params.username as string).then(() => {
 	if (userStore.isRegistered && !userStore.userAuth.has_2fa)
 	{
 		socket.connect()
@@ -19,8 +19,7 @@ userStore.handleFakeLogin(route.params.username).then(() => {
 })
 .catch((e) => {
 	if (e.response.data) toast.error(e.response.data.message);
-	else toast.error("Something went wrong")
-	//userStore.handleLogout()
+	userStore.handleLogout()
 });
 
 </script>

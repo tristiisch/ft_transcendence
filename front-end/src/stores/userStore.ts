@@ -64,7 +64,6 @@ export const useUserStore = defineStore('userStore', {
 					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
 				}
 			} catch (error: any) {
-				console.log('ERROR FAKE LOGIN')
 				throw error;
 			}
 		},

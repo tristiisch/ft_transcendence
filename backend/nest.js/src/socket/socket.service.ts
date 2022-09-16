@@ -27,32 +27,27 @@ export class SocketService {
 		} catch (err) {
 			throw new WsException(err.message);
 		}
-		if (!user) {
-			console.log('Invalid credentials.')
-			//throw new WsException('Invalid credentials.');
-		}
 		return user;
 	}
 
 	saveClientSocket(user: User, clientSocketId: string) {
-		if (!this.usersSocket.has(user.id))
-			this.usersSocket[user.id] = clientSocketId
-		else this.usersSocket.set(user.id, clientSocketId)
+		if (this.usersSocket.has(user.id)) this.usersSocket[user.id] = clientSocketId
+		this.usersSocket.set(user.id, clientSocketId)
 	}
 
 	getSocketToEmit(targetId: number) {
-		const socketId = this.usersSocket[targetId];
+		const socketId = this.usersSocket.get(targetId);
 		return this.server.sockets.sockets.get(socketId)
 	}
 
-	async FriendRequest(senderId: number, targetId: number, notification: NotificationFront) {
+	async FriendRequest(targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('FriendRequest', await this.userService.findOne(senderId), notification);
+		if (clientSocket) clientSocket.emit('FriendRequest', notification.from_user, notification);
 	};
 
-	async AddFriend(senderId: number, targetId: number, notification: NotificationFront) {
+	async AddFriend(targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('AddFriend', await this.userService.findOne(senderId), notification);
+		if (clientSocket) clientSocket.emit('AddFriend', notification.from_user, notification);
 	};
 
 	async RemoveFriend(senderId: number, targetId: number) {

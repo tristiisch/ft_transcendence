@@ -38,25 +38,28 @@ function setDisplayedPart(button: number) {
 }
 
 function treatFriendRequest() {
-	if (!globalStore.isFriend(userId.value)) {
-		UsersService.sendFriendRequest(userId.value)
-			.then((response) => {
-				globalStore.addPendingFriend(response.data.user)
-				toast.info(response.data.message)
-			})
-			.catch((error) => {
-				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-			});
-	}
-	else {
-		UsersService.removeFriend(userId.value)
-			.then((response) => {
-				globalStore.removeFriend(response.data.user)
-				toast.info(response.data.message)
-			})
-			.catch((error) => {
-				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-			});
+	if (friendButton.value !== 'Pending')
+	{
+		if (!globalStore.isFriend(userId.value)) {
+			UsersService.sendFriendRequest(userId.value)
+				.then((response) => {
+					globalStore.addPendingFriend(response.data.user)
+					toast.info(response.data.message)
+				})
+				.catch((error) => {
+					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+				});
+		}
+		else {
+			UsersService.removeFriend(userId.value)
+				.then((response) => {
+					globalStore.removeFriend(response.data.user)
+					toast.info(response.data.message)
+				})
+				.catch((error) => {
+					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+				});
+		}
 	}
 }
 

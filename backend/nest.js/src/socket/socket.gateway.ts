@@ -44,9 +44,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(clientSocket: Socket) {
 		if (this.debug)
 			console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
-		const user = await this.socketService.getUserFromSocket(clientSocket);
-		if (!user) return clientSocket.disconnect();
-		else this.socketService.saveClientSocket(user, clientSocket.id);
+		try {
+			const user = await this.socketService.getUserFromSocket(clientSocket);
+			this.socketService.saveClientSocket(user, clientSocket.id);
+		} catch (err) {
+			clientSocket.disconnect();
+		}
 	}
 
 	async handleDisconnect(clientSocket: Socket) {
@@ -130,7 +133,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelDTO: ChannelFront = body[0];
 		const msgFront: MessageFront = body[1];
 
-		if (channelDTO.id == null) // TODO fix: je sais pas quand on vient de crée le channel, c'est null 
+		if (channelDTO.id == null) // TODO fix: je sais pas quand on vient de crée le channel, c'est null
 			throw new WsException(`channel.id = ${channelDTO.id} so msg ${msgFront} can't be send`);
 
 		msgFront.idSender = user.id;
@@ -164,7 +167,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelJoin(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
 		const channelDTO: ChannelFront = body[0];
 		// const joinedUser: User = body[1];
-	
+
 		const joinedUser: User = await this.socketService.getUserFromSocket(client);
 
 		let channel: Channel = await this.chatService.fetchChannel(joinedUser, channelDTO.id, channelDTO.type);
@@ -187,7 +190,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<ChannelFront> {
 		const channelDTO: ChannelFront = body[0];
 		// const joinedUser: User = body[1];
-	
+
 		const leaveUser: User = await this.socketService.getUserFromSocket(client);
 
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
@@ -233,7 +236,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelAdmin(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
-	
+
 		const clientUser: User = await this.socketService.getUserFromSocket(client);
 		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
 
@@ -248,7 +251,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelMute(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		const newMuted:{ list: User[], userWhoSelect: User} = body[1];
-	
+
 		const clientUser: User = await this.socketService.getUserFromSocket(client);
 		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
 
@@ -263,7 +266,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelKick(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		const newKicked:{ list: User[], userWhoSelect: User} = body[1];
-	
+
 		const clientUser: User = await this.socketService.getUserFromSocket(client);
 		let channel: Channel = await this.chatService.fetchChannel(clientUser, channelDTO.id, channelDTO.type);
 
@@ -291,7 +294,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelOtherUsers(@MessageBody() body: any[], @ConnectedSocket() client: Socket) {
 		const channelDTO: ChannelFront = body[0];
 		const user: User = await this.socketService.getUserFromSocket(client);
-	
+
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		if (channel.admins_ids.indexOf(user.id) === -1)
@@ -307,7 +310,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket): Promise<any[]> {
 		const user: User = await this.socketService.getUserFromSocket(client);
 		const userCached: User[] = new Array();
-	
+
 		let channelsFront: ChannelFront[] = await this.chatService.findUserChannel(user, userCached);
 		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(user, userCached);
 

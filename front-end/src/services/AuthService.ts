@@ -35,16 +35,8 @@ class AuthService {
 		});
 	}
 
-	checkJwtToken() {
-		return axios.get('auth/jwt-check');
-	}
-
 	getAuth() {
 		return axios.get('auth/me');
-	}
-
-	registerUser(username: string, avatar: string) {
-		return axios.patch(`users/register`, { username, avatar });
 	}
 
 	enable2FA(twoFacode: number) {

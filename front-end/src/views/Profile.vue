@@ -71,22 +71,7 @@ const isMe = computed(() => {
 	return userId.value === userStore.userData.id;
 });
 
-watch(
-	() => userId.value,
-	() => {
-		if (userId.value)
-		{
-			if (isMe.value)
-			{
-				user.value = userStore.userData;
-				fetchMyStats()
-			}
-			else fetchAll()
-		}
-	}
-);
-
-onBeforeMount(() => {
+function treatAll() {
 	if (isMe.value)
 	{
 		user.value = userStore.userData;
@@ -98,6 +83,16 @@ onBeforeMount(() => {
 		partToDisplay.value = 'Notifications'
 		rightCardTitle.value = 'NOTIFICTIONS'
 	}
+}
+
+watch(
+	() => userId.value, () => {
+		if (userId.value) treatAll()
+	}
+);
+
+onBeforeMount(() => {
+	treatAll()
 });
 </script>
 
