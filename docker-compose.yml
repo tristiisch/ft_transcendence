@@ -9,6 +9,7 @@ services:
     volumes:
     # - api_srcs:/usr/src/app:ro
     - ./api:/usr/src/app
+    # - /usr/src/app/dist
     - /usr/src/app/node_modules
     restart: always
     env_file:
@@ -29,6 +30,8 @@ services:
       target: ${NODE_ENV}
     volumes:
     - ./front-end:/usr/src/app
+    # - /usr/src/app/dist
+    - /usr/src/app/node_modules
     restart: always
     environment:
       VITE_FT_UID: ${FT_UID}

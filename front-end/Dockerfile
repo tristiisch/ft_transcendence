@@ -9,19 +9,24 @@ FROM node:18-alpine As dev
 # Create app directory
 WORKDIR /usr/src/app
 
+RUN mkdir -p node_modules/.vite/processing && chmod -R 777 node_modules/.vite/processing
+RUN chown -R node:node .
+
 # Copy application dependency manifests to the container image.
 # A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
 # Copying this first prevents re-running npm install on every code change.
 COPY --chown=node:node package*.json ./
 
-# Install app dependencies using the `npm ci` command instead of `npm install`
-RUN npm ci
-
 # Bundle app source
-# COPY --chown=node:node . .
+COPY --chown=node:node . .
+RUN mkdir -p dist node_modules
+RUN chown -R node:node .
 
 # Use the node user from the image (instead of the root user)
 USER node
+
+# Install app dependencies using the `npm ci` command instead of `npm install`
+RUN npm ci
 
 ###################
 # BUILD FOR PRODUCTION

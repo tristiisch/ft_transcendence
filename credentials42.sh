@@ -18,6 +18,15 @@ FT_UID=${UID_LINE#*=}
 FT_SECRET=${SECRET_LINE#*=}
 LOCAL_HOSTNAME=${HOSTNAME_LINE#*=}
 
+function printJSON() {
+    if command -v jq &> /dev/null; then
+        echo $1 | jq
+    else
+        echo -e "$1\n"
+    fi
+    echo -e "$1\n"
+}
+
 function updateEnv() {
     if test -f "$ENV"; then
         mv $ENV outdated.env
@@ -82,18 +91,13 @@ RESPONSE=$(curl --write-out " %{http_code}" --data "grant_type=client_credential
 HTTP_CODE=$(echo $RESPONSE | awk '{print $NF}')
 PAYLOAD=$(removeHttpCode $RESPONSE)
 
-# if command -v jq &> /dev/null; then
-#     echo -e "Code: $HTTP_CODE"
-#     echo $PAYLOAD | jq
-# else
-#     echo -e "Code : $HTTP_CODE\n$PAYLOAD"
-# fi
-
 if [ $HTTP_CODE == 200 ]; then
     echo -e "\033[0;32m42API connection is working. Nice !\033[0m"
-    # echo $PAYLOAD
+    # printJSON $PAYLOAD
 else
-    echo -e "\033[0;31m42API connection is not working. Check 42API credentials in .env files. You can create an application for 42APi at https://profile.intra.42.fr/oauth/applications with $FT_OAUTH_REDIRECT as redirect URI.\033[0m"
+    echo -e "\033[0;31m42API connection is not working (Error $HTTP_CODE). Check 42API credentials in .env files.\033[0m"
+    echo -e "\033[0;31mYou can create an application for 42APi at https://profile.intra.42.fr/oauth/applications with $FT_OAUTH_REDIRECT as redirect URI.\033[0m"
+    printJSON $PAYLOAD
     exit $HTTP_CODE;
 fi
 
