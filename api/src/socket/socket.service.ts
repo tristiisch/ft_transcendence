@@ -38,7 +38,7 @@ export class SocketService {
 
 	saveClientSocket(user: User, clientSocketId: string) {
 		if (this.usersSocket.has(user.id)) this.usersSocket[user.id] = clientSocketId
-		this.usersSocket.set(user.id, clientSocketId)
+		else this.usersSocket.set(user.id, clientSocketId)
 	}
 
 	deleteClientSocket(userId: number) {
