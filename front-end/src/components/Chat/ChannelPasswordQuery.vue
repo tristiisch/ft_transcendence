@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useChatStore } from '@/stores/chatStore';
+import socket from '@/plugin/socketInstance';
 
 const chatStore = useChatStore();
 const password = ref('')
@@ -8,13 +9,14 @@ const passwordError = ref(false);
 
 function checkPassword()
 {
-    if (chatStore.inChannel?.password === password.value)    
-        chatStore.registrationToChannel()
-    else
-    {
-       passwordError.value = true
-       password.value = ''
-    }
+    socket.emit('chatPassCheck', (ok: boolean) => {
+        if (ok)
+            chatStore.registrationToChannel()
+        else {
+            passwordError.value = true
+            password.value = ''
+        }
+    });
 }
 </script>
 
