@@ -6,6 +6,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import type User from '@/types/User';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
+import ChatStatus from '@/types/ChatStatus';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -37,8 +38,10 @@ function updateSelectableUsers() {
 		const bannedAndMember: User[] = []
 		for(const member of selectableUsers.value)
 			bannedAndMember.push(member)
-		for(const banned of chatStore.inChannel.banned)
-			bannedAndMember.push(banned)
+		if (chatStore.inChannel.banned) {
+			for(const banned of chatStore.inChannel.banned)
+				bannedAndMember.push(banned)
+		}
 		return selectableUsers.value = bannedAndMember
 	}
 }

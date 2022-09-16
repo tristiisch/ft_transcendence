@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NotificationType } from '@/types/Notification';
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref, onBeforeMount, computed } from 'vue';
+import { ref, onBeforeMount, onUnmounted, computed } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useRouter, useRoute } from 'vue-router';
 import UserService from '@/services/UserService';
@@ -17,7 +17,7 @@ const size = computed(() => {
 });
 
 function isActionNotification(notification: Notification) {
-	if (notification.type == NotificationType.FRIEND_ACCEPT || notification.type == NotificationType.FRIEND_DECLINE)
+	if (notification.type == NotificationType.FRIEND_ACCEPT)
 		return false
 	return true
 }
@@ -30,7 +30,7 @@ function acceptInvitation(notification: Notification) {
 		UserService.notificationAction(notification.id, true)
 		.then((response) => {
 			globalStore.removeNotification(notification.id)
-			globalStore.addFriend(notification.from_user_id)
+			globalStore.addFriend(notification.from_user)
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
@@ -54,6 +54,10 @@ function declineInvitation(notification: Notification) {
 		});
 	}
 }
+
+onUnmounted(() => {
+	globalStore.removeNotActionNotification()
+});
 </script>
 
 <template>

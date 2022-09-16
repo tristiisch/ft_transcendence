@@ -1,5 +1,6 @@
 import { forwardRef, Inject,Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
+import { UsersService } from '../users/users.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
@@ -51,19 +52,19 @@ export class SocketService {
 		return this.server.sockets.sockets.get(socketId)
 	}
 
-	FriendRequest(senderId: number, targetId: number, notification: NotificationFront) {
+	async FriendRequest(senderId: number, targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('FriendRequest', senderId, notification);
+		if (clientSocket) clientSocket.emit('FriendRequest', await this.userService.findOne(senderId), notification);
 	};
 
-	AddFriend(senderId: number, targetId: number, notification: NotificationFront) {
+	async AddFriend(senderId: number, targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('AddFriend', senderId, notification);
+		if (clientSocket) clientSocket.emit('AddFriend', await this.userService.findOne(senderId), notification);
 	};
 
-	RemoveFriend(senderId: number, targetId: number, notification: NotificationFront) {
+	async RemoveFriend(senderId: number, targetId: number) {
 		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('RemoveFriend', senderId, notification);
+		if (clientSocket) clientSocket.emit('RemoveFriend', senderId)
 	};
 
 	AddUser(user: User) {

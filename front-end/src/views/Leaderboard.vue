@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useGlobalStore } from '@/stores/globalStore';
 import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
 import type LeaderboardUser from '@/types/Leaderboard';
@@ -13,6 +14,7 @@ const route = useRoute();
 const users = ref<LeaderboardUser[]>();
 const friends = ref<LeaderboardUser[]>();
 const playerToDisplay = ref<LeaderboardUser[]>();
+const globalStore = useGlobalStore();
 const isLoading = ref(false);
 const playerName = ref('');
 const type = ref('All');
@@ -114,6 +116,7 @@ function updateStatus(data: UserStatus) {
 
 onBeforeMount(() => {
 	fetchLeaderboard();
+
 	socket.on('update_status', (data) => {
 		updateStatus(data);
 	});

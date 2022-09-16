@@ -57,7 +57,7 @@ socket.on("chatChannelCreate", (creator: User, channel: Channel) => {
 });
 
 socket.on("chatChannelDelete", (channel: Channel) => {
-	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.name));
+	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.id));
 });
 
 socket.on("chatChannelJoin", (channel: Channel, joinedUser: User) => {
@@ -103,10 +103,6 @@ socket.on('chatChannelName', (channel: Channel, newName: { name: string, userWho
 socket.on('exception', (err) => {
 	toast.warning(`Error socket: ${err.message}`)
 });
-const isLoaded = computed(() => {
-	if (!chatStore.isLoading && userStore.isLoaded) return true;
-	return false;
-})
 
 onBeforeMount(() => {
 	isLoading.value = true

@@ -37,16 +37,13 @@ export const useChatStore = defineStore('chatStore', {
 			return (userToCheck: User) => state.inChannel?.users.includes(userToCheck)
 		},
 		getIndexChannels: (state) => {
-			return  (channelName: string) => state.channels.findIndex((channel) => channel.name === channelName);
+			return  (channelId: number) => state.channels.findIndex((channel) => channel.id === channelId);
 		},
 		getIndexUserChannels: (state) => {
-			return  (channelName: string) => state.userChannels.findIndex((userChannel) => userChannel.name === channelName);
+			return  (channelId: number | undefined) => channelId ? state.userChannels.findIndex((userChannel) => userChannel.id === channelId) : -1;
 		},
 		getIndexUserDiscussions: (state) => {
 			return  (userId: number) => state.userDiscussions.findIndex((userDiscussion) => userDiscussion.user.id === userId);
-		},
-		getChannelsFiltered: (state) => {
-			return  (channelsToFilter: Channel[]) => state.channels.filter((channel) => !channelsToFilter.includes(channel));
 		},
 	},
 	actions: {
@@ -150,18 +147,16 @@ export const useChatStore = defineStore('chatStore', {
 			this.userDiscussions.push(discussion);
 		},
 		createNewDiscussion(newDiscussion: Discussion, load: boolean) {
-			const userStore = useUserStore();
 			this.userDiscussions.length ? this.userDiscussions.unshift(newDiscussion) : this.userDiscussions.push(newDiscussion)
-			socket.emit('chatDiscussionCreate', userStore.userData, newDiscussion) // TODO Delete this
 			if (load === true)
 				this.loadDiscussion(this.userDiscussions[0]);
 		},
 		addUsersToChannel(channel: Channel, users: User[], inviter?: User) {
-			if (this.inChannel && this.inChannel.name === channel.name)
+			if (this.inChannel && this.inChannel.id === channel.id)
 				for(const user of users)
 					this.inChannel.users.push(user);
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				if (index < 0) {
 					if (inviter) {
 					this.addNewChannel(inviter, channel)
@@ -211,7 +206,7 @@ export const useChatStore = defineStore('chatStore', {
 				this.addAutomaticMessage(channel, { unlisted: [], listed: users}, '', ' have been invited into the channel')
 			}
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				if (index >= 0) {
 					for(const user of users)
 						this.userChannels[index].users.push(user);
@@ -220,13 +215,20 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		deleteUserFromChannel(channel: Channel, userToDelete: User) {
-			let index = channel.admins.findIndex((user) => user.id === userToDelete.id);
-			if (index >= 0) channel.admins.splice(index, 1);
-			index = channel.muted.findIndex((user) => user.id === userToDelete.id);
-			if (index >= 0) channel.muted.splice(index, 1);
-			index = channel.users.findIndex((user) => user.id === userToDelete.id);
-			if (index >= 0) channel.users.splice(index, 1);
-			if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
+			let index;
+			if (channel.admins) {
+				index = channel.admins.findIndex((user) => user.id === userToDelete.id);
+				if (index >= 0) channel.admins.splice(index, 1);
+			}
+			if (channel.muted) {
+				index = channel.muted.findIndex((user) => user.id === userToDelete.id);
+				if (index >= 0) channel.muted.splice(index, 1);
+			}
+			if (channel.users) {
+				index = channel.users.findIndex((user) => user.id === userToDelete.id);
+				if (index >= 0) channel.users.splice(index, 1);
+				if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
+			}
 		},
 		deleteUserDiscussion(index: number) {
 			const userStore = useUserStore();
@@ -252,21 +254,21 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelMessage', channel, channel.messages[channel.messages.length - 1]);
 				socket.emit('chatChannelLeave', channel, userStore.userData);
 				this.setChannelOwner(channel, [user])
-				this.deleteUserChannel(this.getIndexUserChannels(channel.name));
+				this.deleteUserChannel(this.getIndexUserChannels(channel.id));
 				this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 			}
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				this.deleteUserFromChannel(this.userChannels[index], user);
 				this.setChannelOwner(this.userChannels[index], [user])
 			}
 		},
 		UpdateChannelName(channel: Channel, newName: { name: string, userWhoChangeName: User }, emit: boolean) {
-			if (emit && this.inChannel && this.inChannel.name === channel.name) {
+			if (emit && this.inChannel && this.inChannel.id === channel.id) {
 				const newChannelNameMessage = {
 					date: new Date().toLocaleString(),
-					message: '⚪️　' + newName.userWhoChangeName.username + ' change the channel name to ' + newName.name.toUpperCase,
+					message: '⚪️　' + newName.userWhoChangeName.username + ' change the channel name to ' + newName.name.toUpperCase(),
 					idSender: -1,
 					read: false
 				};
@@ -274,10 +276,10 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelName', channel, newName);
 				socket.emit('chatChannelMessage', channel, channel.messages[channel.messages.length - 1]);
 			}
-			if (this.inChannel && this.inChannel.name === channel.name)
+			if (this.inChannel && this.inChannel.id === channel.id)
 				this.inChannel.name = newName.name;
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				this.userChannels[index].name = newName.name;
 			}
 		},
@@ -287,10 +289,13 @@ export const useChatStore = defineStore('chatStore', {
 				this.addAutomaticMessage(channel, selection, '->got unBanned by ' + newBanned.userWhoSelect.username,
 					'-> got Banned by ' + newBanned.userWhoSelect.username)
 				socket.emit('chatChannelBan', channel, newBanned);
+				// socket.emit('chatChannelBan', channel, newBanned, (channelUpdated: Channel) => {
+				// 	const index = this.getIndexUserChannels(channelUpdated.id);
+				// 	this.userChannels[index] = channelUpdated;
+				// });
 			}
-
 			///////////////////////////////////////////////////////////////////BACK best to do in back
-			if (this.inChannel && this.inChannel.name === channel.name) {
+			if (this.inChannel && this.inChannel.id === channel.id) {
 				this.inChannel.banned = newBanned.list
 				for (const banned of channel.banned)
 					this.deleteUserFromChannel(this.inChannel, banned);
@@ -298,7 +303,7 @@ export const useChatStore = defineStore('chatStore', {
 					this.setChannelOwner(this.inChannel, selection.listed);
 			}
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				this.userChannels[index].banned = newBanned.list;
 				for (const banned of channel.banned)
 					this.deleteUserFromChannel(this.userChannels[index], banned);
@@ -310,9 +315,9 @@ export const useChatStore = defineStore('chatStore', {
 			const indexUser = newBanned.list.findIndex(user => user.id === userStore.userData.id)
 			if (indexUser >= 0) {
 				const toast = useToast();
-				if (this.inChannel && this.inChannel.name === channel.name) this.inChannel = null;
+				if (this.inChannel && this.inChannel.id === channel.id) this.inChannel = null;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
-				this.deleteUserChannel(this.getIndexUserChannels(channel.name))
+				this.deleteUserChannel(this.getIndexUserChannels(channel.id))
 				toast.info('you have been banned from channel ' + channel.name + " by " + newBanned.userWhoSelect.username);
 			}
 		},
@@ -321,12 +326,16 @@ export const useChatStore = defineStore('chatStore', {
 			if (selection) {
 				this.addAutomaticMessage(channel, selection, '->got unMuted by ' + newMuted.userWhoSelect.username,
 					'-> got Muted by ' + newMuted.userWhoSelect.username);
-				socket.emit('chatChannelMute', channel, newMuted);
+				socket.emit('chatChannelMute', channel, newMuted)
+				// socket.emit('chatChannelMute', channel, newMuted, (channelUpdated: Channel) => {
+				// 	const index = this.getIndexUserChannels(channelUpdated.id);
+				// 	this.userChannels[index] = channelUpdated;
+				// });
 			}
-			if (this.inChannel && this.inChannel.name === channel.name)
+			if (this.inChannel && this.inChannel.id === channel.id)
 				this.inChannel.muted = newMuted.list
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				this.userChannels[index].muted = newMuted.list;
 			}
 		},
@@ -336,14 +345,17 @@ export const useChatStore = defineStore('chatStore', {
 				this.addAutomaticMessage(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
 					'-> got Admin status by ' + newAdmin.userWhoSelect.username);
 				socket.emit('chatChannelAdmin', channel, newAdmin);
+				// socket.emit('chatChannelAdmin', channel, newAdmin, (channelUpdated: Channel) => {
+				// 	const index = this.getIndexUserChannels(channelUpdated.id);
+				// 	this.userChannels[index] = channelUpdated;
+				// });
 			}
-			if (this.inChannel && this.inChannel.name === channel.name)
+			if (this.inChannel && this.inChannel.id === channel.id)
 				this.inChannel.admins = newAdmin.list;
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				this.userChannels[index].admins = newAdmin.list;
 			}
-
 		},
 		KickUsers(channel: Channel, newKicked: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
@@ -355,9 +367,9 @@ export const useChatStore = defineStore('chatStore', {
 				this.deleteUserFromChannel(this.inChannel, user);
 			}
 			else {
-				if (this.inChannel && this.inChannel.name === channel.name)
+				if (this.inChannel && this.inChannel.id === channel.id)
 					this.inChannel = null;
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				if (index >= 0) {
 					this.deleteUserChannel(index);
 					const toast = useToast();
@@ -371,7 +383,7 @@ export const useChatStore = defineStore('chatStore', {
 				const ownerId = channel.owner.id;
 				const indexOwner = selection.findIndex(user => user.id === ownerId)
 				if (indexOwner >= 0) {
-					if (channel.admins.length) {
+					if (channel.admins && channel.admins.length) {
 						channel.owner = channel.admins[0];
 						this.addAutomaticMessage(channel, {unlisted:[], listed: selection}, '', ' is now owner of the channel.')
 					}
@@ -395,12 +407,12 @@ export const useChatStore = defineStore('chatStore', {
 					idSender: -1,
 					read: false
 				};
-				if (this.inChannel && this.inChannel.name === channel.name) {
+				if (this.inChannel && this.inChannel.id === channel.id) {
 					this.inChannel.messages.push(newMessage);
 					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
 				}
 				else {
-					const index = this.getIndexUserChannels(channel.name);
+					const index = this.getIndexUserChannels(channel.id);
 					this.userChannels[index].messages.push(newMessage);
 					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
 				}
@@ -422,12 +434,12 @@ export const useChatStore = defineStore('chatStore', {
 					idSender: -1,
 					read: false
 				};
-				if (this.inChannel && this.inChannel.name === channel.name) {
+				if (this.inChannel && this.inChannel.id === channel.id) {
 					this.inChannel.messages.push(newMessage);
 					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
 				}
 				else {
-					const index = this.getIndexUserChannels(channel.name);
+					const index = this.getIndexUserChannels(channel.id);
 					this.userChannels[index].messages.push(newMessage);
 					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
 				}
@@ -489,10 +501,10 @@ export const useChatStore = defineStore('chatStore', {
 				this.userDiscussions[index].messages.push(data);
 		},
 		addChannelMessage(channel: Channel, data: Message) {
-			if (this.inChannel?.name === channel.name)
+			if (this.inChannel && this.inChannel.id === channel.id)
 				this.inChannel.messages.push(data)
 			else {
-				const index = this.getIndexUserChannels(channel.name);
+				const index = this.getIndexUserChannels(channel.id);
 				if (index >= 0) this.userChannels[index].messages.push(data);
 			}
 		},
@@ -519,7 +531,7 @@ export const useChatStore = defineStore('chatStore', {
 					if (user.id === userStore.userData.id) this.inChannelRegistration = true;
 		},
 		shiftPositionUserChannel( channel: Channel) {
-			const fromIndex = this.getIndexUserChannels(channel.name)
+			const fromIndex = this.getIndexUserChannels(channel.id)
 			if (fromIndex > 0) {
 				const element = this.userChannels.splice(fromIndex, 1)[0];
 				this.userChannels.unshift(element);

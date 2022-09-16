@@ -4,6 +4,7 @@ import type GlobalState from '@/types/GlobalState';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
 import type Notification from '@/types/Notification';
+import { NotificationType } from '@/types/Notification';
 
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
@@ -24,10 +25,10 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
-			return (userId: number) => state.friends.some((friendId) => friendId === userId);
+			return (userId: number) => state.friends.some((friend) => friend.id === userId);
 		},
 		isPendingFriend: (state) => {
-			return (userId: number) => state.pendingFriends.some((pendingId) => pendingId === userId);
+			return (userId: number) => state.pendingFriends.some((pendingFriend) => pendingFriend.id === userId);
 		},
 		getUserName: (state) => {
 			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
@@ -103,15 +104,19 @@ export const useGlobalStore = defineStore('globalStore', {
 		checkChangeInArray(baseArray: User[]) {
 			let unlisted: User[] = [];
 			let listed: User[] = [];
-			for (const userBa of baseArray) {
-				const index = this.getIndexSelectedItems(userBa);
-				if (index < 0) unlisted.push(userBa);
+			if (baseArray) {
+				for (const userBa of baseArray) {
+					const index = this.getIndexSelectedItems(userBa);
+					if (index < 0) unlisted.push(userBa);
+				}
+				for (const selectedUser of this.selectedItems) {
+					const index = baseArray.findIndex((user) => user.id === selectedUser.id);
+					if (index < 0 && this.isTypeUser(selectedUser)) listed.push(selectedUser);
+				}
+				return (unlisted.length || listed.length) ? { unlisted, listed } : null
 			}
-			for (const selectedUser of this.selectedItems) {
-				const index = baseArray.findIndex((user) => user.id === selectedUser.id);
-				if (index < 0 && this.isTypeUser(selectedUser)) listed.push(selectedUser);
-			}
-			return (unlisted.length || listed.length) ? { unlisted, listed } : null
+			if (this.isTypeArrayUsers(this.selectedItems)) listed = this.selectedItems
+			return listed.length ? { unlisted, listed } : null
 		},
 		resetSelectedItems() {
 			this.selectedItems = []
@@ -119,12 +124,12 @@ export const useGlobalStore = defineStore('globalStore', {
 		addUser(user: User) {
 			this.users.push(user);
 		},
-		addFriend(friendId: number) {
-			this.removePendingFriend(friendId)
-			this.friends.push(friendId);
+		addFriend(friend: User) {
+			this.removePendingFriend(friend.id)
+			this.friends.push(friend);
 		},
-		addPendingFriend(pendingFriendId: number) {
-			this.pendingFriends.push(pendingFriendId);
+		addPendingFriend(pendingFriend: User) {
+			this.pendingFriends.push(pendingFriend);
 		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
@@ -135,16 +140,22 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
-			const index = this.friends.findIndex(friendId => friendId === friendToRemoveId);
+			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
 			this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
-			const index = this.pendingFriends.findIndex(pendingFriendId => pendingFriendId === pendingFriendToRemoveId);
+			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
 			this.pendingFriends.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
 			this.notifications.splice(index, 1);
+		},
+		removeNotActionNotification() {
+			for (const notification of this.notifications) {
+			if (notification.type == NotificationType.FRIEND_ACCEPT)
+				this.removeNotification(notification.id);
+			}
 		},
 		updateUser(userToChange: User) {
 			const index = this.users.findIndex(user => user.id === userToChange.id);
