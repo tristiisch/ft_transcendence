@@ -257,10 +257,10 @@ export const useChatStore = defineStore('chatStore', {
 				this.setChannelOwner(this.userChannels[index], [user])
 			}
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword: { name: string | null, password: string | null, userWhoChangeName: User }) {
+		updateChannelNamePassword(channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) {
 			if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== ''))) {
-				if (newNamePassword.name === '') newNamePassword.name = null;
-				else if (newNamePassword.password === '') newNamePassword.password = null;
+				if (newNamePassword.name !== '') channel.name = newNamePassword.name
+				newNamePassword.password !== '' ? channel.password = newNamePassword.password : newNamePassword.password = null;
 				socket.emit('chatChannelNamePassword', channel, newNamePassword);
 				const userStore = useUserStore();
 				if (newNamePassword.name !== null)
@@ -373,8 +373,8 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelKick', channel, newKicked);
 				this.addAutomaticMessageSelection(channel, { unlisted: [], listed: newKicked.list }, '',
 					'-> ' + ' kicked by ' + newKicked.userWhoSelect.username);
-			for (const user of newKicked.list)
-				this.deleteUserFromChannel(this.inChannel, user);
+				for (const user of newKicked.list)
+					this.deleteUserFromChannel(this.inChannel, user);
 			}
 			else {
 				if (this.inChannel && this.inChannel.id === channel.id)
@@ -588,15 +588,15 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				return 'PUBLIC';
 		},
-		UsersNotInChannels() {  						//BACK need to be done with a fetch
-			const globalStore = useGlobalStore();
-			let userNotInChannel: User[] = [];
-			for(const user of globalStore.users) {
-				if (!this.userIsInChannel(user))
-					userNotInChannel.push(user);
-			}
-			const userStore = useUserStore();
-			return userNotInChannel.filter(user => user.id != userStore.userData.id);
-		}
+		// UsersNotInChannels() {  						//BACK need to be done with a fetch
+		// 	const globalStore = useGlobalStore();
+		// 	let userNotInChannel: User[] = [];
+		// 	for(const user of globalStore.users) {
+		// 		if (!this.userIsInChannel(user))
+		// 			userNotInChannel.push(user);
+		// 	}
+		// 	const userStore = useUserStore();
+		// 	return userNotInChannel.filter(user => user.id != userStore.userData.id);
+		// }
 	},
 });
