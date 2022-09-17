@@ -3,7 +3,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
-import TokenService from '@/services/TokenService';
+import AuthService from '@/services/AuthService';
 import axios from '@/plugin/axiosInstance';
 import socket from '@/plugin/socketInstance';
 
@@ -14,13 +14,14 @@ const route = useRoute();
 const isLoading = ref(false);
 
 onBeforeMount(() => {
-	if (TokenService.isLocalToken()) {
-	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
+	const token_jwt = AuthService.getJwtToken()
+	if (token_jwt) {
+	axios.defaults.headers.common['Authorization'] = `Bearer ${token_jwt}`;
 	isLoading.value = true
 	Promise.all([userStore.fetchAll(), globalStore.fetchAll()])
 	.then(() => {
 		isLoading.value = false
-		socket.auth = { token: TokenService.getLocalToken() };
+		socket.auth = { token: token_jwt };
 		socket.connect()
 	})
 	.catch((error) => {

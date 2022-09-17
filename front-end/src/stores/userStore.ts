@@ -1,35 +1,20 @@
 import { defineStore } from 'pinia';
-import type { UserState, Auth } from '@/types/UserState';
+import type { UserState } from '@/types/UserState';
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
-import TokenService from '@/services/TokenService';
 import type User from '@/types/User';
-import status from '@/types/Status';
-import socket from '@/plugin/socketInstance';
 import router from '@/router/index'
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
-		userToken: TokenService.isLocalToken() ? TokenService.getLocalToken() : null,
-		userAuth: {} as Auth,
+		userAuth: { token_jwt: AuthService.getJwtToken() },
 		userData: {} as User,
 	}),
 	getters: {
-		isLoggedIn: (state) => state.userToken !== null,
+		isLoggedIn: (state) => state.userAuth.token_jwt !== null,
 		isRegistered: (state) => state.userData.username !== null,
-		isLoaded: (state) => state.userData.id !== undefined && state.userData.username !== undefined && state.userData.avatar !== undefined
 	},
 	actions: {
-		saveToken() {
-			TokenService.setLocalToken(this.userAuth.token_jwt)
-			this.userToken = this.userAuth.token_jwt
-			console.log(this.userToken)
-		},
-		resetAll() {
-			localStorage.clear()
-			this.$reset()
-			router.replace({ name: 'Login' });
-		},
 		verifyState(state: string) {
 			const randomString = localStorage.getItem('state')
 			localStorage.removeItem('state');
@@ -38,15 +23,16 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async handleLogin(code: string, state: string) {
 			try {
-				this.verifyState(state)
+				this.verifyState(state);
 				const data = await AuthService.login(code);
 				this.userAuth = data.auth;
-				console.log(this.userAuth)
+				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
 					this.userData = data.user;
 					console.log(this.userData)
-					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
+					if (this.isRegistered && !this.userAuth.has_2fa)
+						localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
 				}
 			} catch (error: any) {
 				throw error;
@@ -56,12 +42,13 @@ export const useUserStore = defineStore('userStore', {
 			try {
 				const data = await AuthService.fakeLogin(username);
 				this.userAuth = data.auth;
-				console.log(this.userAuth)
+				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
 					this.userData = data.user;
-					console.log(this.userData)
-					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
+					console.log(this.userData);
+					if (this.isRegistered && !this.userAuth.has_2fa)
+						localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
 				}
 			} catch (error: any) {
 				throw error;
@@ -72,21 +59,22 @@ export const useUserStore = defineStore('userStore', {
 				const data = await AuthService.login2FA(twoFaCode);
 				this.userAuth = data.auth;
 				this.userData = data.user;
-				this.saveToken()
+				localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
 			} catch (error: any) {
 				throw error;
 			}
 		},
 		handleLogout() {
-			localStorage.clear()
-			location.reload()
+			localStorage.clear();
+			this.$reset();
+			router.push({ path: '/' });
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
 				await UserService.registerUser(newUsername, newAvatar);
 				this.userData.username = newUsername;
 				this.userData.avatar = newAvatar;
-				this.saveToken()
+				localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
 			} catch (error: any) {
 				throw error;
 			}

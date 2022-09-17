@@ -2,6 +2,18 @@ import axios from '@/plugin/axiosInstance';
 import socket from '@/plugin/socketInstance';
 
 class AuthService {
+
+	getJwtToken() {
+		try {
+			const token = localStorage.getItem('userAuth');
+			if (token) return JSON.parse(token)
+			else return null
+		}
+		catch {
+			return null
+		}
+	}
+	
 	login(code: string) {
 		return axios.post('auth/42/redirect', { code }).then((response) => {
 			if (response.data.auth.token_jwt) {

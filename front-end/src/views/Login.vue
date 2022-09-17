@@ -2,7 +2,9 @@
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
-import { ref, watch, onBeforeMount, ErrorCodes } from 'vue';
+import { ref, watch, onBeforeMount } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router'
+import { useGlobalStore } from '@/stores/globalStore';
 import socket from '@/plugin/socketInstance';
 import BaseCard from '@/components/Ui/BaseCard.vue';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
@@ -12,6 +14,7 @@ const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 const toast = useToast();
+const globalStore = useGlobalStore();
 
 const username = ref(userStore.userData.login_42);
 const image = ref(userStore.userData.avatar);
@@ -57,13 +60,12 @@ function submit2faForm() {
 	userStore
 	.handleLogin2Fa(twoFaCode.value)
 	.then(() => {
-		socket.connect()
 		router.replace({ name: 'Home' });
 	})
 	.catch((error) => {
 		console.log(error)
 		if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-		else userStore.resetAll()
+		else userStore.handleLogout()
 	});
 }
 
@@ -72,34 +74,46 @@ function onlyLettersAndNumbers(str: string) {
 }
 
 function submitRegistrationForm() {
-	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.error('Username should have at least 2 and at most 16 characters.');
-	else if (!onlyLettersAndNumbers(username.value)) toast.error('Username can only contain alphanumeric characters.');
+	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.warning('Username should have at least 2 and at most 16 characters.');
+	else if (!onlyLettersAndNumbers(username.value)) toast.warning('Username can only contain alphanumeric characters.');
 	else {
 		isLoading.value = true;
 		userStore
 			.registerUser(username.value, image.value)
 			.then(() => {
-				socket.connect()
 				router.replace({ name: 'Home' });
 			})
 			.catch((error) => {
 				isLoading.value = false;
 				//check for name already exist in database --> Code === 403 ?
 				if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-				else userStore.resetAll()
+				else userStore.handleLogout()
 			});
 	}
 }
+
+onBeforeRouteLeave((to, _) => {
+	if (to.name === 'Home')
+	{
+		socket.connect()
+		isLoading.value = true;
+		globalStore
+			.fetchAll()
+			.then(() => {
+				isLoading.value = false;
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			});
+	}
+})
 
 onBeforeMount(() => {
 	if (route.query.code !== undefined && route.query.state !== undefined && !userStore.isLoggedIn) {
 		isLoading.value = true;
 		userStore.handleLogin(route.query.code as string, route.query.state as string)
 		.then(() => {
-			if (userStore.isRegistered && !userStore.userAuth.has_2fa) {
-				socket.connect()
-				router.replace({ name: 'Home' });
-			}
+			if (userStore.isRegistered && !userStore.userAuth.has_2fa) router.replace({ name: 'Home' });
 			else isLoading.value = false;
 		})
 		.catch((error) => {

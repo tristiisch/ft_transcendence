@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onBeforeMount } from 'vue';
-import { useGlobalStore } from '@/stores/globalStore';
-import { useRoute, useRouter } from 'vue-router';
 
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 const imageLoaded = ref(false);
-const isLoading = ref(false);
-const globalStore = useGlobalStore();
-const route = useRoute();
-const router = useRouter();
 
 function tvSize() {
 	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.6_*_100vw)]';
@@ -47,16 +41,6 @@ function onImageLoad() {
 
 onBeforeMount(() => {
 	window.addEventListener('resize', handleResize);
-
-	isLoading.value = true;
-	globalStore
-		.fetchAll()
-		.then(() => {
-			isLoading.value = false;
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-		});
 })
 
 onUnmounted(() => {
@@ -65,8 +49,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<base-spinner v-if="isLoading"></base-spinner>
-	<div v-else class="relative flex flex-col h-full mx-[8vw]">
+	<div class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
 			<the-footer v-if="smallScreen()" class=""></the-footer>

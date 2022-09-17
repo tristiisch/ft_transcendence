@@ -99,17 +99,12 @@ function updateStatus(data: UserStatus) {
 
 onBeforeMount(() => {
 	treatAll()
-
-	socket.on('updateStatus', (data: UserStatus) => {
-		updateStatus(data);
-	});
+	socket.on('updateStatus', updateStatus);
 });
 
 onBeforeUnmount(() => {
-	socket.off('updateStatus', (data) => {
-		updateStatus(data);
-	});
-});
+	socket.off('updateStatus', updateStatus);
+})
 </script>
 
 <template>
