@@ -18,8 +18,8 @@ export class UsersController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get()
-	getAllUsers(): Promise<User[]> {
-		return this.usersService.findAll();
+	getAllUsers(@Req() req): Promise<User[]> {
+		return this.usersService.findAllExcept(req.user);
 	}
 
 	@Post()

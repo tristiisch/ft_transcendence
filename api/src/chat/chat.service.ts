@@ -1,8 +1,8 @@
 /** @prettier */
-import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
-import { ArrayContains, InsertResult, Repository } from 'typeorm';
+import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
@@ -470,16 +470,27 @@ export class ChatService {
 		}
 	}
 
-	async updateProtectedChannel(channel: ChannelEditDTO): Promise<ChannelProtected> {
+	async updateChannel(channel: Channel, newName: string, newPassword: string, userWhoChangeName: User): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		let dataUpdate: QueryDeepPartialEntity<ChannelProtected>;
 
-		if (channel.name != null)
-			dataUpdate.name = channel.name
-		if (channel.password != null)
-			dataUpdate.password = channel.password
+		if (newName)
+			dataUpdate.name = newName;
+		if (channel.type === ChatStatus.PROTECTED && newPassword)
+			dataUpdate.password = newPassword;
 
-		this.channelProtectedRepo.update(channel.id, dataUpdate);
-		return this.channelProtectedRepo.findOneBy({ id: channel.id });
+		switch (channel.type) {
+			case ChatStatus.PUBLIC:
+				this.channelPublicRepo.update(channel.id, dataUpdate);
+				return this.channelPublicRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PROTECTED:
+				this.channelProtectedRepo.update(channel.id, dataUpdate);
+				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+			case ChatStatus.PRIVATE:
+				this.channelPrivateRepo.update(channel.id, dataUpdate);
+				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+			default:
+				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
+		}
 	}
 
 	async joinChannel(user: User, channel: Channel): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
@@ -572,11 +583,17 @@ export class ChatService {
 	async setReadMessage(user: User, chatId: number, message: Message) {
 		// if (!chat.users_ids || chat.users_ids.indexOf(user.id) === -1)
 		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');
-		let chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
-		if (!chatRead)
-			await this.chatReadRepo.save({ id_user: user.id, id_chat: chatId, id_message: message.id });
-		else if (message.id > chatRead.id_message)
-			await this.chatReadRepo.update(user.id, { id_chat: chatId, id_message: message.id });
+		try {
+			let chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
+			if (!chatRead)
+				await this.chatReadRepo.save({ id_user: user.id, id_chat: chatId, id_message: message.id });
+			else if (message.id > chatRead.id_message)
+				await this.chatReadRepo.update({ id_user: user.id , id_chat: chatId}, { id_message: message.id });
+		} catch (err) {
+			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+				throw new WsException(`Duplicate ChatRead ${chatId}`);
+			throw err;
+		}
 	}
 
 	async getReadMessage(user: User, channel: Channel) {
@@ -588,15 +605,21 @@ export class ChatService {
 	}
 
 	async deleteChannel(channel: Channel) {
+		let dr: DeleteResult;
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				return this.channelPublicRepo.delete(channel.id);
+				dr = await this.channelPublicRepo.delete(channel.id);
+				break;
 			case ChatStatus.PROTECTED:
-				return this.channelProtectedRepo.delete(channel.id);
+				dr = await this.channelProtectedRepo.delete(channel.id);
+				break;
 			case ChatStatus.PRIVATE:
-				return this.channelPrivateRepo.delete(channel.id);
+				dr = await this.channelPrivateRepo.delete(channel.id);
+				break;
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
 		}
+		await this.chatReadRepo.delete({ id_chat: channel.id });
+		return dr;
 	}
 }

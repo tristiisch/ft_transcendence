@@ -98,19 +98,16 @@ jobs:
         run : |
           ./credentials42.sh ${{ secrets.FT_UID }} ${{ secrets.FT_SECRET }}
         shell: bash
-        continue-on-error: true
 
       - name: Setup containers
         run : |
           make setup -i
         shell: bash
-        continue-on-error: true
 
       - name: Start containers
         run : |
           docker-compose up --detach
         shell: bash
-        continue-on-error: true
 
       - name: Waiting for ready and close containers
         run : |

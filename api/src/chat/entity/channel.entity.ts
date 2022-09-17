@@ -161,6 +161,9 @@ export class ChannelFront extends ChatFront {
 	name: string;
 	owner: User;
 	avatar: string;
+	/**
+	 * @Deprecated
+	 */
 	password: string | null;
 	hasPassword: boolean;
 	users: User[];

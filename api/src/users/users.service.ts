@@ -69,6 +69,15 @@ export class UsersService {
 		}, this.lambdaDatabaseUnvailable);
 	}
 
+	async findAllExcept(user: User): Promise<User[]> {
+		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user')
+			.where('user.username IS NOT NULL').andWhere('user.id != :id', { id: user.id });
+		return await sqlStatement.getMany().then(async (users: User[]) => {
+			for (const user of users) delete user.avatar_64;
+			return users;
+		}, this.lambdaDatabaseUnvailable);
+	}
+
 	async findOne(id: number): Promise<User> {
 		isNumberPositive(id, 'get a user');
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
