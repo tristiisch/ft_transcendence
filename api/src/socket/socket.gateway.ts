@@ -142,7 +142,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const msgFront: MessageFront = msg.toFront(null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
 
-			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront);
+			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
 			// tempDiscu.sendMessage(this.socketService, "chatDiscussionMessage", discuFront, msgFront);
 			return [discuFront, msgFront];
@@ -178,7 +178,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(null);
-			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channel, newMsgFront);
+			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channel, newMsgFront, user);
 			// client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
 			return [ channel, newMsgFront ];
 		} catch (err) {
