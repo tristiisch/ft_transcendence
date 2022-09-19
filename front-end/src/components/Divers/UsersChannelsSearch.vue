@@ -74,7 +74,7 @@ onBeforeMount(() => {
 			toast.error(error.value);
 		});
 		if (props.type === 'users') {
-			globalStore.fetchUsers()   //TODO client user must not be in
+			globalStore.fetchUsers()
 			.then(() => {
 			itemsToDisplay.value = globalStore.users;
 			isLoading.value = false;
@@ -85,7 +85,6 @@ onBeforeMount(() => {
 			});
 		}
 		else {
-			//itemsToDisplay.value = chatStore.UsersNotInChannels();
 			socket.emit('chatChannelOtherUsers', chatStore.inChannel, (usersNotInChannel: User[]) => {
 			globalStore.users = usersNotInChannel;
 			itemsToDisplay.value = globalStore.users;
@@ -96,7 +95,7 @@ onBeforeMount(() => {
 	else {
 		chatStore.fetchChannels()
 		.then(() => {
-			itemsToDisplay.value = chatStore.channels   //TODO check that private channel not sended and channel filtered
+			itemsToDisplay.value = chatStore.channels;
 			isLoading.value = false;
 		})
 		.catch((e: Error) => {
