@@ -4,6 +4,7 @@ import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
 import type User from '@/types/User';
 import router from '@/router/index'
+import socket from '@/plugin/socketInstance';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -67,6 +68,7 @@ export const useUserStore = defineStore('userStore', {
 		handleLogout() {
 			localStorage.clear();
 			this.$reset();
+			socket.disconnect()
 			router.push({ path: '/' });
 		},
 		async registerUser(newUsername: string, newAvatar: string) {

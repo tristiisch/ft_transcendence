@@ -43,7 +43,7 @@ function treatFriendRequest() {
 		if (!globalStore.isFriend(userId.value)) {
 			UsersService.sendFriendRequest(userId.value)
 				.then((response) => {
-					globalStore.addPendingFriend(response.data.user)
+					globalStore.addPendingFriend(response.data.user.id)
 					toast.info(response.data.message)
 				})
 				.catch((error) => {
@@ -53,7 +53,7 @@ function treatFriendRequest() {
 		else {
 			UsersService.removeFriend(userId.value)
 				.then((response) => {
-					globalStore.removeFriend(response.data.user)
+					globalStore.removeFriend(response.data.user.id)
 					toast.info(response.data.message)
 				})
 				.catch((error) => {

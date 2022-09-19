@@ -114,13 +114,19 @@ function updateStatus(data: UserStatus) {
 	}
 }
 
+function updateFriends(data: LeaderboardUser) {
+
+}
+
 onBeforeMount(() => {
 	fetchLeaderboard();
 	socket.on('updateStatus', updateStatus);
+	socket.on('updateFriends', updateFriends);
 });
 
 onBeforeUnmount(() => {
 	socket.off('updateStatus', updateStatus)
+	socket.on('updateFriends', updateFriends);
 });
 </script>
 
