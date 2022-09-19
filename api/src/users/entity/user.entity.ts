@@ -14,8 +14,7 @@ export class User extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
-	@IsNotEmpty()
+	@Column({ nullable: true })
 	login_42: string;
 
 	@Column({ unique: true, nullable: true })

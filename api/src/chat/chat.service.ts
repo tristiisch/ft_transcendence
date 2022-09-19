@@ -590,7 +590,7 @@ export class ChatService {
 			else if (message.id > chatRead.id_message)
 				await this.chatReadRepo.update({ id_user: user.id , id_chat: chatId}, { id_message: message.id });
 		} catch (err) {
-			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+			if (err.message.includes('duplicate key value violates unique constraint'))
 				throw new WsException(`Duplicate ChatRead ${chatId}`);
 			throw err;
 		}
