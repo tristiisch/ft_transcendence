@@ -9,6 +9,7 @@ HOSTNAME_NAME=LOCAL_HOSTNAME
 
 APP_URL="https://profile.intra.42.fr/oauth/applications"
 
+#ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}'
 REAL_HOSTNAME=$(hostname -I | cut -d' ' -f1)
 UID_LINE=$(cat .env 2> /dev/null | grep $UID_NAME)
 SECRET_LINE=$(cat .env 2> /dev/null | grep $SECRET_NAME)

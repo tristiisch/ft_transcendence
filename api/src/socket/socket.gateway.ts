@@ -17,7 +17,7 @@ import { SocketService } from './socket.service';
 import { Message, MessageFront } from '../chat/entity/message.entity';
 import { Chat, ChatFront, ChatStatus } from '../chat/entity/chat.entity';
 import { Discussion, DiscussionFront } from '../chat/entity/discussion.entity';
-import { ForbiddenException, forwardRef, Inject, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Logger, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { comparePassword } from '../utils/bcrypt';
 import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 import { UsersService } from 'users/users.service';
@@ -50,18 +50,23 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleConnection(clientSocket: Socket) {
-		if (this.debug)
-			console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
-		const user = await this.socketService.getUserFromSocket(clientSocket);
-		if (!user) return clientSocket.disconnect();
-		else
-		{
-			this.socketService.saveClientSocket(user, clientSocket.id);
-			clientSocket.broadcast.emit('updateStatus', ({id: user.id, status: UserStatus.ONLINE}))
+		try {
+			if (this.debug)
+				console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
+			const user = await this.socketService.getUserFromSocket(clientSocket);
+			if (!user) return clientSocket.disconnect();
+			else
+			{
+				this.socketService.saveClientSocket(user, clientSocket.id);
+				clientSocket.broadcast.emit('updateStatus', ({id: user.id, status: UserStatus.ONLINE}))
+			}
+		} catch (err) {
+			Logger.error(`ERROR > Can't get user from socket: ${err.message()}`);
 		}
 	}
 
 	async handleDisconnect(clientSocket: Socket) {
+		this.handleConnection(clientSocket);
 		const user = await this.socketService.getUserFromSocket(clientSocket);
 		this.socketService.deleteClientSocket(user.id);
 		clientSocket.broadcast.emit('updateStatus', (({id: user.id, status: UserStatus.OFFLINE})))
