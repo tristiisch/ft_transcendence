@@ -32,9 +32,9 @@ function updateEnv() {
         mv $ENV outdated.env
     fi
     cp $ENV_LOCAL $ENV
-    sed -i "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" $ENV
-    sed -i "s/$UID_NAME=/$UID_NAME=$FT_UID/g" $ENV
-    sed -i "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" $ENV
+    sed -i '' -e "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" $ENV
+    sed -i '' -e "s/$UID_NAME=/$UID_NAME=$FT_UID/g" $ENV
+    sed -i '' -e "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" $ENV
     echo -e "\033[0;32mYour $ENV as been updated.\033[0m"
 }
 
