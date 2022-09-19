@@ -145,6 +145,8 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		addNewDiscussion(discussion: Discussion) {
 			this.userDiscussions.push(discussion);
+			const toast = useToast();
+			toast.info(discussion.user.username + ' started a new discussion with you.');
 		},
 		createNewDiscussion(newDiscussion: Discussion, load: boolean) {
 			this.userDiscussions.length ? this.userDiscussions.unshift(newDiscussion) : this.userDiscussions.push(newDiscussion)

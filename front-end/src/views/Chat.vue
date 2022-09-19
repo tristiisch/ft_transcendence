@@ -132,7 +132,7 @@ onBeforeMount(() => {
 			const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
 			if (discussion) chatStore.loadDiscussion(discussion);
 			else {
-				const user = globalStore.getUser(parseInt(route.query.discussion as string));
+				const user = globalStore.getUser(parseInt(route.query.discussion as string));//TODO replace by fetch or socket.
 				if (user) {
 					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
 					if (!chatStore.isNewDiscussion(newDiscussion))
