@@ -1,4 +1,4 @@
-import { forwardRef, Inject,Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { forwardRef, Inject,Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { Server, Socket } from 'socket.io';
@@ -23,15 +23,9 @@ export class SocketService {
 
 	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
-		let user;
-		try {
-			user = await this.authService.getUserFromAuthenticationToken(token);
-		} catch (err) {
-			throw new WsException(err.message);
-		}
+		let user = await this.authService.getUserFromAuthenticationToken(token);
 		if (!user) {
-			console.log('Invalid credentials.')
-			//throw new WsException('Invalid credentials.');
+			throw new UnauthorizedException('Invalid credentials.');
 		}
 		return user;
 	}

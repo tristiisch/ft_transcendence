@@ -39,7 +39,7 @@ class UserService {
 	}
 
 	deleteAccount() {
-		return axios.patch(`delete`);
+		return axios.get('users/delete');
 	}
 
 	getUserfriends() {
