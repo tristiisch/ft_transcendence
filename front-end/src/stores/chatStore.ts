@@ -145,6 +145,8 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		addNewDiscussion(discussion: Discussion) {
 			this.userDiscussions.push(discussion);
+			const toast = useToast();
+			toast.info(discussion.user.username + ' started a new discussion with you.');
 		},
 		createNewDiscussion(newDiscussion: Discussion, load: boolean) {
 			this.userDiscussions.length ? this.userDiscussions.unshift(newDiscussion) : this.userDiscussions.push(newDiscussion)
@@ -528,11 +530,11 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 		},
-		addDiscussionMessage(discussion: Discussion, data: Message) {   //BACK need to send User if new Discussion
+		addDiscussionMessage(discussion: Discussion, data: Message, user?: User) {   //BACK need to send User if new Discussion
 			const globalStore = useGlobalStore();
 			const index = this.getIndexUserDiscussions(data.idSender);
 			if (index < 0)  {
-				const user =  globalStore.getUser(data.idSender);
+				// const user =  globalStore.getUser(data.idSender);
 				if (user) {
 				const newDiscussion: Discussion = {
 					type: ChatStatus.DISCUSSION,
@@ -551,6 +553,18 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				const index = this.getIndexUserChannels(channel.id);
 				if (index >= 0) this.userChannels[index].messages.push(data);
+			}
+		},
+		markMessageReaded(message: Message) {
+			if (message.read === false) {
+				message.read = true;
+				let msgId;
+				if (this.inChannel)
+					msgId = this.inChannel.messages[this.inChannel.messages.length - 1].idMessage
+				else if (this.inDiscussion)
+					msgId = this.inDiscussion.messages[this.inDiscussion.messages.length - 1].idMessage
+				if (msgId === message.idMessage)
+					socket.emit('chatMsgReaded', message.idMessage, message.idChat);
 			}
 		},
 		nbUnreadMessageInDiscussion(discussion: Discussion) {

@@ -3,6 +3,7 @@ all: setup up logs
 setup:
 	mkdir -p ${HOME}/ft_transcendence_volumes/postgres_data
 	mkdir -p ${HOME}/ft_transcendence_volumes/pgadmin_data
+	export COMPOSE_HTTP_TIMEOUT=200
 #	chmod -R 777 ${HOME}/ft_transcendence_volumes
 
 test:

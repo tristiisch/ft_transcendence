@@ -70,6 +70,14 @@ export class UsersController {
 		return user;
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('delete')
+	async anonymizeAccount(@Req() req) {
+		const user: User = req.user;
+
+		return this.usersService.anonymizeUser(user);
+	}
+
 	@Get(':id')
 	getUser(@Param('id') id: number): Promise<User> {
 		return this.usersService.findOne(id);

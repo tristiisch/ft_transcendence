@@ -30,24 +30,24 @@ export const useGlobalStore = defineStore('globalStore', {
 		isPendingFriend: (state) => {
 			return (userId: number) => state.pendingFriends.some((pendingFriend) => pendingFriend.id === userId);
 		},
-		getUserName: (state) => {
-			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
-		},
-		getUserAvatar: (state) => {
-			return (idSender: number) => state.users.find((user) => user.id === idSender)?.avatar;
-		},
-		getUserId: (state) => {
-			return (idSender: number) => state.users.find((user) => user.id === idSender)?.id;
-		},
+		// getUserName: (state) => {
+		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
+		// },
+		// getUserAvatar: (state) => {
+		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.avatar;
+		// },
+		// getUserId: (state) => {
+		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.id;
+		// },
 		getUser: (state) => {
-			return (userId: number) => state.users.find((user) => user.id === userId);
+			return (userId: number) => state.users.find((user) => user.id === userId);  //TODO remove
 		},
 		getIndexSelectedItems: (state) => {
 			return  (user: User) => state.selectedItems.findIndex((userSelectioned) => userSelectioned.id === user.id);
 		},
-		getUsersFiltered: (state) => {
-			return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
-		},
+		// getUsersFiltered: (state) => {
+		// 	return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
+		// },
 	},
 	actions: {
 		async fetchAll() {
@@ -121,9 +121,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		resetSelectedItems() {
 			this.selectedItems = []
 		},
-		addUser(user: User) {
-			this.users.push(user);
-		},
+		// addUser(user: User) {
+		// 	this.users.push(user);
+		// },
 		addFriend(friend: User) {
 			this.removePendingFriend(friend.id)
 			this.friends.push(friend);
@@ -134,10 +134,10 @@ export const useGlobalStore = defineStore('globalStore', {
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
 		},
-		removeUser(userToRemoveId: number) {
-			const index = this.users.findIndex(user => user.id === userToRemoveId);
-			this.users.splice(index, 1);
-		},
+		// removeUser(userToRemoveId: number) {
+		// 	const index = this.users.findIndex(user => user.id === userToRemoveId);
+		// 	this.users.splice(index, 1);
+		// },
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
 			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
@@ -154,15 +154,15 @@ export const useGlobalStore = defineStore('globalStore', {
 		removeNotActionNotification() {
 			this.notifications.filter(notification => notification.type == NotificationType.FRIEND_ACCEPT).forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
 		},
-		updateUser(userToChange: User) {
-			const index = this.users.findIndex(user => user.id === userToChange.id);
-			this.users[index] = userToChange
-			if (this.isFriend(userToChange.id))
-			{
-				const index = this.friends.findIndex(friend => friend.id === userToChange.id);
-				this.users[index] = userToChange
-			}
-		}
+		// updateUser(userToChange: User) {
+		// 	const index = this.users.findIndex(user => user.id === userToChange.id);
+		// 	this.users[index] = userToChange
+		// 	if (this.isFriend(userToChange.id))
+		// 	{
+		// 		const index = this.friends.findIndex(friend => friend.id === userToChange.id);
+		// 		this.users[index] = userToChange
+		// 	}
+		// }
 
 	}
 });

@@ -38,6 +38,10 @@ class UserService {
 		return axios.patch(`users/set-avatar`, { avatar_64 });
 	}
 
+	deleteAccount() {
+		return axios.patch(`delete`);
+	}
+
 	getUserfriends() {
 		return axios.get(`friends`);
 	}
