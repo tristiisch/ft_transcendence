@@ -96,8 +96,8 @@ socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
 	chatStore.addChannelMessage(channel, data);
 });
 
-socket.on('chatChannelName', (channel: Channel, newName: { name: string, userWhoChangeName: User }) => {
-	chatStore.UpdateChannelName(channel, newName, false);
+socket.on('chatChannelNamePassword', (channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) => {
+	chatStore.updateChannelNamePassword(channel, newNamePassword);
 });
 
 socket.on('exception', (err) => {

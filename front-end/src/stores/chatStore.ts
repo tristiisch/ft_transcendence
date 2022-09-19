@@ -258,17 +258,35 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		updateChannelNamePassword(channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) {
-			if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== ''))) {
-				if (newNamePassword.name !== '') channel.name = newNamePassword.name
-				newNamePassword.password !== '' ? channel.password = newNamePassword.password : newNamePassword.password = null;
-				socket.emit('chatChannelNamePassword', channel, newNamePassword);
-				const userStore = useUserStore();
-				if (newNamePassword.name !== null)
-					this.addAutomaticMessage(channel, userStore.userData, 'change the channel name to ' + newNamePassword.name);
-				if (this.inChannel.password && newNamePassword.password !== null)
-					this.addAutomaticMessage(channel, userStore.userData, 'changed the password of ' + channel.name);
-				else if (!this.inChannel.password && newNamePassword.password !== null)
-					this.addAutomaticMessage(channel, userStore.userData, 'added a Password to ' + channel.name);
+			const userStore = useUserStore();
+			if (userStore.userData.id === newNamePassword.userWhoChangeName.id) {
+				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== ''))) {
+					if (newNamePassword.name !== '') channel.name = newNamePassword.name
+					newNamePassword.password !== '' ? channel.password = newNamePassword.password : newNamePassword.password = null;
+					socket.emit('chatChannelNamePassword', channel, newNamePassword);
+					const userStore = useUserStore();
+					if (newNamePassword.name !== null)
+						this.addAutomaticMessage(channel, userStore.userData, 'change the channel name to ' + newNamePassword.name);
+					if (this.inChannel.password && newNamePassword.password !== null)
+						this.addAutomaticMessage(channel, userStore.userData, 'changed the password of ' + channel.name);
+					else if (!this.inChannel.password && newNamePassword.password !== null)
+						this.addAutomaticMessage(channel, userStore.userData, 'added a Password to ' + channel.name);
+				}
+			}
+			else {
+				if (this.inChannel && this.inChannel.id === channel.id) {
+					if (newNamePassword.name !== '') this.inChannel.name = newNamePassword.name;
+					if (newNamePassword.password !== null) this.inChannel.password = newNamePassword.password;
+				}
+				else {
+					const index = this.getIndexUserChannels(channel.id);
+					if (index >= 0) {
+						if (newNamePassword.name !== '')
+							this.userChannels[index].name = newNamePassword.name;
+						if (newNamePassword.password !== null)
+							this.userChannels[index].password = newNamePassword.password;
+					}
+				}
 			}
 		},
 		// UpdateChannelName(channel: Channel, newName: { name: string, userWhoChangeName: User }) {
