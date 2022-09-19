@@ -56,7 +56,13 @@ function declineInvitation(notification: Notification) {
 }
 
 onUnmounted(() => {
-	globalStore.removeNotActionNotification()
+	UserService.removeNotActionNotification()
+		.then(() => {
+			globalStore.removeNotActionNotification()
+		})
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		})
 });
 </script>
 

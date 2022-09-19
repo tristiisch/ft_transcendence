@@ -42,6 +42,10 @@ class UserService {
 		return axios.get('users/delete');
 	}
 
+	blockUser(targetId: number) {
+		return axios.post('users/block', { id: targetId });
+	}
+
 	getUserfriends() {
 		return axios.get(`friends`);
 	}
@@ -83,6 +87,10 @@ class UserService {
 
 	notificationAction(notifId: number, accept: boolean) {
 		return axios.post(`notification/action`, { id: notifId, accept: accept });
+	}
+
+	removeNotActionNotification() {
+		return axios.get('notification/remove');
 	}
 
 	getStats(id: number) {

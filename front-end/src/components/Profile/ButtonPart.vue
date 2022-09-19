@@ -63,10 +63,24 @@ function treatFriendRequest() {
 	}
 }
 
+function blockUser() {
+	UsersService.blockUser(userId.value)
+		.then((response) => {
+			toast.info(response.data.message)
+		})
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		});
+}
+
 const friendButton = computed(() => {
 	if (globalStore.isFriend(userId.value)) return 'Remove friend';
 	else if (globalStore.isPendingFriend(userId.value)) return 'Pending';
 	return 'Add friend';
+});
+
+const blockButton = computed(() => {
+	return 'Block';
 });
 
 const button1Name = computed(() => {
@@ -90,7 +104,7 @@ onBeforeMount(() => {
 		<button-gradient @click="treatFriendRequest()">
 			{{ friendButton }}
 		</button-gradient>
-		<button-gradient> Block </button-gradient>
+		<button-gradient @click="blockUser"> {{ blockButton }} </button-gradient>
 	</div>
 	<div v-else class="flex flex-col gap-4">
 		<button-gradient @click="setDisplayedPart(1)">
