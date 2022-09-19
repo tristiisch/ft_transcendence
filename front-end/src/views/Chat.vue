@@ -2,7 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref, onBeforeMount, computed, watch, onMounted } from 'vue';
+import { ref, onBeforeMount, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
@@ -48,10 +48,6 @@ function unsetDisplayDelete(index: number) {
 	displayDelete.value[index] = false;
 }
 
-// socket.on("chatDiscussionCreate", (discussion: Discussion) => {
-// 	chatStore.addNewDiscussion(discussion);
-// });
-
 socket.on("chatChannelCreate", (creator: User, channel: Channel) => {
 	chatStore.addNewChannel(creator, channel);
 });
@@ -88,22 +84,22 @@ socket.on("chatChannelKick", (channel: Channel, newKicked: { list: User[], userW
 	chatStore.KickUsers(channel, newKicked)
 });
 
-socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message, user: User) => {
+socket.on("chatDiscussionMessage", (discussion: Discussion, data: Message, user: User) => {
 	if (user)
 		chatStore.addDiscussionMessage(discussion, data, user);
 	else
 		chatStore.addDiscussionMessage(discussion, data);
 });
 
-socket.on('chatChannelMessage', (channel: Channel, data: Message) => {
+socket.on("chatChannelMessage", (channel: Channel, data: Message) => {
 	chatStore.addChannelMessage(channel, data);
 });
 
-socket.on('chatChannelNamePassword', (channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) => {
+socket.on("chatChannelNamePassword", (channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) => {
 	chatStore.updateChannelNamePassword(channel, newNamePassword);
 });
 
-socket.on('exception', (err) => {
+socket.on("exception", (err) => {
 	toast.warning(`Error socket: ${err.message}`)
 });
 
@@ -147,6 +143,22 @@ onBeforeMount(() => {
 		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 	})
 });
+
+onBeforeUnmount(() => {
+	socket.off("chatChannelCreate");
+	socket.off("chatChannelDelete");
+	socket.off("chatChannelJoin");
+	socket.off("chatChannelInvitation");
+	socket.off("chatChannelLeave");
+	socket.off("chatChannelBan");
+	socket.off("chatChannelAdmin");
+	socket.off("chatChannelMute");
+	socket.off("chatChannelKick");
+	socket.off("chatDiscussionMessage");
+	socket.off("chatChannelMessage");
+	socket.off("chatChannelNamePassword");
+	socket.off("exception");
+})
 </script>
 
 <template>
