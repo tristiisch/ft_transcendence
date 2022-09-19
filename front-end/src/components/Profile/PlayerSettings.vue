@@ -1,14 +1,27 @@
 <script setup lang="ts">
 import { ref, onBeforeMount, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import QrCode from '@/components/Profile/QrCode.vue';
 import EditProfile from '@/components/Profile/EditProfile.vue';
+import UserService from '@/services/UserService';
 
+const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const toast = useToast();
 const mode = ref('2FA');
 
+function DeleteAccount() {
+	UserService.deleteAccount()
+		.then(() => {
+			userStore.handleLogout()
+		})
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
+}
 </script>
 
 <template>
@@ -26,7 +39,7 @@ const mode = ref('2FA');
 		</div>
 		<div v-else-if="mode === 'Remove'" class="flex flex-col items-center justify-center gap-8 h-full w-full">
 			<p class="text-center text-red-200 text-xs sm:text-sm">You can delete your account below. Profile deletion is irreversible and you will lost all your data.</p>
-			<base-button class="text-sm py-1 sm:py-2 px-3 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Delete</base-button>
+			<base-button @click="DeleteAccount" class="text-sm py-1 sm:py-2 px-3 rounded-lg bg-neutral-100 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-neutral-100">Delete</base-button>
 		</div>
 	</div>
 </template>
