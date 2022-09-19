@@ -73,9 +73,10 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
-				await UserService.registerUser(newUsername, newAvatar);
+				if (this.userData.avatar === newAvatar) newAvatar = null;
+				else this.userData.avatar = newAvatar;
 				this.userData.username = newUsername;
-				this.userData.avatar = newAvatar;
+				await UserService.registerUser(newUsername, newAvatar);
 				localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
 			} catch (error: any) {
 				throw error;
