@@ -530,11 +530,10 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 		},
-		addDiscussionMessage(discussion: Discussion, data: Message, user?: User) {   //BACK need to send User if new Discussion
+		addDiscussionMessage(discussion: Discussion, data: Message, user: User) {
 			const globalStore = useGlobalStore();
 			const index = this.getIndexUserDiscussions(data.idSender);
 			if (index < 0)  {
-				// const user =  globalStore.getUser(data.idSender);
 				if (user) {
 				const newDiscussion: Discussion = {
 					type: ChatStatus.DISCUSSION,
@@ -603,9 +602,9 @@ export const useChatStore = defineStore('chatStore', {
 				this.userDiscussions.unshift(element);
 			}
 		},
-		isNewDiscussion(newDiscussion: Discussion) {
+		isNewDiscussion(userId: number) {
 			for (const discussion of this.userDiscussions) {
-				if (discussion.user.id === newDiscussion.user.id) {
+				if (discussion.user.id === userId) {
 					this.loadDiscussion(discussion);
 					return 1;
 				}
