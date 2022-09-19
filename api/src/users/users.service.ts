@@ -112,6 +112,8 @@ export class UsersService {
 	}
 
 	async findMany(array: number[]): Promise<User[]> {
+		if (!array || array.length === 0)
+			return new Array();
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user');
 		const entries: IterableIterator<number[]> = array.entries();
 

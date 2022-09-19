@@ -9,7 +9,7 @@ const passwordError = ref(false);
 
 function checkPassword()
 {
-    socket.emit('chatPassCheck', (ok: boolean) => {
+    socket.emit('chatPassCheck', chatStore.inChannel, password.value, (ok: boolean) => {
         if (ok)
             chatStore.registrationToChannel()
         else {

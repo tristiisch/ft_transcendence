@@ -9,8 +9,8 @@ HOSTNAME_NAME=LOCAL_HOSTNAME
 
 APP_URL="https://profile.intra.42.fr/oauth/applications"
 
-#ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}'
-REAL_HOSTNAME=$(hostname -I | cut -d' ' -f1)
+#REAL_HOSTNAME=$(hostname -I | cut -d' ' -f1)
+REAL_HOSTNAME=$(ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}')
 UID_LINE=$(cat .env 2> /dev/null | grep $UID_NAME)
 SECRET_LINE=$(cat .env 2> /dev/null | grep $SECRET_NAME)
 HOSTNAME_LINE=$(cat .env 2> /dev/null | grep $HOSTNAME_NAME)
@@ -64,7 +64,7 @@ if ! test -f "$ENV"; then
 elif [ -z "$FT_UID" ] || [ -z "$FT_SECRET" ]; then
     echo -e "\033[1;34mYou didn't add your 42API credentials. Get it from $APP_URL\033[0m"
     askCredentials $@
-elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ $LOCAL_HOSTNAME != $REAL_HOSTNAME ]; then
+elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ "$LOCAL_HOSTNAME" != "$REAL_HOSTNAME" ]; then
     echo -e "\033[1;33mYou need to update your .env.\033[0m"
     diff $ENV $ENV_LOCAL
     read -p $'\e[1;92mYour credentials will be preserve. Update .env ? (y/N)'$'\033[0m' -n 1 -r

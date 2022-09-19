@@ -46,6 +46,10 @@ class UserService {
 		return axios.post('users/block', { id: targetId });
 	}
 
+	unblockUser(targetId: number) {
+		return axios.post('users/unblock', { id: targetId });
+	}
+
 	getUserfriends() {
 		return axios.get(`friends`);
 	}

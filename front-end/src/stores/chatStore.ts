@@ -185,7 +185,7 @@ export const useChatStore = defineStore('chatStore', {
 				console.log('channelCreated', channelCreated)
 				const type = this.channelTypeToString(channelCreated);
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
-				this.inChannel = this.userChannels[0]; 
+				this.inChannel = this.userChannels[0];
 				this.addAutomaticMessageSelection(this.inChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
 					, 'have been added to ' + this.inChannel.name + ' by ' + userStore.userData.username);
 				this.loadChannel(this.inChannel);
@@ -374,17 +374,19 @@ export const useChatStore = defineStore('chatStore', {
 			if (selection) {
 				this.addAutomaticMessageSelection(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
 					'-> got Admin status by ' + newAdmin.userWhoSelect.username);
-				socket.emit('chatChannelAdmin', channel, newAdmin);
-				// socket.emit('chatChannelAdmin', channel, newAdmin, (channelUpdated: Channel) => {
-				// 	const index = this.getIndexUserChannels(channelUpdated.id);
-				// 	this.userChannels[index] = channelUpdated;
-				// });
-			}
-			if (this.inChannel && this.inChannel.id === channel.id)
-				this.inChannel.admins = newAdmin.list;
-			else {
-				const index = this.getIndexUserChannels(channel.id);
-				this.userChannels[index].admins = newAdmin.list;
+				socket.emit('chatChannelAdmin', channel, newAdmin, (body: any[]) => {
+					const channelUpdated: Channel = body[0];
+				 	const index = this.getIndexUserChannels(channelUpdated.id);
+				 	this.userChannels[index] = channelUpdated;
+					this.inChannel = this.userChannels[index];
+				});
+			} else {
+				if (this.inChannel && this.inChannel.id === channel.id)
+					this.inChannel.admins = newAdmin.list;
+				else {
+					const index = this.getIndexUserChannels(channel.id);
+					this.userChannels[index].admins = newAdmin.list;
+				}
 			}
 		},
 		KickUsers(channel: Channel, newKicked: {list: User[], userWhoSelect: User }) {

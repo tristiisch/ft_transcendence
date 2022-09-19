@@ -1,6 +1,7 @@
 /** @prettier */
 import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { isNumberPositive } from 'utils/utils';
 import { JwtAuthGuard } from '../auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
@@ -78,15 +79,16 @@ export class UsersController {
 		return this.usersService.anonymizeUser(user);
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Get(':id')
 	getUser(@Param('id') id: number): Promise<User> {
 		return this.usersService.findOne(id);
 	}
 
-	@Delete(':id')
+	/*@Delete(':id')
 	deleteUser(@Param('id') id: number) {
 		return this.usersService.remove(id);
-	}
+	}*/
 
 	@Get('avatar/:id/id')
 	async getAvatarById(@Param('id') id: number, @Res() res: Response) {
@@ -104,8 +106,21 @@ export class UsersController {
 		return this.usersService.findAvatar(selectUser, res);
 	}
 
-	@Get(':id')
-	getUserByUsername(@Param('id') id: number): Promise<User> {
-		return this.usersService.findOne(id);
+	@UseGuards(JwtAuthGuard)
+	@Get('block/:id')
+	async blockUser(@Param('id') targetId: number, @Req() req) {
+		const user: User = req.user;
+
+		isNumberPositive(targetId, 'block user');
+		this.usersService.addBlockedUser(user, targetId);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('unblock/:id')
+	async unblockUser(@Param('id') targetId: number, @Req() req) {
+		const user: User = req.user;
+
+		isNumberPositive(targetId, 'unblock user');
+		this.usersService.removeBlockedUser(user, targetId);
 	}
 }

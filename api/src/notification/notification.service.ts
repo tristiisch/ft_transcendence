@@ -25,6 +25,13 @@ export class NotificationService {
 		return await this.notifsRepository.save(notif);
 	}
 
+	public async delete(notifId: number): Promise<Notification> {
+		const notif: Notification = await this.notifsRepository.findOneBy({ id: notifId });
+		notif.is_deleted = false;
+		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });
+		return notif;
+	}
+
 	public async findMany(userId: number): Promise<NotificationFront[]> {
 		const sqlStatement: SelectQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notif');
 

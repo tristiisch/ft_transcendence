@@ -111,7 +111,6 @@ export class ChatService {
     async findUserDiscussion(user: User, usersCached: User[] | null) : Promise<DiscussionFront[]> {
 		if (!usersCached)
 			usersCached = new Array();
-		// return new Array(); // TODO remove this line
 		return await this.discussionRepo.findBy({ users_ids: ArrayContains([user.id]) })
 			.then(async (chs: Discussion[]) => {
 				const chsFront: DiscussionFront[] = new Array();
@@ -195,7 +194,7 @@ export class ChatService {
 				delete chat.avatar_64;
 				break;
 			default:
-				throw new NotAcceptableException(`Unknown channel type ${channelType}.`)
+				throw new WsException(`Unknown channel type ${channelType}.`)
 		}
 		return chat;
 	}
@@ -360,8 +359,8 @@ export class ChatService {
 
 	async createMessage(channel: ChannelFront, msgFront: MessageFront) {
 		const msg: Message = new Message();
-		msg.id_sender = channel.id;
-		msg.id_channel =  msgFront.idSender;
+		msg.id_sender =  msgFront.idSender;
+		msg.id_channel = channel.id;
 		msg.message = msgFront.message;
 		// await validateDTOforHttp(plainToInstance(ChannelCreateDTO, Message));
 		return await this.addMessage(msg);
@@ -382,13 +381,13 @@ export class ChatService {
 	async setAdmin(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				this.channelPublicRepo.update(channel.id, { admins_ids: users_ids });
+				await this.channelPublicRepo.update(channel.id, { admins_ids: users_ids });
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				this.channelProtectedRepo.update(channel.id, { admins_ids: users_ids });
+				await this.channelProtectedRepo.update(channel.id, { admins_ids: users_ids });
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				this.channelPrivateRepo.update(channel.id, { admins_ids: users_ids });
+				await this.channelPrivateRepo.update(channel.id, { admins_ids: users_ids });
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
@@ -398,13 +397,13 @@ export class ChatService {
 	async setMuted(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				this.channelPublicRepo.update(channel.id, { muted_ids: users_ids });
+				await this.channelPublicRepo.update(channel.id, { muted_ids: users_ids });
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				this.channelProtectedRepo.update(channel.id, { muted_ids: users_ids });
+				await this.channelProtectedRepo.update(channel.id, { muted_ids: users_ids });
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				this.channelPrivateRepo.update(channel.id, { muted_ids: users_ids });
+				await this.channelPrivateRepo.update(channel.id, { muted_ids: users_ids });
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
@@ -414,13 +413,13 @@ export class ChatService {
 	async setBanned(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				this.channelPublicRepo.update(channel.id, { banned_ids: users_ids });
+				await this.channelPublicRepo.update(channel.id, { banned_ids: users_ids });
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				this.channelProtectedRepo.update(channel.id, { banned_ids: users_ids });
+				await this.channelProtectedRepo.update(channel.id, { banned_ids: users_ids });
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				this.channelPrivateRepo.update(channel.id, { banned_ids: users_ids });
+				await this.channelPrivateRepo.update(channel.id, { banned_ids: users_ids });
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
@@ -454,15 +453,15 @@ export class ChatService {
 		channel.users_ids = users_ids;
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				this.channelPublicRepo.update(channel.id, { users_ids: users_ids });
+				await this.channelPublicRepo.update(channel.id, { users_ids: users_ids });
 				leaveMessage();
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				this.channelProtectedRepo.update(channel.id, { users_ids: users_ids });
+				await this.channelProtectedRepo.update(channel.id, { users_ids: users_ids });
 				leaveMessage();
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				this.channelPrivateRepo.update(channel.id, { users_ids: users_ids });
+				await this.channelPrivateRepo.update(channel.id, { users_ids: users_ids });
 				leaveMessage();
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
@@ -471,7 +470,7 @@ export class ChatService {
 	}
 
 	async updateChannel(channel: Channel, newName: string, newPassword: string, userWhoChangeName: User): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
-		let dataUpdate: QueryDeepPartialEntity<ChannelProtected>;
+		let dataUpdate: QueryDeepPartialEntity<ChannelProtected> = {};
 
 		if (newName)
 			dataUpdate.name = newName;
@@ -480,13 +479,13 @@ export class ChatService {
 
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				this.channelPublicRepo.update(channel.id, dataUpdate);
+				await this.channelPublicRepo.update(channel.id, dataUpdate);
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				this.channelProtectedRepo.update(channel.id, dataUpdate);
+				await this.channelProtectedRepo.update(channel.id, dataUpdate);
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				this.channelPrivateRepo.update(channel.id, dataUpdate);
+				await this.channelPrivateRepo.update(channel.id, dataUpdate);
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
@@ -583,6 +582,8 @@ export class ChatService {
 	async setReadMessage(user: User, chatId: number, message: Message) {
 		// if (!chat.users_ids || chat.users_ids.indexOf(user.id) === -1)
 		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');
+		if (Number.isNaN(chatId))
+			throw new WsException(`Unable to find channel id ${chatId}`);
 		try {
 			let chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
 			if (!chatRead)

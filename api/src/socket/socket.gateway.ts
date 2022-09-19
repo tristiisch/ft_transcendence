@@ -166,7 +166,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (channelDTO.id == null) // TODO fix: je sais pas quand on vient de crée le channel, c'est null
 			throw new WsException(`channel.id = ${channelDTO.id} so msg ${msgFront} can't be send`);
 
-		msgFront.idSender = user.id;
+		if (msgFront.idSender !== -1)
+			msgFront.idSender = user.id;
 		const channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 		if (!channel.users_ids || channel.users_ids.indexOf(user.id) === -1) {
 			throw new WsException(`You are not in channel ${channel.name}`);
@@ -177,7 +178,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		try {
 			let msg: Message = new Message();
-			msg.id_sender = user.id;
+			msg.id_sender = msgFront.idSender;
 			msg.id_channel =  channel.id;
 			msg.message = msgFront.message;
 
@@ -228,14 +229,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelLeave')
-	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
+	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const leaveUser: User = req.user;
 
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
 
 		channel = await this.chatService.leaveChannel(leaveUser, channel);
-		return channel.toFront(this.chatService, leaveUser, [leaveUser]);
+		return [await channel.toFront(this.chatService, leaveUser, [leaveUser])];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -255,7 +256,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(body.map(user => user.id));
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
-		return channel.toFront(this.chatService, user, [...users, user]);
+		return [await channel.toFront(this.chatService, user, [...users, user])];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -272,7 +273,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel = await this.chatService.setBanned(channel, users.map(user => user.id));
 		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id)); // TODO optimize
 
-		return channel.toFront(this.chatService, user, [...users, user]);
+		return [await channel.toFront(this.chatService, user, [...users, user])];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -288,7 +289,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
 		channel = await this.chatService.setAdmin(channel, users.map(user => user.id));
 
-		return channel.toFront(this.chatService, user, [...users, user]);
+		return [await channel.toFront(this.chatService, user, [...users, user])];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -304,7 +305,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
 		channel = await this.chatService.setMuted(channel, users.map(user => user.id));
 
-		return channel.toFront(this.chatService, user, [...users, user]);
+		return [await channel.toFront(this.chatService, user, [...users, user])];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -320,7 +321,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newKicked.list.map(user => user.id));
 		channel = await this.chatService.kickUsers(user, channel, users.map(user => user.id));
 
-		return channel.toFront(this.chatService, user, [...users, user]);
+		return [await channel.toFront(this.chatService, user, [...users, user])];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -332,10 +333,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatPassCheck')
-	async chatPassCheck(@MessageBody() body: any[], @ConnectedSocket() client: Socket): Promise<boolean> {
+	async chatPassCheck(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<boolean> {
 		const channelDTO: ChannelFront = body[0];
 		const password: string = body[1];
-		return comparePassword(password, channelDTO.password)
+		const user: User = req.user;
+		let tempChannel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+		if (!(tempChannel instanceof ChannelProtected && tempChannel.password)) {
+			throw new WsException(`${channelDTO.name} is not a protected channel.`);
+		}
+		const channel: ChannelProtected = tempChannel as ChannelProtected;
+
+		return comparePassword(password, channel.password)
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -413,6 +421,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
-		return channel.toFront(this.chatService, user, [user]);
+		return [await channel.toFront(this.chatService, user, [user])];
 	}
 }
