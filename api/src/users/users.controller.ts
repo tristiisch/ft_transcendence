@@ -103,4 +103,9 @@ export class UsersController {
 		selectUser.username = username;
 		return this.usersService.findAvatar(selectUser, res);
 	}
+
+	@Get(':id')
+	getUserByUsername(@Param('id') id: number): Promise<User> {
+		return this.usersService.findOne(id);
+	}
 }

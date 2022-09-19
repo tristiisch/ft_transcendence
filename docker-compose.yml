@@ -7,7 +7,6 @@ services:
       context: ./api/
       target: ${NODE_ENV}
     volumes:
-    # - api_srcs:/usr/src/app:ro
     - ./api:/usr/src/app
     # - /usr/src/app/dist
     - /usr/src/app/node_modules
@@ -48,23 +47,6 @@ services:
     # depends_on:
     # - api
     command: npm run ${NODE_ENV}
-
-  # api_prod:
-  #   build:
-  #     context: ./api/
-  #     target: production
-  #   restart: always
-  #   env_file:
-  #   - .env
-  #   ports:
-  #   - 3000:3000
-  #   networks:
-  #   - ft_transcendence_network
-  #   container_name : api
-  #   hostname: api
-  #   depends_on:
-  #   - postgreSQL
-  #   # command: npm run start:prod
 
   postgreSQL:
     image: postgres:14.4
