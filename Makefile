@@ -3,19 +3,19 @@ all: setup up logs
 setup:
 	mkdir -p ${HOME}/ft_transcendence_volumes/postgres_data
 	mkdir -p ${HOME}/ft_transcendence_volumes/pgadmin_data
-	export COMPOSE_HTTP_TIMEOUT=200
 #	chmod -R 777 ${HOME}/ft_transcendence_volumes
 
-test:
+init:
+	export COMPOSE_HTTP_TIMEOUT=200
 	./credentials42.sh
+
+test: init
 	docker-compose up --build --force-recreate
 
-build:
-	./credentials42.sh
+build: init
 	docker-compose up --detach --build --force-recreate
 
-up:
-	./credentials42.sh
+up: init
 	docker-compose up --detach
 
 stop:
@@ -38,3 +38,5 @@ logs:
 	docker-compose logs --follow api front postgreSQL
 
 re: clean all
+
+.PHONY: setup init test build up stop start fclean purge logs re

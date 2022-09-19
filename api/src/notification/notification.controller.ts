@@ -23,7 +23,7 @@ export class NotificationController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('delete/:id')
+	@Get('remove/:id')
 	async deleteNotif(@Param('id') notifId: number, @Req() req) {
 		const user: User = req.user;
 
