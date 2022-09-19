@@ -88,8 +88,11 @@ socket.on("chatChannelKick", (channel: Channel, newKicked: { list: User[], userW
 	chatStore.KickUsers(channel, newKicked)
 });
 
-socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message) => {
-	chatStore.addDiscussionMessage(discussion, data);
+socket.on('chatDiscussionMessage', (discussion: Discussion, data: Message, user: User) => {
+	if (user)
+		chatStore.addDiscussionMessage(discussion, data, user);
+	else
+		chatStore.addDiscussionMessage(discussion, data);
 });
 
 socket.on('chatChannelMessage', (channel: Channel, data: Message) => {

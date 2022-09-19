@@ -35,8 +35,7 @@ function sizeText(idSender: number) {
 }
 
 function displayMessage(message: Message) {
-	message.read = true;
-	socket.emit('chatMsgReaded', message.idMessage, message.idChat);
+	chatStore.markMessageReaded(message);
 	return message.message;
 }
 
@@ -56,8 +55,12 @@ function chooseArray() {
 function userAvatar(message: Message) {
 	if (message.idSender === userStore.userData.id)
 		return userStore.userData.avatar;
-	else
-		return globalStore.getUserAvatar(message.idSender)
+	else {
+		if (chatStore.inChannel)
+			return chatStore.inChannel.users.find(user => user.id === message.idSender)?.avatar
+		else if (chatStore.inDiscussion)
+			return chatStore.inDiscussion.user.avatar
+	}
 }
 </script>
 
