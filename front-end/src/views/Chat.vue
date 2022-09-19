@@ -4,6 +4,7 @@ import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import type Message from '@/types/Message';
@@ -24,7 +25,6 @@ import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
 const toast = useToast();
-const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const route = useRoute();
 const router = useRouter();
@@ -85,10 +85,7 @@ socket.on("chatChannelKick", (channel: Channel, newKicked: { list: User[], userW
 });
 
 socket.on("chatDiscussionMessage", (discussion: Discussion, data: Message, user: User) => {
-	if (user)
-		chatStore.addDiscussionMessage(discussion, data, user);
-	else
-		chatStore.addDiscussionMessage(discussion, data);
+	chatStore.addDiscussionMessage(discussion, data, user);
 });
 
 socket.on("chatChannelMessage", (channel: Channel, data: Message) => {
@@ -123,25 +120,31 @@ onBeforeMount(() => {
 		console.log(error)
 		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 	});*/
-	chatStore.fetchAll().then(() => {
-		if (route.query.discussion) {
-			const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-			if (discussion) chatStore.loadDiscussion(discussion);
-			else {
-				const user = globalStore.getUser(parseInt(route.query.discussion as string));//TODO replace by fetch or socket.
-				if (user) {
-					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-					if (!chatStore.isNewDiscussion(newDiscussion))
-						chatStore.createNewDiscussion(newDiscussion, true);
+	chatStore.fetchAll()
+		.then(() => {
+			if (route.query.discussion) {
+				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
+				// if (discussion) chatStore.loadDiscussion(discussion);
+				if (!chatStore.isNewDiscussion(parseInt(route.query.discussion as string))) {
+					// const user = globalStore.getUser(parseInt(route.query.discussion as string));//TODO replace by fetch or socket.
+					UserService.getUser(parseInt(route.query.discussion as string))
+						.then((response) => {
+							const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: response.data, messages: [] as Message[] };
+							chatStore.createNewDiscussion(newDiscussion, true);
+						})
+						.catch((error) => {
+							console.log(error)
+							router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+						})
+						
 				}
 			}
-		}
-		isLoading.value = false
-	})
-	.catch((error) => {
-		console.log(error)
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-	})
+			isLoading.value = false
+		})
+		.catch((error) => {
+			console.log(error)
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
 });
 
 onBeforeUnmount(() => {
