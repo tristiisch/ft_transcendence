@@ -534,6 +534,17 @@ export class ChatService {
 		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
 		if (channel.admins_ids && channel.admins_ids.indexOf(user.id) !== -1)
 			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
+		if (channel.muted_ids && channel.muted_ids.indexOf(user.id) !== -1)
+			dataUpdate.muted_ids = removeFromArray(channel.muted_ids, user.id);
+
+		if (channel.owner_id === user.id) {
+			if (channel.admins_ids && channel.admins_ids.length != 0) {
+				channel.owner_id = channel.admins_ids[0];
+			} else {
+				this.deleteChannel(channel);
+				return ;
+			}
+		}
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();

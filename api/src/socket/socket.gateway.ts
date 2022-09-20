@@ -91,12 +91,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelCreate')
 	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
-		// const user: User = body[0];
 		const user: User = req.user;
 		const channelDTO: ChannelCreateDTO = body[1];
 		try {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
-			return await channel.toFront(this.chatService, user, [user]);
+			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]); 
+
+			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channel, user);
+			return channelFront;
 		} catch (err) {
 			throw new WsException(err.message);
 		}
@@ -201,6 +203,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
+		//channel.sendMessageFrom(this.socketService, user, "chatChannelDelete", channel, user);
 
 		this.chatService.deleteChannel(channel);
 	}
@@ -240,7 +243,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
 
 		channel = await this.chatService.leaveChannel(leaveUser, channel);
-		return [await channel.toFront(this.chatService, leaveUser, [leaveUser])];
+		if (!channel)
+			return;
+		const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
+
+		channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelLeave', channelFront);
 	}
 
 	@UseGuards(JwtSocketGuard)
