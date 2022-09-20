@@ -224,6 +224,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			throw new WsException(`You are not part of the channel ${channel.name}.`);
 		}
 		channel = await this.chatService.joinChannel(joinedUser, channel);
+		const channelFront = await channel.toFront(this.chatService, joinedUser, [joinedUser]);
+
+		channel.sendMessage(this.socketService, 'chatChannelJoin', channelFront);
+
 		return channel.toFront(this.chatService, joinedUser, [joinedUser]);
 	}
 
@@ -256,7 +260,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(body.map(user => user.id));
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
-		return [await channel.toFront(this.chatService, user, [...users, user])];
+		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
+		
+		channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
+		this.socketService.emitIds(users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
+
+		return [channelFront];
 	}
 
 	@UseGuards(JwtSocketGuard)
