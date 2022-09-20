@@ -1,5 +1,5 @@
 /** @prettier */
-import { forwardRef, Inject, Injectable, NotFoundException, NotImplementedException, PreconditionFailedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from 'friends/friends.service';
 import { User } from 'users/entity/user.entity';
@@ -62,6 +62,10 @@ export class NotificationService {
 		if (!notif)
 			throw new NotFoundException(`Unable to find notification n°${notifAction.id}.`);
 		const target: User = await this.userService.findOne(notif.from_user_id);
+
+		if (user.isBlockedUser(target.id)) {
+			throw new NotAcceptableException(`You have blocked ${target}. You can't add him as friends.`);
+		}
 
 		if (notif.type === NotificationType.FRIEND_REQUEST) {
 			if (notifAction.accept) {

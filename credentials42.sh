@@ -11,7 +11,7 @@ HOSTNAME_NAME=LOCAL_HOSTNAME
 APP_URL="https://profile.intra.42.fr/oauth/applications"
 
 if command -v ifconfig &> /dev/null; then
-    REAL_HOSTNAME=$(ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}')
+    REAL_HOSTNAME=$(ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}' | head -n 1)
 else
     REAL_HOSTNAME=$(hostname -I | cut -d' ' -f1)
 fi
