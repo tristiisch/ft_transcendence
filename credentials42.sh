@@ -2,6 +2,7 @@
 
 ENV=.env
 ENV_LOCAL=local.env
+ENV_TEMP=tmp.env
 
 UID_NAME=FT_UID
 SECRET_NAME=FT_SECRET
@@ -9,15 +10,21 @@ HOSTNAME_NAME=LOCAL_HOSTNAME
 
 APP_URL="https://profile.intra.42.fr/oauth/applications"
 
-#REAL_HOSTNAME=$(hostname -I | cut -d' ' -f1)
-REAL_HOSTNAME=$(ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}')
-UID_LINE=$(cat .env 2> /dev/null | grep $UID_NAME)
-SECRET_LINE=$(cat .env 2> /dev/null | grep $SECRET_NAME)
-HOSTNAME_LINE=$(cat .env 2> /dev/null | grep $HOSTNAME_NAME)
+if command -v ifconfig &> /dev/null; then
+    REAL_HOSTNAME=$(ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}')
+else
+    REAL_HOSTNAME=$(hostname -I | cut -d' ' -f1)
+fi
 
-FT_UID=${UID_LINE#*=}
-FT_SECRET=${SECRET_LINE#*=}
-LOCAL_HOSTNAME=${HOSTNAME_LINE#*=}
+if test -f "$ENV"; then
+    UID_LINE=$(cat .env | grep $UID_NAME)
+    SECRET_LINE=$(cat .env | grep $SECRET_NAME)
+    HOSTNAME_LINE=$(cat .env | grep $HOSTNAME_NAME)
+
+    FT_UID=${UID_LINE#*=}
+    FT_SECRET=${SECRET_LINE#*=}
+    LOCAL_HOSTNAME=${HOSTNAME_LINE#*=}
+fi
 
 function printJSON() {
     if command -v jq &> /dev/null; then
@@ -28,14 +35,24 @@ function printJSON() {
     echo -e "$1\n"
 }
 
+function previewEnv() {
+    # sed 4.7 sed: can't read : No such file or directory but worked
+    if command -v ifconfig &> /dev/null; then
+        SED_CMD="sed -i '' -e"
+    else
+        SED_CMD="sed -i"
+    fi
+    $SED_CMD "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" $1
+    $SED_CMD "s/$UID_NAME=/$UID_NAME=$FT_UID/g" $1
+    $SED_CMD "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" $1
+}
+
 function updateEnv() {
     if test -f "$ENV"; then
         mv $ENV outdated.env
     fi
     cp $ENV_LOCAL $ENV
-    sed -i '' -e "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" $ENV
-    sed -i '' -e "s/$UID_NAME=/$UID_NAME=$FT_UID/g" $ENV
-    sed -i '' -e "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" $ENV
+    previewEnv $ENV
     echo -e "\033[0;32mYour $ENV as been updated.\033[0m"
 }
 
@@ -66,8 +83,11 @@ elif [ -z "$FT_UID" ] || [ -z "$FT_SECRET" ]; then
     askCredentials $@
 elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ "$LOCAL_HOSTNAME" != "$REAL_HOSTNAME" ]; then
     echo -e "\033[1;33mYou need to update your .env.\033[0m"
-    diff $ENV $ENV_LOCAL
-    read -p $'\e[1;92mYour credentials will be preserve. Update .env ? (y/N)'$'\033[0m' -n 1 -r
+    cp $ENV_LOCAL $ENV_TEMP
+    previewEnv $ENV_TEMP
+    diff $ENV $ENV_TEMP
+    rm $ENV_TEMP
+    read -p $'\e[1;92mYour credentials will be preserve. Update .env ? (y/N) '$'\033[0m' -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         updateEnv
@@ -97,7 +117,7 @@ if [ $HTTP_CODE == 200 ]; then
     # printJSON $PAYLOAD
 else
     echo -e "\033[0;31m42API connection is not working (Error $HTTP_CODE). Check 42API credentials in .env files.\033[0m"
-    echo -e "\033[0;31mYou can create an application for 42APi at https://profile.intra.42.fr/oauth/applications with $FT_OAUTH_REDIRECT as redirect URI.\033[0m"
+    echo -e "\033[0;31mYou can create an application for 42API at https://profile.intra.42.fr/oauth/applications with $FT_OAUTH_REDIRECT as redirect URI.\033[0m"
     printJSON $PAYLOAD
     exit $HTTP_CODE;
 fi
