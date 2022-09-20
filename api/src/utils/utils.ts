@@ -1,4 +1,4 @@
-import { PreconditionFailedException, Req } from "@nestjs/common";
+import { Logger, PreconditionFailedException, Req } from "@nestjs/common";
 import axios from 'axios';
 import { validate } from "class-validator";
 
@@ -95,7 +95,7 @@ export async function toBase64(url: string): Promise<string | null> {
 		imageBase64 = `data:${header};base64,${dataBase64}`;
 		return imageBase64;
 	} catch (err) {
-		console.log('Exception when download URL', url, ':', err.message);
+		Logger.error(`Exception when download URL ${url} : ${err.message}.`, 'UserAvatar');
 	}
 	return null;
 }
@@ -113,7 +113,7 @@ export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: 
 		const imgRaw = Buffer.from(imgBase64, 'base64')
 		return { imageType: imgType, imageBuffer : imgRaw };
 	} catch (err) {
-		console.log(`Exception | Can't fromBase64(${imageBase64})`, err.message);
+		Logger.error(`Exception when extract from base64 ${imageBase64} : ${err.message}.`, 'UserAvatar');
 	}
 	return null;
 }

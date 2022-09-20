@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res, UnprocessableEntityException, Inject, forwardRef } from "@nestjs/common";
+import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res, UnprocessableEntityException, Inject, forwardRef, UnsupportedMediaTypeException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { toBase64, isNumberPositive, fromBase64, removeFromArray, randomWord } from "../utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
@@ -252,6 +252,10 @@ export class UsersService {
 			throw new NotAcceptableException("Unable to find a user without key 'id' or 'username'.");
 
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);
+		if (!avatar) {
+			Logger.error(`Can't get a valid image from ${target.avatar_64} for ${target.username}.`, 'AvatarUser');
+			throw new UnsupportedMediaTypeException(`Can't get a valid image from ${target.avatar_64} for ${target.username}.`);
+		}
 
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });
 		res.end(avatar.imageBuffer);
@@ -294,7 +298,7 @@ export class UsersService {
 	}
 	
 	async anonymizeUser(user: User) : Promise<User> {
-		user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/assets/anonymize.png`);
+		user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/src/assets/anonymize.png`);
 		user.username = `${randomWord(3)}-${randomWord(5)}`
 		user.login_42 = null;
 		await this.authService.delete(user);

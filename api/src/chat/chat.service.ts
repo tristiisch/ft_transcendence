@@ -598,7 +598,7 @@ export class ChatService {
 	async setReadMessage(user: User, chatId: number, message: Message) {
 		// if (!chat.users_ids || chat.users_ids.indexOf(user.id) === -1)
 		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');
-		if (Number.isNaN(chatId))
+		if (!chatId || Number.isNaN(chatId))
 			throw new WsException(`Unable to find channel id ${chatId}`);
 		try {
 			let chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });

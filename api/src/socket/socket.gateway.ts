@@ -393,13 +393,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const idMsg: number = body[0];
 		const idChannel: number = body[1];
 
-		if (Number.isNaN(idMsg))
-			return;
 
 		// let chat: Chat = await this.chatService.findChat(idChannel);
 		let msg: Message = await this.chatService.findMessage(idMsg);
-		if (!msg)
+		if (!msg) {
+			Logger.error(`Can't read a message with ${idMsg} id.`);
 			throw new WsException(`Unable to find message ${idMsg} in channel ${idChannel}.`);
+		}
 		await this.chatService.setReadMessage(user, idChannel, msg)
 	}
 

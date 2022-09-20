@@ -3,8 +3,6 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
-import { createSocketServer } from './socket/server';
-import { createClient } from './socket/client';
 import * as bodyParser from 'body-parser';
 import { FtLogger } from 'logger/ft.logger';
 
@@ -17,6 +15,7 @@ async function bootstrap() {
 	app.setGlobalPrefix('api');
 
 	// For avatar, max JSON (should be better if this rules is only for avatar request)
+	// https://stackoverflow.com/questions/12921658/use-specific-middleware-in-express-for-all-paths-except-a-specific-one
 	app.use(bodyParser.json({ limit: '10mb' }));
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
