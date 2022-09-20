@@ -8,7 +8,6 @@ import type Leaderboard from '@/types/Leaderboard';
 import Status from '@/types/Status';
 import PlayerStatus from '@/components/Divers/PlayerStatus.vue';
 import UsersService from '@/services/UserService';
-import type User from '@/types/User';
 
 const globalStore = useGlobalStore();
 const userStore = useUserStore();
@@ -47,6 +46,10 @@ const isPendingFriend = computed(() => {
 	if (props.user) return globalStore.isPendingFriend(props.user?.id)
 });
 
+const isBlockedUser = computed(() => {
+	if (props.user) return globalStore.isBlockedUser(props.user?.id)
+});
+
 function friendRequest() {
 	if(props.user?.id)
 	{
@@ -54,6 +57,22 @@ function friendRequest() {
 		UsersService.sendFriendRequest(props.user?.id)
 			.then((response) => {
 				globalStore.addPendingFriend(response.data.user)
+				toast.info(response.data.message)
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			});
+		}
+	}
+}
+
+function unblockUser() {
+	if(props.user?.id)
+	{
+		if (globalStore.isBlockedUser(props.user?.id)) {
+		UsersService.unblockUser(props.user?.id)
+			.then((response) => {
+				globalStore.removeBlockedUser(response.data.user.id)
 				toast.info(response.data.message)
 			})
 			.catch((error) => {
@@ -94,10 +113,14 @@ onUnmounted(() => {
 				<span>{{ userStatus }}</span>
 			</div>
 			<div v-else class="inline-flex items-center justify-center p-[1px]">
-				<button v-if="!isPendingFriend">
+				<span v-if="isPendingFriend" class="pl-2 text-slate-800">Pending</span>
+				<button v-else-if="isBlockedUser">
+					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="unblockUser()" >Unblock</span>
+				</button>
+				<button v-else>
 					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="friendRequest()" >Add friend</span>
 				</button>
-				<span v-else class="pl-2 text-slate-800">Pending</span>
+				
 			</div>
 		</div>
 		<div class="flex justify-center items-center">{{ user?.rank }}</div>

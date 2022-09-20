@@ -94,7 +94,7 @@ watch(
 );
 
 function updateStatus(data: UserStatus) {
-	if (user.value) user.value.status = data.status
+	if (user.value?.id === data.id) user.value.status = data.status
 }
 
 onBeforeMount(() => {

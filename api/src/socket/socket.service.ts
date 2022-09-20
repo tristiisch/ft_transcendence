@@ -23,7 +23,7 @@ export class SocketService {
 
 	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
-		let user = await this.authService.getUserFromAuthenticationToken(token);
+		const user = await this.authService.getUserFromAuthenticationToken(token);
 		if (!user) {
 			throw new UnauthorizedException('Invalid credentials.');
 		}

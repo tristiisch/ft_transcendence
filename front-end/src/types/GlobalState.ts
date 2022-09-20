@@ -6,6 +6,7 @@ export interface GlobalState {
 	users: User[],
 	friends: User[],
 	pendingFriends: User[],
+	blockedUsers: User[],
 	notifications: Notification[],
 	selectedItems: User[] | Channel[];
 }

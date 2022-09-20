@@ -8,6 +8,7 @@ import { User } from "./entity/user.entity";
 import { Response } from 'express';
 import { WsException } from "@nestjs/websockets";
 import { AuthService } from "auth/auth.service";
+import { SocketService } from 'socket/socket.service';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,8 @@ export class UsersService {
 
 	@Inject(forwardRef(() => AuthService))
 	private readonly authService: AuthService;
+	@Inject(forwardRef(() => SocketService))
+	private readonly socketService: SocketService;
 
 	public getRepo() {
 		return this.usersRepository;
@@ -261,6 +264,8 @@ export class UsersService {
 		if (user.blocked_ids.indexOf(targetId) !== -1)
 			throw new WsException('User is already blocked')
 		user.blocked_ids.push(targetId);
+		//need to delete friendship in back if exist
+		this.socketService.RemoveFriend(user.id, targetId);
 		await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
 		return user;
 	}
