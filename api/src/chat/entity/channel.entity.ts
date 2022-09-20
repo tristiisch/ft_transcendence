@@ -147,13 +147,6 @@ export class ChannelPrivate extends Channel {
 
 	@Column("int", { nullable: true, array: true })
 	banned_ids: number[];
-
-	@Column("int", { nullable: true, array: true })
-	invited_ids: number[];
-
-	public isInvited?(user: User) {
-		return this.invited_ids.indexOf(user.id) !== -1;
-	}
 }
 
 export class ChannelFront extends ChatFront {

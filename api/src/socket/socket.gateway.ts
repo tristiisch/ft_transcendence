@@ -97,7 +97,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
 			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]); 
 
-			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channel, user);
+			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channelFront, user);
 			return channelFront;
 		} catch (err) {
 			throw new WsException(err.message);
@@ -223,7 +223,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!await comparePassword(password, channel.password)) {
 				throw new WsException(`Bad password '${password}' for channel ${channel.name}.`);
 			}
-		} else if (channel instanceof ChannelPrivate && channel.invited_ids.indexOf(joinedUser.id) === -1) {
+		} else if (channel instanceof ChannelPrivate) {
 			throw new WsException(`You are not part of the channel ${channel.name}.`);
 		}
 		channel = await this.chatService.joinChannel(joinedUser, channel);
@@ -272,7 +272,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
 		this.socketService.emitIds(users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
 
-		return [channelFront];
+		return channelFront;
 	}
 
 	@UseGuards(JwtSocketGuard)

@@ -90,7 +90,7 @@ export class TestFakeService {
 		let userAuth: UserAuth;
 		let userStats: UserStats;
 	
-		user.username = randomWord(randomNumber(3, 16));
+		user.username = randomWord(randomNumber(3, 12));
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
 	
