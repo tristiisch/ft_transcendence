@@ -23,11 +23,9 @@ export class NotificationController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('remove/:id')
-	async deleteNotif(@Param('id') notifId: number, @Req() req) {
+	@Get('remove')
+	async deleteTempNotif(@Req() req) {
 		const user: User = req.user;
-
-		isNumberPositive(notifId, 'delete notification');
-		this.notifService.delete(notifId);
+		await this.notifService.deleteTempNotifs(user);
 	}
 }

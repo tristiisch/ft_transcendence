@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from '../friends/friends.service';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
-import { InsertResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';
 
@@ -25,23 +25,29 @@ export class NotificationService {
 		return await this.notifsRepository.save(notif);
 	}
 
-	public async delete(notifId: number): Promise<Notification> {
-		const notif: Notification = await this.notifsRepository.findOneBy({ id: notifId });
-		notif.is_deleted = false;
-		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });
-		return notif;
+	public async deleteTempNotifs(user: User): Promise<UpdateResult> {
+		const sqlStatement: UpdateQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').update(Notification);
+
+		sqlStatement.where('notification.user_id = :user_id', { user_id: user.id });
+		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.andWhere(`notification.type <> '${NotificationType.FRIEND_REQUEST}'`);
+		sqlStatement.andWhere(`notification.type <> '${NotificationType.MATCH_REQUEST}'`);
+	
+		sqlStatement.set({ is_deleted: true });
+
+		return await sqlStatement.execute();
 	}
 
 	public async findMany(userId: number): Promise<NotificationFront[]> {
-		const sqlStatement: SelectQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notif');
+		const sqlStatement: SelectQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification');
 
-		sqlStatement.where('notif.user_id = :user_id', { user_id: userId });
-		sqlStatement.andWhere('notif.is_deleted IS NOT TRUE');
-		sqlStatement.orderBy('notif.id', 'DESC', 'NULLS LAST');
+		sqlStatement.where('notification.user_id = :user_id', { user_id: userId });
+		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.orderBy('notification.id', 'DESC', 'NULLS LAST');
 		return await sqlStatement.getMany().then(async (notifs: Notification[]) => {
 			const allNotifsFront: NotificationFront[] = new Array();
 			const userCaches: User[] = new Array();
-			for (let notif of notifs) {
+			for (const notif of notifs) {
 				const notifFront: NotificationFront = await notif.toFront(this.userService, userCaches);
 				allNotifsFront.push(notifFront);
 				notifFront.date = notif.date.toDateString();

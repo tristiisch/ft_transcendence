@@ -23,10 +23,10 @@ export class UsersController {
 		return this.usersService.findAllExcept(req.user);
 	}
 
-	@Post()
+	/*@Post()
 	addUser(@Body() newUser: User) {
 		return this.usersService.add(newUser);
-	}
+	}*/
 
 	/*
 	@Get('name/:name')
