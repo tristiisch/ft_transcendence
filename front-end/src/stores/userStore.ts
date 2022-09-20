@@ -73,7 +73,7 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
-				if (this.userData.avatar === newAvatar) newAvatar = '';
+				if (this.userData.avatar === newAvatar) newAvatar = null;
 				await UserService.registerUser(newUsername, newAvatar);
 				if (newAvatar) this.userData.avatar = newAvatar;
 				this.userData.username = newUsername;
@@ -124,13 +124,13 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
-		async deleteAccount() {
+		/*async deleteAccount() {
 			try {
 				const res = await UserService.deleteAccount();
 				this.userData = res.data;
 			} catch (error: any) {
 				throw error;
 			}
-		},
+		},*/
 	},
 });

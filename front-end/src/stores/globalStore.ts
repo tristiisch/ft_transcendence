@@ -5,6 +5,8 @@ import type User from '@/types/User';
 import type Channel from '@/types/Channel';
 import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
+import type LeaderboardUser from '@/types/Leaderboard';
+import type { UserStatus } from '@/types/User';
 
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
@@ -15,6 +17,8 @@ export const useGlobalStore = defineStore('globalStore', {
 		friends: [],
 		pendingFriends: [],
 		blockedUsers: [],
+		leaderboard: [],
+		leaderboardFriends: [],
 		notifications: [],
 		selectedItems: [],
 	}),
@@ -105,6 +109,15 @@ export const useGlobalStore = defineStore('globalStore', {
 				}
 			}
 		},
+		async fetchLeaderboard() {
+			try {
+				const response = await UserService.getLeaderboard();
+				this.leaderboard = response.data.leaderBoard;
+				this.leaderboardFriends = response.data.leaderBoardFriends;
+			} catch (error: any) {
+					throw error;
+			}
+		},
 		checkChangeInArray(baseArray: User[]) {
 			let unlisted: User[] = [];
 			let listed: User[] = [];
@@ -130,6 +143,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		// },
 		addFriend(friend: User) {
 			this.removePendingFriend(friend.id)
+			this.addFriendToLeaderboard(friend.id)
 			this.friends.push(friend);
 		},
 		addPendingFriend(pendingFriend: User) {
@@ -147,28 +161,51 @@ export const useGlobalStore = defineStore('globalStore', {
 		// },
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
+			this.removeFriendToLeaderboard(friendToRemoveId)
 			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
-			this.friends.splice(index, 1);
+			if (index !== -1) this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
 			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
-			this.pendingFriends.splice(index, 1);
+			if (index !== -1) this.pendingFriends.splice(index, 1);
 		},
 		removeBlockedUser(blockedUserToRemoveId: number) {
 			const index = this.blockedUsers.findIndex(blockedUser => blockedUser.id === blockedUserToRemoveId);
-			this.blockedUsers.splice(index, 1);
+			if (index !== -1) this.blockedUsers.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
-			this.notifications.splice(index, 1);
+			if (index !== -1) this.notifications.splice(index, 1);
 		},
-		removeNotificationByUserId(UserId: number) {
-			const index = this.notifications.findIndex(notification => notification.from_user_id === UserId);
-			this.notifications.splice(index, 1);
+		removeNotificationByUserId(userId: number) {
+			const index = this.notifications.findIndex(notification => notification.from_user_id === userId);
+			if (index !== -1) this.notifications.splice(index, 1);
 		},
 		removeNotActionNotification() {
 			this.notifications.filter(notification => notification.type == NotificationType.FRIEND_ACCEPT).forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
 		},
+		addFriendToLeaderboard(userId: number) {
+			const user = this.leaderboard.find((user) => user.id === userId)
+			if (user) this.leaderboardFriends.push(user)
+		},
+		removeFriendToLeaderboard(userId: number) {
+			const index = this.leaderboardFriends.findIndex(friend => friend.id === userId);
+			if (index !== -1) this.leaderboardFriends.splice(index, 1);
+		},
+		updateLeaderboard(data: { leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[] }) {
+			this.leaderboard = data.leaderBoard;
+			this.leaderboardFriends = data.leaderBoardFriends;
+		},
+		updateLeaderboardStatus(target: UserStatus) {
+			if (this.leaderboard) {
+				const index = this.leaderboard.findIndex((user) => user.id === target.id);
+				if (index !== -1) this.leaderboard[index].status = target.status;
+			}
+			if (this.leaderboardFriends) {
+				const index = this.leaderboardFriends.findIndex((user) => user.id === target.id);
+				if (index !== -1) this.leaderboardFriends[index].status = target.status;
+			}
+		}
 		// updateUser(userToChange: User) {
 		// 	const index = this.users.findIndex(user => user.id === userToChange.id);
 		// 	this.users[index] = userToChange

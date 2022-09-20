@@ -200,7 +200,6 @@ export const useChatStore = defineStore('chatStore', {
 			const userStore = useUserStore();
 			if (index >= 0) {
 				this.userDiscussions.splice(index, 1);
-				socket.emit('chatDiscussionDelete', (this.userDiscussions[index], userStore.userData.id))
 			}
 		},
 		deleteUserChannel(indexUserChannel: number) {
@@ -219,12 +218,10 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel);
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | null, userWhoChangeName: User }) {
+		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | null, removePassword: boolean, userWhoChangeName: User }) {
 			const userStore = useUserStore();
 			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
-				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== ''))) {
-					// if (newNamePassword.name !== '') channel.name = newNamePassword.name
-					// newNamePassword.password !== '' ? channel.password = newNamePassword.password : newNamePassword.password = null;
+				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== '') || newNamePassword.removePassword)) {
 					socket.emit('chatChannelNamePassword', channel, newNamePassword, (body: any[]) => {
 						const channelUpdated: Channel = body[0];
 						this.updateChannel(channelUpdated);
@@ -241,15 +238,15 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel)
 		},
-		updateBanList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
-				newBanned: {list: User[], userWhoSelect: User }) {
+		updateBanList(channel: Channel, newBanned: {list: User[], userWhoSelect: User },
+				selection?: {unlisted: User[], listed: User[] } | null,) {
 			const userStore = useUserStore();
 			if (newBanned.userWhoSelect.id ===  userStore.userData.id && selection) {
 				this.addAutomaticMessageSelection(channel, selection, '->got unBanned by ' + newBanned.userWhoSelect.username,
 					'-> got Banned by ' + newBanned.userWhoSelect.username)
 				socket.emit('chatChannelBan', channel, newBanned, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
-				 	this.updateChannel( channelUpdated);
+				 	this.updateChannel(channelUpdated);
 				});
 			}
 			else {
@@ -264,10 +261,10 @@ export const useChatStore = defineStore('chatStore', {
 					this.updateChannel(channel);
 			}
 		},
-		updateMuteList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
-				newMuted: {list: User[], userWhoSelect: User }) {
+		updateMuteList(channel: Channel, newMuted?: {list: User[], userWhoSelect: User },
+				selection?: {unlisted: User[], listed: User[] } | null) {
 			const userStore = useUserStore();
-			if (newMuted.userWhoSelect.id === userStore.userData.id && selection) {
+			if (newMuted && newMuted.userWhoSelect.id === userStore.userData.id && selection) {
 				socket.emit('chatChannelMute', channel, newMuted, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
 					this.addAutomaticMessageSelection(channel, selection, '->got unMuted by ' + newMuted.userWhoSelect.username,
@@ -278,10 +275,10 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel);
 		},
-		updateAdminList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
-				newAdmin: {list: User[], userWhoSelect: User }) {
+		updateAdminList(channel: Channel, newAdmin?: {list: User[], userWhoSelect: User },
+				selection?: {unlisted: User[], listed: User[] } | null) {
 			const userStore = useUserStore();
-			if (newAdmin.userWhoSelect.id === userStore.userData.id && selection) {
+			if (newAdmin && newAdmin.userWhoSelect.id === userStore.userData.id && selection) {
 				socket.emit('chatChannelAdmin', channel, newAdmin, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
 					this.addAutomaticMessageSelection(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
