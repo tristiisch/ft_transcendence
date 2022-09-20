@@ -57,7 +57,7 @@ while ! docker-compose logs pgAdmin | grep -q "Listening at"; do
 done
 echo "pgAdmin finish !"
 
-while ! docker-compose logs api | grep -q "Nest application successfully started"; do
+while ! docker-compose logs api | grep -q "successfully started"; do
     if docker-compose logs api | grep -q "errors. Watching for file changes."; then
         errorContainer API
     fi
