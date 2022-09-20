@@ -112,9 +112,11 @@ onBeforeUnmount(() => {
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
-					<player-profile :user="user"></player-profile>
-					<button-part @change-display="setPartToDisplay"></button-part>
-					<rank-card :rank="userStats?.rank"></rank-card>
+					<div class="flex sm:flex-col justify-around sm:justify-center items-center w-full h-full gap-6 3xl:gap-10">
+						<player-profile :user="user"></player-profile>
+						<button-part @change-display="setPartToDisplay"></button-part>
+					</div>
+					<rank-card :rank="userStats?.rank" class="mr-6 sm:mr-0"></rank-card>
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">
