@@ -1,8 +1,8 @@
 /** @prettier */
 import { Controller, Get, Inject, Param, PreconditionFailedException, } from '@nestjs/common';
-import { User } from '../users/entity/user.entity';
-import { UsersService } from '../users/users.service';
-import { isNumberPositive } from '../utils/utils';
+import { User } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
+import { isNumberPositive } from 'utils/utils';
 import { TestDbService } from './test-db.service';
 import { TestFakeService } from './test-fake.service';
 

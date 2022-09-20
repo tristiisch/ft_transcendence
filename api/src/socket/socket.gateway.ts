@@ -8,17 +8,17 @@ import {
 	ConnectedSocket,
 	WsException,
 } from '@nestjs/websockets';
-import { ChatService } from '../chat/chat.service';
-import { ChannelCreateDTO } from '../chat/entity/channel-dto';
-import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from '../chat/entity/channel.entity';
+import { ChatService } from 'chat/chat.service';
+import { ChannelCreateDTO } from 'chat/entity/channel-dto';
+import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from 'chat/entity/channel.entity';
 import { Server, Socket } from 'socket.io';
-import { User, UserStatus } from '../users/entity/user.entity';
+import { User, UserStatus } from 'users/entity/user.entity';
 import { SocketService } from './socket.service';
-import { Message, MessageFront } from '../chat/entity/message.entity';
-import { Chat, ChatFront, ChatStatus } from '../chat/entity/chat.entity';
-import { Discussion, DiscussionFront } from '../chat/entity/discussion.entity';
+import { Message, MessageFront } from 'chat/entity/message.entity';
+import { Chat, ChatFront, ChatStatus } from 'chat/entity/chat.entity';
+import { Discussion, DiscussionFront } from 'chat/entity/discussion.entity';
 import { ForbiddenException, forwardRef, Inject, Logger, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { comparePassword } from '../utils/bcrypt';
+import { comparePassword } from 'utils/bcrypt';
 import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 import { UsersService } from 'users/users.service';
 import { AuthService } from 'auth/auth.service';

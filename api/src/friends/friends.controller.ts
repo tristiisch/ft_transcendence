@@ -1,9 +1,9 @@
 /** @prettier */
 import { Body, Controller, forwardRef, Get, Inject, NotAcceptableException, NotImplementedException, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guard';
-import { UserSelectDTO } from '../users/entity/user-select.dto';
-import { User } from '../users/entity/user.entity';
-import { UsersService } from '../users/users.service';
+import { JwtAuthGuard } from 'auth/guard';
+import { UserSelectDTO } from 'users/entity/user-select.dto';
+import { User } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
 import { FriendsService } from './friends.service';
 
 @Controller('friends')

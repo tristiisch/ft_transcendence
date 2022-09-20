@@ -1,7 +1,7 @@
 /** @prettier */
 import { NotAcceptableException } from '@nestjs/common';
 import { IsInt, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator';
-import { UsersService } from '../users.service';
+import { UsersService } from 'users/users.service';
 import { User } from './user.entity';
 
 export class UserSelectDTO {

@@ -1,20 +1,20 @@
 /** @prettier */
 import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
-import { FriendsService } from '../friends/friends.service';
-import { MatchStats } from '../game/matchs/entity/matchstats.entity';
-import { MatchStatsService } from '../game/matchs/matchs.service';
-import { UserStats } from '../game/stats/entity/userstats.entity';
-import { StatsService } from '../game/stats/stats.service';
-import { UserSelectDTO } from '../users/entity/user-select.dto';
-import { User, UserStatus } from '../users/entity/user.entity';
-import { UsersService } from '../users/users.service';
-import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from '../utils/utils';
+import { AuthService } from 'auth/auth.service';
+import { FriendsService } from 'friends/friends.service';
+import { MatchStats } from 'game/matchs/entity/matchstats.entity';
+import { MatchStatsService } from 'game/matchs/matchs.service';
+import { UserStats } from 'game/stats/entity/userstats.entity';
+import { StatsService } from 'game/stats/stats.service';
+import { UserSelectDTO } from 'users/entity/user-select.dto';
+import { User, UserStatus } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
+import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from 'utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
-import { UserAuth } from '../auth/entity/user-auth.entity';
+import { UserAuth } from 'auth/entity/user-auth.entity';
 import { ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
-import { Chat, ChatStatus } from '../chat/entity/chat.entity';
-import { ChatService } from '../chat/chat.service';
+import { Chat, ChatStatus } from 'chat/entity/chat.entity';
+import { ChatService } from 'chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
 import { Message } from 'chat/entity/message.entity';
 

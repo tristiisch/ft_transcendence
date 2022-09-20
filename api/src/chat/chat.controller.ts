@@ -1,8 +1,8 @@
 /** @prettier */
 import { Body, Controller, Get, Inject, NotImplementedException, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { channel } from 'diagnostics_channel';
-import { JwtAuthGuard } from '../auth/guard';
-import { User } from '../users/entity/user.entity';
+import { JwtAuthGuard } from 'auth/guard';
+import { User } from 'users/entity/user.entity';
 import { ChatService } from './chat.service';
 import { ChannelCreateDTO, ChannelEditUsersDTO, ChannelFetchDTO, ChannelSelectDTO } from './entity/channel-dto';
 import { ChannelFront } from './entity/channel.entity';

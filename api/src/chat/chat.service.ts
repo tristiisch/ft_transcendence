@@ -1,18 +1,18 @@
 /** @prettier */
 import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UsersService } from '../users/users.service';
+import { UsersService } from 'users/users.service';
 import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
-import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTOforHttp } from '../utils/utils';
+import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTOforHttp } from 'utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
-import { hashPassword } from '../utils/bcrypt';
+import { hashPassword } from 'utils/bcrypt';
 import { validate, validateOrReject, ValidationError, Validator } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { SocketService } from 'socket/socket.service';

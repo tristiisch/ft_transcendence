@@ -1,9 +1,9 @@
 /** @prettier */
 import { forwardRef, Inject, Injectable, NotFoundException, NotImplementedException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FriendsService } from '../friends/friends.service';
-import { User } from '../users/entity/user.entity';
-import { UsersService } from '../users/users.service';
+import { FriendsService } from 'friends/friends.service';
+import { User } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
 import { InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';

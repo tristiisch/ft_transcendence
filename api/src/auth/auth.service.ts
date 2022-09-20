@@ -1,15 +1,15 @@
 import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserStatus } from '../users/entity/user.entity';
-import { UsersService } from '../users/users.service';
-import { isNumberPositive, toBase64 } from '../utils/utils';
+import { User, UserStatus } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
+import { isNumberPositive, toBase64 } from 'utils/utils';
 import { Repository } from 'typeorm';
 import { UserAuth } from './entity/user-auth.entity';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
-import { StatsService } from '../game/stats/stats.service';
-import { UserStats } from '../game/stats/entity/userstats.entity';
+import { StatsService } from 'game/stats/stats.service';
+import { UserStats } from 'game/stats/entity/userstats.entity';
 
 @Injectable()
 export class AuthService {

@@ -4,10 +4,10 @@ import { AuthController, TFAController } from './auth.controller';
 import { JwtStrategy, JwtTFAStrategy } from './strategy';
 import * as dotenv from "dotenv";
 import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from '../users/users.module';
+import { UsersModule } from 'users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserAuth } from './entity/user-auth.entity';
-import { StatsModule } from '../game/stats/stats.module';
+import { StatsModule } from 'game/stats/stats.module';
 
 dotenv.config();
 

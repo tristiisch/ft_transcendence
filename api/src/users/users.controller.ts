@@ -2,7 +2,7 @@
 import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { isNumberPositive } from 'utils/utils';
-import { JwtAuthGuard } from '../auth/guard';
+import { JwtAuthGuard } from 'auth/guard';
 import { UserSelectDTO } from './entity/user-select.dto';
 import { UserDTO } from './entity/user.dto';
 import { User } from './entity/user.entity';

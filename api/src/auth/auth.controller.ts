@@ -4,10 +4,10 @@ import axios from 'axios';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../users/entity/user.entity';
+import { User } from 'users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
-import { UsersService } from '../users/users.service';
-import { getFrontRelativeURL } from '../utils/utils';
+import { UsersService } from 'users/users.service';
+import { getFrontRelativeURL } from 'utils/utils';
 
 @Controller("auth")
 export class AuthController {

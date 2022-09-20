@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../users/entity/user.entity';
-import { UsersService } from '../../users/users.service';
+import { User } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { MatchStats } from './entity/matchstats.entity';
 import { MatchOwn } from './entity/own-match.entity';

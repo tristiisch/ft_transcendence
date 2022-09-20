@@ -1,11 +1,11 @@
 import { forwardRef, Inject,Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
-import { UsersService } from '../users/users.service';
+import { AuthService } from 'auth/auth.service';
+import { UsersService } from 'users/users.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
-import { NotificationFront } from '../notification/entity/notification.entity';
-import { User } from '../users/entity/user.entity';
+import { NotificationFront } from 'notification/entity/notification.entity';
+import { User } from 'users/entity/user.entity';
 
 @Injectable()
 export class SocketService {

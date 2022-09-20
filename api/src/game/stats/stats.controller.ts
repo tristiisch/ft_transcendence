@@ -1,8 +1,8 @@
 import { Body, Controller, forwardRef, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/guard';
-import { UserSelectDTO } from '../../users/entity/user-select.dto';
-import { User } from '../../users/entity/user.entity';
-import { UsersService } from '../../users/users.service';
+import { JwtAuthGuard } from 'auth/guard';
+import { UserSelectDTO } from 'users/entity/user-select.dto';
+import { User } from 'users/entity/user.entity';
+import { UsersService } from 'users/users.service';
 import { UserStats } from './entity/userstats.entity';
 import { StatsService } from './stats.service';
 
