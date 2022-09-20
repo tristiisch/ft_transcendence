@@ -6,6 +6,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import UsersService from '@/services/UserService';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import { useToast } from 'vue-toastification';
+import BaseButton from '../Ui/BaseButton.vue';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
@@ -27,6 +28,10 @@ const isUser = computed(() =>  {
 	return false;
 })
 
+const isBlockedUser = computed(() => {
+	return globalStore.isBlockedUser(userId.value)
+});
+
 function setDisplayedPart(button: number) {
 	if (button === 1)
 		if (displayPart.value === 'Player Stats') displayPart.value = 'Notifications';
@@ -40,17 +45,7 @@ function setDisplayedPart(button: number) {
 function treatFriendRequest() {
 	if (friendButton.value !== 'Pending')
 	{
-		if (!globalStore.isFriend(userId.value)) {
-			UsersService.sendFriendRequest(userId.value)
-				.then((response) => {
-					globalStore.addPendingFriend(response.data.user.id)
-					toast.info(response.data.message)
-				})
-				.catch((error) => {
-					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-				});
-		}
-		else {
+		if (globalStore.isFriend(userId.value)) {
 			UsersService.removeFriend(userId.value)
 				.then((response) => {
 					globalStore.removeFriend(response.data.user.id)
@@ -60,27 +55,55 @@ function treatFriendRequest() {
 					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 				});
 		}
+		else {
+			UsersService.sendFriendRequest(userId.value)
+				.then((response) => {
+					globalStore.addPendingFriend(response.data.user)
+					toast.info(response.data.message)
+				})
+				.catch((error) => {
+					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+				});
+		}
 	}
 }
 
-function blockUser() {
-	UsersService.blockUser(userId.value)
+function treatBlock() {
+	if (globalStore.isBlockedUser(userId.value))
+	{
+		UsersService.unblockUser(userId.value)
 		.then((response) => {
+			globalStore.removeBlockedUser(response.data.user.id)
 			toast.info(response.data.message)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
+	}
+	else
+	{
+		UsersService.blockUser(userId.value)
+			.then((response) => {
+				globalStore.removeFriend(response.data.user.id)
+				globalStore.removeNotificationByUserId(response.data.user.id)
+				globalStore.addBlockedUser(response.data.user)
+				toast.info(response.data.message)
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			});
+	}
 }
 
 const friendButton = computed(() => {
 	if (globalStore.isFriend(userId.value)) return 'Remove friend';
 	else if (globalStore.isPendingFriend(userId.value)) return 'Pending';
-	return 'Add friend';
+	else return 'Add friend';
 });
 
 const blockButton = computed(() => {
-	return 'Block';
+	if (globalStore.isBlockedUser(userId.value)) return 'Unblock';
+	else return 'Block'
 });
 
 const button1Name = computed(() => {
@@ -101,10 +124,8 @@ onBeforeMount(() => {
 
 <template>
 	<div v-if="!isUser" class="flex flex-col gap-4">
-		<button-gradient @click="treatFriendRequest()">
-			{{ friendButton }}
-		</button-gradient>
-		<button-gradient @click="blockUser"> {{ blockButton }} </button-gradient>
+		<button-gradient v-if="!isBlockedUser" @click="treatFriendRequest()"> {{ friendButton }} </button-gradient>
+		<button-gradient @click="treatBlock()"> {{ blockButton }} </button-gradient>
 	</div>
 	<div v-else class="flex flex-col gap-4">
 		<button-gradient @click="setDisplayedPart(1)">

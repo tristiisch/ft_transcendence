@@ -14,6 +14,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		users: [],
 		friends: [],
 		pendingFriends: [],
+		blockedUsers: [],
 		notifications: [],
 		selectedItems: [],
 	}),
@@ -29,6 +30,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		},
 		isPendingFriend: (state) => {
 			return (userId: number) => state.pendingFriends.some((pendingFriend) => pendingFriend.id === userId);
+		},
+		isBlockedUser: (state) => {
+			return (userId: number) => state.blockedUsers.some((blockedUser) => blockedUser.id === userId);
 		},
 		// getUserName: (state) => {
 		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
@@ -131,6 +135,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		addPendingFriend(pendingFriend: User) {
 			this.pendingFriends.push(pendingFriend);
 		},
+		addBlockedUser(blockedUser: User) {
+			this.blockedUsers.push(blockedUser);
+		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
 		},
@@ -147,8 +154,16 @@ export const useGlobalStore = defineStore('globalStore', {
 			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
 			this.pendingFriends.splice(index, 1);
 		},
+		removeBlockedUser(blockedUserToRemoveId: number) {
+			const index = this.blockedUsers.findIndex(blockedUser => blockedUser.id === blockedUserToRemoveId);
+			this.blockedUsers.splice(index, 1);
+		},
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
+			this.notifications.splice(index, 1);
+		},
+		removeNotificationByUserId(UserId: number) {
+			const index = this.notifications.findIndex(notification => notification.from_user_id === UserId);
 			this.notifications.splice(index, 1);
 		},
 		removeNotActionNotification() {

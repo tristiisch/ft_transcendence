@@ -115,7 +115,7 @@ export class UsersController {
 		const target: User = await this.usersService.findOne(targetId);
 	
 		this.usersService.addBlockedUser(user, targetId);
-		return { message: `You have block ${target.username}.` };
+		return { user: target, message: `You have block ${target.username}.` };
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -127,6 +127,6 @@ export class UsersController {
 		const target: User = await this.usersService.findOne(targetId);
 
 		this.usersService.removeBlockedUser(user, targetId);
-		return { message: `You have unblock ${target.username}.` };
+		return { user: target, message: `You have unblock ${target.username}.` };
 	}
 }
