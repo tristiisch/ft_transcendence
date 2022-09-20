@@ -86,9 +86,9 @@ onBeforeMount(() => {
 		}
 		else {
 			socket.emit('chatChannelOtherUsers', chatStore.inChannel, (usersNotInChannel: User[]) => {
-			globalStore.users = usersNotInChannel;
-			itemsToDisplay.value = globalStore.users;
-			isLoading.value = false;
+				globalStore.users = usersNotInChannel;
+				itemsToDisplay.value = globalStore.users;
+				isLoading.value = false;
 			});
 		}
 	}

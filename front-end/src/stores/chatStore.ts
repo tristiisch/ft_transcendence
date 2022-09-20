@@ -153,24 +153,11 @@ export const useChatStore = defineStore('chatStore', {
 			if (load === true)
 				this.loadDiscussion(this.userDiscussions[0]);
 		},
-		addUsersToChannel(channel: Channel, users: User[], inviter?: User) {
-			if (this.inChannel && this.inChannel.id === channel.id)
-				for(const user of users)
-					this.inChannel.users.push(user);
-			else {
-				const index = this.getIndexUserChannels(channel.id);
-				if (index < 0) {
-					if (inviter) {
-					this.addNewChannel(inviter, channel)
-					for(const user of users)
-						this.userChannels[this.userChannels.length - 1].users.push(user);
-					}
-				}
-				else {
-					for(const user of users)
-						this.userChannels[index].users.push(user);
-				}
-			}
+		addUsersToChannel(channelUpdated: Channel, inviter?: User) { 
+			if (inviter)
+				this.addNewChannel(inviter, channelUpdated);
+			else
+				this.updateChannel(channelUpdated);	
 		},
 		createNewChannel(newChannel: Channel, selection: User[]) {
 			const userStore = useUserStore();
@@ -193,44 +180,21 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		joinNewChannel(channel : Channel) {
 			const userStore = useUserStore();
-			this.userChannels.length ? this.userChannels.unshift(channel) : this.userChannels.push(channel);
-			this.inChannel = this.userChannels[0];
-			socket.emit('chatChannelJoin', channel, userStore.userData);
-			this.addAutomaticMessage(channel, userStore.userData, 'just joined the channel')
-			this.setRightPartToDisplay(PartToDisplay.CHAT);
+			socket.emit('chatChannelJoin', channel, userStore.userData, (channelUpdated: Channel) => {
+				this.userChannels.length ? this.userChannels.unshift(channelUpdated) : this.userChannels.push(channelUpdated);
+				this.inChannel = this.userChannels[0];
+				this.addAutomaticMessage(channel, userStore.userData, 'just joined the channel')
+				this.setRightPartToDisplay(PartToDisplay.CHAT);
+			});
 		},
 		inviteUserToPrivateChannel(channel: Channel, users: User[]) {
 			const userStore = useUserStore();
-			socket.emit('chatChannelInvitation', channel, users, userStore.userData);
-			if (this.inChannel && this.inChannel.name === channel.name) {
-				for(const user of users)
-					this.inChannel.users.push(user)
-				this.addAutomaticMessageSelection(channel, { unlisted: [], listed: users}, '', ' have been invited into the channel')
-			}
-			else {
-				const index = this.getIndexUserChannels(channel.id);
-				if (index >= 0) {
-					for(const user of users)
-						this.userChannels[index].users.push(user);
-					this.addAutomaticMessageSelection(this.userChannels[index], { unlisted: [], listed: users}, '', ' have been invited into the channel')
-				}
-			}
-		},
-		deleteUserFromChannel(channel: Channel, userToDelete: User) {
-			let index;
-			if (channel.admins) {
-				index = channel.admins.findIndex((user) => user.id === userToDelete.id);
-				if (index >= 0) channel.admins.splice(index, 1);
-			}
-			if (channel.muted) {
-				index = channel.muted.findIndex((user) => user.id === userToDelete.id);
-				if (index >= 0) channel.muted.splice(index, 1);
-			}
-			if (channel.users) {
-				index = channel.users.findIndex((user) => user.id === userToDelete.id);
-				if (index >= 0) channel.users.splice(index, 1);
-				if (this.inChannel?.type === ChatStatus.PROTECTED) this.inChannelRegistration = false;
-			}
+			socket.emit('chatChannelInvitation', channel, users, userStore.userData, (body: any[]) => {
+				const channelUpdated: Channel = body[0];
+				if (this.inChannel)
+					this.addAutomaticMessageSelection(this.inChannel, { unlisted: [], listed: users}, '', ' have been invited into the channel')
+				this.updateChannel(channelUpdated);
+			});
 		},
 		deleteUserDiscussion(index: number) {
 			const userStore = useUserStore();
@@ -242,188 +206,113 @@ export const useChatStore = defineStore('chatStore', {
 		deleteUserChannel(indexUserChannel: number) {
 			if (indexUserChannel >= 0) this.userChannels.splice(indexUserChannel, 1);
 		},
-		leaveChannel(channel: Channel, user: User) {
+		leaveChannel(channel: Channel, user?: User) {
 			const userStore = useUserStore();
-			if ((userStore.userData.id === user.id)) {
-				this.deleteUserFromChannel(channel, user);
-				this.addAutomaticMessage(channel, userStore.userData, 'just leaved the channel')
-				socket.emit('chatChannelLeave', channel, userStore.userData);
-				this.setChannelOwner(channel, [user])
-				this.deleteUserChannel(this.getIndexUserChannels(channel.id));
-				this.inChannel = null;
-				this.setRightPartToDisplay(PartToDisplay.CHAT);
+			if (user && (userStore.userData.id === user.id)) {
+				socket.emit('chatChannelLeave', channel, userStore.userData, () => {
+					this.addAutomaticMessage(channel, userStore.userData, 'just leaved the channel')
+					this.deleteUserChannel(this.getIndexUserChannels(channel.id));
+					this.inChannel = null;
+					this.setRightPartToDisplay(PartToDisplay.CHAT);
+				});
 			}
-			else {
-				const index = this.getIndexUserChannels(channel.id);
-				this.deleteUserFromChannel(this.userChannels[index], user);
-				this.setChannelOwner(this.userChannels[index], [user])
-			}
+			else
+				this.updateChannel(channel);
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) {
+		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | null, userWhoChangeName: User }) {
 			const userStore = useUserStore();
-			if (userStore.userData.id === newNamePassword.userWhoChangeName.id) {
+			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
 				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== ''))) {
-					if (newNamePassword.name !== '') channel.name = newNamePassword.name
-					newNamePassword.password !== '' ? channel.password = newNamePassword.password : newNamePassword.password = null;
-					socket.emit('chatChannelNamePassword', channel, newNamePassword);
-					const userStore = useUserStore();
-					if (newNamePassword.name !== null)
-						this.addAutomaticMessage(channel, userStore.userData, 'change the channel name to ' + newNamePassword.name);
-					if (this.inChannel.password && newNamePassword.password !== null)
-						this.addAutomaticMessage(channel, userStore.userData, 'changed the password of ' + channel.name);
-					else if (!this.inChannel.password && newNamePassword.password !== null)
-						this.addAutomaticMessage(channel, userStore.userData, 'added a Password to ' + channel.name);
+					// if (newNamePassword.name !== '') channel.name = newNamePassword.name
+					// newNamePassword.password !== '' ? channel.password = newNamePassword.password : newNamePassword.password = null;
+					socket.emit('chatChannelNamePassword', channel, newNamePassword, (body: any[]) => {
+						const channelUpdated: Channel = body[0];
+						this.updateChannel(channelUpdated);
+						const userStore = useUserStore();
+						if (newNamePassword.name !== null)
+							this.addAutomaticMessage(channel, userStore.userData, 'change the channel name to ' + newNamePassword.name);
+						if (this.inChannel && this.inChannel.password && newNamePassword.password !== null)
+							this.addAutomaticMessage(channel, userStore.userData, 'changed the password of ' + channel.name);
+						else if (this.inChannel && !this.inChannel.password && newNamePassword.password !== null)
+							this.addAutomaticMessage(channel, userStore.userData, 'added a Password to ' + channel.name);
+					});
 				}
 			}
-			else {
-				if (this.inChannel && this.inChannel.id === channel.id) {
-					if (newNamePassword.name !== '') this.inChannel.name = newNamePassword.name;
-					if (newNamePassword.password !== null) this.inChannel.password = newNamePassword.password;
-				}
-				else {
-					const index = this.getIndexUserChannels(channel.id);
-					if (index >= 0) {
-						if (newNamePassword.name !== '')
-							this.userChannels[index].name = newNamePassword.name;
-						if (newNamePassword.password !== null)
-							this.userChannels[index].password = newNamePassword.password;
-					}
-				}
-			}
+			else
+				this.updateChannel(channel)
 		},
-		// UpdateChannelName(channel: Channel, newName: { name: string, userWhoChangeName: User }) {
-		// 	const userStore = useUserStore();
-		// 	if (userStore.userData.id === newName.userWhoChangeName.id) {
-		// 		socket.emit('chatChannelName', channel, newName);
-		// 		this.addAutomaticMessage(channel, userStore.userData, 'change the channel name to ' + newName.name.toUpperCase());
-		// 	}
-		// 	if (this.inChannel && this.inChannel.id === channel.id)
-		// 		this.inChannel.name = newName.name;
-		// 	else {
-		// 		const index = this.getIndexUserChannels(channel.id);
-		// 		this.userChannels[index].name = newName.name;
-		// 	}
-		// },
-		// UpdatePassword(channel: Channel, newPassword: { password: string, userWhoChangeName: User }) {
-		// 	//socket.emit('chatChannelPassword', channel, newPassword);
-		// 	const userStore = useUserStore();
-		// 	if (channel.password)
-		// 		this.addAutomaticMessage(channel, userStore.userData, 'changed the password');
-		// 	else
-		// 		this.addAutomaticMessage(channel, userStore.userData, 'added a password');
-		// 	channel.password = newPassword.password;
-		// },
 		updateBanList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
 				newBanned: {list: User[], userWhoSelect: User }) {
-			if (selection) {
+			const userStore = useUserStore();
+			if (newBanned.userWhoSelect.id ===  userStore.userData.id && selection) {
 				this.addAutomaticMessageSelection(channel, selection, '->got unBanned by ' + newBanned.userWhoSelect.username,
 					'-> got Banned by ' + newBanned.userWhoSelect.username)
-				socket.emit('chatChannelBan', channel, newBanned);
-				// socket.emit('chatChannelBan', channel, newBanned, (channelUpdated: Channel) => {
-				// 	const index = this.getIndexUserChannels(channelUpdated.id);
-				// 	this.userChannels[index] = channelUpdated;
-				// });
-			}
-			///////////////////////////////////////////////////////////////////BACK best to do in back
-			if (this.inChannel && this.inChannel.id === channel.id) {
-				this.inChannel.banned = newBanned.list
-				for (const banned of channel.banned)
-					this.deleteUserFromChannel(this.inChannel, banned);
-				if (selection && selection.listed)
-					this.setChannelOwner(this.inChannel, selection.listed);
+				socket.emit('chatChannelBan', channel, newBanned, (body: any[]) => {
+					const channelUpdated: Channel = body[0];
+				 	this.updateChannel( channelUpdated);
+				});
 			}
 			else {
-				const index = this.getIndexUserChannels(channel.id);
-				this.userChannels[index].banned = newBanned.list;
-				for (const banned of channel.banned)
-					this.deleteUserFromChannel(this.userChannels[index], banned);
-				if (selection && selection.listed)
-					this.setChannelOwner(this.userChannels[index], selection.listed);
-			}
-			///////////////////////////////////////////////////////////////////
-			const userStore = useUserStore();
-			const indexUser = newBanned.list.findIndex(user => user.id === userStore.userData.id)
-			if (indexUser >= 0) {
-				const toast = useToast();
-				if (this.inChannel && this.inChannel.id === channel.id) this.inChannel = null;
-				this.setRightPartToDisplay(PartToDisplay.CHAT);
-				this.deleteUserChannel(this.getIndexUserChannels(channel.id))
-				toast.info('you have been banned from channel ' + channel.name + " by " + newBanned.userWhoSelect.username);
+				const user = newBanned.list.find(user => user. id === userStore.userData.id);
+				if (user && channel.id) {
+					this.deleteUserChannel(this.getIndexChannels(channel.id));
+					this.resetInChannel(channel);
+					const toast = useToast();
+					toast.info('you have been banned from channel ' + channel.name + " by " + newBanned.userWhoSelect.username);
+				}
+				else
+					this.updateChannel(channel);
 			}
 		},
 		updateMuteList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
 				newMuted: {list: User[], userWhoSelect: User }) {
-			if (selection) {
-				this.addAutomaticMessageSelection(channel, selection, '->got unMuted by ' + newMuted.userWhoSelect.username,
+			const userStore = useUserStore();
+			if (newMuted.userWhoSelect.id === userStore.userData.id && selection) {
+				socket.emit('chatChannelMute', channel, newMuted, (body: any[]) => {
+					const channelUpdated: Channel = body[0];
+					this.addAutomaticMessageSelection(channel, selection, '->got unMuted by ' + newMuted.userWhoSelect.username,
 					'-> got Muted by ' + newMuted.userWhoSelect.username);
-				socket.emit('chatChannelMute', channel, newMuted)
-				// socket.emit('chatChannelMute', channel, newMuted, (channelUpdated: Channel) => {
-				// 	const index = this.getIndexUserChannels(channelUpdated.id);
-				// 	this.userChannels[index] = channelUpdated;
-				// });
+				 	this.updateChannel( channelUpdated);
+				});
 			}
-			if (this.inChannel && this.inChannel.id === channel.id)
-				this.inChannel.muted = newMuted.list
-			else {
-				const index = this.getIndexUserChannels(channel.id);
-				this.userChannels[index].muted = newMuted.list;
-			}
+			else
+				this.updateChannel(channel);
 		},
 		updateAdminList(channel: Channel, selection: {unlisted: User[], listed: User[] } | null,
 				newAdmin: {list: User[], userWhoSelect: User }) {
-			if (selection) {
-				this.addAutomaticMessageSelection(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
-					'-> got Admin status by ' + newAdmin.userWhoSelect.username);
+			const userStore = useUserStore();
+			if (newAdmin.userWhoSelect.id === userStore.userData.id && selection) {
 				socket.emit('chatChannelAdmin', channel, newAdmin, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
-				 	const index = this.getIndexUserChannels(channelUpdated.id);
-				 	this.userChannels[index] = channelUpdated;
-					this.inChannel = this.userChannels[index];
+					this.addAutomaticMessageSelection(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
+					'-> got Admin status by ' + newAdmin.userWhoSelect.username);
+				 	this.updateChannel( channelUpdated);
 				});
-			} else {
-				if (this.inChannel && this.inChannel.id === channel.id)
-					this.inChannel.admins = newAdmin.list;
-				else {
-					const index = this.getIndexUserChannels(channel.id);
-					this.userChannels[index].admins = newAdmin.list;
-				}
-			}
+			} 
+			else 
+				this.updateChannel(channel);
 		},
 		KickUsers(channel: Channel, newKicked: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
-			if (newKicked.userWhoSelect.id === userStore.userData.id && this.inChannel) {
-				socket.emit('chatChannelKick', channel, newKicked);
-				this.addAutomaticMessageSelection(channel, { unlisted: [], listed: newKicked.list }, '',
+			if (newKicked.userWhoSelect.id === userStore.userData.id) {
+				socket.emit('chatChannelKick', channel, newKicked, (body: any[]) => {
+					const channelUpdated: Channel = body[0];
+				 	this.updateChannel( channelUpdated);
+					this.addAutomaticMessageSelection(channel, { unlisted: [], listed: newKicked.list }, '',
 					'-> ' + ' kicked by ' + newKicked.userWhoSelect.username);
-				for (const user of newKicked.list)
-					this.deleteUserFromChannel(this.inChannel, user);
+				})
 			}
 			else {
-				if (this.inChannel && this.inChannel.id === channel.id)
-					this.inChannel = null;
-				const index = this.getIndexUserChannels(channel.id);
-				if (index >= 0) {
-					this.deleteUserChannel(index);
+				const user = newKicked.list.find(user => user.id === userStore.userData.id);
+				if (user && channel.id) {
+					this.deleteUserChannel(this.getIndexChannels(channel.id));
+					this.resetInChannel(channel);
 					const toast = useToast();
-					toast.info('you have been kicked from ' + channel.name + " by " + newKicked.userWhoSelect.username);
+					toast.info('you have been Kicked from channel ' + channel.name + " by " + newKicked.userWhoSelect.username);
 				}
+				else
+					this.updateChannel(channel)
 			}
-		},
-		setChannelOwner(channel: Channel, selection: User[]) {
-			////////////////////////////////////////////////////////////////////////////// BACK best to do in back
-			if (channel.owner !== null) {
-				const ownerId = channel.owner.id;
-				const indexOwner = selection.findIndex(user => user.id === ownerId)
-				if (indexOwner >= 0) {
-					if (channel.admins && channel.admins.length) {
-						channel.owner = channel.admins[0];
-						this.addAutomaticMessage(channel, channel.admins[0], 'is now owner of the channel.')
-					}
-					else
-						socket.emit('chatChannelDelete', channel)
-				}
-			}
-			//////////////////////////////////////////////////////////////////////////////
 		},
 		addAutomaticMessageSelection(channel: Channel, selection: {unlisted: User[], listed: User[] },
 				messageUnListed: string, messageListed: string) {
@@ -512,13 +401,11 @@ export const useChatStore = defineStore('chatStore', {
 						const discu: Discussion = body[0];
 						const msg: Message = body[1];
 						console.log('chatDiscussionMessage', msg, 'Discussion', discu);
-						// this.inDiscussion = discu;
 						chat.messages.push(msg)
 					});
 				}
 				else if (this.inChannel) {
 					messageDTO['idChat'] = this.inChannel.id;
-					// this.inChannel.messages.push(data)
 					const chat: Channel = this.inChannel;
 					socket.emit('chatChannelMessage', this.inChannel, messageDTO, (body: any[]) => {
 						const channel: Channel = body[0];
@@ -554,6 +441,20 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				const index = this.getIndexUserChannels(channel.id);
 				if (index >= 0) this.userChannels[index].messages.push(data);
+			}
+		},
+		updateChannel(channelUpdated: Channel) {
+			const index = this.getIndexUserChannels(channelUpdated.id);
+			if (index >= 0) {
+				this.userChannels[index] = channelUpdated;
+				if (this.inChannel && this.inChannel.id === channelUpdated.id)
+					this.inChannel = this.userChannels[index]
+			}
+		},
+		resetInChannel(channel: Channel) {
+			if (this.inChannel && this.inChannel.id === channel.id) {
+				this.inChannel = null;
+				this.setRightPartToDisplay(PartToDisplay.CHAT);
 			}
 		},
 		markMessageReaded(message: Message) {
@@ -621,15 +522,5 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				return 'PUBLIC';
 		},
-		// UsersNotInChannels() {  						//BACK need to be done with a fetch
-		// 	const globalStore = useGlobalStore();
-		// 	let userNotInChannel: User[] = [];
-		// 	for(const user of globalStore.users) {
-		// 		if (!this.userIsInChannel(user))
-		// 			userNotInChannel.push(user);
-		// 	}
-		// 	const userStore = useUserStore();
-		// 	return userNotInChannel.filter(user => user.id != userStore.userData.id);
-		// }
 	},
 });
