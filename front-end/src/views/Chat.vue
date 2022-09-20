@@ -92,7 +92,7 @@ socket.on("chatChannelMessage", (channel: Channel, data: Message) => {
 	chatStore.addChannelMessage(channel, data);
 });
 
-socket.on("chatChannelNamePassword", (channel: Channel, newNamePassword: { name: string, password: string | null, userWhoChangeName: User }) => {
+socket.on("chatChannelNamePassword", (channel: Channel, newNamePassword: { name: string, password: string | null, removePassword: boolean,  userWhoChangeName: User }) => {
 	chatStore.updateChannelNamePassword(channel, newNamePassword);
 });
 
