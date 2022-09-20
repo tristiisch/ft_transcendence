@@ -439,6 +439,13 @@ export class ChatService {
 	}
 
 	async kickUsers(user: User, channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+		let dataUpdate: QueryDeepPartialEntity<Channel> = {};
+
+		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
+		if (channel.admins_ids && channel.admins_ids.indexOf(user.id) !== -1)
+			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
+		if (channel.muted_ids && channel.muted_ids.indexOf(user.id) !== -1)
+			dataUpdate.muted_ids = removeFromArray(channel.muted_ids, user.id);
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();
@@ -449,19 +456,18 @@ export class ChatService {
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(null));
 		};
 
-		users_ids = removesFromArray(channel.users_ids, users_ids);
 		channel.users_ids = users_ids;
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				await this.channelPublicRepo.update(channel.id, { users_ids: users_ids });
+				await this.channelPublicRepo.update(channel.id, dataUpdate);
 				leaveMessage();
 				return this.channelPublicRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PROTECTED:
-				await this.channelProtectedRepo.update(channel.id, { users_ids: users_ids });
+				await this.channelProtectedRepo.update(channel.id, dataUpdate);
 				leaveMessage();
 				return this.channelProtectedRepo.findOneBy({ id: channel.id });
 			case ChatStatus.PRIVATE:
-				await this.channelPrivateRepo.update(channel.id, { users_ids: users_ids });
+				await this.channelPrivateRepo.update(channel.id, dataUpdate);
 				leaveMessage();
 				return this.channelPrivateRepo.findOneBy({ id: channel.id });
 			default:
@@ -474,8 +480,11 @@ export class ChatService {
 
 		if (newName)
 			dataUpdate.name = newName;
-		if (channel.type === ChatStatus.PROTECTED && newPassword)
+		if (channel.type === ChatStatus.PROTECTED && newPassword) {
+			if (channel.type !== ChatStatus.PROTECTED)
+				dataUpdate.type = ChatStatus.PROTECTED;
 			dataUpdate.password = newPassword;
+		}
 
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
@@ -534,6 +543,17 @@ export class ChatService {
 		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
 		if (channel.admins_ids && channel.admins_ids.indexOf(user.id) !== -1)
 			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
+		if (channel.muted_ids && channel.muted_ids.indexOf(user.id) !== -1)
+			dataUpdate.muted_ids = removeFromArray(channel.muted_ids, user.id);
+
+		if (channel.owner_id === user.id) {
+			if (channel.admins_ids && channel.admins_ids.length != 0) {
+				channel.owner_id = channel.admins_ids[0];
+			} else {
+				this.deleteChannel(channel);
+				return ;
+			}
+		}
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();

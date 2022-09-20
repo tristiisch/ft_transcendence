@@ -272,13 +272,13 @@ export class UsersService {
 
 	async removeBlockedUser(user: User, targetId: number): Promise<User> {
 		if (user.id === targetId)
-			throw new WsException("Can't unblock yourself");
+			throw new PreconditionFailedException("Can't unblock yourself");
 		if (!user.blocked_ids || user.blocked_ids.indexOf(targetId) === -1)
 			throw new NotFoundException('This user is not blocked.');
 		if (user.blocked_ids.length == 1)
 			user.blocked_ids = null;
 		else if (user.blocked_ids.indexOf(targetId) !== -1)
-			throw new WsException('User is not blocked')
+			throw new PreconditionFailedException('User is not blocked')
 		else
 			user.blocked_ids = removeFromArray(user.blocked_ids, targetId);
 
