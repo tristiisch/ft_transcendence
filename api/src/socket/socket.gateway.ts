@@ -413,24 +413,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('blockUser')
-	async blockUser(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<User> {
-		const user: User = req.user;
-		const targetId: number = body;
-
-		return this.userService.addBlockedUser(user, targetId);
-	}
-
-	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('unblockUser')
-	async unblockUser(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<User> {
-		const user: User = req.user;
-		const targetId: number = body;
-
-		return this.userService.removeBlockedUser(user, targetId);
-	}
-
-	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelNamePassword')
 	async editChannel(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
