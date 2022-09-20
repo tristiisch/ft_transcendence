@@ -427,14 +427,10 @@ export class ChatService {
 	}
 
 	async inviteUsers(channel: ChannelPrivate, users_ids: number[]): Promise<ChannelPrivate> {
-		let invited_ids: number[];
-		if (channel.invited_ids == null)
-			invited_ids = new Array();
-		else
-			channel.invited_ids;
-		invited_ids = [...invited_ids, ...users_ids]
+		if (channel.users_ids != null)
+			users_ids = [...channel.users_ids, ...users_ids]
 
-		this.channelPrivateRepo.update(channel.id, { invited_ids: invited_ids });
+		await this.channelPrivateRepo.update(channel.id, { users_ids: users_ids });
 		return this.channelPrivateRepo.findOneBy({ id: channel.id });
 	}
 

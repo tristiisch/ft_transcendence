@@ -24,9 +24,11 @@ function playerStatus() {
 	if (chatStore.inChannel && chatStore.inChannel.owner) {
 		if (chatStore.inChannel.owner.id === userStore.userData.id) return 'OWNER'
 		else {
-			for (const member of chatStore.inChannel.admins)
-				if (member.id === userStore.userData.id)
-					return 'ADMINISTRATOR'
+			if (chatStore.inChannel.admins) {
+				for (const member of chatStore.inChannel.admins)
+					if (member.id === userStore.userData.id)
+						return 'ADMINISTRATOR'
+			}
 			return 'MEMBER'
 		}
 	}

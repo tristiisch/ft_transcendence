@@ -97,7 +97,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
 			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]); 
 
-			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channel, user);
+			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channelFront, user);
 			return channelFront;
 		} catch (err) {
 			throw new WsException(err.message);
@@ -223,7 +223,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!await comparePassword(password, channel.password)) {
 				throw new WsException(`Bad password '${password}' for channel ${channel.name}.`);
 			}
-		} else if (channel instanceof ChannelPrivate && channel.invited_ids.indexOf(joinedUser.id) === -1) {
+		} else if (channel instanceof ChannelPrivate) {
 			throw new WsException(`You are not part of the channel ${channel.name}.`);
 		}
 		channel = await this.chatService.joinChannel(joinedUser, channel);
@@ -248,6 +248,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
 
 		channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelLeave', channelFront);
+		return [null];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -255,7 +256,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const invitedUsers: User[] = body[1];
-		// const inviter: User = body[2];
 		const user: User = req.user;
 		let channelTmp: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
@@ -264,7 +264,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(body.map(user => user.id));
+		const users: User[] = await this.userService.findMany(invitedUsers.map(user => user.id));
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
@@ -272,7 +272,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
 		this.socketService.emitIds(users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
 
-		return [channelFront];
+		return channelFront;
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -410,24 +410,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(user, userCached);
 
 		return [discussionFront, channelsFront];
-	}
-
-	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('blockUser')
-	async blockUser(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<User> {
-		const user: User = req.user;
-		const targetId: number = body;
-
-		return this.userService.addBlockedUser(user, targetId);
-	}
-
-	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('unblockUser')
-	async unblockUser(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<User> {
-		const user: User = req.user;
-		const targetId: number = body;
-
-		return this.userService.removeBlockedUser(user, targetId);
 	}
 
 	@UseGuards(JwtSocketGuard)

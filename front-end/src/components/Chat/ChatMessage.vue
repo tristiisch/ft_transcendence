@@ -5,7 +5,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { onUpdated } from 'vue';
 import type Message from '@/types/Message';
 import BaseButton from '@/components/Ui/BaseButton.vue';
-import socket from '@/plugin/socketInstance';
 
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
@@ -16,15 +15,17 @@ const emit = defineEmits<{
 }>();
 
 function redirectTo(idSender: number) {
-	// const playerId = globalStore.getUserId(senderId)
-	let playerId;
+	let playerId: number = -1;
 	if (userStore.userData.id === idSender)
 		playerId = userStore.userData.id
-	else if (chatStore.inChannel)
-		playerId = chatStore.inChannel.users.find(user => user.id === idSender)
+	else if (chatStore.inChannel) {
+		const user = chatStore.inChannel.users.find(user => user.id === idSender)
+		if (user)
+			playerId = user.id;
+	}
 	else if (chatStore.inDiscussion)
-		playerId = chatStore.inDiscussion.user.id
-	if(playerId) 
+		playerId = chatStore.inDiscussion.user.id;
+	if (playerId !== -1)
 		return { name: 'Profile', params: { id: playerId }}
 }
 
