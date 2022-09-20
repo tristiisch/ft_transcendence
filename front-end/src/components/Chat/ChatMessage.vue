@@ -15,14 +15,17 @@ const emit = defineEmits<{
 }>();
 
 function redirectTo(idSender: number) {
-	let playerId;
+	let playerId: number = -1;
 	if (userStore.userData.id === idSender)
 		playerId = userStore.userData.id
-	else if (chatStore.inChannel)
-		playerId = chatStore.inChannel.users.find(user => user.id === idSender)
+	else if (chatStore.inChannel) {
+		const user = chatStore.inChannel.users.find(user => user.id === idSender)
+		if (user)
+			playerId = user.id;
+	}
 	else if (chatStore.inDiscussion)
-		playerId = chatStore.inDiscussion.user.id
-	if(playerId) 
+		playerId = chatStore.inDiscussion.user.id;
+	if (playerId !== -1)
 		return { name: 'Profile', params: { id: playerId }}
 }
 
