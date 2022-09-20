@@ -91,7 +91,6 @@ export class TestFakeService {
 		let userStats: UserStats;
 	
 		user.username = randomWord(randomNumber(3, 16));
-		user.login_42 = randomWord(32);
 		user.avatar_64 = await toBase64('https://picsum.photos/200');
 		user.status = randomEnum(UserStatus);
 	
@@ -99,6 +98,8 @@ export class TestFakeService {
 		userAuth = new UserAuth(user.id);
 		userAuth.token_jwt = await this.authService.createToken(user.id);
 		await this.authService.save(userAuth);
+
+		
 
 		userStats = new UserStats(user.id);
 		await this.statsService.add(userStats);

@@ -22,11 +22,11 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
 	await app.listen(port, async () => {
-		console.log('API\t\t', `${process.env.API_URL}`);
-		console.log('API NETWORK\t', `http://${process.env.LOCAL_HOSTNAME}:${process.env.API_PORT}`);
-		console.log('FRONT\t\t', `${process.env.FRONT_URL}`);
-		console.log('FRONT NETWORK\t', `http://${process.env.LOCAL_HOSTNAME}:${process.env.FRONT_PORT}`);
-		console.log('FRONT DOCKER\t', `${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}`);
+		Logger.log(`API\t\t${process.env.API_URL}`, process.env.NAME);
+		Logger.log(`API Network\thttp://${process.env.LOCAL_HOSTNAME}:${process.env.API_PORT}`, process.env.NAME);
+		Logger.log(`Front\t\t${process.env.FRONT_URL}`, process.env.NAME);
+		Logger.log(`Front Network\thttp://${process.env.LOCAL_HOSTNAME}:${process.env.FRONT_PORT}`, process.env.NAME);
+		Logger.log(`Front Docker\t${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}`, process.env.NAME);
 		//createSocketServer(3001);
 	});
 }

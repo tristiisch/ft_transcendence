@@ -52,24 +52,26 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(clientSocket: Socket) {
 		try {
 			if (this.debug)
-				console.log('[SOCKET.IO]', 'SERVER DEBUG', 'new connection id =>', clientSocket.id, 'with jwt =>', clientSocket.handshake.auth.token);
+				Logger.debug(`new connection id ${clientSocket.id} with jwt ${clientSocket.handshake.auth.token}`, 'SocketGateway');
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 			if (!user) return clientSocket.disconnect();
-			else
-			{
-				this.socketService.saveClientSocket(user, clientSocket.id);
-				clientSocket.broadcast.emit('updateStatus', ({id: user.id, status: UserStatus.ONLINE}))
-			}
+			
+			this.socketService.saveClientSocket(user, clientSocket.id);
+			clientSocket.broadcast.emit('updateStatus', ({id: user.id, status: UserStatus.ONLINE}))
 		} catch (err) {
-			Logger.error(`ERROR > Can't get user from socket: ${err.message()}`);
+			Logger.error(`Cannot get user from socket for handleConnection ${err.message}`, 'SocketGateway');
 		}
 	}
 
 	async handleDisconnect(clientSocket: Socket) {
 		this.handleConnection(clientSocket);
-		const user = await this.socketService.getUserFromSocket(clientSocket);
-		this.socketService.deleteClientSocket(user.id);
-		clientSocket.broadcast.emit('updateStatus', (({id: user.id, status: UserStatus.OFFLINE})))
+		try {
+			const user = await this.socketService.getUserFromSocket(clientSocket);
+			this.socketService.deleteClientSocket(user.id);
+			clientSocket.broadcast.emit('updateStatus', (({id: user.id, status: UserStatus.OFFLINE})))
+		} catch (err) {
+			Logger.error(`Cannot get user from socket for handleDisconnect ${err.message}`, 'SocketGateway');
+		}
 	}
 
 

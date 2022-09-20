@@ -107,20 +107,26 @@ export class UsersController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('block/:id')
-	async blockUser(@Param('id') targetId: number, @Req() req) {
+	@Post('block')
+	async blockUser(@Req() req, @Body() body: any) {
 		const user: User = req.user;
-
+		const targetId: number = body.id;
 		isNumberPositive(targetId, 'block user');
+		const target: User = await this.usersService.findOne(targetId);
+	
 		this.usersService.addBlockedUser(user, targetId);
+		return { message: `You have block ${target.username}.` };
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('unblock/:id')
-	async unblockUser(@Param('id') targetId: number, @Req() req) {
+	@Post('unblock')
+	async unblockUser(@Req() req, @Body() body: any) {
 		const user: User = req.user;
-
+		const targetId: number = body.id;
 		isNumberPositive(targetId, 'unblock user');
+		const target: User = await this.usersService.findOne(targetId);
+
 		this.usersService.removeBlockedUser(user, targetId);
+		return { message: `You have unblock ${target.username}.` };
 	}
 }

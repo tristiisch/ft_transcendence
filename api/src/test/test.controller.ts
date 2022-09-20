@@ -1,5 +1,5 @@
 /** @prettier */
-import { Controller, Get, Inject, Param, } from '@nestjs/common';
+import { Controller, Get, Inject, Param, PreconditionFailedException, } from '@nestjs/common';
 import { User } from '../users/entity/user.entity';
 import { UsersService } from '../users/users.service';
 import { isNumberPositive } from '../utils/utils';
@@ -47,5 +47,22 @@ export class TestController {
 	async createManyChannels(@Param('username') username: string, @Param('nb') nb: number) {
 		const target: User = await this.usersService.findOneByUsername(username);
 		return this.fakeService.addChats(target, nb);
+	}
+
+	@Get('dev')
+	async devMode() {
+		const userNeeded: number = 5;
+		const channelCreated: number = 5;
+		const allUsers = await this.usersService.findAll();
+
+		await this.fakeService.generate(userNeeded);
+
+		const target: User = await this.usersService.findOneWith42Login();
+		if (!target) {
+			throw new PreconditionFailedException("Can't find a user registered in database.");
+		}
+		const ret = await this.fakeService.addChats(target, channelCreated);
+		ret.message += ` ${userNeeded} fake user created. Based on ${target.username} http://localhost:8001/profile/${target.id}`
+		return ret;
 	}
 }

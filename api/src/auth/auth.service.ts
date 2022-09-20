@@ -114,6 +114,10 @@ export class AuthService {
 		return this.authRepository.save(userAuth);
 	}
 
+	async delete(user: User) {
+		return this.authRepository.delete(user.id);
+	}
+
 	async findOne(userId: number): Promise<UserAuth> {
 		isNumberPositive(userId, 'get a auth user');
 		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
