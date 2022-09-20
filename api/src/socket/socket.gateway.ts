@@ -51,13 +51,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(clientSocket: Socket) {
 		try {
-			if (this.debug)
-				Logger.debug(`new connection id ${clientSocket.id} with jwt ${clientSocket.handshake.auth.token}`, 'SocketGateway');
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 			if (!user) return clientSocket.disconnect();
+			Logger.debug(`New connection ${user.username}`, 'SocketGateway');
 			
 			this.socketService.saveClientSocket(user, clientSocket.id);
-			clientSocket.broadcast.emit('updateStatus', ({id: user.id, status: UserStatus.ONLINE}))
+			clientSocket.broadcast.emit('updateStatus', ({ id: user.id, status: UserStatus.ONLINE }))
 		} catch (err) {
 			Logger.error(`Cannot get user from socket for handleConnection ${err.message}`, 'SocketGateway');
 		}
@@ -68,7 +67,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 			this.socketService.deleteClientSocket(user.id);
-			clientSocket.broadcast.emit('updateStatus', (({id: user.id, status: UserStatus.OFFLINE})))
+			Logger.debug(`Disconnection ${user.username}`, 'SocketGateway');
+			clientSocket.broadcast.emit('updateStatus', (({ id: user.id, status: UserStatus.OFFLINE })))
 		} catch (err) {
 			Logger.error(`Cannot get user from socket for handleDisconnect ${err.message}`, 'SocketGateway');
 		}
@@ -76,11 +76,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('test')
-	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket, @Req() req): string {
-		// if (this.debug)
-		console.log('[SOCKET.IO]', 'SERVER', 'DEBUG', 'client id :', client.id, req.user.username);
-		return data;
+	@SubscribeMessage(null)
+	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket, @Req() req) {
+		Logger.warn(`Client ${req.user.username} send us a msg`, 'SocketGateway');
 	}
 
 	@UseGuards(JwtSocketGuard)
