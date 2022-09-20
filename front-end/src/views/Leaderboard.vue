@@ -11,18 +11,20 @@ import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 
 const router = useRouter();
 const route = useRoute();
-const users = ref<LeaderboardUser[]>();
-const friends = ref<LeaderboardUser[]>();
-const playerToDisplay = ref<LeaderboardUser[]>();
+//const users = ref<LeaderboardUser[]>();
+//const friends = ref<LeaderboardUser[]>();
+//const playerToDisplay = ref<LeaderboardUser[]>();
 const globalStore = useGlobalStore();
 const isLoading = ref(false);
 const playerName = ref('');
 const type = ref('All');
 
 function searchPlayer() {
-	if (playerName.value != '' && playerToDisplay.value) {
-		return playerToDisplay.value.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
-	} else return playerToDisplay.value;
+	if (globalStore.leaderboard && type.value === 'All' && playerName.value !== '') {
+		return globalStore.leaderboard.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
+	} else if (globalStore.leaderboardFriends && type.value === 'Friends' && playerName.value !== '') {
+		return globalStore.leaderboardFriends.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
+	} else return globalStore.leaderboardFriends;
 }
 
 watch(
@@ -34,11 +36,11 @@ watch(
 
 function rankOrder() {
 	if (type.value === 'All') {
-		users.value?.sort((a, b) => {
+		globalStore.leaderboard.sort((a, b) => {
 			return a.rank - b.rank;
 		});
 	} else {
-		friends.value?.sort((a, b) => {
+		globalStore.leaderboardFriends.sort((a, b) => {
 			return a.rank - b.rank;
 		});
 	}
@@ -46,7 +48,7 @@ function rankOrder() {
 
 function nameOrder() {
 	if (type.value === 'All') {
-		users.value?.sort((a, b) => {
+		globalStore.leaderboard.sort((a, b) => {
 			let fa = a.username;
 			let fb = b.username;
 			if (fa < fb) return -1;
@@ -54,7 +56,7 @@ function nameOrder() {
 			return 0;
 		});
 	} else {
-		friends.value?.sort((a, b) => {
+		globalStore.leaderboardFriends.sort((a, b) => {
 			let fa = a.username;
 			let fb = b.username;
 			if (fa < fb) return -1;
@@ -66,11 +68,11 @@ function nameOrder() {
 
 function statusOrder() {
 	if (type.value === 'All') {
-		users.value?.sort((a, b) => {
+		globalStore.leaderboard.sort((a, b) => {
 			return b.status - a.status;
 		});
 	} else {
-		friends.value?.sort((a, b) => {
+		globalStore.leaderboardFriends.sort((a, b) => {
 			return b.status - a.status;
 		});
 	}
@@ -84,7 +86,7 @@ function switchDysplayUsers() {
 	}
 }
 
-function fetchLeaderboard() {
+/*function fetchLeaderboard() {
 	isLoading.value = true
 	UserService.getLeaderboard()
 		.then((response) => {
@@ -95,15 +97,15 @@ function fetchLeaderboard() {
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
-}
+}*/
 
 const displayUser = computed(() => {
-	if (playerName.value != '') return searchPlayer();
-	else if (type.value === 'All') return users.value;
-	else return friends.value;
+	if (playerName.value !== '') return searchPlayer();
+	else if (type.value === 'All') return globalStore.leaderboard;
+	else return globalStore.leaderboardFriends;
 });
 
-function updateStatus(data: UserStatus) {
+/*function updateStatus(data: UserStatus) {
 	if (users.value) {
 		const index = users.value.findIndex((user) => user.id === data.id);
 		if (index !== -1) users.value[index].status = data.status;
@@ -112,21 +114,23 @@ function updateStatus(data: UserStatus) {
 		const index = friends.value.findIndex((user) => user.id === data.id);
 		if (index !== -1) friends.value[index].status = data.status;
 	}
-}
-
-function updateFriends(data: LeaderboardUser) {
-
-}
+}*/
 
 onBeforeMount(() => {
-	fetchLeaderboard();
-	socket.on('updateStatus', updateStatus);
-	socket.on('updateFriends', updateFriends);
+	isLoading.value = true
+	globalStore.fetchLeaderboard()
+		.then(() => {
+			isLoading.value = false
+			//playerToDisplay.value = globalStore.leaderboard
+			//socket.on('updateStatus', updateStatus);
+		})
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
 });
 
 onBeforeUnmount(() => {
-	socket.off('updateStatus', updateStatus)
-	socket.on('updateFriends', updateFriends);
+	//socket.off('updateStatus', updateStatus)
 });
 </script>
 

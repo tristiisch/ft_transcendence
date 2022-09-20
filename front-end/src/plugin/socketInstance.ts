@@ -3,6 +3,8 @@ import { useGlobalStore } from '@/stores/globalStore';
 import type Notification from '@/types/Notification';
 import type User from '@/types/User';
 import { useToast } from 'vue-toastification';
+import type LeaderboardUser from '@/types/Leaderboard';
+import type { UserStatus } from '@/types/User';
 
 const URL = "http://localhost:3000";
 // const URL = import.meta.env.VITE_API_URL;
@@ -31,6 +33,14 @@ socket.on("connect", () => {
 
 	socket.on('RemoveFriend', (targetId: number) => {
 		globalStore.removeFriend(targetId)
+	});
+
+	socket.on('UpdateLeaderboard', (data: {leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[]}) => {
+		globalStore.updateLeaderboard(data)
+	});
+
+	socket.on('updateStatus', (target: UserStatus) => {
+		globalStore.updateLeaderboardStatus(target)
 	});
 })
 
