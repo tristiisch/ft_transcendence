@@ -22,6 +22,7 @@ import { comparePassword } from 'utils/bcrypt';
 import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 import { UsersService } from 'users/users.service';
 import { AuthService } from 'auth/auth.service';
+import { MatchStatsService } from 'game/matchs/matchs.service';
 
 @WebSocketGateway({
 	cors: {
@@ -43,6 +44,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly userService: UsersService,
 		@Inject(forwardRef(() => AuthService))
 		private readonly authService: AuthService,
+		@Inject(forwardRef(() => MatchStatsService))
+		private readonly matchStatsService: MatchStatsService
 	) {}
 
 	afterInit(server: Server): void {

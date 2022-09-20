@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
@@ -17,7 +17,7 @@ export class MatchStatsService {
 
 	private readonly matches = new Map<number, Match>()
 
-	@Inject(UsersService)
+	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService;
 
 	public getRepo() {

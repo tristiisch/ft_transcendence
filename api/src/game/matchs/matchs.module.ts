@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from 'users/users.module';
 import { MatchStats } from './entity/matchstats.entity';
@@ -6,7 +6,7 @@ import { MatchsStatsController as MatchsStatsController } from './matchs.control
 import { MatchStatsService as MatchStatsService } from './matchs.service';
 
 @Module({
-	imports: [UsersModule, TypeOrmModule.forFeature([MatchStats])],
+	imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([MatchStats])],
 	controllers: [MatchsStatsController],
 	providers: [MatchStatsService],
 	exports: [MatchStatsService]

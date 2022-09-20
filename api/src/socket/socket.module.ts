@@ -5,9 +5,10 @@ import { SocketGateway } from './socket.gateway';
 import { SocketService } from './socket.service';
 import { JwtStrategySocket } from './strategy/jwt-socket.strategy';
 import { UsersModule } from 'users/users.module';
+import { MatchStatsModule } from 'game/matchs/matchs.module';
 
 @Module({
-	imports: [forwardRef(() => AuthModule), forwardRef(() => ChatModule), forwardRef(() => UsersModule)],
+	imports: [forwardRef(() => AuthModule), forwardRef(() => ChatModule), forwardRef(() => UsersModule), forwardRef(() => MatchStatsModule)],
 	providers: [SocketGateway, SocketService, JwtStrategySocket],
 	exports: [SocketService],
 	})
