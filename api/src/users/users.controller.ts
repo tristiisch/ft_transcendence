@@ -111,10 +111,9 @@ export class UsersController {
 	async blockUser(@Req() req, @Body() body: any) {
 		const user: User = req.user;
 		const targetId: number = body.id;
-		isNumberPositive(targetId, 'block user');
 		const target: User = await this.usersService.findOne(targetId);
 	
-		this.usersService.addBlockedUser(user, targetId);
+		this.usersService.addBlockedUser(user, target);
 		return { user: target, message: `You have block ${target.username}.` };
 	}
 
@@ -123,10 +122,9 @@ export class UsersController {
 	async unblockUser(@Req() req, @Body() body: any) {
 		const user: User = req.user;
 		const targetId: number = body.id;
-		isNumberPositive(targetId, 'unblock user');
 		const target: User = await this.usersService.findOne(targetId);
 
-		this.usersService.removeBlockedUser(user, targetId);
+		this.usersService.removeBlockedUser(user, target);
 		return { user: target, message: `You have unblock ${target.username}.` };
 	}
 }

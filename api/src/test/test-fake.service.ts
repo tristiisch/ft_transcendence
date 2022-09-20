@@ -1,5 +1,5 @@
 /** @prettier */
-import { Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, Logger, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { AuthService } from 'auth/auth.service';
 import { FriendsService } from 'friends/friends.service';
 import { MatchStats } from 'game/matchs/entity/matchstats.entity';
@@ -153,7 +153,7 @@ export class TestFakeService {
 
 	async initNewFriendship(user: User, userIds: number[]): Promise<UserSelectDTO> {
 		if (userIds.length === 0) {
-			console.log(`Can't find a valid userId for Friendship of ${JSON.stringify(user)}.`);
+			Logger.warn(`Can't find a valid userId for Friendship of ${user.username}.`, 'FakeUser');
 			return null;
 		}
 		const randomTarget: UserSelectDTO = new UserSelectDTO();

@@ -9,6 +9,7 @@ import { Response } from 'express';
 import { WsException } from "@nestjs/websockets";
 import { AuthService } from "auth/auth.service";
 import { SocketService } from 'socket/socket.service';
+import { FriendsService } from "friends/friends.service";
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,8 @@ export class UsersService {
 	private readonly authService: AuthService;
 	@Inject(forwardRef(() => SocketService))
 	private readonly socketService: SocketService;
+	@Inject(FriendsService)
+	private readonly friendsService: FriendsService;
 
 	public getRepo() {
 		return this.usersRepository;
@@ -254,33 +257,37 @@ export class UsersService {
 		res.end(avatar.imageBuffer);
 	}
 
-	async addBlockedUser(user: User, targetId: number): Promise<User> {
-		if (user.id === targetId)
+	async addBlockedUser(user: User, target: User): Promise<User> {
+		if (user.id === target.id)
 			throw new WsException("Can't block yourself");
 		if (!user.blocked_ids) {
 			user.blocked_ids = new Array();
-			await this.usersRepository.update(user.id, { blocked_ids: [targetId] });
-		}
-		if (user.blocked_ids.indexOf(targetId) !== -1)
+			await this.usersRepository.update(user.id, { blocked_ids: [target.id] });
+		} else if (user.blocked_ids.indexOf(target.id) !== -1)
 			throw new WsException('User is already blocked')
-		user.blocked_ids.push(targetId);
+
+		user.blocked_ids.push(target.id);
 		//need to delete friendship in back if exist
-		this.socketService.RemoveFriend(user.id, targetId);
-		await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
+		//this.socketService.RemoveFriend(user.id, targetId);
+		try {
+			this.friendsService.removeFriendship(user, target);
+		} finally {
+			await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
+		}
 		return user;
 	}
 
-	async removeBlockedUser(user: User, targetId: number): Promise<User> {
-		if (user.id === targetId)
+	async removeBlockedUser(user: User, target: User): Promise<User> {
+		if (user.id === target.id)
 			throw new PreconditionFailedException("Can't unblock yourself");
-		if (!user.blocked_ids || user.blocked_ids.indexOf(targetId) === -1)
+		if (!user.blocked_ids || user.blocked_ids.indexOf(target.id) === -1)
 			throw new NotFoundException('This user is not blocked.');
 		if (user.blocked_ids.length == 1)
 			user.blocked_ids = null;
-		else if (user.blocked_ids.indexOf(targetId) !== -1)
+		else if (user.blocked_ids.indexOf(target.id) !== -1)
 			throw new PreconditionFailedException('User is not blocked')
 		else
-			user.blocked_ids = removeFromArray(user.blocked_ids, targetId);
+			user.blocked_ids = removeFromArray(user.blocked_ids, target.id);
 
 		await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
 		return user;

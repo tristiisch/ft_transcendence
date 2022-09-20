@@ -6,9 +6,10 @@ import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { SocketModule } from 'socket/socket.module';
+import { FriendsModule } from 'friends/friends.module';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User]), forwardRef(() => AuthModule), forwardRef(() => SocketModule)],
+	imports: [TypeOrmModule.forFeature([User]), forwardRef(() => AuthModule), forwardRef(() => SocketModule), FriendsModule],
 	controllers: [UsersController],
 	providers: [UsersService],
 	exports: [UsersService],
