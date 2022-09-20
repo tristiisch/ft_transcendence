@@ -42,6 +42,10 @@ export class FriendsService {
 	async addFriendRequest(user: User, target: User): Promise<{ statusCode: number; message: string }> {
 		if (user.id == target.id) throw new PreconditionFailedException("You can't be friends with yourself.");
 
+		if (user.isBlockedUser(target.id)) {
+			throw new NotAcceptableException(`You have blocked ${target}. You can't add him as friends.`);
+		}
+
 		const friendshipCheck: Friendship = await this.findOne(user.id, target.id, false);
 
 		if (friendshipCheck !== null) {
@@ -83,6 +87,9 @@ export class FriendsService {
 		if (target.id == user.id) throw new PreconditionFailedException("You can't be friends with yourself.");
 		const friendship: Friendship = await this.findOne(target.id, user.id, true);
 
+		if (user.isBlockedUser(target.id)) {
+			throw new NotAcceptableException(`You have blocked ${target}. You can't add him as friends.`);
+		}
 		if (friendship === null) throw new NotAcceptableException(`${user.username} has no friend request from ${target.username}.`);
 
 		if (friendship.status == FriendshipStatus.ACCEPTED) throw new NotAcceptableException(`You are already friend with ${target.username}.`);
