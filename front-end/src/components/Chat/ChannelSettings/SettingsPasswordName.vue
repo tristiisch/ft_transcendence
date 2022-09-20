@@ -2,13 +2,15 @@
 import { ref, computed, onBeforeMount} from 'vue'
 import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
-import status from '@/types/ChatStatus';
+import status, { ChatStatus } from '@/types/ChatStatus';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
+import ToogleButton from '@/components/Divers/ToogleButton.vue'
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
 const newPassword = ref('');
 const newChannelName = ref('');
+const switchButtonActif = ref(false);
 
 const emit = defineEmits<{
 	(e: 'close'): void,
@@ -23,16 +25,16 @@ const label = computed(() => {
 		    return 'you can set a password'
     }
 });
-	
+
+function setRemovePassword() {
+	switchButtonActif.value = !switchButtonActif.value;
+	newPassword.value = '';
+}
+
 function updatePasswordName() {
     if (chatStore.inChannel) {
-        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value, userWhoChangeName: userStore.userData });
-        // if (newChannelName.value != '' && newChannelName.value !== chatStore.inChannel.name)
-        //     chatStore.UpdateChannelName(chatStore.inChannel, { name: newChannelName.value, userWhoChangeName: userStore.userData });
-        // if (newPassword.value != '') {
-        //     if ((chatStore.inChannel.password && newPassword.value !== chatStore.inChannel.password) || (!chatStore.inChannel.password))
-        //        chatStore.UpdatePassword(chatStore.inChannel, { password: newPassword.value, userWhoChangeName: userStore.userData });
-        // }
+        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value ? newPassword.value : null,
+			removePassword: switchButtonActif.value, userWhoChangeName: userStore.userData });	
     }
     emit('close')
 }
@@ -45,18 +47,18 @@ onBeforeMount(() => {
 
 <template>
     <div class="flex flex-col justify-between h-full">
-        <div class="flex flex-col justify-center items-center gap-6 h-full">
+        <div class="flex flex-col justify-center items-center gap-1 sm:gap-4 h-full">
             <div class="w-full sm:w-3/4">
-                <label class="block mb-2 text-sm font-medium text-red-200">Change channel name:</label>
+                <label class="block mb-1 sm:mb-2 text-sm font-medium text-red-200">Change channel name:</label>
                 <input type="text" v-model.trim="newChannelName" class="bg-neutral-100 text-blue-600 text-center border border-blue-600 placeholder:text-slate-300 text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2">
             </div>
-            <div class="w-full sm:w-3/4">
-                <label class="block mb-2 text-sm font-medium text-red-200">{{ label }}</label>
+            <div v-if="!switchButtonActif" class="w-full sm:w-3/4">
+                <label class="block mb-1 sm:mb-2 text-sm font-medium text-red-200">{{ label }}</label>
                 <input type="text" v-model.trim="newPassword" class="bg-neutral-100 border border-blue-600 placeholder:text-slate-300 placeholder:text-center text-sm rounded-lg focus:ring-blue-500 focus:border-red-600 block w-full p-2" placeholder="choose password">
             </div>
-            <div v-if="chatStore.isProtectedChannel" class="w-full sm:w-3/4">
-                 <label class="block mb-2 text-sm font-medium text-red-200">Remove password:</label>
-                 <base-button class=" self-center mr-6 bg-blue-600 py-2 px-5 text-white">Remove</base-button>
+            <div v-if="chatStore.inChannel?.type === ChatStatus.PROTECTED" class="flex flex-col justify-center w-full sm:w-3/4">
+                 <label class="self-start block mb-1 sm:mb-2 text-sm font-medium text-red-200">Remove password:</label>
+                 <toogleButton :chat="true" @switchButton="setRemovePassword()" class="self-center"></toogleButton>
             </div>
         </div>
     </div>

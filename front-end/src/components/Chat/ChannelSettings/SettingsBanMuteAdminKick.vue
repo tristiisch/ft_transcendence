@@ -54,11 +54,11 @@ function updateChangeInChannel() {
 		};
 		let selection: {unlisted: User[], listed: User[]} | null;
 		if (props.type === 'admin' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.admins)))
-			chatStore.updateAdminList(chatStore.inChannel, selection, newList);
+			chatStore.updateAdminList(chatStore.inChannel, newList, selection);
 		else if (props.type === 'ban' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.banned)))
-			chatStore.updateBanList(chatStore.inChannel, selection, newList);
+			chatStore.updateBanList(chatStore.inChannel, newList, selection);
 		else if (props.type === 'mute' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.muted)))
-			chatStore.updateMuteList(chatStore.inChannel, selection, newList);
+			chatStore.updateMuteList(chatStore.inChannel, newList, selection);
 		else if (props.type === 'kick')
 			chatStore.KickUsers(chatStore.inChannel, newList);
 		globalStore.resetSelectedItems();
