@@ -52,7 +52,8 @@ function treatFriendRequest() {
 					toast.info(response.data.message)
 				})
 				.catch((error) => {
-					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+					if (error.response.status === 406) toast.warning(error.response.data.message)
+					else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 				});
 		}
 		else {
@@ -62,7 +63,8 @@ function treatFriendRequest() {
 					toast.info(response.data.message)
 				})
 				.catch((error) => {
-					router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+					if (error.response.status === 406) toast.warning(error.response.data.message)
+					else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 				});
 		}
 	}
