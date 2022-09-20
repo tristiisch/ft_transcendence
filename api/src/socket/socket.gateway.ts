@@ -248,6 +248,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
 
 		channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelLeave', channelFront);
+		return [null];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -255,7 +256,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
 		const invitedUsers: User[] = body[1];
-		// const inviter: User = body[2];
 		const user: User = req.user;
 		let channelTmp: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
@@ -264,7 +264,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(body.map(user => user.id));
+		const users: User[] = await this.userService.findMany(invitedUsers.map(user => user.id));
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);

@@ -431,7 +431,7 @@ export class ChatService {
 		if (channel.invited_ids == null)
 			invited_ids = new Array();
 		else
-			channel.invited_ids;
+			invited_ids = channel.invited_ids;
 		invited_ids = [...invited_ids, ...users_ids]
 
 		this.channelPrivateRepo.update(channel.id, { invited_ids: invited_ids });
