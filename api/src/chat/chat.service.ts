@@ -597,6 +597,11 @@ export class ChatService {
 		return discu;
 	}
 
+/*
+postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] ERROR:  duplicate key value violates unique constraint "UQ_cfd4f9d6e325ff227c481e027fa"
+postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] DETAIL:  Key (id_user, id_chat)=(261, 10) already exists.
+postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_read"("id_user", "id_chat", "id_message", "last_update") VALUES ($1, $2, $3, DEFAULT) RETURNING "id", "last_update"
+*/
 	async setReadMessage(user: User, chatId: number, message: Message) {
 		// if (!chat.users_ids || chat.users_ids.indexOf(user.id) === -1)
 		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');

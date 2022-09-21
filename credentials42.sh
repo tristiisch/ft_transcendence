@@ -38,20 +38,24 @@ function printJSON() {
 function previewEnv() {
     # sed 4.7 sed: can't read : No such file or directory but worked
     if command -v ifconfig &> /dev/null; then
-        SED_CMD="sed -i '' -e"
+        SED_CMD="sed -i .bak -e"
     else
         SED_CMD="sed -i"
     fi
-    $SED_CMD "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" $1
-    $SED_CMD "s/$UID_NAME=/$UID_NAME=$FT_UID/g" $1
-    $SED_CMD "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" $1
+    $SED_CMD "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" "$1"
+    $SED_CMD "s/$UID_NAME=/$UID_NAME=$FT_UID/g" "$1"
+    $SED_CMD "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" "$1"
+
+    if command -v ifconfig &> /dev/null; then
+        rm -f "$1.bak"
+    fi
 }
 
 function updateEnv() {
     if test -f "$ENV"; then
         mv $ENV outdated.env
     fi
-    cp $ENV_LOCAL $ENV
+    cp -R $ENV_LOCAL $ENV
     previewEnv $ENV
     echo -e "\033[0;32mYour $ENV as been updated.\033[0m"
 }
@@ -83,10 +87,10 @@ elif [ -z "$FT_UID" ] || [ -z "$FT_SECRET" ]; then
     askCredentials $@
 elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ "$LOCAL_HOSTNAME" != "$REAL_HOSTNAME" ]; then
     echo -e "\033[1;33mYou need to update your .env.\033[0m"
-    cp $ENV_LOCAL $ENV_TEMP
-    previewEnv $ENV_TEMP
-    diff $ENV $ENV_TEMP
-    rm $ENV_TEMP
+    cp "$ENV_LOCAL" "$ENV_TEMP"
+    previewEnv "$ENV_TEMP"
+    diff "$ENV" "$ENV_TEMP"
+    #rm "$ENV_TEMP"
     read -p $'\e[1;92mYour credentials will be preserve. Update .env ? (y/N) '$'\033[0m' -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
