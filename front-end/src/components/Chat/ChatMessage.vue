@@ -60,34 +60,16 @@ function chooseArray() {
 	else if (chatStore.inDiscussion)
 		return chatStore.inDiscussion.messages;
 };
-
-function userAvatar(idSender: number) {
-	if (idSender === userStore.userData.id)
-		return userStore.userData.avatar;
-	else if (chatStore.inChannel)
-		return chatStore.inChannel.users.find(user => user.id === idSender)?.avatar
-	else if (chatStore.inDiscussion)
-		return chatStore.inDiscussion.user.avatar
-}
-
-function userName(idSender: number) {
-	if (idSender === userStore.userData.id)
-		return userStore.userData.username;
-	else if (chatStore.inChannel)
-		return chatStore.inChannel.users.find(user => user.id === idSender)?.username
-	else if (chatStore.inDiscussion)
-		return chatStore.inDiscussion.user.username
-}
 </script>
 
 <template>
     <div v-for="message in chooseArray()" :key="message.idMessage" class="flex gap-2 w-full mb-4 pl-8">
 		<BaseButton v-if="isUserMessage(message.type)" link :to="redirectTo(message.idSender)" class="shrink-0">
-			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="userAvatar(message.idSender)">
+			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="message.avatarSender">
 		</BaseButton>
 		<div class="flex flex-col gap-1 min-w-0">
 			<div class="flex flex-col sm:items-center sm:gap-2 pt-1 sm:flex-row text-red-300">
-				<p class="text-sm">{{ userName(message.idSender) }}</p>
+				<p class="text-sm">{{ message.usernameSender }}</p>
 				<p class="text-xs">{{ message.date }}</p>
 			</div> 
 			<div v-if="message.type !== MessageType.GAME_INVITATION" :class="sizeText(message.type), colorMessage(message)" class="min-w-0 text-red-200 break-words">{{ displayMessage(message) }}</div>
