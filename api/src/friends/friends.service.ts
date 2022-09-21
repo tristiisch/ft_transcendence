@@ -156,7 +156,6 @@ export class FriendsService {
 		if (!strict) {
 			sqlStatement.orWhere('friendship.user1_id = :id2').andWhere('friendship.user2_id = :id1');
 		}
-		// console.log("SQL friendship", sqlStatement.getQueryAndParameters());
 
 		return await sqlStatement.getOne().then((friendship: Friendship) => {
 			return friendship;

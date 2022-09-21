@@ -9,7 +9,7 @@ import { FtLogger } from 'logger/ft.logger';
 dotenv.config();
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule, { logger: new FtLogger() });
+	const app = await NestFactory.create(AppModule, { abortOnError: true, logger: new FtLogger() });
 	const port = process.env.API_PORT;
 	app.enableCors({ origin: `${process.env.FRONT_URL}` });
 	app.setGlobalPrefix('api');

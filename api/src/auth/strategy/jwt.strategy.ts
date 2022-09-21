@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable, NotFoundException, PreconditionFailedException, ServiceUnavailableException } from "@nestjs/common";
+import { BadGatewayException, Injectable, Logger, NotFoundException, PreconditionFailedException, ServiceUnavailableException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, ExtractJwt} from "passport-jwt";
 import { UsersService } from "../../users/users.service";
@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt'){
 				throw new BadGatewayException('Unknown user.');
 			if (err instanceof ServiceUnavailableException)
 				throw err;
-			console.log("ERROR while validate jwt strategy of '", jwtData, "'", err.message);
+			Logger.error(`Unable to validate jwt strategy of ${jwtData}: ${err.message}`, 'JWT')
 			return null;
 		}
 	}

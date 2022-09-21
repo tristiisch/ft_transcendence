@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Logger, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
@@ -33,7 +33,7 @@ export class AuthController {
 			const url = process.env.FT_API;
 			result = await axios.post(url, postData);
 		} catch (err42) {
-			console.log('Unable to connect to 42 API', 'Verify UID & Secret env vars', err42.message)
+			Logger.error(`Unable to connect to 42 API Verify UID & Secret env vars: ${err42.message}`, 'API42');
 			throw new ForbiddenException("Unauthorized - Unable to connect to 42 API");
 		}
 
