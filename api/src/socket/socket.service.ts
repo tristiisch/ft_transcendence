@@ -1,4 +1,4 @@
-import { forwardRef, Inject,Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject,Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from 'auth/auth.service';
 import { UsersService } from 'users/users.service';
 import { Server, Socket } from 'socket.io';
@@ -31,7 +31,11 @@ export class SocketService {
 	}
 
 	saveClientSocket(user: User, clientSocketId: string) {
+		const oldClientSocketId: string = this.usersSocket.get(user.id);
+		if (oldClientSocketId)
+			Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
 		this.usersSocket.set(user.id, clientSocketId)
+		return oldClientSocketId;
 	}
 
 	deleteClientSocket(userId: number) {
