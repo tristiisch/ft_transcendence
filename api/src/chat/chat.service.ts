@@ -5,7 +5,7 @@ import { UsersService } from 'users/users.service';
 import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
-import { Message, MessageFront } from './entity/message.entity';
+import { Message, MessageFront, MessageType } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
 import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTOforHttp } from 'utils/utils';
@@ -315,6 +315,7 @@ export class ChatService {
 		let msg: Message = new Message();
 		msg.message = `[DEBUG MSG CREATED BY BACK] ⚪️　${user.username} been added to ${channel.name} by ${user.username}`;
 		msg.id_sender = -1;
+		msg.type = MessageType.AUTO;
 		msg.id_channel = channel.id;
 		msg = await this.addMessage(msg);
 		return channel;
@@ -446,6 +447,7 @@ export class ChatService {
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();
 			leaveMessage.message = `🔴　${users_ids.join(', ')} has been kicked by ${user.username}`;
+			leaveMessage.type = MessageType.AUTO;
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);

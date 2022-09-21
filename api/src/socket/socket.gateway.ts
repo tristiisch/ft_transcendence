@@ -150,19 +150,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async chatDiscussionMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
 		const targetId: number = body[0];
-		const message: MessageFront = body[1];
+		const messageDTO: MessageFront = body[1];
 
-		message.idSender = user.id;
+		messageDTO.idSender = user.id;
 
-		const discu: Discussion = await this.chatService.findOrCreateDiscussion(message.idSender, targetId);
+		const discu: Discussion = await this.chatService.findOrCreateDiscussion(messageDTO.idSender, targetId);
 		try {
-			let msg: Message = new Message();
-			msg.id_sender = message.idSender;
-			msg.id_channel = discu.id;
-			msg.message = message.message;
+			let message: Message = new Message();
+			message.id_sender = messageDTO.idSender;
+			message.id_channel = discu.id;
+			message.message = messageDTO.message;
+			message.type = messageDTO.type;
 
-			msg = await this.chatService.addMessage(msg);
-			const msgFront: MessageFront = msg.toFront(null);
+			message = await this.chatService.addMessage(message);
+			const msgFront: MessageFront = message.toFront(null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
@@ -200,6 +201,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			msg.id_sender = msgFront.idSender;
 			msg.id_channel =  channel.id;
 			msg.message = msgFront.message;
+			msg.type = msgFront.type;
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(null);
