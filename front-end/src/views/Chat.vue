@@ -208,8 +208,7 @@ onBeforeUnmount(() => {
 			<card-right :title="chatStore.cardRightTitle">
 				<div v-if="chatStore.displayChat" class="w-11/12 px-8 3xl:px-10 h-full">
 					<div v-if="chatStore.inDiscussion || chatStore.inChannel" class="h-full">
-						<channel-password-query v-if="chatStore.isProtectedChannel"></channel-password-query>
-						<chat v-else></chat>
+						<chat></chat>
 					</div>
 					<div v-else class="shrink-0 flex justify-center items-center h-full w-full">
 						<img   class="w-[90%]" src="@/assets/42.png" />
@@ -218,6 +217,7 @@ onBeforeUnmount(() => {
 				<settings-channel v-else-if="chatStore.displayChannelSettings"></settings-channel>
 				<channel-add v-else-if="chatStore.displayAddChannel"></channel-add>
 				<discussion-add v-else-if="chatStore.displayAddDiscussion"></discussion-add>
+				<channel-password-query v-else-if="chatStore.displayPasswordQuery"></channel-password-query>
 			</card-right>
 		</div>
 	</base-ui>

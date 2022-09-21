@@ -14,7 +14,7 @@ function joinNewChannel() {
     if (!globalStore.isTypeUser(globalStore.selectedItems[0])) {
         const newChannel = globalStore.selectedItems[0];
 		if (newChannel.type === ChatStatus.PROTECTED) {
-			chatStore.inChannel = newChannel;
+			chatStore.setRightPartToDisplay(PartToDisplay.PASSWORD_QUERY);
 		}
 		else {
         	chatStore.joinNewChannel(newChannel)

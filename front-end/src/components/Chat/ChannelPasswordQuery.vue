@@ -11,7 +11,6 @@ function checkPassword()
 {
     socket.emit('chatPassCheck', chatStore.inChannel, password.value, (ok: boolean) => {
         if (ok) {
-            chatStore.registrationToChannel()
 			if (chatStore.inChannel)
 				chatStore.joinNewChannel(chatStore.inChannel)
 		}
