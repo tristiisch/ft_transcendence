@@ -22,9 +22,9 @@ async function bootstrap() {
 
 	await app.listen(port, async () => {
 		Logger.log(`API\t\t${process.env.API_URL}`, process.env.NAME);
-		Logger.log(`API Network\thttp://${process.env.LOCAL_HOSTNAME}:${process.env.API_PORT}`, process.env.NAME);
+		//Logger.log(`API Network\thttp://${process.env.LOCAL_HOSTNAME}:${process.env.API_PORT}`, process.env.NAME);
 		Logger.log(`Front\t\t${process.env.FRONT_URL}`, process.env.NAME);
-		Logger.log(`Front Network\thttp://${process.env.LOCAL_HOSTNAME}:${process.env.FRONT_PORT}`, process.env.NAME);
+		//Logger.log(`Front Network\thttp://${process.env.LOCAL_HOSTNAME}:${process.env.FRONT_PORT}`, process.env.NAME);
 		Logger.log(`Front Docker\t${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}`, process.env.NAME);
 		//createSocketServer(3001);
 	});

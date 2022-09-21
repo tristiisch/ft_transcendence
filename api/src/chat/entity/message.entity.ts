@@ -1,3 +1,4 @@
+import { Logger } from "@nestjs/common";
 import { WsException } from "@nestjs/websockets";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "users/entity/user.entity";
@@ -30,7 +31,7 @@ export class Message {
 	@Column({ type: 'enum', enum: MessageType, default: MessageType.MSG, name: 'type' })
 	type: MessageType;
 
-	public toFront(chatRead: ChatRead | null): MessageFront {
+	public toFront(user: User, chatRead: ChatRead | null): MessageFront {
 		if (chatRead != null && chatRead.id_chat !== this.id_channel)
 			throw new WsException('Not same id in Message#toFront');
 		const msgFront: MessageFront = {
@@ -40,9 +41,17 @@ export class Message {
 			message: this.message,
 			send: true,
 			read: chatRead ? this.id > chatRead.id_chat : false,
-			date: `${this.date.toLocaleString()}`,
+			date: this.date.toLocaleString(),
 			type: this.type
 		};
+		if (this.type === MessageType.MSG) {
+			if (!user) {
+				Logger.error(`user is null for message#toFront`, 'Chat');
+			} else {
+				msgFront.avatarSender = user.avatar;
+				msgFront.usernameSender = user.username;
+			}
+		}
 		return msgFront;
 	}
 }
@@ -51,6 +60,8 @@ export class MessageFront {
 	idMessage?: number;
 	idChat?: number;
 	idSender: number;
+	avatarSender?: string;
+	usernameSender?: string;
 	message: string;
 	send?: boolean;
 	read: boolean;

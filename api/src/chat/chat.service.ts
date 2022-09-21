@@ -156,7 +156,7 @@ export class ChatService {
 			.then(async (msgs: Message[]) => {
 				const msgsFront: MessageFront[] = new Array();
 				for (const msg of msgs)
-					msgsFront.push(msg.toFront(chatRead));
+					msgsFront.push(msg.toFront(user, chatRead));
 				return msgsFront;
 			}
 		);
@@ -451,7 +451,7 @@ export class ChatService {
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(null));
+			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};
 
 		channel.users_ids = users_ids;
@@ -515,7 +515,7 @@ export class ChatService {
 			msg.id_sender = -1;
 			msg.id_channel = channel.id;
 			msg = await this.addMessage(msg);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(null));
+			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(user, null));
 		};
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
@@ -559,7 +559,7 @@ export class ChatService {
 			leaveMessage.id_sender = user.id;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(null));
+			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};
 
 		switch (channel.type) {

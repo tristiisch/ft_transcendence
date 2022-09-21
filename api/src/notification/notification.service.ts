@@ -74,7 +74,11 @@ export class NotificationService {
 				await this.friendService.removeFriendship(user, target)
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
+			if (notifAction.accept) {
 
+			} else {
+
+			}
 		}
 		notif.is_deleted = true;
 		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });
