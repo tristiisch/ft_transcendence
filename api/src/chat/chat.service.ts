@@ -549,15 +549,15 @@ export class ChatService {
 			if (channel.admins_ids && channel.admins_ids.length != 0) {
 				channel.owner_id = channel.admins_ids[0];
 			} else {
-				this.deleteChannel(channel);
-				return ;
+				await this.deleteChannel(channel);
+				return null;
 			}
 		}
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();
 			leaveMessage.message = '[DEBUG MSG CREATED BY BACK] 🔴　' + user.username + ' just leaved the channel';
-			leaveMessage.id_sender = user.id;
+			leaveMessage.id_sender = -1;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
