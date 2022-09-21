@@ -150,9 +150,12 @@ export const useChatStore = defineStore('chatStore', {
 			toast.info(discussion.user.username + ' started a new discussion with you.');
 		},
 		createNewDiscussion(newDiscussion: Discussion, load: boolean) {
-			this.userDiscussions.length ? this.userDiscussions.unshift(newDiscussion) : this.userDiscussions.push(newDiscussion)
-			if (load === true)
-				this.loadDiscussion(this.userDiscussions[0]);
+			const index = this.userDiscussions.findIndex(discussion => discussion.user.id === newDiscussion.user.id)
+			if (index < 0) {
+				this.userDiscussions.length ? this.userDiscussions.unshift(newDiscussion) : this.userDiscussions.push(newDiscussion)
+				if (load === true)
+					this.loadDiscussion(this.userDiscussions[0]);
+			}
 		},
 		addUsersToChannel(channelUpdated: Channel, inviter?: User) { 
 			if (inviter)
