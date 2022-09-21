@@ -224,7 +224,7 @@ export class UsersService {
 			throw new BadRequestException(`You are already registered.`);
 
 		try {
-			if (user.avatar_64 != null) {
+			if (user.avatar_64 != null && user.avatar_64 != '') {
 				this.checkAvatar(user.avatar_64);
 				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
 			} else
