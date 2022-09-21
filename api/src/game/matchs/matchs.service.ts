@@ -118,7 +118,7 @@ export class MatchStatsService {
 		match.live_infos.room_socket.emit("startMatch")
 
 		//maybe while(1) for more accuracy ?
-		setTimeout(() => setInterval(() => {
+		setTimeout(() => { let loop = setInterval(() => {
 			if (x + dx < 0) {
 				match.stats.score[1]++
 				match.live_infos.room_socket.emit('p2Scored')
@@ -129,10 +129,10 @@ export class MatchStatsService {
 				match.live_infos.room_socket.emit('p1Scored')
 				dx = -dx
 			}
-			if (match.stats.score[0] === 3|| match.stats.score[1] === 3) {
+			if (match.stats.score[0] === 1 || match.stats.score[1] === 1) {
 				match.live_infos.room_socket.emit("endMatch")
 				this.save(match.stats)
-				return
+				clearInterval(loop)
 			}
 			if (y + dy < 0 || y + dy > height) { dy = -dy }
 
@@ -146,7 +146,7 @@ export class MatchStatsService {
 			y += dy
 			match.live_infos.room_socket.emit("ball", x, y)
 			//dx += dx < 0 ? -0.0001 : 0.0001
-		}, 10), 3000)
+		}, 10)}, 3000)
 	}
 
 	async findHistory(userId: number) : Promise<MatchOwn[]> {
