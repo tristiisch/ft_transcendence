@@ -4,6 +4,7 @@ import { UsersModule } from 'users/users.module';
 import { MatchStats } from './entity/matchstats.entity';
 import { MatchsStatsController as MatchsStatsController } from './matchs.controller';
 import { MatchStatsService as MatchStatsService } from './matchs.service';
+// import MatchLiveInfos from './entity/matchliveinfos.entity';
 
 @Module({
 	imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([MatchStats])],

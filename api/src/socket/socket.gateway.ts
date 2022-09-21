@@ -43,7 +43,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@Inject(forwardRef(() => AuthService))
 		private readonly authService: AuthService,
 		@Inject(forwardRef(() => MatchStatsService))
-		private readonly matchStatsService: MatchStatsService
+		private readonly matchService: MatchStatsService
 	) {}
 
 	afterInit(server: Server): void {
@@ -442,5 +442,92 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront)
 		return [channelFront];
+	}
+
+
+		////////////////
+		//	MATCH	//
+		/////////////
+
+	private matches = this.matchService.getMatches()
+
+	@SubscribeMessage('findMatch')
+	async handleFindMatch(@ConnectedSocket() client: Socket): Promise<any> {
+		const user = await this.socketService.getUserFromSocket(client)
+		if (!this.matchService.getPlayersQueue().find(o => o.id === user.id))
+			this.matchService.addPlayerToQueue(user)
+		// console.log(this.matchService.getPlayersQueue())
+
+		if (this.matchService.getPlayersQueue().length > 1) {
+			let id = await this.matchService.createNewMatch(this.matchService.getPlayersQueue()[0], user)
+			this.matches.get(id).live_infos.room_socket = this.server.to('match_' + id)
+			client.emit('foundMatch', id)
+			this.socketService.getSocketToEmit(this.matchService.getPlayersQueue()[0].id).emit('foundMatch', id)
+			this.matchService.getPlayersQueue().splice(0, 2)
+			console.log(this.matchService.getPlayersQueue())
+		}
+	}
+
+	@SubscribeMessage('joinMatch')
+	handleJoinMatch(@MessageBody() id: number, @ConnectedSocket() client: Socket) {
+		// once the match is created: for players and spectators
+		console.log(client.id, "wants to join : ", id)
+		if (this.matches.has(id)) {
+			let match = this.matches.get(id).live_infos
+			let started = match.started
+			let waiting = match.waiting
+			let p1Ready = match.p1Ready
+			let p2Ready = match.p2Ready
+			let p1Pos = match.p1Pos
+			let p2Pos = match.p2Pos
+			client.join('match_' + id)
+			return { started, waiting, p1Ready, p2Ready, p1Pos, p2Pos }
+		}
+	}
+
+	@SubscribeMessage('readyToPlay')
+	async handleReadyPlayerFromMatch(@MessageBody() id: number, @ConnectedSocket() client: Socket) {
+		const user = await this.socketService.getUserFromSocket(client)
+		const match = this.matches.get(id)
+		if (match.stats.user1_id === user.id)
+			match.live_infos.p1Ready = true
+		else if (match.stats.user2_id === user.id)
+			match.live_infos.p2Ready = true
+		if (!match.live_infos.started && match.live_infos.p1Ready && match.live_infos.p2Ready)
+		{
+			console.log("match ", id, "ready !")
+			match.live_infos.started = true
+			this.matchService.startMatch(match)
+		}
+	}
+
+	@SubscribeMessage('p1Pos')
+	updatePlayer1Pos(@MessageBody() data: number[], @ConnectedSocket() client: Socket) {
+		// console.log(data)
+		const id = data[0]
+		const pos = data[1]
+		if (this.matches.has(id)) {
+			const match = this.matches.get(id)
+			const user_id = match.stats.user1_id
+			if (client === this.socketService.getSocketToEmit(user_id)) {
+				match.live_infos.p1Pos = pos
+				client.to('match_' + id).emit('p1Pos', pos)
+			}
+		}
+	}
+
+	@SubscribeMessage('p2Pos')
+	updatePlayer2Pos(@MessageBody() data: number[], @ConnectedSocket() client: Socket) {
+		// console.log(data)
+		const id = data[0]
+		const pos = data[1]
+		if (this.matches.has(id)) {
+			const match = this.matches.get(id)
+			const user_id = match.stats.user2_id
+			if (client === this.socketService.getSocketToEmit(user_id)) {
+				match.live_infos.p2Pos = pos
+				client.to('match_' + id).emit('p2Pos', pos)
+			}
+		}
 	}
 }

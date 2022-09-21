@@ -18,14 +18,11 @@ export class MatchsStatsController {
 	 * @deprecated Only for test
 	 */
 
-	@UseGuards(JwtAuthGuard)
-	@Get('matchmaking')
-	async sendMatchId(@Req() req): Promise<number> {
-		const user: User = req.user;
-		var match: MatchStats = new MatchStats();
-		//this.matchsService.getMatches().set(id, { room: io.to('match_' + id), started:false, p1_jwt: socket.id, p2_jwt: null, p1_ypos: 0, p2_ypos: 0 })
-		this.matchsService.add(match);
-		return 1;
+	// @UseGuards(JwtAuthGuard)
+	@Get(':id')
+	sendMatchInfos(@Param('id') id: number) {
+		// console.log("get : ", this.matchService.getMatches().get(id).stats)
+		return this.matchsService.getMatches().get(id)?.stats;
 	}
 
 	@Post('start')
@@ -35,7 +32,7 @@ export class MatchsStatsController {
 		const match: MatchStats = new MatchStats();
 		match.user1_id = user.id;
 		match.user2_id = target.id;
-		return await this.matchsService.add(match);
+		return await this.matchsService.save(match);
 	}
 
 	@UseGuards(JwtAuthGuard)
