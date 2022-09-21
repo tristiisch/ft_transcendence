@@ -85,6 +85,13 @@ export class FriendsController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Get('request')
+	async getFriendRequests(@Req() req) {
+		const user: User = req.user;
+		return [...await this.friendsService.findPending(user.id), ...await this.friendsService.findWaiting(user.id)];
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Get('request/pending')
 	getFriendRequestsPending(@Req() req) {
 		const user: User = req.user;
