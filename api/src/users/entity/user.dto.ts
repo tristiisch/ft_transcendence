@@ -13,11 +13,6 @@ export class UserDTO {
 
 	@IsString()
 	@IsOptional()
-	avatar?: string;
-
-	@IsString()
-	@IsOptional()
-	@IsNotEmpty()
 	avatar_64?: string;
 
 	status?: UserStatus;
