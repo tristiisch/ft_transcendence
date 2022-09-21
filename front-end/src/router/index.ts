@@ -39,7 +39,6 @@ const router = createRouter({
 			path: '/leaderboard',
 			name: 'Leaderboard',
 			component: () => import('@/views/Leaderboard.vue'),
-			//meta: { requiresAuth: true },
 		},
 		{
 			path: '/chat',

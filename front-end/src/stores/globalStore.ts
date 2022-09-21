@@ -62,14 +62,11 @@ export const useGlobalStore = defineStore('globalStore', {
 			}
 		},
 		async fetchUsers() {
-			if (!this.users.length)
-			{
-				try {
-					const response = await UserService.getUsers();
-					this.users = response.data;
-				} catch (error: any) {
-					throw error;
-				}
+			try {
+				const response = await UserService.getUsers();
+				this.users = response.data;
+			} catch (error: any) {
+				throw error;
 			}
 		},
 		async fetchfriends() {
