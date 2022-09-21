@@ -182,8 +182,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const msgFront: MessageFront = body[1];
 
 		validate(channelDTO);
-		if (!channelDTO.id || !channelDTO.type)
-			throw new WsException(`Channel of message must be a valid channel with id & type.`);
+		//if (channelDTO.id == null || !channelDTO.type)
+		//	throw new WsException(`Channel of message must be a valid channel with id & type.`);
 
 		if (msgFront.idSender !== -1)
 			msgFront.idSender = user.id;

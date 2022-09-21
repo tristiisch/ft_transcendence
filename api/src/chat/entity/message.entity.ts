@@ -4,10 +4,9 @@ import { User } from "users/entity/user.entity";
 import { ChatRead } from "./chat-read.entity";
 
 export enum MessageType {
-	UNKNOWN,
-	USER,
-	AUTO,
-	BOT
+	MSG,
+	GAME_INVIT,
+	AUTO
 }
 
 @Entity()
@@ -28,7 +27,7 @@ export class Message {
 	@Column()
 	message: string;
 
-	@Column({ type: 'enum', enum: MessageType, default: MessageType.UNKNOWN, name: 'type' })
+	@Column({ type: 'enum', enum: MessageType, default: MessageType.MSG, name: 'type' })
 	type: MessageType;
 
 	public toFront(chatRead: ChatRead | null): MessageFront {
@@ -42,6 +41,7 @@ export class Message {
 			send: true,
 			read: chatRead ? this.id > chatRead.id_chat : false,
 			date: `${this.date.toLocaleString()}`,
+			type: this.type
 		};
 		return msgFront;
 	}
@@ -55,4 +55,5 @@ export class MessageFront {
 	send?: boolean;
 	read: boolean;
 	date: string;
+	type: MessageType;
 }

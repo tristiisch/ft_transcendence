@@ -271,10 +271,11 @@ export class UsersService {
 			throw new WsException('User is already blocked')
 
 		user.blocked_ids.push(target.id);
-		//need to delete friendship in back if exist
-		//this.socketService.RemoveFriend(user.id, targetId);
 		try {
-			this.friendsService.removeFriendship(user, target);
+			await this.friendsService.removeFriendship(user, target);
+		} catch (err) {
+			if (!(err instanceof NotAcceptableException))
+				throw err;
 		} finally {
 			await this.usersRepository.update(user.id, { blocked_ids: user.blocked_ids });
 		}

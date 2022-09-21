@@ -126,6 +126,8 @@ export class FriendsService {
 			throw new NotAcceptableException(`You are not friends with ${target.username}.`);
 		}
 
+		// TODO delete notif friends
+
 		/*let notif: Notification = new Notification();
 		notif.user_id = friendship.user1_id;
 		notif.from_user_id = friendship.user2_id;
