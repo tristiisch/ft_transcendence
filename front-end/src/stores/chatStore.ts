@@ -210,11 +210,14 @@ export const useChatStore = defineStore('chatStore', {
 		leaveChannel(channel: Channel, user?: User) {
 			const userStore = useUserStore();
 			if (user && (userStore.userData.id === user.id)) {
-				socket.emit('chatChannelLeave', channel, userStore.userData, () => {
-					this.addAutomaticMessage(channel, userStore.userData, 'just leaved the channel')
-					this.deleteUserChannel(this.getIndexUserChannels(channel.id));
-					if (this.inChannel)
-						this.resetInChannel(this.inChannel);
+				socket.emit('chatChannelLeave', channel, userStore.userData, (body: any[]) => {
+					const ok: boolean = body[0];
+					if (ok) {
+						this.addAutomaticMessage(channel, userStore.userData, 'just leaved the channel')
+						this.deleteUserChannel(this.getIndexUserChannels(channel.id));
+						if (this.inChannel)
+							this.resetInChannel(this.inChannel);
+					}
 				});
 			}
 			else
