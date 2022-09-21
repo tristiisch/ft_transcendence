@@ -445,6 +445,7 @@ export const useChatStore = defineStore('chatStore', {
 		resetInChannel(channel: Channel) {
 			if (this.inChannel && this.inChannel.id === channel.id) {
 				this.inChannel = null;
+				this.inChannelRegistration = false;
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 			}
 		},
