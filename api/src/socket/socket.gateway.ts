@@ -90,7 +90,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	updateStatus(clientSocket: Socket, user: User, status: UserStatus) {
-		clientSocket.broadcast.emit('updateStatus', ({ id: user.id, status: status }))
+		clientSocket.broadcast.emit('updateUserStatus', ({ id: user.id, status: status }))
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -100,10 +100,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('updateStatus')
+	@SubscribeMessage('updateUserStatus')
 	handleUserStatus(@MessageBody() data: number, @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
-		client.broadcast.emit('updateStatus', ({id: user.id, status: data}))
+		client.broadcast.emit('updateUserStatus', ({id: user.id, status: data}))
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -113,7 +113,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelDTO: ChannelCreateDTO = body[1];
 		try {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
-			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]); 
+			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
 
 			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channelFront, user);
 			return channelFront;
@@ -285,7 +285,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
-		
+
 		channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
 		this.socketService.emitIds(users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
 
@@ -324,7 +324,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
 		channel = await this.chatService.setAdmin(channel, users.map(user => user.id));
-	
+
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelAdmin', channelFront);
 		return [channelFront];

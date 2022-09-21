@@ -19,28 +19,20 @@ socket.on("connect", () => {
 	const globalStore = useGlobalStore();
 	const toast = useToast();
 
-	socket.on('FriendRequest', (sender: User, notification: Notification) => {
+	socket.on('friendRequest', (sender: User, notification: Notification) => {
 		globalStore.addNotification(notification);
 		globalStore.addPendingFriend(sender)
 		toast.info(notification.message)
 	});
 
-	socket.on('AddFriend', (target: User, notification: Notification) => {
+	socket.on('addFriend', (target: User, notification: Notification) => {
 		globalStore.addNotification(notification);
 		globalStore.addFriend(target)
 		toast.info(notification.message)
 	});
 
-	socket.on('RemoveFriend', (targetId: number) => {
+	socket.on('removeFriend', (targetId: number) => {
 		globalStore.removeFriend(targetId)
-	});
-
-	socket.on('UpdateLeaderboard', (data: {leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[]}) => {
-		globalStore.updateLeaderboard(data)
-	});
-
-	socket.on('updateStatus', (target: UserStatus) => {
-		globalStore.updateLeaderboardStatus(target)
 	});
 })
 

@@ -196,12 +196,12 @@ function loadMatch() {
 }
 
 onMounted(() => {
-	socket.emit('updateStatus', status.INGAME )
+	socket.emit('updateUserStatus', status.INGAME )
 	loadMatch()
 })
 
 onBeforeUnmount(() => {
-	socket.emit('updateStatus', status.ONLINE)
+	socket.emit('updateUserStatus', status.ONLINE)
 });
 
 </script>
