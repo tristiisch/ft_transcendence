@@ -352,6 +352,8 @@ export const useChatStore = defineStore('chatStore', {
 					date: now,
 					message: newMessage,
 					idSender: type === MessageType.AUTOMATIC_MESSAGE ? -1 : userStore.userData.id,
+					avatarSender: userStore.userData.avatar,
+					usernameSender: userStore.userData.username,
 					read: false,
 					type: type
 				};

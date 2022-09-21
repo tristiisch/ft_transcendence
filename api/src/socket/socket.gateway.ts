@@ -260,7 +260,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
 
-		channel = await this.chatService.leaveChannel(leaveUser, channel);
+		const tmpChannel = await this.chatService.leaveChannel(leaveUser, channel);
+		if (!tmpChannel) {
+			const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
+			channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelDelete', channelFront);
+			return [true];
+		}
+		channel = tmpChannel;
 
 		const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
 
