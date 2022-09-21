@@ -68,11 +68,6 @@ watch(
 
 onBeforeMount(() => {
 	if (props.type === 'users' || props.type === 'usersNotInChannel') {
-		globalStore.fetchfriends() 
-		.catch((e: Error) => {
-			error.value = e.message;
-			toast.error(error.value);
-		});
 		if (props.type === 'users') {
 			globalStore.fetchUsers()
 			.then(() => {
