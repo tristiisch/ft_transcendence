@@ -376,7 +376,7 @@ export const useChatStore = defineStore('chatStore', {
 				const messageDTO: Message = {
 					date: now,
 					message: newMessage,
-					idSender: userStore.userData.id,
+					idSender: MessageType.AUTOMATIC_MESSAGE ? -1 : userStore.userData.id,
 					read: false,
 					type: type
 				};

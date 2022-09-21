@@ -4,7 +4,6 @@ import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
 import AuthService from '@/services/AuthService';
-import axios from '@/plugin/axiosInstance';
 import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
@@ -16,19 +15,20 @@ const isLoading = ref(false);
 onBeforeMount(() => {
 	const token_jwt = AuthService.getJwtToken()
 	if (token_jwt) {
-	axios.defaults.headers.common['Authorization'] = `Bearer ${token_jwt}`;
-	isLoading.value = true
-	Promise.all([userStore.fetchAll(), globalStore.fetchAll()])
-	.then(() => {
-		isLoading.value = false
-		socket.auth = { token: token_jwt };
-		socket.connect()
-	})
-	.catch((error) => {
-		isLoading.value = false
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-	})
-}})
+		isLoading.value = true
+		userStore.userAuth.islogin = true
+		Promise.all([userStore.fetchAll(), globalStore.fetchAll()])
+		.then(() => {
+			isLoading.value = false
+			socket.auth = { token: token_jwt };
+			socket.connect()
+		})
+		.catch((error) => {
+			isLoading.value = false
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		})
+	}
+})
 </script>
 
 <template>
