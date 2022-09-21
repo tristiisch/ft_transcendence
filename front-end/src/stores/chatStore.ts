@@ -174,10 +174,9 @@ export const useChatStore = defineStore('chatStore', {
 				console.log('channelCreated', channelCreated)
 				const type = this.channelTypeToString(channelCreated);
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
-				this.inChannel = this.userChannels[0];
-				this.addAutomaticMessageSelection(this.inChannel, {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
-					, 'have been added to ' + this.inChannel.name + ' by ' + userStore.userData.username);
-				this.loadChannel(this.inChannel);
+				this.loadChannel(this.userChannels[0]);
+				this.addAutomaticMessageSelection(this.userChannels[0], {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
+					, 'have been added to ' + this.userChannels[0].name + ' by ' + userStore.userData.username);
 			});
 		},
 		joinNewChannel(channel : Channel) {
