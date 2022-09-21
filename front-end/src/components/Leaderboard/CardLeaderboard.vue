@@ -117,10 +117,10 @@ onUnmounted(() => {
 			<div v-else class="inline-flex items-center justify-center p-[1px]">
 				<span v-if="isPendingFriend" class="pl-2 text-slate-800">Pending</span>
 				<button v-else-if="isBlockedUser">
-					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="unblockUser()" >Unblock</span>
+					<span class="border border-slate-800 text-xs text-slate-800 px-1 py-1.5 sm:px-2 sm:py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="unblockUser()" >Unblock</span>
 				</button>
 				<button v-else>
-					<span class="border border-slate-800 text-xs text-slate-800 px-2 py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="friendRequest()" >Add friend</span>
+					<span class="border border-slate-800 text-xs text-slate-800 px-1 py-1.5 sm:px-2 sm:py-2.5 transition-all ease-in duration-75 rounded-md group-hover:bg-opacity-0 hover:bg-gradient-to-br  hover:from-lime-200 hover:to-green-400" @click="friendRequest()" >Add friend</span>
 				</button>
 				
 			</div>

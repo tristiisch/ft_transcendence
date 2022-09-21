@@ -3,6 +3,7 @@ import { onMounted, onUpdated, ref, watch } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
 import PartToDisplay from '@/types/ChatPartToDisplay';
+import MessageType from '@/types/MessageType';
 import UsersChannelsNameImage from '@/components/Chat/UsersChannelNameImages.vue';
 import message from '@/components/Chat/ChatMessage.vue';
 
@@ -19,11 +20,11 @@ function scrollToEnd() {
 }
 
 function sendGameInvitation() {
-    chatStore.sendMessage('game invitation', 'game');
+    chatStore.sendMessage('game invitation', MessageType.GAME_INVITATION);
 }
 
 function sendMessage() { 
-	chatStore.sendMessage(newMessage.value)
+	chatStore.sendMessage(newMessage.value, MessageType.MESSAGE)
 	newMessage.value = ''
 	scrollToEnd()
 }

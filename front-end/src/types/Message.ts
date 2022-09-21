@@ -1,3 +1,5 @@
+import type MessageType from '@/types/MessageType';
+
 export default interface Message {
 	idMessage?: number,
 	idChat?: number,
@@ -6,5 +8,5 @@ export default interface Message {
 	send?: boolean,
 	read: boolean,
 	date: string,
-	type?: string
+	type: MessageType
 }

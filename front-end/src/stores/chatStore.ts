@@ -10,6 +10,7 @@ import type Channel from '@/types/Channel';
 import type Discussion from '@/types/Discussion';
 import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
+import MessageType from '@/types/MessageType';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 
 export const useChatStore = defineStore('chatStore', {
@@ -319,22 +320,17 @@ export const useChatStore = defineStore('chatStore', {
 				while(++i < selection.unlisted.length - 1)
 					userNameInUnListed += selection.unlisted[i].username + ", ";
 				userNameInUnListed += selection.unlisted[i].username + " ";
-				const newMessage = {
-					date: new Date().toLocaleString(),
-					message: '🔴　' + userNameInUnListed + messageUnListed,
-					idSender: -1,
-					read: false
-				};
-				if (this.inChannel && this.inChannel.id === channel.id) {
-					this.inChannel.messages.push(newMessage);
-					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
-				}
-				else {
-					const index = this.getIndexUserChannels(channel.id);
-					this.userChannels[index].messages.push(newMessage);
-					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
-				}
-
+				const newMessage = '🔴　' + userNameInUnListed + messageUnListed;
+				this.sendMessage(newMessage, MessageType.AUTOMATIC_MESSAGE);
+				// if (this.inChannel && this.inChannel.id === channel.id) {
+				// 	// this.inChannel.messages.push(newMessage);
+				// 	socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+				// }
+				// else {
+				// 	const index = this.getIndexUserChannels(channel.id);
+				// 	// this.userChannels[index].messages.push(newMessage);
+				// 	socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
+				// }
 			}
 			if (selection.listed.length !== 0) {
 				let userNameInListed = '';
@@ -346,41 +342,34 @@ export const useChatStore = defineStore('chatStore', {
 				}
 				if (selection.listed[i].username !== userStore.userData.username)
 					userNameInListed += selection.listed[i].username + " ";
-				const newMessage = {
-					date: new Date().toLocaleString(),
-					message: '⚪️　' + userNameInListed + messageListed,
-					idSender: -1,
-					read: false
-				};
-				if (this.inChannel && this.inChannel.id === channel.id) {
-					this.inChannel.messages.push(newMessage);
-					socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
-				}
-				else {
-					const index = this.getIndexUserChannels(channel.id);
-					this.userChannels[index].messages.push(newMessage);
-					socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
-				}
+				const newMessage = '⚪️　' + userNameInListed + messageListed;
+				this.sendMessage(newMessage, MessageType.AUTOMATIC_MESSAGE);
+				// if (this.inChannel && this.inChannel.id === channel.id) {
+				// 	// this.inChannel.messages.push(newMessage);
+				// 	// socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+					
+				// }
+				// else {
+				// 	const index = this.getIndexUserChannels(channel.id);
+				// 	// this.userChannels[index].messages.push(newMessage);
+				// 	socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
+				// }
 			}
 		},
 		addAutomaticMessage(channel: Channel, user: User, msg: string) {
-			const newMessage = {
-				date: new Date().toLocaleString(),
-				message: '⚪️　' + user.username + ' ' + msg,
-				idSender: -1,
-				read: false
-			};
-			if (this.inChannel && this.inChannel.id === channel.id) {
-				this.inChannel.messages.push(newMessage);
-				socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
-			}
-			else {
-				const index = this.getIndexUserChannels(channel.id);
-				this.userChannels[index].messages.push(newMessage);
-				socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
-			}
+			const newMessage = '⚪️　' + user.username + ' ' + msg;
+			this.sendMessage(newMessage, MessageType.AUTOMATIC_MESSAGE);
+			// if (this.inChannel && this.inChannel.id === channel.id) {
+			// 	// this.inChannel.messages.push(newMessage);
+			// 	socket.emit('chatChannelMessage', channel, this.inChannel.messages[this.inChannel.messages.length - 1]);
+			// }
+			// else {
+			// 	const index = this.getIndexUserChannels(channel.id);
+			// 	// this.userChannels[index].messages.push(newMessage);
+			// 	socket.emit('chatChannelMessage', channel, this.userChannels[index].messages[this.userChannels[index].messages.length - 1]);
+			// }
 		},
-		sendMessage(newMessage: string, type?: string) {
+		sendMessage(newMessage: string, type: MessageType) {
 			const userStore = useUserStore();
 			if (newMessage != '') {
 				const now = new Date().toLocaleString();
@@ -462,8 +451,11 @@ export const useChatStore = defineStore('chatStore', {
 					msgId = this.inChannel.messages[this.inChannel.messages.length - 1].idMessage
 				else if (this.inDiscussion)
 					msgId = this.inDiscussion.messages[this.inDiscussion.messages.length - 1].idMessage
-				if (msgId === message.idMessage)
+				if (msgId === message.idMessage) {
+					console.log(message.idMessage)
+					console.log(message.idChat)
 					socket.emit('chatMsgReaded', message.idMessage, message.idChat);
+				}
 			}
 		},
 		nbUnreadMessageInDiscussion(discussion: Discussion) {

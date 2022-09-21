@@ -33,7 +33,7 @@ const emit = defineEmits<{
             <button @click="changeMode()" class="btn-base rounded-l-md border" :class="mode === 'random' && !invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Random</button>
             <button @click="changeMode()" class="btn-base rounded-r-md border-t border-b" :class="mode === 'invite' || invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Invite</button>
         </div>
-        <div v-if="mode === 'invite' || invitation === true" class="flex flex-col justify-center items-center py-2 sm:py-4 w-3/4 bg-neutral-100 border border-blue-600 rounded-lg mt-2 3xl:mt-6 h-full">
+        <div v-if="mode === 'invite' || invitation === true" class="flex flex-col justify-center items-center py-2 sm:py-4 w-3/4 bg-neutral-100 border border-blue-600 rounded-lg mt-2 3xl:mt-6 h-1/2">
             <div v-if="!invitation" class="flex items-center gap-2">
                 <button-plus @click="emit('invitePlayer')"></button-plus>
                 <label class="text-xs sm:text-sm text-blue-600">Choose Player</label>

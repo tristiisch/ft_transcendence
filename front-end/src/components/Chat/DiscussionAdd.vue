@@ -23,7 +23,7 @@ function createNewDiscussion()
 </script>
 
 <template>
-    <div class="flex flex-col justify-between items-center h-full w-full px-6 3xl:px-10">
+    <div class="flex flex-col justify-between items-center h-full w-full px-8 3xl:px-10">
         <users-search :singleSelection="true" :type="'users'"></users-search>
         <button-close-validate @validate="createNewDiscussion()" @close="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)"></button-close-validate>
     </div>
