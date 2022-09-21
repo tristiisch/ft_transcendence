@@ -9,7 +9,7 @@ import {
 	WsException,
 } from '@nestjs/websockets';
 import { ChatService } from 'chat/chat.service';
-import { ChannelCreateDTO } from 'chat/entity/channel-dto';
+import { ChannelCreateDTO, ChannelSelectDTO } from 'chat/entity/channel-dto';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from 'chat/entity/channel.entity';
 import { Server, Socket } from 'socket.io';
 import { User, UserStatus } from 'users/entity/user.entity';
@@ -23,6 +23,7 @@ import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 import { UsersService } from 'users/users.service';
 import { AuthService } from 'auth/auth.service';
 import { MatchStatsService } from 'game/matchs/matchs.service';
+import { validate, validateOrReject } from 'class-validator';
 
 @WebSocketGateway({
 	cors: {
@@ -148,12 +149,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatDiscussionMessage')
 	async chatDiscussionMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
-		const discussion: DiscussionFront = body[0];
+		const targetId: number = body[0];
 		const message: MessageFront = body[1];
 
 		message.idSender = user.id;
 
-		const discu: Discussion = await this.chatService.findOrCreateDiscussion(message.idSender, discussion.user['id']);
+		const discu: Discussion = await this.chatService.findOrCreateDiscussion(message.idSender, targetId);
 		try {
 			let msg: Message = new Message();
 			msg.id_sender = message.idSender;
@@ -177,11 +178,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatChannelMessage')
 	async chatChannelMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
-		const channelDTO: ChannelFront = body[0];
+		const channelDTO: ChannelSelectDTO = body[0];
 		const msgFront: MessageFront = body[1];
 
-		if (channelDTO.id == null) // TODO fix: je sais pas quand on vient de crée le channel, c'est null
-			throw new WsException(`channel.id = ${channelDTO.id} so msg ${msgFront} can't be send`);
+		validate(channelDTO);
+		if (!channelDTO.id || !channelDTO.type)
+			throw new WsException(`Channel of message must be a valid channel with id & type.`);
 
 		if (msgFront.idSender !== -1)
 			msgFront.idSender = user.id;

@@ -394,7 +394,7 @@ export const useChatStore = defineStore('chatStore', {
 				if (this.inDiscussion) {
 					messageDTO['idChat'] = this.inDiscussion.id;
 					const chat: Discussion = this.inDiscussion;
-					socket.emit('chatDiscussionMessage', this.inDiscussion, messageDTO, (body: any[]) => {
+					socket.emit('chatDiscussionMessage', this.inDiscussion.user.id, messageDTO, (body: any[]) => {
 						const discu: Discussion = body[0];
 						const msg: Message = body[1];
 						console.log('chatDiscussionMessage', msg, 'Discussion', discu);
@@ -404,7 +404,7 @@ export const useChatStore = defineStore('chatStore', {
 				else if (this.inChannel) {
 					messageDTO['idChat'] = this.inChannel.id;
 					const chat: Channel = this.inChannel;
-					socket.emit('chatChannelMessage', this.inChannel, messageDTO, (body: any[]) => {
+					socket.emit('chatChannelMessage', { id: this.inChannel.id, type: this.inChannel.type }, messageDTO, (body: any[]) => {
 						const channel: Channel = body[0];
 						const msg: Message = body[1];
 						console.log('channel Message', msg);
