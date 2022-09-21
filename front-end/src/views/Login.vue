@@ -95,6 +95,7 @@ function submitRegistrationForm() {
 onBeforeRouteLeave((to, _) => {
 	if (to.name === 'Home')
 	{
+		socket.auth = { token: userStore.userAuth.token_jwt }
 		socket.connect()
 		isLoading.value = true;
 		globalStore

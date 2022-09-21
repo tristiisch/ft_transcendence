@@ -3,11 +3,16 @@ import socket from '@/plugin/socketInstance';
 
 class AuthService {
 
+	/*isJwtToken() {
+		if (localStorage.getItem('userAuth')) return true
+		else return false
+	}*/
+	
 	getJwtToken() {
 		try {
 			const token = localStorage.getItem('userAuth');
 			if (token) return JSON.parse(token)
-			else return null
+			return ''
 		}
 		catch {
 			return null
@@ -15,17 +20,18 @@ class AuthService {
 	}
 	
 	login(code: string) {
-		return axios.post('auth/42/redirect', { code }).then((response) => {
+		return axios.post('auth/42/redirect', { code })/*.then((response) => {
 			if (response.data.auth.token_jwt) {
+				console.log(response)
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
 				socket.auth = { token: response.data.auth.token_jwt }
 			}
 			return response.data;
-		})
+		})*/
 	}
 
 	fakeLogin(username: string) {
-		return axios.get('auth/fakeLogin/' + username).then((response) => {
+		return axios.get('auth/fakeLogin/' + username)/*.then((response) => {
 			console.log('get request fakelogin')
 			if (response.data.auth.token_jwt) {
 				console.log('auth token yes')
@@ -33,18 +39,18 @@ class AuthService {
 				socket.auth = { token: response.data.auth.token_jwt }
 			}
 			return response.data;
-		})
+		})*/
 	}
 
 	login2FA(otpToken: string) {
-		return axios.post('2fa/authenticate', { otpToken }).then((response) => {
+		return axios.post('2fa/authenticate', { otpToken })/*.then((response) => {
 			console.log(response.data)
 			if (response.data.auth.token_jwt) {
 				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.auth.token_jwt}`;
 				socket.auth = { token: response.data.auth.token_jwt }
 			}
 			return response.data;
-		});
+		});*/
 	}
 
 	getAuth() {

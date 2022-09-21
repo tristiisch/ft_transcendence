@@ -5,6 +5,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { onUpdated } from 'vue';
 import type Message from '@/types/Message';
 import BaseButton from '@/components/Ui/BaseButton.vue';
+import MessageType from '@/types/MessageType';
 
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
@@ -29,14 +30,14 @@ function redirectTo(idSender: number) {
 		return { name: 'Profile', params: { id: playerId }}
 }
 
-function isUserMessage(idSender: number) {
-	if (idSender === -1)
+function isUserMessage(type: MessageType) {
+	if (type === MessageType.AUTOMATIC_MESSAGE)
 		return false
 	return true;
 }
 
-function sizeText(idSender: number) {
-	if (isUserMessage(idSender))
+function sizeText(type: MessageType) {
+	if (type !== MessageType.AUTOMATIC_MESSAGE)
 		return 'text-sm'
 	else 
 		return 'text-xs mb-2'
@@ -81,7 +82,7 @@ function userName(idSender: number) {
 
 <template>
     <div v-for="message in chooseArray()" :key="message.idMessage" class="flex gap-2 w-full mb-4 pl-8">
-		<BaseButton v-if="isUserMessage(message.idSender)" link :to="redirectTo(message.idSender)" class="shrink-0">
+		<BaseButton v-if="isUserMessage(message.type)" link :to="redirectTo(message.idSender)" class="shrink-0">
 			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="userAvatar(message.idSender)">
 		</BaseButton>
 		<div class="flex flex-col gap-1 min-w-0">
@@ -89,7 +90,7 @@ function userName(idSender: number) {
 				<p class="text-sm">{{ userName(message.idSender) }}</p>
 				<p class="text-xs">{{ message.date }}</p>
 			</div> 
-			<div v-if="message.type !== 'game'" :class="sizeText(message.idSender), colorMessage(message)" class="min-w-0 text-red-200 break-words">{{ displayMessage(message) }}</div>
+			<div v-if="message.type !== MessageType.GAME_INVITATION" :class="sizeText(message.type), colorMessage(message)" class="min-w-0 text-red-200 break-words">{{ displayMessage(message) }}</div>
 			<div v-else class="bg-red-600 w-full h-[20px]">{{ displayMessage(message) }}</div>
 		</div>
     </div>
