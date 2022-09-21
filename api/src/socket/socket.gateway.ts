@@ -261,12 +261,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
 
 		channel = await this.chatService.leaveChannel(leaveUser, channel);
-		if (!channel)
-			return;
+
 		const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
 
 		channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelLeave', channelFront);
-		return [null];
+		return [true];
 	}
 
 	@UseGuards(JwtSocketGuard)

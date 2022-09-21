@@ -1,5 +1,5 @@
 /** @prettier */
-import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'users/users.service';
 import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
@@ -183,19 +183,20 @@ export class ChatService {
 		switch (channelType) {
 			case ChatStatus.PUBLIC:
 				chat = await this.channelPublicRepo.findOneBy({ id: channelId });
-				delete chat.avatar_64;
 				break;
 			case ChatStatus.PROTECTED:
 				chat = await this.channelProtectedRepo.findOneBy({ id: channelId });
-				delete chat.avatar_64;
 				break;
 			case ChatStatus.PRIVATE:
 				chat = await this.channelPrivateRepo.findOneBy({ id: channelId });
-				delete chat.avatar_64;
 				break;
 			default:
 				throw new WsException(`Unknown channel type ${channelType}.`)
 		}
+		if (!chat) {
+			throw new WsException(`Can't find a chat with id ${channelId} and type ${ChatStatus[channelType].toLowerCase()}`)
+		}
+		delete chat.avatar_64;
 		return chat;
 	}
 
