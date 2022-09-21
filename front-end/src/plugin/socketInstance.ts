@@ -6,8 +6,8 @@ import { useToast } from 'vue-toastification';
 import type LeaderboardUser from '@/types/Leaderboard';
 import type { UserStatus } from '@/types/User';
 
-const URL = "http://localhost:3000";
-// const URL = import.meta.env.VITE_API_URL;
+//const URL = "http://10.2.2.7:3000";
+const URL = import.meta.env.VITE_SOCKET_URL;
 const socket = io(URL, {
 	auth: {token: null},
 	autoConnect: false

@@ -24,11 +24,10 @@ import { UsersService } from 'users/users.service';
 import { AuthService } from 'auth/auth.service';
 import { MatchStatsService } from 'game/matchs/matchs.service';
 import { validate, validateOrReject } from 'class-validator';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @WebSocketGateway({
-	cors: {
-		origin: `${process.env.FRONT_URL}`
-	}
+	cors: { origin: `${process.env.FRONT_URL}` }
 })
 
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {

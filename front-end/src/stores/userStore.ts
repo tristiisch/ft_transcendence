@@ -75,7 +75,7 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
-				if (this.userData.avatar === newAvatar) newAvatar = null;
+				if (this.userData.avatar === newAvatar) newAvatar = '';
 				await UserService.registerUser(newUsername, newAvatar);
 				if (newAvatar) this.userData.avatar = newAvatar;
 				this.userData.username = newUsername;
