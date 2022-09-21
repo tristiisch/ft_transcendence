@@ -310,8 +310,14 @@ export class ChatService {
 			channel.users_ids = [user.id];
 		else if (channel.users_ids.indexOf(user.id) == -1)
 			channel.users_ids.push(user.id);
-		channel = await this.addChatToDB(channel) as Channel;
 
+		try {
+			channel = await this.addChatToDB(channel) as Channel;
+		} catch (err) {
+			if (err.message.includes('duplicate key value violates unique constraint'))
+				throw new WsException('A channel already exist with same name.');
+			throw err;
+		}
 
 		let msg: Message = new Message();
 		msg.message = `[DEBUG MSG CREATED BY BACK] ⚪️　${user.username} been added to ${channel.name} by ${user.username}`;
