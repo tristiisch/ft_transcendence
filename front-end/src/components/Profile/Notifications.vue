@@ -24,8 +24,7 @@ function isActionNotification(notification: Notification) {
 
 function acceptInvitation(notification: Notification) {
 	console.log('accept');
-	console.log(notification.type)
-	if (notification.type == NotificationType.FRIEND_REQUEST)
+	if (notification.type == NotificationType.FRIEND_REQUEST || notification.type == NotificationType.MATCH_REQUEST)
 	{
 		UserService.notificationAction(notification.id, true)
 		.then((response) => {
@@ -34,7 +33,11 @@ function acceptInvitation(notification: Notification) {
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
-			if (error.response.status === 406) toast.warning(error.response.data.message)
+			if (error.response.status === 406)
+			{
+				toast.warning(error.response.data.message)
+				globalStore.removeNotification(notification.id)
+			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
@@ -42,7 +45,7 @@ function acceptInvitation(notification: Notification) {
 
 function declineInvitation(notification: Notification) {
 	console.log('decline');
-	if (notification.type == NotificationType.FRIEND_REQUEST)
+	if (notification.type == NotificationType.FRIEND_REQUEST || notification.type == NotificationType.MATCH_REQUEST)
 	{
 		UserService.notificationAction(notification.id, false)
 		.then((response) => {
@@ -51,7 +54,11 @@ function declineInvitation(notification: Notification) {
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
-			if (error.response.status === 406) toast.warning(error.response.data.message)
+			if (error.response.status === 406) 
+			{
+				toast.warning(error.response.data.message)
+				globalStore.removeNotification(notification.id)
+			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}

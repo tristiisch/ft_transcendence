@@ -19,7 +19,7 @@ class UserService {
 	}
 
 	getPendingFriends() {
-		return axios.get('friends/request/pending');
+		return axios.get('friends/request');
 	}
 
 	getUser(id: number) {

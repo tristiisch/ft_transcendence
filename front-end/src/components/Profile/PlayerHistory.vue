@@ -21,7 +21,7 @@ function colorTextScore(value: MatchHistory) {
             <div v-for="match in matchsHistory" :key="match.date" class="flex w-full">
                 <p class="w-2/5 text-right text-sm sm:text-lg" :class="colorTextScore(match)"><span class="text-xs sm:text-sm text-red-300">{{ user?.username }}</span><span class="text-red-300"> - </span>{{ match.score[0] }}</p>
                 <p class="w-1/5 text-center grayscale"> ⚔️ </p>
-                <p class="w-2/5 text-left text-xs sm:text-sm text-red-300"><span class="text-sm sm:text-lg" :class="colorTextScore(match, true)">{{ match.score[1] }}</span><span class="text-red-300"> - </span>{{ match.opponent }}</p>
+                <p class="w-2/5 text-left text-xs sm:text-sm text-red-300"><span class="text-sm sm:text-lg" :class="colorTextScore(match)">{{ match.score[1] }}</span><span class="text-red-300"> - </span>{{ match.opponent }}</p>
             </div>
         </div>
         <p v-else class="flex items-center text-base sm:text-xl h-full text-red-300"> NO DATA</p>

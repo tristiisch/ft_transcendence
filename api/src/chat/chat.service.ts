@@ -438,11 +438,11 @@ export class ChatService {
 	async kickUsers(user: User, channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		let dataUpdate: QueryDeepPartialEntity<Channel> = {};
 
-		dataUpdate.users_ids = removeFromArray(channel.users_ids, user.id);
-		if (channel.admins_ids && channel.admins_ids.indexOf(user.id) !== -1)
-			dataUpdate.admins_ids = removeFromArray(channel.admins_ids, user.id);
-		if (channel.muted_ids && channel.muted_ids.indexOf(user.id) !== -1)
-			dataUpdate.muted_ids = removeFromArray(channel.muted_ids, user.id);
+		dataUpdate.users_ids = removesFromArray(channel.users_ids, users_ids);
+		if (channel.admins_ids)
+			dataUpdate.admins_ids = removesFromArray(channel.admins_ids, users_ids);
+		if (channel.muted_ids)
+			dataUpdate.muted_ids = removesFromArray(channel.muted_ids, users_ids);
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();

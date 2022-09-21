@@ -45,6 +45,7 @@ function previewEnv() {
     $SED_CMD "s/$HOSTNAME_NAME=/$HOSTNAME_NAME=$REAL_HOSTNAME/g" "$1"
     $SED_CMD "s/$UID_NAME=/$UID_NAME=$FT_UID/g" "$1"
     $SED_CMD "s/$SECRET_NAME=/$SECRET_NAME=$FT_SECRET/g" "$1"
+	$SED_CMD "s/localhost/$REAL_HOSTNAME/g" $1
 
     if command -v ifconfig &> /dev/null; then
         rm -f "$1.bak"

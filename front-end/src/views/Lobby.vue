@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeMount, computed } from 'vue';
+import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
 import UsersService from '@/services/UserService';
@@ -11,11 +11,12 @@ import GameSettings from '@/components/Lobby/GameSettings.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
+import socket from '@/plugin/socketInstance';
 
 const globalStore = useGlobalStore();
 const router = useRouter();
 const route = useRoute();
-const matchs = ref<Match[] | null>(null);
+const matchs = ref([] as Match[]);
 const isLoading = ref(false);
 const rightPartToDisplay = ref('gameSettings');
 const invitation = ref(false);
@@ -53,8 +54,18 @@ function invitePlayer()
     }
 }
 
+function updateMatch(match: Match) {
+	const index = matchs.value.findIndex((user) => user.id === match.id);
+	if (index !== -1) matchs.value[index].score = match.score;
+}
+
 onBeforeMount(() => {
 	fetchCurrentMatchs();
+	socket.on('UpdateMatch', updateMatch);
+});
+
+onBeforeUnmount(() => {
+	socket.off('UpdateMatch', updateMatch);
 });
 </script>
 
