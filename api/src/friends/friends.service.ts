@@ -43,9 +43,9 @@ export class FriendsService {
 		if (user.id == target.id) throw new PreconditionFailedException("You can't be friends with yourself.");
 
 		if (user.isBlockedUser(target.id)) {
-			throw new NotAcceptableException(`You have blocked ${target}. You can't add him as friends.`);
+			throw new NotAcceptableException(`You have blocked ${target.username}. You can't add him as friends.`);
 		} else if (target.isBlockedUser(user.id)) {
-			throw new NotAcceptableException(`You are blocked by ${target}. You can't add him as friends.`);
+			throw new NotAcceptableException(`You are blocked by ${target.username}. You can't add him as friends.`);
 		}
 
 		const friendshipCheck: Friendship = await this.findOne(user.id, target.id, false);
@@ -90,9 +90,9 @@ export class FriendsService {
 		const friendship: Friendship = await this.findOne(target.id, user.id, true);
 
 		if (user.isBlockedUser(target.id)) {
-			throw new NotAcceptableException(`You have blocked ${target}. You can't add him as friends.`);
+			throw new NotAcceptableException(`You have blocked ${target.username}. You can't add him as friends.`);
 		} else if (target.isBlockedUser(user.id)) {
-			throw new NotAcceptableException(`You are blocked by ${target}. You can't add him as friends.`);
+			throw new NotAcceptableException(`You are blocked by ${target.username}. You can't add him as friends.`);
 		}
 		if (friendship === null) throw new NotAcceptableException(`${user.username} has no friend request from ${target.username}.`);
 
