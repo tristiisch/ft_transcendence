@@ -12,10 +12,14 @@ export const useUserStore = defineStore('userStore', {
 		userData: {} as User,
 	}),
 	getters: {
-		isLoggedIn: (state) => state.userAuth.token_jwt !== null,
+		isLoggedIn: (state) => state.userAuth.islogin === true,
 		isRegistered: (state) => state.userData.username !== null,
 	},
 	actions: {
+		logUser() {
+			localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
+			this.userAuth.islogin = true
+		},
 		verifyState(state: string) {
 			const randomString = localStorage.getItem('state')
 			localStorage.removeItem('state');
@@ -25,15 +29,14 @@ export const useUserStore = defineStore('userStore', {
 		async handleLogin(code: string, state: string) {
 			try {
 				this.verifyState(state);
-				const data = await AuthService.login(code);
-				this.userAuth = data.auth;
+				const response = await AuthService.login(code);
+				this.userAuth = response.data.auth;
 				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
-					this.userData = data.user;
+					this.userData = response.data.user;
 					console.log(this.userData)
-					if (this.isRegistered && !this.userAuth.has_2fa)
-						localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
+					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				}
 			} catch (error: any) {
 				throw error;
@@ -41,15 +44,14 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async handleFakeLogin(username: string) {
 			try {
-				const data = await AuthService.fakeLogin(username);
-				this.userAuth = data.auth;
+				const response = await AuthService.fakeLogin(username);
+				this.userAuth = response.data.auth;
 				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
-					this.userData = data.user;
+					this.userData = response.data.user;
 					console.log(this.userData);
-					if (this.isRegistered && !this.userAuth.has_2fa)
-						localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
+					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				}
 			} catch (error: any) {
 				throw error;
@@ -57,10 +59,10 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async handleLogin2Fa(twoFaCode: string) {
 			try {
-				const data = await AuthService.login2FA(twoFaCode);
-				this.userAuth = data.auth;
-				this.userData = data.user;
-				localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
+				const response = await AuthService.login2FA(twoFaCode);
+				this.userAuth = response.data.auth;
+				this.userData = response.data.user;
+				this.logUser()
 			} catch (error: any) {
 				throw error;
 			}
@@ -77,7 +79,7 @@ export const useUserStore = defineStore('userStore', {
 				await UserService.registerUser(newUsername, newAvatar);
 				if (newAvatar) this.userData.avatar = newAvatar;
 				this.userData.username = newUsername;
-				localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
+				this.logUser()
 			} catch (error: any) {
 				throw error;
 			}
@@ -100,7 +102,7 @@ export const useUserStore = defineStore('userStore', {
 		async fetchAuth() {
 			try {
 				const response = await AuthService.getAuth();
-				this.userAuth = response.data;
+				this.userAuth.has_2fa = response.data.has_2fa;
 			} catch (error: any) {
 				throw error;
 			}

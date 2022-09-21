@@ -14,8 +14,8 @@ const isProfilePage = computed(() => {
 </script>
 
 <template>
-	<div class="relative flex items-center h-[10%] min-h-[100px] sm:min-h-[140px] sm:pt-8" :class="{ 'justify-end': isProfilePage, 'justify-between': !isProfilePage }">
-		<div v-if="userStore.isLoggedIn" v-show="!isProfilePage" class="flex gap-1">
+	<div v-if="userStore.isLoggedIn" class="relative flex items-center h-[10%] min-h-[100px] sm:min-h-[140px] sm:pt-8" :class="{ 'justify-end': isProfilePage, 'justify-between': !isProfilePage }">
+		<div v-show="!isProfilePage" class="flex gap-1">
 			<base-button link :to="{ name: 'Profile', params: { id: userStore.userData.id } }">
 				<img class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 object-cover border-neutral-100 hover:border-[#f1cf3b]" :src="userStore.userData.avatar" alt="Rounded avatar" />
 			</base-button>
