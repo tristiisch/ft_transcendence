@@ -310,8 +310,14 @@ export class ChatService {
 			channel.users_ids = [user.id];
 		else if (channel.users_ids.indexOf(user.id) == -1)
 			channel.users_ids.push(user.id);
-		channel = await this.addChatToDB(channel) as Channel;
 
+		try {
+			channel = await this.addChatToDB(channel) as Channel;
+		} catch (err) {
+			if (err.message.includes('duplicate key value violates unique constraint'))
+				throw new WsException('A channel already exist with same name.');
+			throw err;
+		}
 
 		let msg: Message = new Message();
 		msg.message = `[DEBUG MSG CREATED BY BACK] ⚪️　${user.username} been added to ${channel.name} by ${user.username}`;
@@ -549,15 +555,15 @@ export class ChatService {
 			if (channel.admins_ids && channel.admins_ids.length != 0) {
 				channel.owner_id = channel.admins_ids[0];
 			} else {
-				this.deleteChannel(channel);
-				return ;
+				await this.deleteChannel(channel);
+				return null;
 			}
 		}
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = new Message();
 			leaveMessage.message = '[DEBUG MSG CREATED BY BACK] 🔴　' + user.username + ' just leaved the channel';
-			leaveMessage.id_sender = user.id;
+			leaveMessage.id_sender = -1;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
