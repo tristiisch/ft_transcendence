@@ -157,7 +157,7 @@ export const useChatStore = defineStore('chatStore', {
 					this.loadDiscussion(this.userDiscussions[0]);
 			}
 			else
-				this.setRightPartToDisplay(PartToDisplay.CHAT);
+				this.loadDiscussion(this.userDiscussions[index]);
 		},
 		addUsersToChannel(channelUpdated: Channel, inviter?: User) { 
 			if (inviter)
