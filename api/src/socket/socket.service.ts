@@ -32,8 +32,11 @@ export class SocketService {
 
 	saveClientSocket(user: User, clientSocketId: string) {
 		const oldClientSocketId: string = this.usersSocket.get(user.id);
-		if (oldClientSocketId)
+		if (oldClientSocketId) {
+			const oldSocket: Socket = this.server.sockets.sockets.get(oldClientSocketId);
+			oldSocket.disconnect();
 			Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
+		}
 		this.usersSocket.set(user.id, clientSocketId)
 		return oldClientSocketId;
 	}

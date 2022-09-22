@@ -46,7 +46,7 @@ export class Message {
 		};
 		if (this.type === MessageType.MSG) {
 			if (!user) {
-				Logger.error(`user is null for message#toFront`, 'Chat');
+				Logger.error(`user is null for message#toFront : ${JSON.stringify(this)}`, 'Chat');
 			} else {
 				msgFront.avatarSender = user.avatar;
 				msgFront.usernameSender = user.username;

@@ -323,12 +323,7 @@ export class ChatService {
 			throw err;
 		}
 
-		let msg: Message = new Message();
-		msg.message = `[DEBUG MSG CREATED BY BACK] ⚪️　${user.username} been added to ${channel.name} by ${user.username}`;
-		msg.id_sender = -1;
-		msg.type = MessageType.AUTO;
-		msg.id_channel = channel.id;
-		msg = await this.addMessage(msg);
+		let msg: Message = await this.createAutoMsg(`⚪️　${user.username} been added to ${channel.name} by ${user.username}`, channel);
 		return channel;
 	}
 
@@ -456,12 +451,7 @@ export class ChatService {
 			dataUpdate.muted_ids = removesFromArray(channel.muted_ids, users_ids);
 
 		const leaveMessage = async () => {
-			let leaveMessage: Message = new Message();
-			leaveMessage.message = `🔴　${users_ids.join(', ')} has been kicked by ${user.username}`;
-			leaveMessage.type = MessageType.AUTO;
-			leaveMessage.id_sender = -1;
-			leaveMessage.id_channel = channel.id;
-			leaveMessage = await this.addMessage(leaveMessage);
+			let leaveMessage: Message = await this.createAutoMsg(`🔴　${users_ids.join(', ')} has been kicked by ${user.username}`, channel);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};
 
@@ -521,11 +511,7 @@ export class ChatService {
 			dataUpdate.users_ids = [user.id];
 
 		const joinMessage = async () => {
-			let msg: Message = new Message();
-			msg.message = '[DEBUG MSG CREATED BY BACK] ⚪️　' + user.username + ' just joined the channel';
-			msg.id_sender = -1;
-			msg.id_channel = channel.id;
-			msg.type = MessageType.AUTO;
+			let msg: Message = await this.createAutoMsg(`⚪️　${user.username} just joined the channel`, channel);
 			msg = await this.addMessage(msg);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(user, null));
 		};
@@ -566,12 +552,7 @@ export class ChatService {
 		}
 
 		const leaveMessage = async () => {
-			let leaveMessage: Message = new Message();
-			leaveMessage.message = '[DEBUG MSG CREATED BY BACK] 🔴　' + user.username + ' just leaved the channel';
-			leaveMessage.id_sender = -1;
-			leaveMessage.id_channel = channel.id;
-			leaveMessage.type = MessageType.AUTO;
-			leaveMessage = await this.addMessage(leaveMessage);
+			let leaveMessage: Message = await this.createAutoMsg(`🔴　${user.username} just leaved the channel`, channel);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};
 
@@ -668,5 +649,15 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 		else
 			query.hidden_ids = [...discu.hidden_ids, user.id]
 		await this.discussionRepo.update(discu.id, query);
+	}
+
+	async createAutoMsg(str: string, channel: Channel): Promise<Message> {
+		let msg: Message = new Message();
+		msg.message = '[DEBUG MSG CREATED BY BACK] ' + str;
+		msg.id_sender = -1;
+		msg.id_channel = channel.id;
+		msg.type = MessageType.AUTO;
+		msg = await this.addMessage(msg);
+		return msg;
 	}
 }

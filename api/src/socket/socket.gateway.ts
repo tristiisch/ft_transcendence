@@ -76,7 +76,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleDisconnect(clientSocket: Socket) {
-		this.handleConnection(clientSocket);
 		try {
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 
