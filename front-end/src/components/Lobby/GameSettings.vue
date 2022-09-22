@@ -13,22 +13,22 @@ const emit = defineEmits<{
 
 <template>
 	<h1 class="flex justify-center items-center shrink-0 w-3/4 h-[40px] sm:h-[50px] text-sm sm:text-base text-red-200 border-b border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">CHOOSE SETTINGS</h1>
-    <div class="flex flex-col justify-center items-center gap-4 sm:gap-6 w-3/4 h-full text-red-200 pb-4">
-        <label class="text-sm">BALL SPEED</label>
+    <div class="flex flex-col justify-center items-center gap-4 sm:gap-6 w-3/4 h-full text-red-200">
+        <label class="text-xs sm:text-sm">BALL SPEED</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
-            <span class="absolute -top-3 sm:-top-4 text-red-700 text-sm sm:text-md">{{ globalStore.ballSpeed }}</span>
+            <span class="absolute -top-4 text-red-700 text-sm sm:text-md">{{ globalStore.ballSpeed }}</span>
             <span class="text-sm sm:text-md"> 50 </span>
             <input v-model="globalStore.ballSpeed" id="small-range" type="range" min="50" max="200" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
             <span class="text-sm sm:text-md"> 200 </span>
         </div>
-        <label class="text-sm">RACKET SIZE</label>
+        <label class="text-xs sm:text-sm">RACKET SIZE</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
-            <span class="absolute -top-3 sm:-top-4 text-red-700 text-sm sm:text-md">{{ globalStore.racketSize }}</span>
+            <span class="absolute -top-4 text-red-700 text-sm sm:text-md">{{ globalStore.racketSize }}</span>
             <span class="text-sm sm:text-md"> 50 </span>
             <input v-model="globalStore.racketSize" id="small-range" type="range" min="50" max="150" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
             <span class="text-sm sm:text-md"> 150 </span>
         </div>
-		<label class="text-sm">INCREASE SPEED / TIME</label>
+		<label class="text-xs sm:text-sm sm:pt-6">INCREASE SPEED / TIME</label>
 		<div class="flex gap-4">
 			<span class="-rotate-90 -translate-y-0.5">🚀</span>
 			<toogle :gameSetting="true" @switchButton="globalStore.increaseSpeed = !globalStore.increaseSpeed"></toogle>
