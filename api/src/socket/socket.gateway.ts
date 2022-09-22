@@ -315,6 +315,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
+		this.socketService.emitIds(newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
 		return channelFront;
 	}
 
@@ -369,6 +370,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
+		this.socketService.emitIds(newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		return [channelFront];
 	}
 

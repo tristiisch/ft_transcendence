@@ -146,7 +146,9 @@ export class ChatService {
 		return publicChannels.concat(protectedChannels);
     }
 
-	async fetchMessage(user: User, chatId: number) : Promise<MessageFront[]> {
+	async fetchMessage(user: User, chatId: number, usersCached: User[]) : Promise<MessageFront[]> {
+		if (!usersCached)
+			usersCached = new Array();
 		let chatRead: ChatRead = null;
 
 		if (user)
@@ -155,8 +157,14 @@ export class ChatService {
 		return await this.msgRepo.findBy({ id_channel: chatId })
 			.then(async (msgs: Message[]) => {
 				const msgsFront: MessageFront[] = new Array();
-				for (const msg of msgs)
-					msgsFront.push(msg.toFront(user, chatRead));
+				for (const msg of msgs) {
+					let target: User;
+					if (msg.id_sender === -1)
+						target = null;
+					else
+						target = await this.userService.findOneWithCache(msg.id_sender, usersCached);
+					msgsFront.push(msg.toFront(target, chatRead));
+				}
 				return msgsFront;
 			}
 		);
@@ -174,7 +182,7 @@ export class ChatService {
 			if (protectedChannel.password !== channelDTO.password)
 				throw new UnauthorizedException(`Wrong password for protected channel ${protectedChannel.name}.`)
 		}
-		return this.fetchMessage(user, channelDTO.id);
+		return this.fetchMessage(user, channelDTO.id, null);
 	}
 
 	async fetchChannel(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | ChannelPublic | ChannelPrivate> {
@@ -455,7 +463,7 @@ export class ChatService {
 			let leaveMessage: Message = new Message();
 			leaveMessage.message = `🔴　${users_ids.join(', ')} has been kicked by ${user.username}`;
 			leaveMessage.type = MessageType.AUTO;
-			leaveMessage.id_sender = user.id;
+			leaveMessage.id_sender = -1;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
@@ -521,6 +529,7 @@ export class ChatService {
 			msg.message = '[DEBUG MSG CREATED BY BACK] ⚪️　' + user.username + ' just joined the channel';
 			msg.id_sender = -1;
 			msg.id_channel = channel.id;
+			msg.type = MessageType.AUTO;
 			msg = await this.addMessage(msg);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(user, null));
 		};
@@ -565,6 +574,7 @@ export class ChatService {
 			leaveMessage.message = '[DEBUG MSG CREATED BY BACK] 🔴　' + user.username + ' just leaved the channel';
 			leaveMessage.id_sender = -1;
 			leaveMessage.id_channel = channel.id;
+			leaveMessage.type = MessageType.AUTO;
 			leaveMessage = await this.addMessage(leaveMessage);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};

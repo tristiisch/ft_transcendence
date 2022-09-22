@@ -22,7 +22,7 @@ export class Discussion extends Chat {
 		const discuFront: DiscussionFront = {
 			type: ChatStatus.DISCUSSION,
 			user: target,
-			messages: await chatService.fetchMessage(user, this.id)
+			messages: await chatService.fetchMessage(user, this.id, userCached)
 		}
 		return discuFront;
 	}
