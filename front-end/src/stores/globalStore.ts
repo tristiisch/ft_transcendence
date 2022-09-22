@@ -17,6 +17,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		blockedUsers: [],
 		notifications: [],
 		selectedItems: [],
+		ballSpeed: 55,
+		racketSize: 50,
+		world: 'world1'
 	}),
 	getters: {
 		isTypeArrayUsers: (state) => {
