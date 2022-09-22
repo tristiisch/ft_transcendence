@@ -158,7 +158,11 @@ export class ChatService {
 			.then(async (msgs: Message[]) => {
 				const msgsFront: MessageFront[] = new Array();
 				for (const msg of msgs) {
-					let target: User = await this.userService.findOneWithCache(msg.id_sender, usersCached);
+					let target: User;
+					if (msg.id_sender === -1)
+						target = null;
+					else
+						target = await this.userService.findOneWithCache(msg.id_sender, usersCached);
 					msgsFront.push(msg.toFront(target, chatRead));
 				}
 				return msgsFront;
@@ -459,7 +463,7 @@ export class ChatService {
 			let leaveMessage: Message = new Message();
 			leaveMessage.message = `🔴　${users_ids.join(', ')} has been kicked by ${user.username}`;
 			leaveMessage.type = MessageType.AUTO;
-			leaveMessage.id_sender = user.id;
+			leaveMessage.id_sender = -1;
 			leaveMessage.id_channel = channel.id;
 			leaveMessage = await this.addMessage(leaveMessage);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
@@ -525,6 +529,7 @@ export class ChatService {
 			msg.message = '[DEBUG MSG CREATED BY BACK] ⚪️　' + user.username + ' just joined the channel';
 			msg.id_sender = -1;
 			msg.id_channel = channel.id;
+			msg.type = MessageType.AUTO;
 			msg = await this.addMessage(msg);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(user, null));
 		};
@@ -569,6 +574,7 @@ export class ChatService {
 			leaveMessage.message = '[DEBUG MSG CREATED BY BACK] 🔴　' + user.username + ' just leaved the channel';
 			leaveMessage.id_sender = -1;
 			leaveMessage.id_channel = channel.id;
+			leaveMessage.type = MessageType.AUTO;
 			leaveMessage = await this.addMessage(leaveMessage);
 			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};
