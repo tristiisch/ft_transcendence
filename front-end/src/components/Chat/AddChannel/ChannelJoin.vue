@@ -11,7 +11,7 @@ const globalStore = useGlobalStore();
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 function joinNewChannel() {
-    if (!globalStore.isTypeUser(globalStore.selectedItems[0])) {
+    if (globalStore.selectedItems[0] && !globalStore.isTypeUser(globalStore.selectedItems[0])) {
         const newChannel = globalStore.selectedItems[0];
 		if (newChannel.type === ChatStatus.PROTECTED) {
 			chatStore.setRightPartToDisplay(PartToDisplay.PASSWORD_QUERY);

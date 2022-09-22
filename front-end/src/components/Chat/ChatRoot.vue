@@ -20,11 +20,14 @@ function scrollToEnd() {
 }
 
 function sendGameInvitation() {
-    chatStore.sendMessage('game invitation', MessageType.GAME_INVITATION);
+    if (chatStore.inDiscussion) chatStore.sendMessageDiscussion('game invitation', MessageType.GAME_INVITATION, chatStore.inDiscussion);
 }
 
 function sendMessage() { 
-	chatStore.sendMessage(newMessage.value, MessageType.MESSAGE)
+	if (chatStore.inDiscussion) 
+		chatStore.sendMessageDiscussion(newMessage.value, MessageType.MESSAGE, chatStore.inDiscussion)
+	else if (chatStore.inChannel)
+		chatStore.sendMessageChannel(newMessage.value, MessageType.MESSAGE, chatStore.inChannel)
 	newMessage.value = ''
 	scrollToEnd()
 }

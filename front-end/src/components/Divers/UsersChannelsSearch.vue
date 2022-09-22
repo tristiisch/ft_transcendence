@@ -102,7 +102,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<base-spinner v-if="isLoading"></base-spinner>
+	<base-spinner small v-if="isLoading"></base-spinner>
 	<form v-if="!isLoading" class="flex w-full pb-4" @submit.prevent>
 		<div class="self-start relative">
 			<button

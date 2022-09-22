@@ -53,7 +53,7 @@ socket.on("chatChannelCreate", (channel: Channel, creator: User) => {
 });
 
 socket.on("chatChannelDelete", (channel: Channel) => {
-	chatStore.deleteUserChannel(chatStore.getIndexUserChannels(channel.id));
+	chatStore.deleteUserChannel(channel);
 });
 
 socket.on("chatChannelJoin", (channelUpdated: Channel) => {

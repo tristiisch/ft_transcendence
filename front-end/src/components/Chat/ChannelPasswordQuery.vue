@@ -4,6 +4,8 @@ import { useChatStore } from '@/stores/chatStore';
 import { useGlobalStore } from '@/stores/globalStore';
 import socket from '@/plugin/socketInstance';
 import type Channel from '@/types/Channel';
+import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
+import PartToDisplay from '@/types/ChatPartToDisplay';
 
 const chatStore = useChatStore();
 const globalStore = useGlobalStore();
@@ -17,24 +19,32 @@ function checkPassword()
 		channelToJoin = globalStore.selectedItems[0];
 		socket.emit('chatPassCheck', channelToJoin, password.value, (ok: boolean) => {
 			if (ok) {
-				chatStore.joinNewChannel(channelToJoin)
+				chatStore.joinNewChannel(channelToJoin, password.value)
+				globalStore.resetSelectedItems();
 			}
 			else {
 				passwordError.value = true
 				password.value = ''
 			}
-			globalStore.resetSelectedItems();
 		});
 	}
+}
+
+function leavePage() {
+	chatStore.setRightPartToDisplay(PartToDisplay.CHAT)
+	globalStore.resetSelectedItems();
 }
 </script>
 
 <template>
-    <div class="flex flex-col w-full justify-center items-center gap-2 rounded h-full">
-        <p class="text-red-200 pb-4">This channel is <span class="text-red-800">PROTECTED</span></p>
-        <form @submit.prevent="checkPassword()">
-            <input v-model="password" placeholder="Enter password" class="text-sm w-full p-2 text-center bg-neutral-100 border border-blue-600 rounded-lg text-blue-600 placeholder:text-slate-300 placeholder:text-center">
-        </form>
-        <p v-if="passwordError && password === ''" class="flex gap-3 text-red-700 pt-4"><span class="-hue-rotate-[50deg]">⚠️</span>wrong password</p>
-    </div>
+    <div class="flex flex-col w-full justify-center items-center gap-2 rounded h-full px-10">
+		<div class="flex flex-col justify-center h-full">
+			<p class="text-red-200 pb-4">This channel is <span class="text-red-800">PROTECTED</span></p>
+			<form @submit.prevent="checkPassword()">
+				<input v-model="password" placeholder="Enter password" class="text-sm w-full p-2 text-center bg-neutral-100 border border-blue-600 rounded-lg text-blue-600 placeholder:text-slate-300 placeholder:text-center">
+			</form>
+			<p v-if="passwordError && password === ''" class="flex gap-3 text-red-700 pt-4"><span class="-hue-rotate-[50deg]">⚠️</span>wrong password</p>
+		</div>
+		<button-return-next @click="leavePage()" side="previous" class="self-end mb-1"></button-return-next>
+	</div>
 </template>

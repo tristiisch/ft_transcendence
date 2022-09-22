@@ -176,9 +176,9 @@ export const useChatStore = defineStore('chatStore', {
 					, 'have been added to ' + this.userChannels[0].name + ' by ' + userStore.userData.username);
 			});
 		},
-		joinNewChannel(channel : Channel) {
+		joinNewChannel(channel : Channel, password?: string) {
 			const userStore = useUserStore();
-			socket.emit('chatChannelJoin', channel, userStore.userData, (channelUpdated: Channel) => {
+			socket.emit('chatChannelJoin', channel, userStore.userData, password, (channelUpdated: Channel) => {
 				this.userChannels.length ? this.userChannels.unshift(channelUpdated) : this.userChannels.push(channelUpdated);
 				this.inChannel = this.userChannels[0];
 				this.addAutomaticMessage(channel, userStore.userData, 'just joined the channel')
@@ -200,8 +200,12 @@ export const useChatStore = defineStore('chatStore', {
 				this.userDiscussions.splice(index, 1);
 			}
 		},
-		deleteUserChannel(indexUserChannel: number) {
-			if (indexUserChannel >= 0) this.userChannels.splice(indexUserChannel, 1);
+		deleteUserChannel(channel: Channel) {
+			const indexUserChannel = this.getIndexUserChannels(channel.id)
+			if (indexUserChannel >= 0) {
+				this.userChannels.splice(indexUserChannel, 1);
+				this.resetInChannel(channel)
+			}
 		},
 		leaveChannel(channel: Channel, user?: User) {
 			const userStore = useUserStore();
@@ -210,8 +214,8 @@ export const useChatStore = defineStore('chatStore', {
 					const ok: boolean = body[0];
 					if (ok) {
 						this.addAutomaticMessage(channel, userStore.userData, 'just leaved the channel')
-						this.deleteUserChannel(this.getIndexUserChannels(channel.id));
-						if (this.inChannel)
+						this.deleteUserChannel(channel);
+						if (this.inChannel && this.inChannel.id === channel.id)
 							this.resetInChannel(this.inChannel);
 					}
 				});
@@ -253,7 +257,7 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				const user = newBanned.list.find(user => user. id === userStore.userData.id);
 				if (user && channel.id) {
-					this.deleteUserChannel(this.getIndexChannels(channel.id));
+					this.deleteUserChannel(channel);
 					this.resetInChannel(channel);
 					const toast = useToast();
 					toast.info('you have been banned from channel ' + channel.name + " by " + newBanned.userWhoSelect.username);
@@ -303,7 +307,7 @@ export const useChatStore = defineStore('chatStore', {
 			else {
 				const user = newKicked.list.find(user => user.id === userStore.userData.id);
 				if (user && channel.id) {
-					this.deleteUserChannel(this.getIndexChannels(channel.id));
+					this.deleteUserChannel(channel);
 					this.resetInChannel(channel);
 					const toast = useToast();
 					toast.info('you have been Kicked from channel ' + channel.name + " by " + newKicked.userWhoSelect.username);
@@ -321,7 +325,7 @@ export const useChatStore = defineStore('chatStore', {
 					userNameInUnListed += selection.unlisted[i].username + ", ";
 				userNameInUnListed += selection.unlisted[i].username + " ";
 				const newMessage = '🔴　' + userNameInUnListed + messageUnListed;
-				this.sendMessage(newMessage, MessageType.AUTOMATIC_MESSAGE);
+				this.sendMessageChannel(newMessage, MessageType.AUTOMATIC_MESSAGE, channel);
 			}
 			if (selection.listed.length !== 0) {
 				let userNameInListed = '';
@@ -334,49 +338,54 @@ export const useChatStore = defineStore('chatStore', {
 				if (selection.listed[i].username !== userStore.userData.username)
 					userNameInListed += selection.listed[i].username + " ";
 				const newMessage = '⚪️　' + userNameInListed + messageListed;
-				this.sendMessage(newMessage, MessageType.AUTOMATIC_MESSAGE);
+				this.sendMessageChannel(newMessage, MessageType.AUTOMATIC_MESSAGE, channel);
 			}
 		},
 		addAutomaticMessage(channel: Channel, user: User, msg: string) {
 			const newMessage = '⚪️　' + user.username + ' ' + msg;
-			this.sendMessage(newMessage, MessageType.AUTOMATIC_MESSAGE);
+			this.sendMessageChannel(newMessage, MessageType.AUTOMATIC_MESSAGE, channel);
 		},
-		sendMessage(newMessage: string, type: MessageType) {
+		createMessage(newMessage: string, type: MessageType) {
 			const userStore = useUserStore();
+			const now = new Date().toLocaleString();
+			const messageDTO: Message = {
+				date: now,
+				message: newMessage,
+				idSender: type === MessageType.AUTOMATIC_MESSAGE ? -1 : userStore.userData.id,
+				avatarSender: userStore.userData.avatar,
+				usernameSender: userStore.userData.username,
+				read: false,
+				type: type
+			};
+			return messageDTO;
+		},
+		sendMessageDiscussion(newMessage: string, type: MessageType, discussion: Discussion) {
 			if (newMessage != '') {
-				const now = new Date().toLocaleString();
-				const messageDTO: Message = {
-					date: now,
-					message: newMessage,
-					idSender: type === MessageType.AUTOMATIC_MESSAGE ? -1 : userStore.userData.id,
-					avatarSender: userStore.userData.avatar,
-					usernameSender: userStore.userData.username,
-					read: false,
-					type: type
-				};
-				if (this.inDiscussion) {
-					messageDTO['idChat'] = this.inDiscussion.id;
-					const chat: Discussion = this.inDiscussion;
-					socket.emit('chatDiscussionMessage', this.inDiscussion.user.id, messageDTO, (body: any[]) => {
-						const discu: Discussion = body[0];
-						const msg: Message = body[1];
-						console.log('chatDiscussionMessage', msg, 'Discussion', discu);
-						chat.messages.push(msg)
-					});
-				}
-				else if (this.inChannel) {
-					messageDTO['idChat'] = this.inChannel.id;
-					const chat: Channel = this.inChannel;
-					socket.emit('chatChannelMessage', { id: this.inChannel.id, type: this.inChannel.type }, messageDTO, (body: any[]) => {
-						const channel: Channel = body[0];
-						const msg: Message = body[1];
-						console.log('channel Message', msg);
-						if (!msg) {
-							console.log('ERROR chatChannelMessage', this.inChannel, 'messageDTO', messageDTO);
-						}
-						chat.messages.push(msg)
-					});
-				}
+				const messageDTO = this.createMessage(newMessage, type)
+				messageDTO['idChat'] = discussion.id;
+				const chat: Discussion = discussion;
+				socket.emit('chatDiscussionMessage', discussion.user.id, messageDTO, (body: any[]) => {
+					const discu: Discussion = body[0];
+					const msg: Message = body[1];
+					console.log('chatDiscussionMessage', msg, 'Discussion', discu);
+					chat.messages.push(msg)
+				});
+			}
+		},
+		sendMessageChannel(newMessage: string, type: MessageType, channel: Channel) {
+			if (newMessage != '') {
+				const messageDTO = this.createMessage(newMessage, type)
+				messageDTO['idChat'] = channel.id;
+				const chat: Channel = channel;
+				socket.emit('chatChannelMessage', { id: channel.id, type: channel.type }, messageDTO, (body: any[]) => {
+					const channel: Channel = body[0];
+					const msg: Message = body[1];
+					console.log('channel Message', msg);
+					if (!msg) {
+						console.log('ERROR chatChannelMessage', channel, 'messageDTO', messageDTO);
+					}
+					chat.messages.push(msg)
+				});
 			}
 		},
 		addDiscussionMessage(discussion: Discussion, data: Message, user: User) {

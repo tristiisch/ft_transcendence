@@ -53,7 +53,7 @@ export class SocketService {
 	async AddNotification(target: User, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(target.id)
 		if (clientSocket) {
-			clientSocket.emit('addNotification', target, notification);
+			clientSocket.emit('addNotification', notification);
 			if (notification.type == NotificationType.FRIEND_ACCEPT)
 				clientSocket.emit('addFriendLeaderboard', notification.from_user.id);
 			else if (notification.type == NotificationType.FRIEND_REMOVE)
