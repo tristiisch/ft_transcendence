@@ -70,6 +70,10 @@ class UserService {
 		return axios.post(`friends/remove`, { id: targetId });
 	}
 
+	sendGameRequest(targetId: number) {
+		return axios.post(`matchs/request/add`, { id: targetId });
+	}
+
 	getLeaderboard() {
 		return axios.get(`stats/leaderboard-with-friends`);
 	}

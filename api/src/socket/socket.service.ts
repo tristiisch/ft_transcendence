@@ -47,12 +47,14 @@ export class SocketService {
 		return this.server.sockets.sockets.get(socketId)
 	}
 
-	async FriendRequest(targetId: number, notification: NotificationFront) {
-		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) clientSocket.emit('friendRequest', notification.from_user, notification);
+	async AddNotification(target: User, notification: NotificationFront) {
+		console.log(target)
+		console.log(notification)
+		const clientSocket = this.getSocketToEmit(target.id)
+		if (clientSocket) clientSocket.emit('addNotification', target, notification);
 	};
 
-	async AddFriend(targetId: number, notification: NotificationFront) {
+	/*async AddFriend(targetId: number, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(targetId)
 		if (clientSocket) {
 			clientSocket.emit('addFriend', notification.from_user, notification);
@@ -66,7 +68,7 @@ export class SocketService {
 			clientSocket.emit('removeFriend', senderId)
 			clientSocket.emit('removeFriendLeaderboard', senderId)
 		}
-	};
+	};*/
 
 	/*AddUser(user: User) {
 		const clientSocket = this.getSocketToEmit(user.id)
