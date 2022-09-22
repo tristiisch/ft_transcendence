@@ -1,24 +1,31 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useChatStore } from '@/stores/chatStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import socket from '@/plugin/socketInstance';
+import type Channel from '@/types/Channel';
 
 const chatStore = useChatStore();
+const globalStore = useGlobalStore();
 const password = ref('')
 const passwordError = ref(false);
 
 function checkPassword()
 {
-    socket.emit('chatPassCheck', chatStore.inChannel, password.value, (ok: boolean) => {
-        if (ok) {
-			if (chatStore.inChannel)
-				chatStore.joinNewChannel(chatStore.inChannel)
-		}
-        else {
-            passwordError.value = true
-            password.value = ''
-        }
-    });
+	let channelToJoin: Channel;
+	if (!globalStore.isTypeUser(globalStore.selectedItems[0])) {
+		channelToJoin = globalStore.selectedItems[0];
+		socket.emit('chatPassCheck', channelToJoin, password.value, (ok: boolean) => {
+			if (ok) {
+				chatStore.joinNewChannel(channelToJoin)
+			}
+			else {
+				passwordError.value = true
+				password.value = ''
+			}
+			globalStore.resetSelectedItems();
+		});
+	}
 }
 </script>
 
