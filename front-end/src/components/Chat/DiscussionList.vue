@@ -42,18 +42,16 @@ watch(props.discussion.messages, () => {
 </script>
 
 <template>
-    <button class="flex w-full gap-2 h-full border-b-[1px] border-slate-600">
-        <div class="shrink-0 flex items-center h-full">
-            <img class="aspect-square h-8 sm:h-[80%] rounded-full object-cover border border-slate-400" :src="discussion.user.avatar" alt="Rounded avatar">
-        </div>
-        <div class="flex flex-col justify-center h-full w-[calc(100%_-_56px)] gap-1">
-            <div class="flex justify-between items-center">
+    <button class="flex items-center w-full h-full border-b-[1px] border-slate-600">
+        <img class="aspect-square h-8 sm:h-[80%] rounded-full object-cover border border-slate-400" :src="discussion.user.avatar" alt="Rounded avatar">
+        <div class="flex flex-col justify-center w-[calc(100%_-_32px)] sm:w-[calc(100%_-_75px)] 3xl:w-[calc(100%_-_68px)] h-full gap-1 pl-2">
+            <div class="flex flex-wrap justify-between items-center">
                 <span class="text-sm" :class="colorText()">{{ discussion.user.username }}</span>
-                <span v-if="lastMessage" class="pr-4 text-xs" :class="colorText()">{{ lastMessage.date }}</span>
+                <span v-if="lastMessage" class="text-xs" :class="colorText()">{{ lastMessage.date }}</span>
             </div>
             <div class="flex justify-between items-center">
-                <p v-if="lastMessage" class="w-full text-left truncate text-xs" :class="colorText()"><span>{{ prefix() }}</span>{{ lastMessage.message }}</p>
-			    <p v-else class="w-full text-left truncate text-xs" :class="colorText()">NO MESSAGES</p>
+                <p v-if="lastMessage" class="text-left truncate text-xs" :class="colorText()"><span>{{ prefix() }}</span>{{ lastMessage.message }}</p>
+			    <p v-else class="text-left truncate text-xs" :class="colorText()">NO MESSAGES</p>
                 <div v-if="numberOfUnreadedMessage" class="bg-red-600 rounded-full px-2 text-xs text-white mr-4">{{ numberOfUnreadedMessage }}</div>
             </div>
         </div>
