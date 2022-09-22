@@ -25,7 +25,7 @@ function deleteChannelDiscussion(index: number)
 </script>
 
 <template>
-    <div class="absolute top-[6px] left-[54px] z-10 h-[48px] w-[calc(100%_-_54px)] flex justify-center bg-blue-600 text-white text-sm">
+    <div class="absolute top-[6px] z-10 w-full h-[90%] flex justify-center bg-blue-600 text-white text-sm">
         <button @click="deleteChannelDiscussion(index)" class="w-full">
             Delete
         </button>

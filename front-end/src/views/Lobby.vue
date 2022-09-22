@@ -12,6 +12,7 @@ import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
 import socket from '@/plugin/socketInstance';
+import UserService from '@/services/UserService';
 
 const globalStore = useGlobalStore();
 const router = useRouter();
@@ -52,6 +53,13 @@ function invitePlayer()
         invitedUser.value = globalStore.selectedItems[0];
         globalStore.resetSelectedItems();
     }
+	UserService.sendGameRequest(invitedUser.value!.id)
+		.then(() => {
+			
+		})
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+		})
 }
 
 function updateMatch(match: Match) {

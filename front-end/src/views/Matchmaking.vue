@@ -19,5 +19,5 @@ socket.on('foundMatch', (id) => {
 </script>
 
 <template>
-	<h1>Searching</h1>
+	<base-spinner game></base-spinner>
 </template>
