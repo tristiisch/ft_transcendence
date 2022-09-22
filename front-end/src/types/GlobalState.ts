@@ -9,6 +9,9 @@ export interface GlobalState {
 	blockedUsers: User[],
 	notifications: Notification[],
 	selectedItems: User[] | Channel[];
+	ballSpeed: number,
+	racketSize: number,
+	world: string
 }
 
 export default GlobalState;
