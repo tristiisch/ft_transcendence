@@ -4,7 +4,7 @@ import { UsersService } from 'users/users.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
-import { NotificationFront } from 'notification/entity/notification.entity';
+import { NotificationFront, NotificationType } from 'notification/entity/notification.entity';
 import { User } from 'users/entity/user.entity';
 
 @Injectable()
@@ -48,32 +48,15 @@ export class SocketService {
 	}
 
 	async AddNotification(target: User, notification: NotificationFront) {
-		console.log(target)
-		console.log(notification)
 		const clientSocket = this.getSocketToEmit(target.id)
-		if (clientSocket) clientSocket.emit('addNotification', target, notification);
-	};
-
-	/*async AddFriend(targetId: number, notification: NotificationFront) {
-		const clientSocket = this.getSocketToEmit(targetId)
 		if (clientSocket) {
-			clientSocket.emit('addFriend', notification.from_user, notification);
-			clientSocket.emit('addFriendLeaderboard', notification.from_user.id);
+			clientSocket.emit('addNotification', target, notification);
+			if (notification.type == NotificationType.FRIEND_ACCEPT)
+				clientSocket.emit('addFriendLeaderboard', notification.from_user.id);
+			else if (notification.type == NotificationType.FRIEND_REMOVE)
+				clientSocket.emit('removeFriendLeaderboard', notification.from_user.id)
 		}
 	};
-
-	async RemoveFriend(senderId: number, targetId: number) {
-		const clientSocket = this.getSocketToEmit(targetId)
-		if (clientSocket) {
-			clientSocket.emit('removeFriend', senderId)
-			clientSocket.emit('removeFriendLeaderboard', senderId)
-		}
-	};*/
-
-	/*AddUser(user: User) {
-		const clientSocket = this.getSocketToEmit(user.id)
-		clientSocket.broadcast.emit('addUser', user);
-	};*/
 
 	emitId(userId: number, room: string, ...args: any) {
 		const socket: Socket = this.getSocketToEmit(userId);
