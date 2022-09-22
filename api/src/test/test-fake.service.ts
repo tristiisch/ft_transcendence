@@ -12,7 +12,7 @@ import { UsersService } from 'users/users.service';
 import { randomNumber, randomElement, randomElements, randomEnum, removeFromArray, removesFromArray, toBase64, randomWord } from 'utils/utils';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 import { UserAuth } from 'auth/entity/user-auth.entity';
-import { ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
+import { ChannelPrivate, ChannelProtected, ChannelPublic } from 'chat/entity/channel.entity';
 import { Chat, ChatStatus } from 'chat/entity/chat.entity';
 import { ChatService } from 'chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
@@ -195,55 +195,51 @@ export class TestFakeService {
 
 	private async createFakeChannel(user: User, usersIds: number[]): Promise<Chat> {
 		const type: ChatStatus = randomEnum(ChatStatus);
-		let newChat: ChannelPublic | ChannelProtected | Discussion;
+		let newChat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion;
 
 		switch (type) {
 			case ChatStatus.PUBLIC:
-				newChat = {
-					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
-					owner_id: user.id,
-					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
-					password: null,
-					admins_ids: [user.id],
-					muted_ids: [],
-					banned_ids: [],
-					type: type,
-					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
-				}
+				newChat = new ChannelPublic();
+				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+				newChat.owner_id = user.id,
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.admins_ids = [user.id],
+				newChat.muted_ids = [],
+				newChat.banned_ids = [],
+				newChat.type = type,
+				newChat.users_ids = [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				break;
 
 			case ChatStatus.PRIVATE:
-				newChat = {
-					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
-					owner_id: user.id,
-					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
-					password: 'bob',
-					admins_ids: [user.id],
-					muted_ids: [],
-					banned_ids: [],
-					type: type,
-					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
-				}
+				newChat = new ChannelPrivate();
+				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+				newChat.owner_id = user.id,
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.admins_ids = [user.id],
+				newChat.muted_ids = [],
+				newChat.banned_ids = [],
+				newChat.type = type,
+				newChat.users_ids = [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				break;
 			case ChatStatus.PROTECTED:
-				newChat = {
-					name: `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
-					owner_id: user.id,
-					avatar_64: await toBase64('https://api.lorem.space/image?w=256&h=256'),
-					password: 'bob',
-					admins_ids: [user.id],
-					muted_ids: [],
-					banned_ids: [],
-					type: type,
-					users_ids: [...randomElements(usersIds, randomNumber(1, 20)), user.id]
-				}
+				newChat = new ChannelProtected();
+				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
+				newChat.owner_id = user.id,
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				(newChat as ChannelProtected).password = 'bob',
+				newChat.admins_ids = [user.id],
+				newChat.muted_ids = [],
+				newChat.banned_ids = [],
+				newChat.type = type,
+				newChat.users_ids = [...randomElements(usersIds, randomNumber(1, 20)), user.id]
 				break;
 			case ChatStatus.DISCUSSION:
 				if (usersIds.length === 0)
 					return null;
 				newChat = {
 					type: type,
-					users_ids: [randomElement(usersIds), user.id]
+					users_ids: [randomElement(usersIds), user.id],
+					hidden_ids: undefined
 				}
 				break;
 			default:

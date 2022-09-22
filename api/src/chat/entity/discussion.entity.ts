@@ -2,7 +2,7 @@ import { NotAcceptableException } from "@nestjs/common";
 import { WsException } from "@nestjs/websockets";
 import { ChatService } from "chat/chat.service";
 import { SocketService } from "socket/socket.service";
-import { ChildEntity } from "typeorm";
+import { ChildEntity, Column } from "typeorm";
 import { User } from "users/entity/user.entity";
 import { UsersService } from "users/users.service";
 import { Chat, ChatStatus } from "./chat.entity";
@@ -11,6 +11,9 @@ import { MessageFront } from "./message.entity";
 
 @ChildEntity(ChatStatus.DISCUSSION)
 export class Discussion extends Chat {
+
+	@Column("int", { nullable: true, array: true })
+	hidden_ids: number[] | null;
 
 	public async toFront?(chatService: ChatService, user: User, userCached: User[]): Promise<DiscussionFront> {
 		if (this.users_ids == null || this.users_ids.length != 2)
@@ -22,7 +25,7 @@ export class Discussion extends Chat {
 		const discuFront: DiscussionFront = {
 			type: ChatStatus.DISCUSSION,
 			user: target,
-			messages: await chatService.fetchMessage(user, this.id)
+			messages: await chatService.fetchMessage(user, this.id, userCached)
 		}
 		return discuFront;
 	}

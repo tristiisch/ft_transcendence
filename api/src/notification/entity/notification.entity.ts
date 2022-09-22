@@ -1,4 +1,5 @@
 /** @prettier */
+import { NotFoundException } from '@nestjs/common';
 import { IsInt } from 'class-validator';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from 'users/entity/user.entity';
@@ -9,7 +10,8 @@ export enum NotificationType {
 	FRIEND_REQUEST,
 	MATCH_REQUEST,
 	FRIEND_ACCEPT,
-	FRIEND_DECLINE
+	FRIEND_DECLINE,
+	FRIEND_REMOVE
 }
 
 @Entity()
@@ -52,7 +54,11 @@ export class Notification {
 		} else if (this.type == NotificationType.FRIEND_ACCEPT) {
 			notifFront.message = `${notifFront.from_user.username} is now friend with you.`;
 		} else if (this.type == NotificationType.FRIEND_DECLINE) {
+			notifFront.message = `${notifFront.from_user.username} decline your friend request.`;
+		} else if (this.type == NotificationType.FRIEND_REMOVE) {
 			notifFront.message = `${notifFront.from_user.username} is no longer friend with you.`;
+		} else {
+			throw new NotFoundException(`Unknown notif type ${this.type}.`);
 		}
 		notifFront.date = this.date.toDateString();
 		notifFront.type = this.type;

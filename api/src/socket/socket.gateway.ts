@@ -128,7 +128,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const discussionFront: DiscussionFront = body[1];
 		const discu: Discussion = {
 			type: ChatStatus.DISCUSSION,
-			users_ids: [user.id, discussionFront['user'].id]
+			users_ids: [user.id, discussionFront['user'].id],
+			hidden_ids: undefined
 		}
 		let newDiscu: Discussion;
 		try {
@@ -210,6 +211,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		} catch (err) {
 			throw new WsException(err.message);
 		}
+	}
+
+	@UseGuards(JwtSocketGuard)
+	@SubscribeMessage('chatDiscussionHide')
+	async chatDiscuHide(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
+		const targetId: number = body[0];
+		const user: User = req.user;
+
+		let discu: Discussion = await this.chatService.findDiscussion(user.id, targetId);
+		if (!discu) {
+			throw new WsException('You never talked to her/him.');
+		}
+
+		this.chatService.hideDiscussion(user, discu);
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -315,6 +330,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
+		this.socketService.emitIds(newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
 		return channelFront;
 	}
 
@@ -369,6 +385,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
+		this.socketService.emitIds(newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		return [channelFront];
 	}
 

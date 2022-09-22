@@ -31,7 +31,7 @@ export class Message {
 	@Column({ type: 'enum', enum: MessageType, default: MessageType.MSG, name: 'type' })
 	type: MessageType;
 
-	public toFront(user: User, chatRead: ChatRead | null): MessageFront {
+	public toFront(user: User | null, chatRead: ChatRead | null): MessageFront {
 		if (chatRead != null && chatRead.id_chat !== this.id_channel)
 			throw new WsException('Not same id in Message#toFront');
 		const msgFront: MessageFront = {

@@ -4,12 +4,12 @@ import { ConsoleLogger, Injectable, Logger, LoggerService } from '@nestjs/common
 export class FtLogger extends ConsoleLogger implements LoggerService {
 
 	error(message: any, ...optionalParams: [...any, string?, string?]): void {
-		Logger.verbose(`optionalParams ${JSON.stringify(optionalParams)}`)
+		//Logger.verbose(`optionalParams ${JSON.stringify(optionalParams)}`)
 		super.error(message, ...optionalParams);
 	}
 
 	warn(message: any, ...optionalParams: [...any, string?]): void {
-		Logger.verbose(`optionalParams ${JSON.stringify(optionalParams)}`)
+		//Logger.verbose(`optionalParams ${JSON.stringify(optionalParams)}`)
 		super.warn(message, ...optionalParams);
 	}
 

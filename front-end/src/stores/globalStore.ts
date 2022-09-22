@@ -168,7 +168,10 @@ export const useGlobalStore = defineStore('globalStore', {
 			if (index !== -1) this.notifications.splice(index, 1);
 		},
 		removeNotActionNotification() {
-			this.notifications.filter(notification => notification.type == NotificationType.FRIEND_ACCEPT).forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
+			this.notifications.filter(notification => notification.type == NotificationType.FRIEND_ACCEPT 
+				|| notification.type == NotificationType.FRIEND_DECLINE 
+				|| notification.type == NotificationType.FRIEND_REMOVE)
+				.forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
 		},
 		// updateUser(userToChange: User) {
 		// 	const index = this.users.findIndex(user => user.id === userToChange.id);

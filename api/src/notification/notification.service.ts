@@ -71,7 +71,7 @@ export class NotificationService {
 			if (notifAction.accept) {
 				await this.friendService.acceptFriendRequest(user, target);
 			} else {
-				await this.friendService.removeFriendship(user, target)
+				await this.friendService.declineFriendShip(user, target)
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
 			if (notifAction.accept) {
