@@ -208,10 +208,6 @@ export class ChatService {
 		return chat;
 	}
 
-	async findChat(channelId: number) {
-		return await this.chatRepo.findOneBy({ id: channelId });
-	}
-
 	async fetchChat(user: User, channelId: number, channelType: ChatStatus): Promise<ChannelProtected | Discussion | ChannelPublic | ChannelPrivate> {
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion;
 	
@@ -662,5 +658,15 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 		}
 		await this.chatReadRepo.delete({ id_chat: channel.id });
 		return dr;
+	}
+
+
+	async hideDiscussion(user: User, discu: Discussion) {
+		const query: QueryDeepPartialEntity<Discussion> = {};
+		if (!discu.hidden_ids)
+			query.hidden_ids = [user.id]
+		else
+			query.hidden_ids = [...discu.hidden_ids, user.id]
+		await this.discussionRepo.update(discu.id, query);
 	}
 }

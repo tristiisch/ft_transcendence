@@ -128,7 +128,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const discussionFront: DiscussionFront = body[1];
 		const discu: Discussion = {
 			type: ChatStatus.DISCUSSION,
-			users_ids: [user.id, discussionFront['user'].id]
+			users_ids: [user.id, discussionFront['user'].id],
+			hidden_ids: undefined
 		}
 		let newDiscu: Discussion;
 		try {
@@ -210,6 +211,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		} catch (err) {
 			throw new WsException(err.message);
 		}
+	}
+
+	@UseGuards(JwtSocketGuard)
+	@SubscribeMessage('chatDiscussionHide')
+	async chatDiscuHide(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
+		const targetId: number = body[0];
+		const user: User = req.user;
+
+		let discu: Discussion = await this.chatService.findDiscussion(user.id, targetId);
+		if (!discu) {
+			throw new WsException('You never talked to her/him.');
+		}
+
+		this.chatService.hideDiscussion(user, discu);
 	}
 
 	@UseGuards(JwtSocketGuard)
