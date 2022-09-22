@@ -42,13 +42,10 @@ export class FriendsController {
 		return this.resolveUsers(this.friendsService.addFriendRequest.bind(this.friendsService), req.user, targetSelect);
 	}
 
-	/**
-	 * Same as {@link removeFriend}
-	 */
 	@UseGuards(JwtAuthGuard)
 	@Post('request/remove')
 	removeFriendRequest(@Req() req, @Body() targetSelect: UserSelectDTO) {
-		return this.resolveUsers(this.friendsService.removeFriendship.bind(this.friendsService), req.user, targetSelect);
+		return this.resolveUsers(this.friendsService.declineFriendShip.bind(this.friendsService), req.user, targetSelect);
 	}
 
 	@UseGuards(JwtAuthGuard)
