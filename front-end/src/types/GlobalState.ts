@@ -11,6 +11,7 @@ export interface GlobalState {
 	selectedItems: User[] | Channel[];
 	ballSpeed: number,
 	racketSize: number,
+	increaseSpeed: boolean,
 	world: string
 }
 

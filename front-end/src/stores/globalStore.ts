@@ -17,8 +17,9 @@ export const useGlobalStore = defineStore('globalStore', {
 		blockedUsers: [],
 		notifications: [],
 		selectedItems: [],
-		ballSpeed: 55,
-		racketSize: 50,
+		ballSpeed: 100,
+		racketSize: 100,
+		increaseSpeed: false,
 		world: 'world1'
 	}),
 	getters: {

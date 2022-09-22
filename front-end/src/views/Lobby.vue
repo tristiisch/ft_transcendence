@@ -7,6 +7,7 @@ import type Match from '@/types/Match';
 import type User from '@/types/User';
 import CurrentGame from '@/components/Lobby/CurrentGame.vue';
 import UsersSearch from '@/components/Divers/UsersChannelsSearch.vue';
+import SelectWorld from '@/components/Lobby/SelectWorld.vue'
 import GameSettings from '@/components/Lobby/GameSettings.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import SelectPlayer from '@/components/Lobby/SelectPlayer.vue'
@@ -25,11 +26,10 @@ const invitedUser = ref<User | undefined>();
 
 function setRightPartToDisplay()
 {
-	if (rightPartToDisplay.value === 'selectPlayer')
-		rightPartToDisplay.value = 'gameSettings'
-	else
+	if (rightPartToDisplay.value === 'gameSettings')
+		rightPartToDisplay.value = 'selectWorld'
+	else if (rightPartToDisplay.value === 'selectWorld')
 		rightPartToDisplay.value = 'selectPlayer'
-
 }
 
 function fetchCurrentMatchs() {
@@ -89,9 +89,13 @@ onBeforeUnmount(() => {
 			</card-left>
 			<card-right title="CUSTOM GAME">
 				<div class="flex flex-col justify-between items-center w-11/12 h-full px-8">
-					<game-settings v-if="rightPartToDisplay === 'gameSettings'" @next="rightPartToDisplay = 'selectPlayer'"></game-settings>
-					<button-return-next v-if="rightPartToDisplay === 'gameSettings'" @click="setRightPartToDisplay()" side="next" class="self-end mb-1"></button-return-next>
-					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="setRightPartToDisplay()" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation" :invitedUser="invitedUser"></select-player>
+					<game-settings v-if="rightPartToDisplay === 'gameSettings'" @next="rightPartToDisplay = 'selectWorld'"></game-settings>
+					<select-world v-if="rightPartToDisplay === 'selectWorld'"  @next="rightPartToDisplay = 'selectPlayer'"></select-world>
+					<div v-if="(rightPartToDisplay === 'gameSettings') || (rightPartToDisplay === 'selectWorld')" class="flex self-end gap-3">
+						<button-return-next v-if="rightPartToDisplay === 'selectWorld'" @click="rightPartToDisplay = 'gameSettings'" side="previous" class="mb-1"></button-return-next>
+						<button-return-next  @click="setRightPartToDisplay()" side="next" class="mb-1"></button-return-next>
+					</div>
+					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="rightPartToDisplay = 'selectWorld'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation" :invitedUser="invitedUser"></select-player>
 					<users-search v-if="rightPartToDisplay === 'invitePlayer'" :singleSelection="true" :type="'users'"></users-search>
 					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></button-close-validate>
 				</div>

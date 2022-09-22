@@ -4,7 +4,7 @@ import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
 import status, { ChatStatus } from '@/types/ChatStatus';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
-import ToogleButton from '@/components/Divers/ToogleButton.vue'
+import Toogle from '@/components/Divers/ToogleButton.vue';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -58,7 +58,7 @@ onBeforeMount(() => {
             </div>
             <div v-if="chatStore.inChannel?.type === ChatStatus.PROTECTED" class="flex flex-col justify-center w-full sm:w-3/4">
                  <label class="self-start block mb-1 sm:mb-2 text-sm font-medium text-red-200">Remove password:</label>
-                 <toogleButton :chat="true" @switchButton="setRemovePassword()" class="self-center"></toogleButton>
+                 <toogle :chat="true" @switchButton="setRemovePassword()" class="self-center"></toogle>
             </div>
         </div>
     </div>
