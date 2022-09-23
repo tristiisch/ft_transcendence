@@ -1,8 +1,8 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Logger, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Logger, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guard';
+import { JwtAuthGuard, JwtTFAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
@@ -47,9 +47,14 @@ export class AuthController {
 		const { user, userAuth } = await this.authService.UserConnecting(userInfo);
 		delete userAuth.twoFactorSecret; // TODO Verif this method
 
-		if (user && userAuth.has_2fa === true)
-			res.json({ auth: userAuth });
-		else if (user)
+		if (!user)
+			throw new BadRequestException('User is null');
+
+		if (userAuth.has_2fa === true) {
+			const jwtToken2FA: string = await this.authService.createTFAToken(user.id);
+			res.json({ auth: userAuth, jwtToken2FA: jwtToken2FA });
+		}
+		else
 			res.json({ auth: userAuth, user: user });
 	}
 
@@ -99,7 +104,7 @@ export class TFAController {
 
 	@Post('authenticate')
 	@HttpCode(200)
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtTFAuthGuard)
 	async authenticate(@Req() req, @Body() data) {
 		const user: User = req.user;
 		const code: string = data.otpToken;

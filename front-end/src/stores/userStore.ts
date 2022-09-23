@@ -37,6 +37,9 @@ export const useUserStore = defineStore('userStore', {
 					this.userData = response.data.user;
 					console.log(this.userData)
 					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
+				} else {
+					// TODO this.userAuth will be null here
+					localStorage.setItem('userAuth2FA', response.data.jwtToken2FA);
 				}
 			} catch (error: any) {
 				throw error;

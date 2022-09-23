@@ -4,7 +4,8 @@ import { Strategy, ExtractJwt} from "passport-jwt";
 import { UsersService } from "../../users/users.service";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt'){
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+
 	constructor(private usersService: UsersService) {
 		super({
 		  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -21,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt'){
 				throw new BadGatewayException('Unknown user.');
 			if (err instanceof ServiceUnavailableException)
 				throw err;
-			Logger.error(`Unable to validate jwt strategy of ${jwtData}: ${err.message}`, 'JWT')
+			Logger.error(`Unable to validate jwt strategy of ${JSON.stringify(jwtData)}: ${err.message}`, 'JWT')
 			return null;
 		}
 	}

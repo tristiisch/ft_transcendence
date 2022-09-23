@@ -92,13 +92,13 @@ export class AuthService {
 		});
 	}
 
-	public async createTempToken(id: number): Promise<string> {
+	/*public async createTempToken(id: number): Promise<string> {
 		const payload = { id: id };
 		return this.jwtService.signAsync(payload, {
 			secret: process.env.JWT_SECRET_2FA,
 			expiresIn: "2min" // prévoir une variable pour l'expiration du token
 		});
-	}
+	}*/
 
 	public async createTFAToken(id: number): Promise<string> {
 		const payload = {
@@ -107,6 +107,7 @@ export class AuthService {
 		};
 		return this.jwtService.signAsync(payload, {
 			secret: process.env.JWT_SECRET_2FA,
+			expiresIn: "2min" // prévoir une variable pour l'expiration du token
 		});
 	}
 
@@ -123,16 +124,12 @@ export class AuthService {
 		const userAuth: UserAuth = await this.authRepository.findOneBy({ user_id: userId });
 		if (!userAuth)
 			return null;
-		/*if (userAuth.twoFactorSecret != null)
-			userAuth.has_2fa = true;
-		else
-			userAuth.has_2fa = false;*/
 		return userAuth;
 	}
 
 	public TFACodeValidationEnable(code: string, userId: number){
 		if (!this.temp2FASecret.has(userId))
-			throw new BadRequestException('BadRequest: You should generate a 2FA QRCode before send code.');
+			throw new BadRequestException('You should generate a 2FA QRCode before send code.');
 		const twoFactorSecret: string = this.temp2FASecret.get(userId);
 		return authenticator.verify({
 			token: code,
