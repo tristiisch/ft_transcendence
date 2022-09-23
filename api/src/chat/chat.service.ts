@@ -385,9 +385,9 @@ export class ChatService {
 		return await this.msgRepo.findOneBy({ id: idMsg });
 	}
 
-	async setAdmin(channel: Channel, user: User, newAdmin:{ list: User[], userWhoSelect: User}): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+	async setAdmin(channel: Channel, user: User, newAdmin:{ list: User[], userWhoSelect: User}): Promise<ChannelFront> {
 		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
-		const usersIds: number[] = users.map(u => u.id);
+		const usersIds: number[] = users.map(u => u.id); // TODO Verify ids
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion;
 		
 		switch (channel.type) {
@@ -411,46 +411,83 @@ export class ChatService {
 		}
 		const adminsIdsRemoved: number[] = removesFromArray(channel.admins_ids, usersIds);
 		const adminsIdsAdded: number[] = removesFromArray(usersIds, channel.admins_ids);
-		const adminsRemoved: string[] = (await this.userService.findMany(adminsIdsRemoved)).map(u => u.username);
-		const adminsAdded: string[] = (await this.userService.findMany(adminsIdsAdded)).map(u => u.username);
+		const adminsRemoved: User[] = (await this.userService.findMany(adminsIdsRemoved));
+		const adminsAdded: User[] = (await this.userService.findMany(adminsIdsAdded));
 
 		if (adminsAdded.length != 0)
-			await this.createAutoMsg(`⚪️　${adminsAdded.join(', ')} is now admin`, channel);
+			await this.createAutoMsg(`⚪️　${adminsAdded.map(u => u.username).join(', ')} is now admin.`, channel);
 		if (adminsRemoved.length != 0)
-			await this.createAutoMsg(`🔴　${adminsRemoved.join(', ')} is no more admin`, channel);
-		return chat;
+			await this.createAutoMsg(`🔴　${adminsRemoved.map(u => u.username).join(', ')} is no more admin.`, channel);
+			
+		const channelFront: ChannelFront = await channel.toFront(this, user, adminsAdded);
+		return channelFront;
 	}
 
-	async setMuted(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+	async setMuted(channel: Channel, user: User, usersIds: number[]): Promise<ChannelFront> {
+		let ch: ChannelPublic | ChannelProtected | ChannelPrivate;
+
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				await this.channelPublicRepo.update(channel.id, { muted_ids: users_ids });
-				return this.channelPublicRepo.findOneBy({ id: channel.id });
+				await this.channelPublicRepo.update(channel.id, { muted_ids: usersIds });
+				ch = await  this.channelPublicRepo.findOneBy({ id: channel.id });
+				break;
 			case ChatStatus.PROTECTED:
-				await this.channelProtectedRepo.update(channel.id, { muted_ids: users_ids });
-				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+				await this.channelProtectedRepo.update(channel.id, { muted_ids: usersIds });
+				ch = await  this.channelProtectedRepo.findOneBy({ id: channel.id });
+				break;
 			case ChatStatus.PRIVATE:
-				await this.channelPrivateRepo.update(channel.id, { muted_ids: users_ids });
-				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+				await this.channelPrivateRepo.update(channel.id, { muted_ids: usersIds });
+				ch = await this.channelPrivateRepo.findOneBy({ id: channel.id });
+				break;
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
 		}
+		const mutesIdsRemoved: number[] = removesFromArray(channel.admins_ids, usersIds);
+		const mutesIdsAdded: number[] = removesFromArray(usersIds, channel.admins_ids);
+		const mutesRemoved: User[] = (await this.userService.findMany(mutesIdsRemoved));
+		const mutesAdded: User[] = (await this.userService.findMany(mutesIdsAdded));
+
+		if (mutesAdded.length != 0)
+			await this.createAutoMsg(`⚪️　${mutesAdded.map(u => u.username).join(', ')} is now mute.`, channel);
+		if (mutesRemoved.length != 0)
+			await this.createAutoMsg(`🔴　${mutesRemoved.map(u => u.username).join(', ')} is no more muted.`, channel);
+			
+		const channelFront: ChannelFront = await channel.toFront(this, user, mutesAdded);
+		return channelFront;
 	}
 
-	async setBanned(channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+	async setBanned(channel: Channel, user: User, usersIds: number[]): Promise<ChannelFront> {
+		let ch: ChannelPublic | ChannelProtected | ChannelPrivate;
+
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
-				await this.channelPublicRepo.update(channel.id, { banned_ids: users_ids });
-				return this.channelPublicRepo.findOneBy({ id: channel.id });
+				await this.channelPublicRepo.update(channel.id, { banned_ids: usersIds });
+				ch = await  this.channelPublicRepo.findOneBy({ id: channel.id });
+				break;
 			case ChatStatus.PROTECTED:
-				await this.channelProtectedRepo.update(channel.id, { banned_ids: users_ids });
-				return this.channelProtectedRepo.findOneBy({ id: channel.id });
+				await this.channelProtectedRepo.update(channel.id, { banned_ids: usersIds });
+				ch = await  this.channelProtectedRepo.findOneBy({ id: channel.id });
+				break;
 			case ChatStatus.PRIVATE:
-				await this.channelPrivateRepo.update(channel.id, { banned_ids: users_ids });
-				return this.channelPrivateRepo.findOneBy({ id: channel.id });
+				await this.channelPrivateRepo.update(channel.id, { banned_ids: usersIds });
+				ch = await this.channelPrivateRepo.findOneBy({ id: channel.id });
+				break;
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
 		}
+		
+		const idsRemoved: number[] = removesFromArray(channel.admins_ids, usersIds);
+		const idsAdded: number[] = removesFromArray(usersIds, channel.admins_ids);
+		const removed: User[] = (await this.userService.findMany(idsRemoved));
+		const added: User[] = (await this.userService.findMany(idsAdded));
+
+		if (added.length != 0)
+			await this.createAutoMsg(`⚪️　${added.map(u => u.username).join(', ')} is now ban.`, channel);
+		if (removed.length != 0)
+			await this.createAutoMsg(`🔴　${removed.map(u => u.username).join(', ')} is no more banned.`, channel);
+			
+		const channelFront: ChannelFront = await channel.toFront(this, user, added);
+		return channelFront;
 	}
 
 	async inviteUsers(channel: ChannelPrivate, users_ids: number[]): Promise<ChannelPrivate> {
@@ -461,7 +498,7 @@ export class ChatService {
 		return this.channelPrivateRepo.findOneBy({ id: channel.id });
 	}
 
-	async kickUsers(user: User, channel: Channel, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
+	async kickUsers(channel: Channel, user: User, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
 		let dataUpdate: QueryDeepPartialEntity<Channel> = {};
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate;
 
@@ -491,8 +528,6 @@ export class ChatService {
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
 		}
-		let leaveMessage: Message = await this.createAutoMsg(`🔴　${users_ids.join(', ')} has been kicked by ${user.username}`, channel);
-		channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		return chat;
 	}
 
