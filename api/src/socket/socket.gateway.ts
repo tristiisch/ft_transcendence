@@ -343,10 +343,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
-		channel = await this.chatService.setAdmin(channel, users.map(user => user.id));
+		channel = await this.chatService.setAdmin(channel, user, newAdmin);
 
-		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
+		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]); // Todo optimize
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelAdmin', channelFront);
 		return [channelFront];
 	}

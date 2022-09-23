@@ -213,7 +213,6 @@ jobs:
         if: matrix.os == 'macos-latest'
         run : |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
         shell: bash
 
       - name: Install Docker MacOS
