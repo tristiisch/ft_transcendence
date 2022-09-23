@@ -95,9 +95,12 @@ export class UsersService {
 	async findOneWithCache(id: number, usersCached: User[]): Promise<User> {
 		isNumberPositive(id, 'get a user');
 		let user: User = usersCached.find((user: User) => user.id === id);
-		if (user !== undefined)
+		if (user) {
+			delete user.avatar_64;
 			return user;
+		}
 		user = await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
+		delete user.avatar_64;
 		usersCached.push(user);
 		return user;
 	}

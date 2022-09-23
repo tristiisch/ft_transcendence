@@ -16,6 +16,8 @@ export class AppService {
 			cleardb: `${backURL}/api/test/cleardb`,
 			clearChat: `${backURL}/api/test/clear-chat`,
 			generateChannels: `${backURL}/api/test/generateChannels/:username`,
-			generateChannelsNb: `${backURL}/api/test/generateChannels/:username/:nb` }
+			generateChannelsNb: `${backURL}/api/test/generateChannels/:username/:nb`,
+			dev: `${backURL}/api/test/dev`
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /** @prettier */
-import { ForbiddenException, forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, Logger, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'users/users.service';
 import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
@@ -414,10 +414,10 @@ export class ChatService {
 		const adminsRemoved: User[] = (await this.userService.findMany(adminsIdsRemoved));
 		const adminsAdded: User[] = (await this.userService.findMany(adminsIdsAdded));
 
-		if (adminsAdded.length != 0)
-			await this.createAutoMsg(`⚪️　${adminsAdded.map(u => u.username).join(', ')} is now admin.`, channel);
 		if (adminsRemoved.length != 0)
-			await this.createAutoMsg(`🔴　${adminsRemoved.map(u => u.username).join(', ')} is no more admin.`, channel);
+			await this.createAutoMsg(`🔴　${adminsRemoved.map(u => u.username).join(', ')} -> loose Admin status by ${user.username}.`, channel);
+		if (adminsAdded.length != 0)
+			await this.createAutoMsg(`⚪️　${adminsAdded.map(u => u.username).join(', ')} -> got Admin status by ${user.username}.`, channel);
 			
 		const channelFront: ChannelFront = await channel.toFront(this, user, adminsAdded);
 		return channelFront;
@@ -495,7 +495,7 @@ export class ChatService {
 			users_ids = [...channel.users_ids, ...users_ids]
 
 		await this.channelPrivateRepo.update(channel.id, { users_ids: users_ids });
-		return this.channelPrivateRepo.findOneBy({ id: channel.id });
+		return await this.channelPrivateRepo.findOneBy({ id: channel.id });
 	}
 
 	async kickUsers(channel: Channel, user: User, users_ids: number[]): Promise<ChannelPublic | ChannelProtected | ChannelPrivate> {
@@ -666,15 +666,18 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');
 		if (!chatId || Number.isNaN(chatId))
 			throw new WsException(`Unable to find channel id ${chatId}`);
+		let chatRead: ChatRead;
 		try {
-			let chatRead: ChatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
+			chatRead = await this.chatReadRepo.findOneBy({ id_user: user.id, id_chat: chatId });
 			if (!chatRead)
-				await this.chatReadRepo.save({ id_user: user.id, id_chat: chatId, id_message: message.id });
+				await this.chatReadRepo.insert({ id_user: user.id, id_chat: chatId, id_message: message.id });
 			else if (message.id > chatRead.id_message)
-				await this.chatReadRepo.update({ id_user: user.id , id_chat: chatId}, { id_message: message.id });
+				await this.chatReadRepo.update({ id_user: user.id , id_chat: chatId }, { id_message: message.id });
 		} catch (err) {
-			if (err.message.includes('duplicate key value violates unique constraint'))
+			if (err.message.includes('duplicate key value violates unique constraint')) {
+				Logger.error(`Duplicate insert for ${user.username} chat id : ${chatId}  msg id : ${message.id} chat read : ${JSON.stringify(chatRead)}`, 'ChatRead');
 				throw new WsException(`Duplicate ChatRead ${chatId}`);
+			}
 			throw err;
 		}
 	}

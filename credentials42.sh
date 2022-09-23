@@ -119,7 +119,7 @@ PAYLOAD=$(removeHttpCode $RESPONSE)
 
 if [ $HTTP_CODE == 200 ]; then
     echo -e "\033[0;32m42API connection is working. Nice !\033[0m"
-    echo -e "\033[0;32mDon't foget to add $FT_OAUTH_REDIRECT as redirect URL in API42\033[0m"
+    echo -e "\033[0;32mDon't foget to add $FT_OAUTH_REDIRECT as redirect URL in API42 at https://profile.intra.42.fr/oauth/applications\033[0m"
     # printJSON $PAYLOAD
 else
     echo -e "\033[0;31m42API connection is not working (Error $HTTP_CODE). Check 42API credentials in .env files.\033[0m"

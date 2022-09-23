@@ -22,8 +22,8 @@ export class Channel extends Chat {
 		const chFront: ChannelFront = {
 			name: this.name,
 			owner: await chatService.getUserService().findOneWithCache(this.owner_id, usersCached),
-			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
-			password: null,
+			
+			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`, // TODO Dynamize url
 			hasPassword: false,
 			users: await chatService.getUserService().findManyWithCache(this.users_ids, usersCached),
 			// users: this.users_ids,
@@ -121,7 +121,6 @@ export class ChannelProtected extends Channel {
 
 	public async toFront?(chatService: ChatService, user: User | null, usersCached: User[] | null): Promise<ChannelFront> {
 		const chFront: ChannelFront = await super.toFront(chatService, user, usersCached);
-		chFront.password = this.password; // TODO remove this
 		chFront.hasPassword = true;
 		return chFront;
 	}
@@ -154,10 +153,6 @@ export class ChannelFront extends ChatFront {
 	name: string;
 	owner: User;
 	avatar: string;
-	/**
-	 * @Deprecated
-	 */
-	password: string | null;
 	hasPassword: boolean;
 	users: User[];
 	admins: User[];

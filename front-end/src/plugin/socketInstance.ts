@@ -7,8 +7,7 @@ import { NotificationType } from '@/types/Notification';
 import type LeaderboardUser from '@/types/Leaderboard';
 import type { UserStatus } from '@/types/User';
 
-const URL = import.meta.env.VITE_SOCKET_URL;
-const socket = io(URL, {
+const socket = io(`${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_API_PORT}`, {
 	auth: {token: null},
 	autoConnect: false
 });

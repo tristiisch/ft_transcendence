@@ -20,7 +20,7 @@ export class AuthController {
 	async redirect(@Res() res: Response, @Req() req: Request) {
 		if (!req.body.code)
 			throw new PreconditionFailedException("Unauthorized - Code undefined")
-		let result;
+		let result: any;
 		try {
 			const postData = {
 				grant_type: 'authorization_code',
@@ -33,11 +33,11 @@ export class AuthController {
 			const url = process.env.FT_API;
 			result = await axios.post(url, postData);
 		} catch (err42) {
-			Logger.error(`Unable to connect to 42 API Verify UID & Secret env vars: ${err42.message}`, 'API42');
+			Logger.error(`Unable to connect to 42 API Verify UID, Secret env vars and relative redirect URI ${getFrontRelativeURL(req)}/login : ${err42.message}`, 'API42');
 			throw new ForbiddenException("Unauthorized - Unable to connect to 42 API");
 		}
 
-		let userInfo;
+		let userInfo: any;
 		try {
 			const headersRequest = { Authorization: 'Bearer ' + result.data.access_token };
 			userInfo = await axios.get(process.env.FT_API_ME, { headers: headersRequest });

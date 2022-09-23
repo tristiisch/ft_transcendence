@@ -27,7 +27,7 @@ import { validate, validateOrReject } from 'class-validator';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @WebSocketGateway({
-	cors: { origin: `${process.env.FRONT_URL}` }
+	cors: { origin: [process.env.FRONT_URL, `http://localhost:${process.env.FRONT_PORT}`] }
 })
 
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -204,7 +204,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(user, null);
-			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channel, newMsgFront, user);
+			channel.sendMessage(this.socketService, "chatChannelMessage", channel, newMsgFront, user);
 			// client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
 			return [ channel, newMsgFront ];
 		} catch (err) {
@@ -344,7 +344,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel.checkAdminPermission(user);
 		const channelFront: ChannelFront = await this.chatService.setAdmin(channel, user, newAdmin);
 
-		channel.sendMessageFrom(this.socketService, user, 'chatChannelAdmin', channelFront);
+		
+		channel.sendMessage(this.socketService, 'chatChannelAdmin', channelFront);
 		return [channelFront];
 	}
 
@@ -361,7 +362,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
 
 		const channelFront: ChannelFront = await this.chatService.setMuted(channel, user, users.map(user => user.id));
-		channel.sendMessageFrom(this.socketService, user, 'chatChannelMute', channelFront);
+		channel.sendMessage(this.socketService, 'chatChannelMute', channelFront);
 		return [channelFront];
 	}
 
@@ -379,7 +380,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
-		channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
+		channel.sendMessage(this.socketService, 'chatChannelKick', channelFront, newKicked);
 		this.socketService.emitIds(newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		
 		 // TODO get user from db
@@ -429,13 +430,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const idMsg: number = body[0];
 		const idChannel: number = body[1];
 
-		// let chat: Chat = await this.chatService.findChat(idChannel);
 		let msg: Message = await this.chatService.findMessage(idMsg);
 		if (!msg) {
-			Logger.error(`Can't read a message with ${idMsg} id.`);
+			Logger.error(`Can't read a message for ${user.username} with msg id ${idMsg}.`);
 			throw new WsException(`Unable to find message ${idMsg} in channel ${idChannel}.`);
 		}
-		await this.chatService.setReadMessage(user, idChannel, msg)
+		await this.chatService.setReadMessage(user, idChannel, msg);
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -458,9 +458,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const newNamePassword: { name: string | null, password: string | null, userWhoChangeName: User } = body[1];
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
+		let msg: Message = await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${channel.name}`, channel);
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront)
+		channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)
 		return [channelFront];
 	}
 
