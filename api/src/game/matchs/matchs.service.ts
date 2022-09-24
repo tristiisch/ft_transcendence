@@ -18,6 +18,14 @@ export class MatchStatsService {
 	private matches = new Map<number, {stats: MatchStats, live_infos: MatchLiveInfos}>()
 	private players_queue = new Array<User>()
 
+	private readonly winningScore = -1
+	private readonly stageWidth = 3989
+	private readonly stageHeight = 2976
+	private readonly blockerWidth = this.stageWidth / 50
+	private readonly blockerHeight = this.stageHeight / 5
+	private readonly p1XPos = this.stageWidth / 10
+	private readonly p2XPpos = this.stageWidth - this.p1XPos
+
 	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService;
 
@@ -47,11 +55,13 @@ export class MatchStatsService {
 			room_socket: undefined,
 			started: false,
 			waiting: true,
-			ballPos: 0,
+			stopMatch: false,
+			ballXPos: this.stageWidth/2,
+			ballYPos: this.stageHeight/2,
 			p1Ready: false,
 			p2Ready: false,
-			p1Pos: 0,
-			p2Pos: 0
+			p1Pos: this.stageHeight/2 - this.blockerHeight/2,
+			p2Pos: this.stageHeight/2 - this.blockerHeight/2 
 		}
 		this.matches.set(res.id, {
 			stats: res, 
@@ -83,70 +93,92 @@ export class MatchStatsService {
 		return 0
 	}
 
-	async startMatch(match: {stats: MatchStats, live_infos: MatchLiveInfos}) {
-		const width = 3989
-		const height = 2976
-		const ball_size = width / 100
-		var x = width/2
-		var y = height/2
-		var dx = 30
-		var dy = 30
-
-		const blocker_width = width / 50
-		const blocker_height = height / 5
-		//console.log("blocker height", blocker_height)
-		const p1_xpos = width / 10
-		const p2_xpos = width - width / 10
-
-
-		// console.log(context.getImageData(x, y, 1, 1).data)
-		//				let canvas = createCanvas(3989, 2976)
-		//				canvas.width = 3989
-		//				canvas.height = 2976
-		//				var context = canvas.getContext('2d')
-		//				loadImage("https://i.ibb.co/9ZrtvT4/stage.png").then((img) => {
-		//					context.drawImage(img, 0, 0, 3989, 2976)
-		//					}
-
-		// let rgba = context.getImageData(x + dx, y, 1, 1).data
-		// let rgba2 = context.getImageData(x, y + dy, 1, 1).data
-		// if (y > 300 && y < 2700 && !(rgba[0] === 255 && rgba[1] === 255 && rgba[2] === 255 && rgba[2] === 255))
-		// 	dx = -dx
-		// if (x > 200 && x < 3800 && !(rgba2[0] === 255 && rgba2[1] === 255 && rgba2[2] === 255 && rgba2[2] === 255))
-		// 	dy = -dy
-
-		match.live_infos.room_socket.emit("startMatch")
-
-		//maybe while(1) for more accuracy ?
-		setTimeout(() => { let loop = setInterval(() => {
-			if (x + dx < 0) {
+	async launchMatchLoop(match, dx, dy) {
+		setInterval(() => {
+			if (match.live_infos.stopMatch) {
+				this.endMatch(match)
+				return
+			}
+			if (match.live_infos.ballXPos + dx < 0) {
 				match.stats.score[1]++
 				match.live_infos.room_socket.emit('p2Scored')
 				dx = -dx
 			}
-			else if (x + dx > width) {
+			else if (match.live_infos.ballXPos + dx > this.stageWidth) {
 				match.stats.score[0]++
 				match.live_infos.room_socket.emit('p1Scored')
 				dx = -dx
 			}
-			if (match.stats.score[0] === 1 || match.stats.score[1] === 1) {
-				match.live_infos.room_socket.emit("endMatch")
-				this.save(match.stats)
-				clearInterval(loop)
+			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
+				this.endMatch(match)
+				return
 			}
-			if (y + dy < 0 || y + dy > height) { dy = -dy }
+			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
+				dy = -dy
 
-			if ((x > p1_xpos && x < p1_xpos + blocker_width && x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > match.live_infos.p1Pos && y + dy < match.live_infos.p1Pos + blocker_height) ||
-				(x > p2_xpos && x < p2_xpos + blocker_width && x + dx > p2_xpos && x + dx < p2_xpos + blocker_width && y + dy > match.live_infos.p2Pos && y + dy < match.live_infos.p2Pos + blocker_height))
+			if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
+				(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
 					dy = -dy
-			else if ((x + dx > p1_xpos && x + dx < p1_xpos + blocker_width && y + dy > match.live_infos.p1Pos && y + dy < match.live_infos.p1Pos + blocker_height) ||
-					(x + dx > p2_xpos && x + dx < p2_xpos + blocker_width && y + dy > match.live_infos.p2Pos && y + dy < match.live_infos.p2Pos + blocker_height))
+			else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
+					(match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
 					dx = -dx
-			x += dx
-			y += dy
-			match.live_infos.room_socket.emit("ball", x, y)
-			//dx += dx < 0 ? -0.0001 : 0.0001
-		}, 10)}, 3000)
+			match.live_infos.ballXPos += dx
+			match.live_infos.ballYPos += dy
+		}, 1)
+// 		if (match.live_infos.stopMatch) {
+// 			this.endMatch(match)
+// 			return
+// 		}
+// 		if (match.live_infos.ballXPos + dx < 0) {
+// 			match.stats.score[1]++
+// 			match.live_infos.room_socket.emit('p2Scored')
+// 			dx = -dx
+// 		}
+// 		else if (match.live_infos.ballXPos + dx > this.stageWidth) {
+// 			match.stats.score[0]++
+// 			match.live_infos.room_socket.emit('p1Scored')
+// 			dx = -dx
+// 		}
+// 		if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
+// 			this.endMatch(match)
+// 			return
+// 		}
+// 		if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
+// 			dy = -dy
+
+// 		if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
+// 			(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
+// 				dy = -dy
+// 		else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
+// 				(match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
+// 				dx = -dx
+// 		match.live_infos.ballXPos += dx
+// 		match.live_infos.ballYPos += dy
+// // match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
+// 		setTimeout(() => this.launchMatchLoop(match, dx, dy), 0)
+	}
+
+	async startMatch(match: {stats: MatchStats, live_infos: MatchLiveInfos}) {
+		let dx = 3
+		let dy = 3
+
+		console.log("startMatch " + match.stats.id)
+		match.live_infos.room_socket.emit("startMatch")
+
+		setTimeout(() => this.launchMatchLoop(match, dx, dy), 3000)
+		let emitPosInterval = setInterval(() => {
+			if (match.live_infos.stopMatch)
+				clearInterval(emitPosInterval)
+			match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
+		}, 100)
+	}
+
+	async endMatch(match: {stats: MatchStats, live_infos: MatchLiveInfos}) {
+		match.live_infos.stopMatch = true
+		match.live_infos.room_socket.emit("endMatch")
+		match.stats.timestamp_ended = new Date
+		this.save(match.stats)
+		this.matches.delete(match.stats.id)
 	}
 
 	async findHistory(userId: number) : Promise<MatchOwn[]> {

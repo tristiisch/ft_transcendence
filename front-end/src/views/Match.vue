@@ -81,6 +81,7 @@ function loadStage() {
 	const ball_size_quotient = 100 // the least, the bigger
 	const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
 	const ball_ypos_quotient = 2 // same
+	const ball_speed = 12
 
 	const blocker_width_quotient = 50 // the least, the bigger
 	const blocker_height_quotient = 5 // the least, the longer
@@ -99,7 +100,7 @@ function loadStage() {
 		height: computeStageHeight(),
 		width: stage_width
 	})
-	//stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
+	stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
 	var layer = new Konva.Layer()
 
@@ -121,7 +122,7 @@ function loadStage() {
 		x: stage.width() / blocker_xpos_quotient,
 		y: stage.height() / 2 - blockers_height / 2,
 		fill: 'lightgreen',
-		cornerRadius: 25,
+		cornerRadius: 2,
 		visible: false
 	})
 	var p2_blocker = new Konva.Rect({
@@ -130,7 +131,7 @@ function loadStage() {
 		x: stage.width() - stage.width() / blocker_xpos_quotient,
 		y: stage.height() / 2 - blockers_height / 2,
 		fill: 'lightgreen',
-		cornerRadius: 25,
+		cornerRadius: 2,
 		visible: false
 	})
 
@@ -168,6 +169,32 @@ function loadStage() {
 	layer.add(p1_blocker)
 	layer.add(p2_blocker)
 
+	//with ballAnimation
+	// let dx = 75 * backend_stage_ratio
+	// let dy = 5 * backend_stage_ratio
+
+	//with setInterval
+	let dx = ball_speed * backend_stage_ratio
+	let dy = ball_speed * backend_stage_ratio
+	let ball_x = stage_width/2
+	let ball_y = stage_height/2
+
+	// var ballAnimation = new Konva.Animation(function(frame) {
+	// 	if (ball.x() + dx < ball_radius) {
+	// 		dx = -dx
+	// 		// match.value.score[1]++
+	// 	}
+	// 	else if (ball.x() + dx > stage_width - ball_radius) {
+	// 		dx = -dx
+	// 		// match.value.score[0]++
+	// 	}
+	// 	// if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) dy = -dy
+	// 	// if (ball.x() + dx < p1_blocker.x() + ball_radius || ball.x() + dx > p2_blocker.x() - ball_radius) dx = -dx
+	// 	// checkCollisions()
+	// 	ball.x(ball.x() + dx);
+	// 	// ball.y(ball.y() + dy);
+	// }, layer)
+
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
@@ -178,6 +205,8 @@ function loadStage() {
 		var ratio = stage.height() / stage_height
 		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
+		dx = dx < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
+		dy = dy < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 
 		blockers_width = computeBlockerWidth()
 		blockers_height = computeBlockerHeight()
@@ -200,10 +229,11 @@ function loadStage() {
 
 // -----------------------------------------------------
 // sockets after loading stage
-	socket.on("ball", (x, y) => {
-		ball.x(x * backend_stage_ratio)
-		ball.y(y * backend_stage_ratio)
-	});
+	// socket.on("ballPos", (x, y) => ball.position({x: x * backend_stage_ratio, y: y * backend_stage_ratio}))
+	socket.on("ballPos", (x, y) => {
+		ball_x = x * backend_stage_ratio
+		ball_y = y * backend_stage_ratio
+	})
 	if (userStore.userData.id !== match.value.user1_id) {
 		console.log('p1Pos')
 		socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
@@ -212,33 +242,66 @@ function loadStage() {
 		console.log('p2Pos')
 		socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
 	}
+
 	socket.on("p1Scored", () => { match.value.score[0]++ })
 	socket.on("p2Scored", () => { match.value.score[1]++ })
-	socket.on("hey", (s) => {
-		console.log(s)
-	})
+
+	async function launchMatchLoop() {
+		setInterval(() => {
+			if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
+			if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+			if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+				(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+					dy = -dy
+			else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+					(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+					dx = -dx
+			ball_x += dx
+			ball_y += dy
+		}, 1)
+		// if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
+		// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+		// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+		// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+		// 		dy = -dy
+		// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+		// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+		// 		dx = -dx
+		// ball_x += dx
+		// ball_y += dy
+		// setTimeout(launchMatchLoop, 0)
+	}
+
 	socket.on("startMatch", () => {
+		setTimeout(launchMatchLoop, 3000)
+		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		ball.visible(true)
 	})
 	socket.on("endMatch", () => {
 		router.replace('/home')
 	})
 
-	// socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
-
 	socket.emit("joinMatch", match_id, (match_live_infos: any) => {
-		console.log(match_live_infos)
+		if (match_live_infos.started) {
+			launchMatchLoop()
+			ball.visible(true)
+			setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
+		}
+		else if (isPlayer)
+			socket.emit("readyToPlay", match_id)
 		p1_blocker.y(match_live_infos.p1Pos * backend_stage_ratio)
 		p2_blocker.y(match_live_infos.p2Pos * backend_stage_ratio)
 		p1_blocker.visible(true)
 		p2_blocker.visible(true)
-		if (match_live_infos.started)
-			ball.visible(true)
+		// console.log(match_live_infos)
 	})
 
-	if (isPlayer)
-		socket.emit("readyToPlay", match_id)
 // -----------------------------------------------------
+}
+
+function leaveMatch() {
+	socket.emit("leaveMatch", match_id)
+	router.replace('')
 }
 
 function getShrunkUsername(username: string)
@@ -249,6 +312,7 @@ function getShrunkUsername(username: string)
 }
 
 onBeforeUnmount(() => {
+	//socket.off(...)
 	socket.emit('updateUserStatus', status.ONLINE)
 });
 
@@ -261,7 +325,8 @@ onBeforeUnmount(() => {
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> / VS \</h1>
 			<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
 		</div>
-		<base-button link :to="{ name: 'Home', params: {}}" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+		<!--
+		<base-button @click="leaveMatch()" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 			<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
 		</base-button>
 		<div v-if="isLoaded" class="flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
@@ -281,7 +346,7 @@ onBeforeUnmount(() => {
 		<div class="w-[100vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 		</div>
-		<div class="w-[100vh] absolute opacity-10 m-auto top-0 bottom-0 left-0 right-0 h-3/4 bg-TvScreenPixel"></div>
+		<div class="w-[100vh] absolute opacity-10 m-auto top-0 bottom-0 left-0 right-0 h-3/4 bg-TvScreenPixel"></div> -->
 		<div id="stage-container"></div>
 	</div>
 		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
@@ -315,7 +380,7 @@ onBeforeUnmount(() => {
 	/* background-color:rgba(1,255,1,1); */
 }
 
-@keyframes refresh {
+/* @keyframes refresh {
 	0% {
 		bottom: 100%;
 	}
@@ -343,5 +408,6 @@ onBeforeUnmount(() => {
 .animationRefresh {
 	animation: refresh 5s linear infinite;
 }
+*/
 
 </style>
