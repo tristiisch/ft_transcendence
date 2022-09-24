@@ -6,7 +6,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import type User from '@/types/User';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
-import ChatStatus from '@/types/ChatStatus';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -47,23 +46,25 @@ function updateSelectableUsers() {
 }
 
 function updateChangeInChannel() {
-	if (chatStore.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-		let newList: { list: User[], userWhoSelect: User } = {
-			list: globalStore.selectedItems,
-			userWhoSelect: userStore.userData
-		};
-		let selection: {unlisted: User[], listed: User[]} | null;
-		if (props.type === 'admin' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.admins)))
-			chatStore.updateAdminList(chatStore.inChannel, newList, selection);
-		else if (props.type === 'ban' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.banned)))
-			chatStore.updateBanList(chatStore.inChannel, newList, selection);
-		else if (props.type === 'mute' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.muted)))
-			chatStore.updateMuteList(chatStore.inChannel, newList, selection);
-		else if (props.type === 'kick')
-			chatStore.KickUsers(chatStore.inChannel, newList);
-		globalStore.resetSelectedItems();
+	if (globalStore.selectedItems.length) {
+		if (chatStore.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
+			let newList: { list: User[], userWhoSelect: User } = {
+				list: globalStore.selectedItems,
+				userWhoSelect: userStore.userData
+			};
+			let selection: {unlisted: User[], listed: User[]} | null;
+			if (props.type === 'admin' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.admins)))
+				chatStore.updateAdminList(chatStore.inChannel, newList, selection);
+			else if (props.type === 'ban' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.banned)))
+				chatStore.updateBanList(chatStore.inChannel, newList, selection);
+			else if (props.type === 'mute' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.muted)))
+				chatStore.updateMuteList(chatStore.inChannel, newList, selection);
+			else if (props.type === 'kick')
+				chatStore.KickUsers(chatStore.inChannel, newList);
+			globalStore.resetSelectedItems();
+		}
+		emit('validate');
 	}
-	emit('validate');
 }
 
 onBeforeMount(() => {
