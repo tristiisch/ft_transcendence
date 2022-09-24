@@ -2,7 +2,7 @@
 import { useChatStore } from '@/stores/chatStore';
 import { computed } from 'vue';
 import type Channel from '@/types/Channel';
-import Status from '@/types/ChatStatus';
+import Status, { ChatStatus } from '@/types/ChatStatus';
 
 const chatStore = useChatStore();
 const props = defineProps<{ 
@@ -49,6 +49,17 @@ function colorText(){
         return 'text-slate-700'
 }
 
+function borderColor(channel: Channel) {
+	if (channel.id === chatStore.inChannel?.id)
+		return 'border-[#f1cf3b]'
+	if (channel.type === ChatStatus.PUBLIC)
+		return 'border-white'
+	else if (channel.type === ChatStatus.PROTECTED)
+		return 'border-violet-700'
+	else
+		return 'border-red-700'
+}
+
 const numberOfUnreadedMessage = computed(() => {
     const nb = chatStore.nbUnreadMessageInChannel(props.channel);
     return nb;
@@ -58,7 +69,7 @@ const numberOfUnreadedMessage = computed(() => {
 <template>
      <button class="relative flex justify-between items-center w-full h-full border-b-[1px] border-slate-600 pr-2">
         <div class="shrink-0 flex items-center h-full gap-2">
-            <img class="aspect-square h-8 sm:h-[80%] rounded object-cover border-[1px] border-slate-400" :src="channelAvatar()" alt="Rounded avatar">
+            <img class="aspect-square h-8 sm:h-[80%] rounded object-cover border-[1.5px]" :class="borderColor(channel)" :src="channelAvatar()" alt="Rounded avatar">
         </div>
 		<div v-if="numberOfUnreadedMessage" class="absolute flex justify-center items-center left-0 bottom-1 bg-red-600 w-3 h-3 sm:w-4 sm:h-4 rounded-full text-xxxs sm:text-xxs text-white">{{ numberOfUnreadedMessage }}</div>
         <p class="px-2 break-words truncate" :class="colorText()">{{ channel.name }}</p>
