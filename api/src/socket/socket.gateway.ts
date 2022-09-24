@@ -50,10 +50,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.socketService.server = server;
 		this.server.on("connection", (socket) => {
 			socket.prependAny((eventName, ...args) => {
-				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.prependAnyOutgoing((eventName, ...args) => {
-				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.on("ping", (count) => {
 				// Logger.debug(`Ping ${count}`, 'WebSocket');
@@ -494,6 +494,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// once the match is created: for players and spectators
 		console.log(client.id, "wants to join : ", id)
 		if (this.matches.has(id)) {
+			let stageWidth = this.matchService.getStageWidth()
 			let match = this.matches.get(id).live_infos
 			let started = match.started
 			let waiting = match.waiting
@@ -507,8 +508,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
 			console.log("match_" + id, "nb clients = ", clients.size)
 			// if (started)
-				// return { started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
-			return { started, waiting, p1Ready, p2Ready, p1Pos, p2Pos }
+				// return { stageWidth, started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
+			return { stageWidth, started, waiting, p1Ready, p2Ready, p1Pos, p2Pos }
 		}
 	}
 

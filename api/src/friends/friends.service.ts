@@ -131,8 +131,9 @@ export class FriendsService {
 		}
 
 		let notif: Notification = new Notification();
-		notif.user_id = friendship.user2_id;
-		notif.from_user_id = friendship.user1_id;
+
+		notif.user_id = target.id;
+		notif.from_user_id = user.id;
 		notif.type = NotificationType.FRIEND_REMOVE;
 		notif = await this.notifService.addNotif(notif);
 		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
