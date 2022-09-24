@@ -30,6 +30,13 @@ function colorText(){
         return 'text-slate-700'
 }
 
+function borderColor() {
+	if (props.index === 0 && chatStore.inDiscussion)
+        return 'border-[#f1cf3b]'
+    else
+        return 'border-slate-400'
+}
+
 const numberOfUnreadedMessage = computed(() => {
     const nb = chatStore.nbUnreadMessageInDiscussion(props.discussion);
     return nb;
@@ -43,7 +50,7 @@ watch(props.discussion.messages, () => {
 
 <template>
     <button class="relative flex items-center w-full h-full border-b-[1px] border-slate-600">
-        <img class="aspect-square h-8 sm:h-[80%] rounded-full object-cover border border-slate-400" :src="discussion.user.avatar" alt="Rounded avatar">
+        <img class="aspect-square h-8 sm:h-[80%] rounded-full object-cover border border-[1.5px]" :class="borderColor()" :src="discussion.user.avatar" alt="Rounded avatar">
 		<div v-if="numberOfUnreadedMessage" class="absolute flex justify-center items-center bottom-1 sm:bottom-2 bg-red-600 w-3 h-3 sm:w-4 sm:h-4 rounded-full text-xxxs sm:text-xxs text-white">{{ numberOfUnreadedMessage }}</div>
         <div class="flex flex-col justify-center w-[calc(100%_-_32px)] sm:w-[calc(100%_-_75px)] 3xl:w-[calc(100%_-_68px)] h-full gap-1 pl-2">
             <div class="flex flex-wrap justify-between items-center">

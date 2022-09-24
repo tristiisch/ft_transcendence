@@ -18,9 +18,9 @@ export class MatchStatsService {
 	private matches = new Map<number, {stats: MatchStats, live_infos: MatchLiveInfos}>()
 	private players_queue = new Array<User>()
 
-	private readonly winningScore = -1
-	private readonly stageWidth = 3989
-	private readonly stageHeight = 2976
+	private readonly winningScore = 5
+	private readonly stageWidth = 3989 / 1.5
+	private readonly stageHeight = 2976 / 1.5
 	private readonly blockerWidth = this.stageWidth / 50
 	private readonly blockerHeight = this.stageHeight / 5
 	private readonly p1XPos = this.stageWidth / 10
@@ -32,14 +32,16 @@ export class MatchStatsService {
 	public getRepo() {
 		return this.matchsHistoryRepository;
 	}
-
 	public getMatches() {
 		return this.matches;
 	}
-
 	public getPlayersQueue() {
 		return this.players_queue
 	}
+	public getStageWidth() {
+		return this.stageWidth
+	}
+
 	public addPlayerToQueue(socket) {
 		this.players_queue.push(socket)
 	}
@@ -94,10 +96,10 @@ export class MatchStatsService {
 	}
 
 	async launchMatchLoop(match, dx, dy) {
-		setInterval(() => {
+		let interval = setInterval(() => {
 			if (match.live_infos.stopMatch) {
 				this.endMatch(match)
-				return
+				clearInterval(interval)
 			}
 			if (match.live_infos.ballXPos + dx < 0) {
 				match.stats.score[1]++
@@ -111,7 +113,7 @@ export class MatchStatsService {
 			}
 			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
 				this.endMatch(match)
-				return
+				clearInterval(interval)
 			}
 			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
 				dy = -dy
@@ -170,7 +172,7 @@ export class MatchStatsService {
 			if (match.live_infos.stopMatch)
 				clearInterval(emitPosInterval)
 			match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-		}, 100)
+		}, 30)
 	}
 
 	async endMatch(match: {stats: MatchStats, live_infos: MatchLiveInfos}) {
