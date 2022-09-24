@@ -145,5 +145,5 @@ onBeforeMount(() => {
 			/>
 		</div>
 	</form>
-	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></users-list>
+	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySelectedUsers="null" :type="'user'"></users-list>
 </template>
