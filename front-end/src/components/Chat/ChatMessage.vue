@@ -65,7 +65,7 @@ function chooseArray() {
 <template>
     <div v-for="message in chooseArray()" :key="message.idMessage" class="flex gap-2 w-full mb-4 pl-8">
 		<BaseButton v-if="isUserMessage(message.type)" link :to="redirectTo(message.idSender)" class="shrink-0">
-			<img class="self-center h-8 w-8 shrink-0 rounded-full border-[1px] border-red-400 sm:self-start" :src="message.avatarSender">
+			<img class="self-center h-8 w-8 shrink-0 rounded-full object-cover border-[1px] border-red-400 sm:self-start" :src="message.avatarSender">
 		</BaseButton>
 		<div class="flex flex-col gap-1 min-w-0">
 			<div class="flex flex-col sm:items-center sm:gap-2 pt-1 sm:flex-row text-red-300">
