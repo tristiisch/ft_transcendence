@@ -419,7 +419,7 @@ export class ChatService {
 		if (adminsAdded.length != 0)
 			await this.createAutoMsg(`⚪️　${adminsAdded.map(u => u.username).join(', ')} -> got Admin status by ${user.username}.`, channel);
 			
-		const channelFront: ChannelFront = await channel.toFront(this, user, adminsAdded);
+		const channelFront: ChannelFront = await chat.toFront(this, user, adminsAdded);
 		return channelFront;
 	}
 
@@ -452,7 +452,7 @@ export class ChatService {
 		if (mutesRemoved.length != 0)
 			await this.createAutoMsg(`🔴　${mutesRemoved.map(u => u.username).join(', ')} is no more muted.`, channel);
 			
-		const channelFront: ChannelFront = await channel.toFront(this, user, mutesAdded);
+		const channelFront: ChannelFront = await ch.toFront(this, user, mutesAdded);
 		return channelFront;
 	}
 
@@ -486,7 +486,7 @@ export class ChatService {
 		if (removed.length != 0)
 			await this.createAutoMsg(`🔴　${removed.map(u => u.username).join(', ')} is no more banned.`, channel);
 			
-		const channelFront: ChannelFront = await channel.toFront(this, user, added);
+		const channelFront: ChannelFront = await ch.toFront(this, user, added);
 		return channelFront;
 	}
 
