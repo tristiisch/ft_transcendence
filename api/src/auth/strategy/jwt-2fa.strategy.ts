@@ -17,25 +17,20 @@ export class JwtTFAStrategy extends PassportStrategy(Strategy, "jwt-2fa") {
 		});
 	}
 
-	async validate(userId: number, payload: any) {
+	async validate(jwtData: any) {
 		let userAuth: UserAuth;
-		let user: User;
 		try {
-			userAuth = await this.authService.findOne(userId);
-			user = await this.usersService.findOne(userId);
+			userAuth = await this.authService.findOne(jwtData.id);
 		} catch (err) {
 			if (err instanceof NotFoundException)
 				throw new BadGatewayException('Unknown user.');
 			if (err instanceof ServiceUnavailableException)
 				throw err;
-			Logger.error(`Unable to validate jwt strategy of ${JSON.stringify(payload)}: ${err.message}`, 'JWT 2FA')
+			Logger.error(`Unable to validate jwt strategy of ${JSON.stringify(jwtData)}: ${err.message}`, 'JWT 2FA')
 			return null;
 		}
-		if (!userAuth.twoFactorSecret) {
-			return [userAuth, user];
-		}
-		else if (payload.TFA_auth) {
-			return [userAuth, user];
+		if (!userAuth.twoFactorSecret || jwtData.TFA_auth) {
+			return userAuth;
 		}
 	}
 }

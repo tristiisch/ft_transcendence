@@ -52,7 +52,8 @@ export class AuthController {
 
 		if (userAuth.has_2fa === true) {
 			const jwtToken2FA: string = await this.authService.createTFAToken(user.id);
-			res.json({ auth: userAuth, jwtToken2FA: jwtToken2FA });
+			userAuth.token_jwt = jwtToken2FA;
+			res.json({ auth: userAuth });
 		}
 		else
 			res.json({ auth: userAuth, user: user });
@@ -79,7 +80,11 @@ export class AuthController {
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
 export class TFAController {
-	constructor(private readonly authService: AuthService,) {}
+
+	constructor(private readonly authService: AuthService) {}
+
+	@Inject(forwardRef(() => UsersService))
+	private readonly usersService: UsersService;
 
 	@Get('generate')
 	@UseGuards(JwtAuthGuard)
@@ -106,9 +111,10 @@ export class TFAController {
 	@HttpCode(200)
 	@UseGuards(JwtTFAuthGuard)
 	async authenticate(@Req() req, @Body() data) {
-		const user: User = req.user;
+		const userAuth: UserAuth = req.user;
+		const user: User = await this.usersService.findOne(userAuth.user_id);
+
 		const code: string = data.otpToken;
-		const userAuth: UserAuth = await this.authService.findOne(user.id);
 		const isCodeValid = this.authService.TFACodeValidationAuthenticate(code, userAuth);
 		if (!isCodeValid) {
 			throw new ForbiddenException('Wrong authentication code');

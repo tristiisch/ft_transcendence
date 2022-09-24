@@ -17,7 +17,8 @@ export const useUserStore = defineStore('userStore', {
 	},
 	actions: {
 		logUser() {
-			localStorage.setItem('userAuth', JSON.stringify(this.userAuth.token_jwt));
+			if (this.userAuth.token_jwt)
+				localStorage.setItem('userAuth', this.userAuth.token_jwt);
 			this.userAuth.islogin = true
 		},
 		verifyState(state: string) {
@@ -37,10 +38,11 @@ export const useUserStore = defineStore('userStore', {
 					this.userData = response.data.user;
 					console.log(this.userData)
 					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
-				} else {
+				} 
+				/*else {
 					// TODO this.userAuth will be null here
 					localStorage.setItem('userAuth2FA', response.data.jwtToken2FA);
-				}
+				}*/
 			} catch (error: any) {
 				throw error;
 			}
