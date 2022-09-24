@@ -6,7 +6,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import type User from '@/types/User';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue'
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
-import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -80,5 +79,4 @@ onBeforeMount(() => {
 <template>
     <users-list :selectableItems="selectableUsers" :singleSelection="false" :alreadySelectedUsers="alreadySelectedUsers()" :type="'user'"></users-list>
     <button-close-validate @validate="updateChangeInChannel()" @close="emit('close')"></button-close-validate>
-	<!-- <button-return-next v-else @click="emit('close')" side="previous" class="self-end"></button-return-next> -->
 </template>
