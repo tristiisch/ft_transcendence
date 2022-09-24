@@ -30,6 +30,7 @@ const route = useRoute();
 const router = useRouter();
 const displayDelete = ref([] as boolean[]);
 const isLoading = ref(false);
+const scroll = ref<HTMLInputElement | null>(null);
 
 function addButton() {
 	if (chatStore.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS) return 'Add discussion';
@@ -100,6 +101,12 @@ socket.on("exception", (err) => {
 	toast.warning(`Error socket: ${err.message}`)
 });
 
+function scrollToTop() {
+	if (scroll.value) {
+		scroll.value.scrollTop = 0;
+	}
+}
+
 onBeforeMount(() => {
 	isLoading.value = true
 	/*chatStore.fetchUserChats((discu: Discussion[], channels: Channel[]) => {
@@ -168,7 +175,7 @@ onBeforeUnmount(() => {
 	<base-ui :isLoading="isLoading">
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
-				<div class="flex flex-col justify-between items-center h-full w-full px-8">
+				<div class="flex flex-col justify-between items-center h-full w-full px-4 md:px-8">
 					<div class="flex w-full justify-around gap-2 flex-wrap sm:pb-5 sm:border-b-[1px] sm:border-slate-700">
 						<button
 							@click="chatStore.setLeftPartToDisplay('discussion')"
@@ -183,16 +190,16 @@ onBeforeUnmount(() => {
 							CHANNELS
 						</button>
 					</div>
-					<div class="flex flex-col sm:overflow-y-auto h-full w-full">
+					<div class="flex flex-col overflow-x-auto sm:overflow-y-auto h-full w-full" ref="scroll">
 						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
-							<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion)" :discussion="discussion" :index="index"></discussion-list>
+							<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
 							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
 						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
 							<channels-list
 								v-if="memberInChannel(channel)"
 								@click.right="setDisplayDelete(index)"
-								@click.left="chatStore.loadChannel(channel)"
+								@click.left="chatStore.loadChannel(channel), scrollToTop()"
 								:channel="channel"
 								:index="index"
 							></channels-list>

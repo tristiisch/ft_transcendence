@@ -30,6 +30,13 @@ function colorText(){
         return 'text-slate-700'
 }
 
+function borderColor() {
+	if (props.index === 0 && chatStore.inDiscussion)
+        return 'border-[#f1cf3b]'
+    else
+        return 'border-slate-400'
+}
+
 const numberOfUnreadedMessage = computed(() => {
     const nb = chatStore.nbUnreadMessageInDiscussion(props.discussion);
     return nb;
@@ -42,17 +49,17 @@ watch(props.discussion.messages, () => {
 </script>
 
 <template>
-    <button class="flex items-center w-full h-full border-b-[1px] border-slate-600">
-        <img class="aspect-square h-8 sm:h-[80%] rounded-full object-cover border border-slate-400" :src="discussion.user.avatar" alt="Rounded avatar">
+    <button class="relative flex items-center w-full h-full border-b-[1px] border-slate-600">
+        <img class="aspect-square h-8 sm:h-[80%] rounded-full object-cover border border-[1.5px]" :class="borderColor()" :src="discussion.user.avatar" alt="Rounded avatar">
+		<div v-if="numberOfUnreadedMessage" class="absolute flex justify-center items-center bottom-1 sm:bottom-2 bg-red-600 w-3 h-3 sm:w-4 sm:h-4 rounded-full text-xxxs sm:text-xxs text-white">{{ numberOfUnreadedMessage }}</div>
         <div class="flex flex-col justify-center w-[calc(100%_-_32px)] sm:w-[calc(100%_-_75px)] 3xl:w-[calc(100%_-_68px)] h-full gap-1 pl-2">
             <div class="flex flex-wrap justify-between items-center">
                 <span class="text-sm" :class="colorText()">{{ discussion.user.username }}</span>
-                <span v-if="lastMessage" class="text-xs" :class="colorText()">{{ lastMessage.date }}</span>
+                <span v-if="lastMessage" class="text-xxs" :class="colorText()">{{ lastMessage.date }}</span>
             </div>
             <div class="flex justify-between items-center">
                 <p v-if="lastMessage" class="text-left truncate text-xs" :class="colorText()"><span>{{ prefix() }}</span>{{ lastMessage.message }}</p>
 			    <p v-else class="text-left truncate text-xs" :class="colorText()">NO MESSAGES</p>
-                <div v-if="numberOfUnreadedMessage" class="bg-red-600 rounded-full px-2 text-xs text-white mr-4">{{ numberOfUnreadedMessage }}</div>
             </div>
         </div>
     </button>

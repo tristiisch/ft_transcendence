@@ -13,7 +13,6 @@ import socket from '@/plugin/socketInstance';
 
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
-const userStore = useUserStore();
 const toast = useToast();
 const userToggle = ref(false);
 const itemsToDisplay = ref<User[] | Channel[]>([]);

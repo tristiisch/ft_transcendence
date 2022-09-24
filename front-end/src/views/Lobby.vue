@@ -2,6 +2,7 @@
 import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useRoute, useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 import UsersService from '@/services/UserService';
 import type Match from '@/types/Match';
 import type User from '@/types/User';
@@ -18,6 +19,7 @@ import UserService from '@/services/UserService';
 const globalStore = useGlobalStore();
 const router = useRouter();
 const route = useRoute();
+const toast = useToast();
 const matchs = ref([] as Match[]);
 const isLoading = ref(false);
 const rightPartToDisplay = ref('gameSettings');
@@ -54,8 +56,8 @@ function invitePlayer()
         globalStore.resetSelectedItems();
     }
 	UserService.sendGameRequest(invitedUser.value!.id)
-		.then(() => {
-			
+		.then((response) => {
+			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
@@ -70,6 +72,9 @@ function updateMatch(match: Match) {
 onBeforeMount(() => {
 	fetchCurrentMatchs();
 	socket.on('UpdateMatch', updateMatch);
+	globalStore.ballSpeed = 100;
+	globalStore.racketSize = 100;
+	globalStore.world = 'world1';
 });
 
 onBeforeUnmount(() => {
