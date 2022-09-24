@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref} from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import type User from '@/types/User';
 import ButtonPlus from '@/components/Button/ButtonPlus.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
-import router from '@/router';
+import { useGlobalStore } from '@/stores/globalStore';
 
+const globalStore = useGlobalStore();
 const mode = ref('random')
+const router = useRouter();
+const route = useRoute();
 
 const props = defineProps<{
   invitation: boolean;
@@ -26,7 +30,9 @@ const emit = defineEmits<{
 }>()
 
 function launchGame() {
-	if (mode.value === 'random' || (mode.value === 'invite' && props.invitedUser != undefined))
+	if (mode.value === 'random')
+		router.push({ name: 'Matchmaking', params: {}});
+	else if (mode.value === 'invite' && props.invitedUser != undefined && globalStore.gameInvitation)
 		router.push({ name: 'Matchmaking', params: {}});
 }
 

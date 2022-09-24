@@ -13,7 +13,7 @@ const props = defineProps<{
                 <span class="text-xs text-center w-full truncate">{{ match.user1_username }}</span>
             </base-button>
             <div class="flex flex-col items-center gap-2 h-full w-[20%]">
-                <base-button link :to="{ name: 'Match', params: { id: match.id }}" class="inline-flex items-center justify-center p-[1px] overflow-hidden text-xxs lg:text-xs text-gray-900 rounded-lg group bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white focus:ring-1 focus:outline-none focus:ring-purple-200">
+                <base-button link :to="{ name: 'Match', params: { id: match.id }}" class="inline-flex items-center justify-center p-[1px] overflow-hidden text-xxxs lg:text-xs text-gray-900 rounded-lg group bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white focus:ring-1 focus:outline-none focus:ring-purple-200">
                     <span class="text-slate-300 px-1.5 py-1.5 transition-all ease-in duration-75 bg-slate-900 rounded-md group-hover:bg-opacity-0 hover:text-neutral-100">
                     WATCH
                     </span>
