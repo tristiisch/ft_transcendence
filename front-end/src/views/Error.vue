@@ -34,7 +34,7 @@ const errorMessage = computed(() => {
 		<h1 class="font-Arlon text-white text-5xl sm:text-6xl m-2">{{ error }}</h1>
 		<h5 class="font-Arlon text-white text-5xl sm:text-4xl m-4">{{ errorMessage }}</h5>
 		<div class="flex gap-3">
-			<button-gradient link :to="{ name: 'Home' }">Home</button-gradient>
+			<button-gradient v-if="route.query.code !== '0'" link :to="{ name: 'Home' }">Home</button-gradient>
 			<base-button
 					class="w-[80px] sm:w-[130px] text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-1 focus:outline-none focus:ring-red-300 shadow-lg shadow-red-500/50 font-medium rounded-lg text-xs sm:text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center"
 			@click="userStore.handleLogout">Logout</base-button>
