@@ -66,18 +66,11 @@ onMounted(() => {
 	socket.emit('updateUserStatus', status.INGAME )
 })
 
-function testLoad() {
-	var stage = new Konva.Stage({
-		container: 'stage-container',
-		visible: true,
-		height: 300,
-		width: 300
-	})
-	stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
-}
-
 function loadStage() {
-	const stage_ratio = 3989/2976
+	const default_stage_width = 3989
+	const default_stage_height = 2976
+	const stage_height_percentage = 50
+	const stage_ratio = default_stage_width/default_stage_height
 	const ball_size_quotient = 100 // the least, the bigger
 	const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
 	const ball_ypos_quotient = 2 // same
@@ -87,7 +80,8 @@ function loadStage() {
 	const blocker_height_quotient = 5 // the least, the longer
 	const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
-	function computeStageHeight(): number { return window.innerHeight * (75 / 100) }
+
+	function computeStageHeight(): number { return window.innerHeight * (stage_height_percentage / 100) }
 	function computeBallSize(): number { return stage.width() / ball_size_quotient }
 	function computeBlockerWidth(): number { return stage.width() / blocker_width_quotient }
 	function computeBlockerHeight(): number { return stage.height() / blocker_height_quotient }
@@ -100,7 +94,10 @@ function loadStage() {
 		height: computeStageHeight(),
 		width: stage_width
 	})
-	stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
+	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
+
+	var backend_stage_width = default_stage_width
+	var backend_stage_ratio = stage.width() / backend_stage_width
 
 	var layer = new Konva.Layer()
 
@@ -113,7 +110,7 @@ function loadStage() {
 		visible: false
 	})
 
-	var backend_stage_ratio = stage.width() / 3989
+
 	var blockers_width = computeBlockerWidth()
 	var blockers_height = computeBlockerHeight()
 	var p1_blocker: Konva.Rect = new Konva.Rect({
@@ -200,7 +197,7 @@ function loadStage() {
 	function resizeStage() {
 		stage.height(computeStageHeight())
 		stage.width(stage.height() * stage_ratio)
-		backend_stage_ratio = stage.width() / 3989
+		backend_stage_ratio = stage.width() / backend_stage_width
 
 		var ratio = stage.height() / stage_height
 		ball_radius = computeBallSize()
@@ -281,16 +278,18 @@ function loadStage() {
 		router.replace('/home')
 	})
 
-	socket.emit("joinMatch", match_id, (match_live_infos: any) => {
-		if (match_live_infos.started) {
+	socket.emit("joinMatch", match_id, (match_infos: any) => {
+		backend_stage_width = match_infos.stageWidth
+		backend_stage_ratio = stage.width() / backend_stage_width
+		if (match_infos.started) {
 			launchMatchLoop()
 			ball.visible(true)
 			setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		}
 		else if (isPlayer)
 			socket.emit("readyToPlay", match_id)
-		p1_blocker.y(match_live_infos.p1Pos * backend_stage_ratio)
-		p2_blocker.y(match_live_infos.p2Pos * backend_stage_ratio)
+		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
+		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
 		p1_blocker.visible(true)
 		p2_blocker.visible(true)
 		// console.log(match_live_infos)
@@ -325,7 +324,7 @@ onBeforeUnmount(() => {
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> / VS \</h1>
 			<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
 		</div>
-		<!--
+		
 		<base-button @click="leaveMatch()" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 			<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
 		</base-button>
@@ -342,12 +341,16 @@ onBeforeUnmount(() => {
 			</base-button>
 			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
-		<div class="w-[100vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div>
-		<div class="w-[100vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+		<!-- <div class="w-[100vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div> -->
+		<div class="rounded-3xl w-[100vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 		</div>
-		<div class="w-[100vh] absolute opacity-10 m-auto top-0 bottom-0 left-0 right-0 h-3/4 bg-TvScreenPixel"></div> -->
+		<div class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center w-[100vh] absolute m-auto top-0 bottom-0 left-0 right-0 h-3/4"></div>
 		<div id="stage-container"></div>
+		<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full">
+			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[20px]">
+			<img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
+		</div>
 	</div>
 		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
 	<!-- <div class="relative flex flex-col h-full w-full justify-center bg-[#9f9e89] bg-TvScreen-texture">
@@ -363,7 +366,7 @@ onBeforeUnmount(() => {
 <style scoped>
 
 #stage-container {
-	height: 75%;
+	height: 50%;
 	/* max-width: 3989px;
 	max-height: 2976px; */
 	aspect-ratio: 3989/2976;
@@ -377,10 +380,11 @@ onBeforeUnmount(() => {
 	bottom: 0;
 	top: 0;
 	z-index: 999;
+	border: 1px solid rgb(69, 69, 69);
 	/* background-color:rgba(1,255,1,1); */
 }
 
-/* @keyframes refresh {
+@keyframes refresh {
 	0% {
 		bottom: 100%;
 	}
@@ -408,6 +412,6 @@ onBeforeUnmount(() => {
 .animationRefresh {
 	animation: refresh 5s linear infinite;
 }
-*/
+
 
 </style>
