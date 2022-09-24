@@ -72,6 +72,9 @@ function updateMatch(match: Match) {
 onBeforeMount(() => {
 	fetchCurrentMatchs();
 	socket.on('UpdateMatch', updateMatch);
+	globalStore.ballSpeed = 100;
+	globalStore.racketSize = 100;
+	globalStore.world = 'world1';
 });
 
 onBeforeUnmount(() => {

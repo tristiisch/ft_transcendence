@@ -16,17 +16,17 @@ const emit = defineEmits<{
     <div class="flex flex-col justify-center items-center gap-4 sm:gap-6 w-3/4 h-full text-red-200">
         <label class="text-xs sm:text-sm">BALL SPEED</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
-            <span class="absolute -top-4 text-red-700 text-sm sm:text-md">{{ globalStore.ballSpeed }}</span>
-            <span class="text-sm sm:text-md"> 50 </span>
+            <span class="absolute -top-4 text-red-700 text-sm sm:text-md">{{ globalStore.ballSpeed / 100 }}<span class="pl-1">x</span></span>
+            <span class="text-sm sm:text-md"> 1/2x </span>
             <input v-model="globalStore.ballSpeed" id="small-range" type="range" min="50" max="200" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
-            <span class="text-sm sm:text-md"> 200 </span>
+            <span class="text-sm sm:text-md">2x</span>
         </div>
         <label class="text-xs sm:text-sm">RACKET SIZE</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
-            <span class="absolute -top-4 text-red-700 text-sm sm:text-md">{{ globalStore.racketSize }}</span>
-            <span class="text-sm sm:text-md"> 50 </span>
+            <span class="absolute -top-4 text-red-700 text-sm sm:text-md">{{ globalStore.racketSize }}%</span>
+            <span class="text-sm sm:text-md"> 50% </span>
             <input v-model="globalStore.racketSize" id="small-range" type="range" min="50" max="150" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
-            <span class="text-sm sm:text-md"> 150 </span>
+            <span class="text-sm sm:text-md"> 150% </span>
         </div>
 		<label class="text-xs sm:text-sm sm:pt-6">INCREASE SPEED / TIME</label>
 		<div class="flex gap-4">
