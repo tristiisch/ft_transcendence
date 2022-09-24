@@ -69,10 +69,11 @@ export function randomEnum<T>(enumeration: T) {
 
 export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>): Array<T> {
 	const newArray: T[] = new Array();
-	array.forEach(nb => {
-		if (arrayToSubstract.indexOf(nb) === -1)
-			newArray.push(nb);
-	});
+	if (array)
+		array.forEach(nb => {
+			if (arrayToSubstract.indexOf(nb) === -1)
+				newArray.push(nb);
+		});
 	return newArray;
 }
 
