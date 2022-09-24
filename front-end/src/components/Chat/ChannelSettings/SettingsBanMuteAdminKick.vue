@@ -22,11 +22,11 @@ const emit = defineEmits<{
 function alreadySelectedUsers() {
 	if (chatStore.inChannel) {
 		if (props.type === 'ban')
-			return chatStore.inChannel.banned.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
+			return chatStore.inChannel.banned
 		else if (props.type === 'admin')
-			return chatStore.inChannel.admins.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
+			return chatStore.inChannel.admins
 		else if (props.type === 'mute')
-			return chatStore.inChannel.muted.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
+			return chatStore.inChannel.muted
 		else
 			return []
 	}
