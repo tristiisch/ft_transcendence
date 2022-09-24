@@ -22,11 +22,11 @@ const emit = defineEmits<{
 function alreadySelectedUsers() {
 	if (chatStore.inChannel) {
 		if (props.type === 'ban')
-			return chatStore.inChannel.banned
+			return chatStore.inChannel.banned.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
 		else if (props.type === 'admin')
-			return chatStore.inChannel.admins
+			return chatStore.inChannel.admins.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
 		else if (props.type === 'mute')
-			return chatStore.inChannel.muted
+			return chatStore.inChannel.muted.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
 		else
 			return []
 	}
@@ -76,6 +76,6 @@ onBeforeMount(() => {
 </script>
 
 <template>
-    <users-list :selectableItems="selectableUsers" :singleSelection="false" :alreadySlectedUsers="alreadySelectedUsers()" :type="'user'"></users-list>
+    <users-list :selectableItems="selectableUsers" :singleSelection="false" :alreadySelectedUsers="alreadySelectedUsers()" :type="'user'"></users-list>
     <button-close-validate @validate="updateChangeInChannel()" @close="emit('close')"></button-close-validate>
 </template>

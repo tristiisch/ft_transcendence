@@ -9,7 +9,7 @@ const showCheckMark = ref([] as boolean[])
 
 const props = defineProps<{
 	selectableItems: User[] | Channel[]; 
-	alreadySlectedUsers: User[] | null;
+	alreadySelectedUsers: User[] | null;
 	singleSelection: boolean;
 }>()
 
@@ -47,9 +47,9 @@ function unmarkItems(index: number)
 
 function treatAlreadyMarkedUsers()
 {
-	if (props.alreadySlectedUsers)
+	if (props.alreadySelectedUsers)
 	{
-		for(const markedUser of props.alreadySlectedUsers) {
+		for(const markedUser of props.alreadySelectedUsers) {
 			let index = props.selectableItems.findIndex(user => user.id === markedUser.id)
 			showCheckMark.value[index] = true
 			if(globalStore.isTypeArrayUsers(globalStore.selectedItems) && globalStore.isTypeUser(markedUser))
