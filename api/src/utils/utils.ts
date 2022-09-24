@@ -68,16 +68,19 @@ export function randomEnum<T>(enumeration: T) {
 }
 
 export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>): Array<T> {
+	if (!array)
+		return undefined;
 	const newArray: T[] = new Array();
-	if (array)
-		array.forEach(nb => {
-			if (arrayToSubstract.indexOf(nb) === -1)
-				newArray.push(nb);
-		});
+	array.forEach(nb => {
+		if (arrayToSubstract.indexOf(nb) === -1)
+			newArray.push(nb);
+	});
 	return newArray;
 }
 
 export function removeFromArray<T>(array: Array<T>, key: T): Array<T> {
+	if (!array)
+		return undefined;
 	const index = array.indexOf(key);
 	if (index != -1)
 		array.splice(index, 1);

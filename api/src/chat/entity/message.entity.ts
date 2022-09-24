@@ -44,7 +44,7 @@ export class Message {
 			date: this.date.toLocaleString(),
 			type: this.type
 		};
-		if (this.type === MessageType.MSG) {
+		if (this.type === MessageType.MSG || this.type === MessageType.GAME_INVIT) {
 			if (!user) {
 				Logger.error(`user is null for message#toFront : ${JSON.stringify(this)}`, 'Chat');
 			} else {

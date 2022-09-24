@@ -442,8 +442,8 @@ export class ChatService {
 			default:
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
 		}
-		const mutesIdsRemoved: number[] = removesFromArray(channel.admins_ids, usersIds);
-		const mutesIdsAdded: number[] = removesFromArray(usersIds, channel.admins_ids);
+		const mutesIdsRemoved: number[] = removesFromArray(channel.muted_ids, usersIds);
+		const mutesIdsAdded: number[] = removesFromArray(usersIds, channel.muted_ids);
 		const mutesRemoved: User[] = (await this.userService.findMany(mutesIdsRemoved));
 		const mutesAdded: User[] = (await this.userService.findMany(mutesIdsAdded));
 
@@ -476,8 +476,8 @@ export class ChatService {
 				throw new NotAcceptableException(`Unknown channel type ${channel.type}.`)
 		}
 		
-		const idsRemoved: number[] = removesFromArray(channel.admins_ids, usersIds);
-		const idsAdded: number[] = removesFromArray(usersIds, channel.admins_ids);
+		const idsRemoved: number[] = removesFromArray(channel.banned_ids, usersIds);
+		const idsAdded: number[] = removesFromArray(usersIds, channel.banned_ids);
 		const removed: User[] = (await this.userService.findMany(idsRemoved));
 		const added: User[] = (await this.userService.findMany(idsAdded));
 
@@ -503,6 +503,10 @@ export class ChatService {
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate;
 
 		dataUpdate.users_ids = removesFromArray(channel.users_ids, users_ids);
+
+		if (!dataUpdate.users_ids || dataUpdate.users_ids == channel.users_ids)
+			throw new WsException('User kicked is not in channel');
+
 		if (channel.admins_ids)
 			dataUpdate.admins_ids = removesFromArray(channel.admins_ids, users_ids);
 		if (channel.muted_ids)
