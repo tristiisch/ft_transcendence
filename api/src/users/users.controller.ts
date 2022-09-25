@@ -113,7 +113,7 @@ export class UsersController {
 		const targetId: number = body.id;
 		const target: User = await this.usersService.findOne(targetId);
 	
-		this.usersService.addBlockedUser(user, target);
+		await this.usersService.addBlockedUser(user, target);
 		return { user: target, message: `You have block ${target.username}.` };
 	}
 
@@ -124,7 +124,7 @@ export class UsersController {
 		const targetId: number = body.id;
 		const target: User = await this.usersService.findOne(targetId);
 
-		this.usersService.removeBlockedUser(user, target);
+		await this.usersService.removeBlockedUser(user, target);
 		return { user: target, message: `You have unblock ${target.username}.` };
 	}
 }
