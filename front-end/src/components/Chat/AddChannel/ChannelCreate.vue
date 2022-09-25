@@ -100,6 +100,13 @@ function labelInputPassword() {
         return 'Password:'
 }
 
+function onClose() {
+	if (selectPlayer.value === true)
+		selectPlayer.value = false;
+	else 
+		emit('close');
+}
+
 watch(() => newChannelName.value, () => {
     if (newChannelName.value !== '')
         error.value = '';
@@ -141,5 +148,5 @@ watch(() => newPassword.value, () => {
         </div>
     </div>
     <users-search v-else :singleSelection="false" :type="'users'"></users-search>
-    <button-close-validate @validate="onValidation()" @close="emit('close')"></button-close-validate>
+    <button-close-validate @validate="onValidation()" @close="onClose()"></button-close-validate>
 </template>
