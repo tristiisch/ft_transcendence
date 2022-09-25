@@ -78,7 +78,8 @@ onBeforeMount(() => {
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;
-	globalStore.world = 'world1';
+	globalStore.world = 1;
+	globalStore.neededPointsForVictory = 5;
 });
 
 onBeforeUnmount(() => {
