@@ -47,14 +47,14 @@ export const useChatStore = defineStore('chatStore', {
 		},
 	},
 	actions: {
-		async fetchAll() {
+		/*async fetchAll() {
 			try {
 				// await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
 				await Promise.all([this.fetchUserChats(null, null)])
 			} catch (error: any) {
 				throw error;
 			}
-		},
+		},*/
 		async fetchUserChats(func: { (discu: Discussion[], channel: Channel[]): any } | null, err: { (error: any): any } | null) {
 			socket.emit('chatFindAll', (body: any[]) => {
 				this.userDiscussions = body[0];

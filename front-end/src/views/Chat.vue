@@ -127,7 +127,7 @@ onBeforeMount(() => {
 		console.log(error)
 		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 	});*/
-	chatStore.fetchAll()
+	chatStore.fetchUserChats(null, null)
 		.then(() => {
 			if (route.query.discussion) {
 				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
@@ -140,13 +140,13 @@ onBeforeMount(() => {
 							chatStore.createNewDiscussion(newDiscussion, true);
 						})
 						.catch((error) => {
-							console.log(error)
 							router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 						})
 						
 				}
 			}
 			isLoading.value = false
+			
 		})
 		.catch((error) => {
 			console.log(error)
