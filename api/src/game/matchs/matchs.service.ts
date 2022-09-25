@@ -5,6 +5,7 @@ import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
+import { StatsService } from 'game/stats/stats.service';
 
 @Injectable()
 export class MatchStatsService {
@@ -28,6 +29,8 @@ export class MatchStatsService {
 
 	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService;
+	@Inject(forwardRef(() => StatsService))
+	private readonly matchStatsService: StatsService;
 
 	public getRepo() {
 		return this.matchsHistoryRepository;
@@ -198,7 +201,11 @@ export class MatchStatsService {
 		clearInterval(matchLoopInterval)
 		match.live_infos.room_socket.emit("endMatch")
 		match.stats.timestamp_ended = new Date
-		this.save(match.stats)
+		this.save(match.stats);
+
+		this.matchStatsService.addDefeat(match.stats.getLoser());
+		this.matchStatsService.addVictory(match.stats.getWinner());
+
 		this.matches.delete(match.stats.id)
 	}
 
