@@ -18,7 +18,7 @@ export class MatchsStatsController {
 	 * @deprecated Only for test
 	 */
 
-	// @UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard)
 	@Get(':id')
 	sendMatchInfos(@Param('id') id: number) {
 		// console.log("get : ", this.matchService.getMatches().get(id).stats)
@@ -49,14 +49,7 @@ export class MatchsStatsController {
 		return await this.matchsService.findHistory(target.id);
 	}
 
-	/**
-	 * @deprecated only for test
-	 */
-	@Patch(':id')
-	async updateMatch(@Body() match: MatchStats) {
-		return this.matchsService.save(match);
-	}
-
+	@UseGuards(JwtAuthGuard)
 	@Get('current')
 	async getCurrentMatchs() {
 		return await this.matchsService.findOnlineMatchs();
