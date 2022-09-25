@@ -86,7 +86,6 @@ export interface MatchLiveInfos {
 	started: boolean,
 	waiting: boolean,
 	stopMatch: boolean,
-	isCustom: boolean,
 	customInfos: CustomMatchInfos,
 
 	ballXPos: number,
@@ -97,11 +96,8 @@ export interface MatchLiveInfos {
 	p2Pos: number
 }
 
-interface CustomMatchInfos {
-	stageWidth: number,
-	stageHeight: number,
-	blockerWidth: number,
-	blockerHeight: number,
-	p1XPos: number,
-	p2XPos: number
+export interface CustomMatchInfos {
+	ballSpeed: number,
+	racketSize: number,
+	increaseBallSpeed: boolean
 }

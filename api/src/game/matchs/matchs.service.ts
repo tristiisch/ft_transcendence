@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
-import { Match, MatchStats, MatchLiveInfos } from './entity/match.entity';
+import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class MatchStatsService {
 	) {}
 
 	private matches = new Map<number, Match>()
-	private players_queue = new Array<User>()
+	private players_queue = new Map<number, {user: User, custom_match_infos: CustomMatchInfos}>()
 	private invites_queue = new Map<number, {user: User, invited_user: User}>()
 
 	private readonly winningScore = 5
@@ -45,14 +45,29 @@ export class MatchStatsService {
 		return this.stageWidth
 	}
 
-	public addPlayerToQueue(socket) {
-		this.players_queue.push(socket)
+	public addPlayerToQueue(user_id, data) {
+		this.players_queue.set(user_id, data)
+	}
+	public removePlayerFromQueue(user_id) {
+		this.players_queue.delete(user_id)
 	}
 	public addInviteToQueue(user: User, invited_user: User) {
 		this.invites_queue.set(this.invites_queue.size, {user, invited_user})
 	}
 
-	async createNewMatch(p1: User, p2: User, is_custom: boolean) {
+	public findUserToPlay(any: boolean) {
+		console.log(this.players_queue.entries())
+		if (any === false) {
+			for (const [key, value] of this.players_queue.entries()) {
+				if (!value.custom_match_infos)
+					return value
+			}
+		}
+		// else if (this.players_queue.size) return this.players_queue.entries().return
+		return null
+	}
+
+	async createNewMatch(p1: User, p2: User, custom_match_infos: CustomMatchInfos) {
 		const match_stats = new MatchStats()
 		match_stats.user1_id = p1.id
 		match_stats.user2_id = p2.id
@@ -63,8 +78,7 @@ export class MatchStatsService {
 			started: false,
 			waiting: true,
 			stopMatch: false,
-			isCustom: is_custom,
-			customInfos: null,
+			customInfos: custom_match_infos,
 			ballXPos: this.stageWidth/2,
 			ballYPos: this.stageHeight/2,
 			p1Ready: false,
@@ -179,7 +193,7 @@ export class MatchStatsService {
 			if (match.live_infos.stopMatch)
 				clearInterval(emitPosInterval)
 			match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-		}, 30)
+		}, 200)
 	}
 
 	async endMatch(match: Match) {
