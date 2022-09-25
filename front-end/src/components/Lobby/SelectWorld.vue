@@ -16,7 +16,7 @@ const emit = defineEmits<{
 }>()
 
 function chooseImg() {
-	globalStore.world = index.value === 0 ? 'world1' : 'world2'
+	globalStore.world = index.value === 0 ? 1 : 2
 	return imageTab.value[index.value]
 }
 </script>
