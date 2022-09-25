@@ -477,59 +477,67 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		/////////////
 
 	private matches = this.matchService.getMatches()
+	private players_queue = this.matchService.getPlayersQueue()
+	private invites_queue = this.matchService.getInvitesQueue()
 
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() any: boolean, @ConnectedSocket() client: Socket): Promise<any> {
 		const user = await this.socketService.getUserFromSocket(client)
-		if (!this.matchService.getPlayersQueue().find(o => o.id === user.id))
-			this.matchService.addPlayerToQueue(user)
-		// console.log(this.matchService.getPlayersQueue())
-
-		if (this.matchService.getPlayersQueue().length > 1) {
-			let id = await this.matchService.createNewMatch(this.matchService.getPlayersQueue()[0], user, false)
-			this.matches.get(id).live_infos.room_socket = this.server.to('match_' + id)
-			client.emit('foundMatch', id)
-			this.socketService.getSocketToEmit(this.matchService.getPlayersQueue()[0].id).emit('foundMatch', id)
-			this.matchService.getPlayersQueue().splice(0, 2)
-			console.log(this.matchService.getPlayersQueue())
+		const match_found = this.matchService.findUserToPlay(any)
+		console.log("matchfound:", match_found)
+		if (match_found) {
+			console.log("Match Found !")
+			this.matchService.removePlayerFromQueue(match_found.user.id)
+			let match_id = await this.matchService.createNewMatch(match_found.user, user, match_found.custom_match_infos)
+			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+			client.emit('foundMatch', match_id)
+			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
+			console.log("PlayersQueue:", this.matchService.getPlayersQueue())
 		}
+		else this.matchService.addPlayerToQueue(user.id, {user: user, custom_match_infos: null})
+	}
+
+	@SubscribeMessage('createCustomMatch')
+	async createCustomMatch(@MessageBody() custom_match_infos, @ConnectedSocket() client: Socket): Promise<any> {
+		const user = await this.socketService.getUserFromSocket(client)
+		if (!this.players_queue.has(user.id)) this.matchService.addPlayerToQueue(user.id, custom_match_infos)
 	}
 
 	@SubscribeMessage('createMatchInvitation')
 	async createMatchInvitation(@MessageBody() username: string, @ConnectedSocket() client: Socket): Promise<any> {
-		console.log("createMatchInvitation", username)
-		const user = await this.socketService.getUserFromSocket(client)
-		const invited_user = username ? await this.userService.findOneByUsername(username) : null
-		this.matchService.addInviteToQueue(user, invited_user)
-		if (invited_user) {
-			// let notif: Notification = new Notification()
-			// notif.user_id = invited_user.id
-			// notif.from_user_id = user.id
-			// notif.type = NotificationType.MATCH_REQUEST
-			// notif = await this.notificationService.addNotif(notif)
-			// this.socketService.AddNotification(invited_user, await notif.toFront(this.userService, [user, invited_user]))
-		}
+		// console.log("createMatchInvitation", username)
+		// const user = await this.socketService.getUserFromSocket(client)
+		// const invited_user = username ? await this.userService.findOneByUsername(username) : null
+		// this.matchService.addInviteToQueue(user, invited_user)
+		// if (invited_user) {
+		// 	// let notif: Notification = new Notification()
+		// 	// notif.user_id = invited_user.id
+		// 	// notif.from_user_id = user.id
+		// 	// notif.type = NotificationType.MATCH_REQUEST
+		// 	// notif = await this.notificationService.addNotif(notif)
+		// 	// this.socketService.AddNotification(invited_user, await notif.toFront(this.userService, [user, invited_user]))
+		// }
 	}
 
 	@SubscribeMessage('acceptMatchInvitation')
 	async acceptMatchInvitation(@MessageBody() id: number, @ConnectedSocket() client: Socket): Promise<any> {
-		const invited_user = await this.socketService.getUserFromSocket(client)
-		const invitation = this.matchService.getInvitesQueue().get(id)
-		if (invited_user.id === invitation.invited_user.id) {
-			if (invitation.user.status === UserStatus.ONLINE || invitation.user.status === UserStatus.SPEC) {
-				let match_id = await this.matchService.createNewMatch(invitation.user, invited_user, true)
-				let match = this.matches.get(match_id)
-				this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
-			}
-			else {
-				if (invitation.user.status === UserStatus.IN_GAME) {
-					// ask the user to watch the current game
-				}
-				else {
-					// tell the user that the player isn't online
-				}
-			}
-		}
+		// const invited_user = await this.socketService.getUserFromSocket(client)
+		// const invitation = this.matchService.getInvitesQueue().get(id)
+		// if (invited_user.id === invitation.invited_user.id) {
+		// 	if (invitation.user.status === UserStatus.ONLINE || invitation.user.status === UserStatus.SPEC) {
+		// 		let match_id = await this.matchService.createNewMatch(invitation.user, invited_user, true)
+		// 		let match = this.matches.get(match_id)
+		// 		this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+		// 	}
+		// 	else {
+		// 		if (invitation.user.status === UserStatus.IN_GAME) {
+		// 			// ask the user to watch the current game
+		// 		}
+		// 		else {
+		// 			// tell the user that the player isn't online
+		// 		}
+		// 	}
+		// }
 	}
 
 	@SubscribeMessage('joinMatch')
