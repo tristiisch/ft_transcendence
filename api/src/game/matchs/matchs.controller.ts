@@ -56,7 +56,7 @@ export class MatchsStatsController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Post('matchs/request/add')
+	@Post('request/add')
 	async addRequestMatch(@Req() req, @Body() body) {
 		return await this.matchsService.addRequest(req.user, body.id);
 	}
