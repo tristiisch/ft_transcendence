@@ -137,11 +137,11 @@ onBeforeMount(() => {
 				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
 				// if (discussion) chatStore.loadDiscussion(discussion);
 				if (!chatStore.isNewDiscussion(parseInt(route.query.discussion as string))) {
-					// const user = globalStore.getUser(parseInt(route.query.discussion as string));//TODO replace by fetch or socket.
 					UserService.getUser(parseInt(route.query.discussion as string))
 						.then((response) => {
 							const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: response.data, messages: [] as Message[] };
 							chatStore.createNewDiscussion(newDiscussion, true);
+							chatStore.setLeftPartToDisplay('discussion');
 						})
 						.catch((error) => {
 							router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
