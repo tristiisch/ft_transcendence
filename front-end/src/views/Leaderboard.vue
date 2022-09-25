@@ -2,6 +2,7 @@
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGlobalStore } from '@/stores/globalStore';
+import { useUserStore } from '@/stores/userStore';
 import type { UserStatus } from '@/types/User';
 import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
@@ -11,9 +12,9 @@ import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 const leaderboard = ref([] as LeaderboardUser[]);
 const leaderboardFriends = ref([] as LeaderboardUser[]);
-//const playerToDisplay = ref<LeaderboardUser[]>();
 const globalStore = useGlobalStore();
 const isLoading = ref(false);
 const playerName = ref('');
@@ -69,7 +70,25 @@ function nameOrder() {
 function statusOrder() {
 	if (type.value === 'All') {
 		leaderboard.value.sort((a, b) => {
-			return b.status - a.status;
+			let fa = globalStore.isFriend(a.id) || userStore.userData.id === a.id;
+			let fb = globalStore.isFriend(b.id) || userStore.userData.id === b.id;
+			if (fa == false && fb == true) return 1;
+			else if (fa == true && fb == false) return -1;
+			else return 0
+		});
+		leaderboard.value.sort((a, b) => {
+			let fa = globalStore.isPendingFriend(a.id);
+			let fb = globalStore.isPendingFriend(b.id);
+			if (fa == false && fb == true) return -1;
+			else if (fa == true && fb == false) return 1;
+			else return 0
+		});
+		leaderboard.value.sort((a, b) => {
+			let fa = globalStore.isBlockedUser(a.id);
+			let fb =  globalStore.isBlockedUser(b.id);
+			if (fa == false && fb == true) return -1;
+			else if (fa == true && fb == false) return 1;
+			else return 0
 		});
 	} else {
 		leaderboardFriends.value.sort((a, b) => {

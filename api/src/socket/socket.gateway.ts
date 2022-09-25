@@ -208,8 +208,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(user, null);
-			channel.sendMessage(this.socketService, "chatChannelMessage", channel, newMsgFront, user);
-			// client.broadcast.emit("chatChannelMessage", channel, newMsgFront);
+			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channel, newMsgFront, user);
+
 			return [ channel, newMsgFront ];
 		} catch (err) {
 			throw new WsException(err.message);
@@ -333,7 +333,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
 		this.socketService.emitIds(newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
-		return channelFront;
+		return [channelFront];
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -383,12 +383,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newKicked.list.map(user => user.id));
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
+		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${newKicked.list.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
+		
+
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
-		channel.sendMessage(this.socketService, 'chatChannelKick', channelFront, newKicked);
+		channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
 		this.socketService.emitIds(newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		
 		 // TODO get user from db
-		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${newKicked.list.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
 		channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		return [channelFront];
 	}

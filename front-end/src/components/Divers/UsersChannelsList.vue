@@ -9,7 +9,7 @@ const showCheckMark = ref([] as boolean[])
 
 const props = defineProps<{
 	selectableItems: User[] | Channel[]; 
-	alreadySlectedUsers: User[] | null;
+	alreadySelectedUsers: User[] | null;
 	singleSelection: boolean;
 }>()
 
@@ -47,9 +47,9 @@ function unmarkItems(index: number)
 
 function treatAlreadyMarkedUsers()
 {
-	if (props.alreadySlectedUsers)
+	if (props.alreadySelectedUsers)
 	{
-		for(const markedUser of props.alreadySlectedUsers) {
+		for(const markedUser of props.alreadySelectedUsers) {
 			let index = props.selectableItems.findIndex(user => user.id === markedUser.id)
 			showCheckMark.value[index] = true
 			if(globalStore.isTypeArrayUsers(globalStore.selectedItems) && globalStore.isTypeUser(markedUser))
@@ -76,7 +76,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div class="overflow-y-auto w-full h-full">
+	<div v-if="selectableItems.length !== 0" class="overflow-y-auto w-full h-full">
 		<div v-for="(item, index) in selectableItems" :key="item.id" class="flex justify-between items-center h-[calc(100%_/_4)] sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)] border-b w-full border-red-400">
 			<div class="inline-flex items-center py-4">
 				<img class="shrink-0 w-12 h-12 rounded-full object-cover border border-red-400" :class="formAvatar(item)" :src="item.avatar" alt="Rounded avatar">
@@ -92,4 +92,5 @@ onBeforeMount(() => {
 			</button>
 		</div>
 	</div>
+	<div v-else class="flex justify-center items-center w-full h-full text-xl text-neutral-100 font-Arlon">NO PERSON SELECTABLE</div>
 </template>

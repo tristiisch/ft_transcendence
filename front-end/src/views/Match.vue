@@ -347,10 +347,10 @@ onBeforeUnmount(() => {
 		</div>
 		<div class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center w-[100vh] absolute m-auto top-0 bottom-0 left-0 right-0 h-3/4"></div>
 		<div id="stage-container"></div>
-		<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full">
+<!--	<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full">
 			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[20px]">
 			<img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
-		</div>
+		</div> -->
 	</div>
 		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
 	<!-- <div class="relative flex flex-col h-full w-full justify-center bg-[#9f9e89] bg-TvScreen-texture">

@@ -26,7 +26,7 @@ function screenSize() {
 }
 
 function smallScreen() {
-	if (windowWidth.value < 640) return true;
+	if (windowWidth.value < 640 && windowHeight.value > 666) return true;
 	else return false;
 }
 
@@ -52,7 +52,7 @@ onUnmounted(() => {
 	<div class="relative flex flex-col h-full mx-[8vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
-			<the-footer v-if="smallScreen()" class=""></the-footer>
+			<the-footer v-if="smallScreen()"></the-footer>
 		</div>
 		<div :class="titleSize()" class="absolute m-auto left-0 right-0 top-[calc(0.15_*_100vh)] text-center font-Vibur neon-text">
             <span class="px-[2vw]">W</span>

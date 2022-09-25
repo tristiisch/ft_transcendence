@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/stores/globalStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, watch, toDisplayString } from 'vue';
@@ -11,6 +12,8 @@ import UsersList from '@/components/Divers/UsersChannelsList.vue';
 import BaseSpinner from '../Ui/BaseSpinner.vue';
 import socket from '@/plugin/socketInstance';
 
+const router = useRouter();
+const route = useRoute();
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const toast = useToast();
@@ -73,9 +76,8 @@ onBeforeMount(() => {
 			itemsToDisplay.value = globalStore.users;
 			isLoading.value = false;
 			})
-			.catch((e: Error) => {
-				error.value = e.message;
-				toast.error(error.value);
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 			});
 		}
 		else {
@@ -92,9 +94,8 @@ onBeforeMount(() => {
 			itemsToDisplay.value = chatStore.channels;
 			isLoading.value = false;
 		})
-		.catch((e: Error) => {
-			error.value = e.message;
-			toast.error(error.value);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
 	}
 });
@@ -145,5 +146,5 @@ onBeforeMount(() => {
 			/>
 		</div>
 	</form>
-	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></users-list>
+	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySelectedUsers="null" :type="'user'"></users-list>
 </template>
