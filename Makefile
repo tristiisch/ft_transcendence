@@ -6,7 +6,6 @@ setup:
 #	chmod -R 777 ${HOME}/ft_transcendence_volumes
 
 init:
-	export COMPOSE_HTTP_TIMEOUT=200
 	./credentials42.sh
 
 test: init

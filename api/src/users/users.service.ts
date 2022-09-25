@@ -10,6 +10,7 @@ import { WsException } from "@nestjs/websockets";
 import { AuthService } from "auth/auth.service";
 import { SocketService } from 'socket/socket.service';
 import { FriendsService } from "friends/friends.service";
+import { NotificationService } from "notification/notification.service";
 
 @Injectable()
 export class UsersService {
@@ -25,6 +26,8 @@ export class UsersService {
 	private readonly socketService: SocketService;
 	@Inject(FriendsService)
 	private readonly friendsService: FriendsService;
+	@Inject(forwardRef(() => NotificationService))
+	private readonly notifService: NotificationService;
 
 	public getRepo() {
 		return this.usersRepository;
@@ -275,7 +278,8 @@ export class UsersService {
 
 		user.blocked_ids.push(target.id);
 		try {
-			await this.friendsService.removeFriendship(user, target);
+			await this.friendsService.declineFriendShipIgnore(user, target); // TODO verif
+			await this.notifService.removeNotifFriendRequest(user, target); // TODO same
 		} catch (err) {
 			if (!(err instanceof NotAcceptableException))
 				throw err;

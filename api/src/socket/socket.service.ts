@@ -55,7 +55,7 @@ export class SocketService {
 		return this.server.sockets.sockets.get(socketId)
 	}
 
-	async AddNotification(target: User, notification: NotificationFront) {
+	AddNotification(target: User, notification: NotificationFront) {
 		const clientSocket = this.getSocketToEmit(target.id)
 		if (clientSocket) {
 			clientSocket.emit('addNotification', notification);

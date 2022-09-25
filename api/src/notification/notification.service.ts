@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from 'friends/friends.service';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
-import { InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
+import { DeleteQueryBuilder, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';
 
@@ -23,6 +23,19 @@ export class NotificationService {
 
 	public async addNotif(notif: Notification): Promise<Notification> {
 		return await this.notifsRepository.save(notif);
+	}
+
+	public async removeNotifFriendRequest(user: User, target: User): Promise<DeleteResult> {
+		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
+
+		sqlStatement.where('notification.user_id = :user_id1', { user_id1: user.id });
+		sqlStatement.andWhere('notification.from_user_id = :user_id2', { user_id2: target.id });
+		sqlStatement.orWhere('notification.user_id = :user_id2');
+		sqlStatement.andWhere('notification.from_user_id = :user_id1');
+		sqlStatement.orWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.andWhere(`notification.type <> '${NotificationType.FRIEND_REQUEST}'`);
+	
+		return await sqlStatement.execute();
 	}
 
 	public async deleteTempNotifs(user: User): Promise<UpdateResult> {
@@ -71,7 +84,13 @@ export class NotificationService {
 			if (notifAction.accept) {
 				await this.friendService.acceptFriendRequest(user, target);
 			} else {
-				await this.friendService.declineFriendShip(user, target)
+				try {
+					await this.friendService.declineFriendShip(user, target)
+				} catch (err) {
+					if (!(err instanceof NotAcceptableException)) {
+						throw err;
+					}
+				}
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
 			if (notifAction.accept) {

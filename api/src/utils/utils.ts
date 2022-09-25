@@ -72,7 +72,7 @@ export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>)
 		return undefined;
 	const newArray: T[] = new Array();
 	array.forEach(nb => {
-		if (!arrayToSubstract && arrayToSubstract.indexOf(nb) === -1)
+		if (arrayToSubstract && arrayToSubstract.indexOf(nb) === -1)
 			newArray.push(nb);
 	});
 	return newArray;
@@ -142,4 +142,8 @@ export function getBackRelativeURL(req: any) {
 
 export function getFrontRelativeURL(req: any) {
 	return `${req.headers['x-forwarded-proto'] ?? req.protocol}://${req.headers.host.split(':')[0]}:${process.env.FRONT_PORT}`
+}
+
+export function mapGetByValue<K, V>(map: Map<K, V>, value: V): K {
+	return [...map].find(([key, val]) => val == value)[0]
 }

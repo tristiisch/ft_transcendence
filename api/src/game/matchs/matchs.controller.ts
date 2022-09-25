@@ -54,4 +54,10 @@ export class MatchsStatsController {
 	async getCurrentMatchs() {
 		return await this.matchsService.findOnlineMatchs();
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('request/add')
+	async addRequestMatch(@Req() req, @Body() body) {
+		return await this.matchsService.addRequest(req.user, body.id);
+	}
 }
