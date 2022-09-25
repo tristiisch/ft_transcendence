@@ -46,7 +46,7 @@ function updateSelectableUsers() {
 }
 
 function updateChangeInChannel() {
-	if (globalStore.selectedItems.length) {
+	if (selectableUsers.value.length) {
 		if (chatStore.inChannel && globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
 			let newList: { list: User[], userWhoSelect: User } = {
 				list: globalStore.selectedItems,
