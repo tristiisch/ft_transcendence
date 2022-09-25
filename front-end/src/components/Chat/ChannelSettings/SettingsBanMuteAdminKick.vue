@@ -53,12 +53,12 @@ function updateChangeInChannel() {
 				userWhoSelect: userStore.userData
 			};
 			let selection: {unlisted: User[], listed: User[]} | null;
-			if (props.type === 'admin' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.admins)))
-				chatStore.updateAdminList(chatStore.inChannel, newList, selection);
-			else if (props.type === 'ban' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.banned)))
-				chatStore.updateBanList(chatStore.inChannel, newList, selection);
-			else if (props.type === 'mute' && (selection = globalStore.checkChangeInArray(chatStore.inChannel.muted)))
-				chatStore.updateMuteList(chatStore.inChannel, newList, selection);
+			if (props.type === 'admin' && globalStore.checkChangeInArray(chatStore.inChannel.admins))
+				chatStore.updateAdminList(chatStore.inChannel, newList);
+			else if (props.type === 'ban' && globalStore.checkChangeInArray(chatStore.inChannel.banned))
+				chatStore.updateBanList(chatStore.inChannel, newList);
+			else if (props.type === 'mute' && globalStore.checkChangeInArray(chatStore.inChannel.muted))
+				chatStore.updateMuteList(chatStore.inChannel, newList);
 			else if (props.type === 'kick')
 				chatStore.KickUsers(chatStore.inChannel, newList);
 			globalStore.resetSelectedItems();

@@ -169,11 +169,8 @@ export const useChatStore = defineStore('chatStore', {
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, (channelCreated: Channel) => {
 				console.log('channelCreated', channelCreated)
-				const type = this.channelTypeToString(channelCreated);
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
 				this.loadChannel(this.userChannels[0]);
-				this.addAutomaticMessageSelection(this.userChannels[0], {unlisted:[userStore.userData], listed: selection}, ' is creator of this ' + type + ' channel'
-					, 'have been added to ' + this.userChannels[0].name + ' by ' + userStore.userData.username);
 			});
 		},
 		joinNewChannel(channel : Channel, password?: string) {
@@ -181,7 +178,6 @@ export const useChatStore = defineStore('chatStore', {
 			socket.emit('chatChannelJoin', channel, userStore.userData, password, (channelUpdated: Channel) => {
 				this.userChannels.length ? this.userChannels.unshift(channelUpdated) : this.userChannels.push(channelUpdated);
 				this.inChannel = this.userChannels[0];
-				this.addAutomaticMessage(channel, userStore.userData, 'just joined the channel')
 				this.setRightPartToDisplay(PartToDisplay.CHAT);
 			});
 		},
@@ -189,8 +185,6 @@ export const useChatStore = defineStore('chatStore', {
 			const userStore = useUserStore();
 			socket.emit('chatChannelInvitation', channel, users, userStore.userData, (body: any[]) => {
 				const channelUpdated: Channel = body[0];
-				if (this.inChannel)
-					this.addAutomaticMessageSelection(this.inChannel, { unlisted: [], listed: users}, '', ' have been invited into the channel')
 				this.updateChannel(channelUpdated);
 			});
 		},
@@ -213,7 +207,6 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelLeave', channel, userStore.userData, (body: any[]) => {
 					const ok: boolean = body[0];
 					if (ok) {
-						this.addAutomaticMessage(channel, userStore.userData, 'just leaved the channel')
 						this.deleteUserChannel(channel);
 						if (this.inChannel && this.inChannel.id === channel.id)
 							this.resetInChannel(this.inChannel);
@@ -230,25 +223,15 @@ export const useChatStore = defineStore('chatStore', {
 					socket.emit('chatChannelNamePassword', channel, newNamePassword, (body: any[]) => {
 						const channelUpdated: Channel = body[0];
 						this.updateChannel(channelUpdated);
-						const userStore = useUserStore();
-						if (newNamePassword.name !== null)
-							this.addAutomaticMessage(channel, userStore.userData, 'change the channel name to ' + newNamePassword.name);
-						if (this.inChannel && this.inChannel.password && newNamePassword.password !== null)
-							this.addAutomaticMessage(channel, userStore.userData, 'changed the password of ' + channel.name);
-						else if (this.inChannel && !this.inChannel.password && newNamePassword.password !== null)
-							this.addAutomaticMessage(channel, userStore.userData, 'added a Password to ' + channel.name);
 					});
 				}
 			}
 			else
 				this.updateChannel(channel)
 		},
-		updateBanList(channel: Channel, newBanned: {list: User[], userWhoSelect: User },
-				selection?: {unlisted: User[], listed: User[] } | null,) {
+		updateBanList(channel: Channel, newBanned: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
-			if (newBanned.userWhoSelect.id ===  userStore.userData.id && selection) {
-				this.addAutomaticMessageSelection(channel, selection, '->got unBanned by ' + newBanned.userWhoSelect.username,
-					'-> got Banned by ' + newBanned.userWhoSelect.username)
+			if (newBanned.userWhoSelect.id ===  userStore.userData.id) {
 				socket.emit('chatChannelBan', channel, newBanned, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
 				 	this.updateChannel(channelUpdated);
@@ -266,28 +249,22 @@ export const useChatStore = defineStore('chatStore', {
 					this.updateChannel(channel);
 			}
 		},
-		updateMuteList(channel: Channel, newMuted?: {list: User[], userWhoSelect: User },
-				selection?: {unlisted: User[], listed: User[] } | null) {
+		updateMuteList(channel: Channel, newMuted?: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
-			if (newMuted && newMuted.userWhoSelect.id === userStore.userData.id && selection) {
+			if (newMuted && newMuted.userWhoSelect.id === userStore.userData.id) {
 				socket.emit('chatChannelMute', channel, newMuted, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
-					this.addAutomaticMessageSelection(channel, selection, '->got unMuted by ' + newMuted.userWhoSelect.username,
-					'-> got Muted by ' + newMuted.userWhoSelect.username);
 				 	this.updateChannel( channelUpdated);
 				});
 			}
 			else
 				this.updateChannel(channel);
 		},
-		updateAdminList(channel: Channel, newAdmin?: {list: User[], userWhoSelect: User },
-				selection?: {unlisted: User[], listed: User[] } | null) {
+		updateAdminList(channel: Channel, newAdmin?: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
-			if (newAdmin && newAdmin.userWhoSelect.id === userStore.userData.id && selection) {
+			if (newAdmin && newAdmin.userWhoSelect.id === userStore.userData.id) {
 				socket.emit('chatChannelAdmin', channel, newAdmin, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
-					this.addAutomaticMessageSelection(channel, selection, '->loose Admin status by ' + newAdmin.userWhoSelect.username,
-					'-> got Admin status by ' + newAdmin.userWhoSelect.username);
 				 	this.updateChannel( channelUpdated);
 				});
 			} 
@@ -300,8 +277,6 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelKick', channel, newKicked, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
 				 	this.updateChannel( channelUpdated);
-					this.addAutomaticMessageSelection(channel, { unlisted: [], listed: newKicked.list }, '',
-					'-> ' + ' kicked by ' + newKicked.userWhoSelect.username);
 				})
 			}
 			else {
@@ -315,35 +290,6 @@ export const useChatStore = defineStore('chatStore', {
 				else
 					this.updateChannel(channel)
 			}
-		},
-		addAutomaticMessageSelection(channel: Channel, selection: {unlisted: User[], listed: User[] },
-				messageUnListed: string, messageListed: string) {
-			if (selection.unlisted.length !== 0) {
-				let userNameInUnListed = '';
-				let i= -1;
-				while(++i < selection.unlisted.length - 1)
-					userNameInUnListed += selection.unlisted[i].username + ", ";
-				userNameInUnListed += selection.unlisted[i].username + " ";
-				const newMessage = '🔴　' + userNameInUnListed + messageUnListed;
-				this.sendMessageChannel(newMessage, MessageType.AUTOMATIC_MESSAGE, channel);
-			}
-			if (selection.listed.length !== 0) {
-				let userNameInListed = '';
-				const userStore = useUserStore();
-				let i = -1;
-				while(++i < selection.listed.length - 1) {
-					if (selection.listed[i].username !== userStore.userData.username)
-						userNameInListed += selection.listed[i].username + ",  ";
-				}
-				if (selection.listed[i].username !== userStore.userData.username)
-					userNameInListed += selection.listed[i].username + " ";
-				const newMessage = '⚪️　' + userNameInListed + messageListed;
-				this.sendMessageChannel(newMessage, MessageType.AUTOMATIC_MESSAGE, channel);
-			}
-		},
-		addAutomaticMessage(channel: Channel, user: User, msg: string) {
-			const newMessage = '⚪️　' + user.username + ' ' + msg;
-			this.sendMessageChannel(newMessage, MessageType.AUTOMATIC_MESSAGE, channel);
 		},
 		createMessage(newMessage: string, type: MessageType) {
 			const userStore = useUserStore();
@@ -477,14 +423,6 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 			return 0;
-		},
-		channelTypeToString(channel: Channel) {
-			if (channel.type === ChatStatus.PRIVATE)
-				return 'PRIVATE';
-			else if (channel.type === ChatStatus.PROTECTED)
-				return 'PROTECTED';
-			else
-				return 'PUBLIC';
-		},
+		}
 	},
 });
