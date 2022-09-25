@@ -479,7 +479,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private matches = this.matchService.getMatches()
 
 	@SubscribeMessage('findMatch')
-	async handleFindMatch(@MessageBody any: boolean, @ConnectedSocket() client: Socket): Promise<any> {
+	async handleFindMatch(@MessageBody() any: boolean, @ConnectedSocket() client: Socket): Promise<any> {
 		const user = await this.socketService.getUserFromSocket(client)
 		if (!this.matchService.getPlayersQueue().find(o => o.id === user.id))
 			this.matchService.addPlayerToQueue(user)
