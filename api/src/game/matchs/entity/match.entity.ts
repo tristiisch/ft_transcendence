@@ -2,6 +2,11 @@ import { NotAcceptableException, UnprocessableEntityException } from "@nestjs/co
 import { IsInt } from "class-validator";
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
+export interface Match {
+	stats: MatchStats,
+	live_infos: MatchLiveInfos
+}
+
 @Entity()
 export class MatchStats extends BaseEntity {
 
@@ -74,4 +79,25 @@ export class MatchStats extends BaseEntity {
 	public isEnded(): boolean {
 		return this.timestamp_ended !== null;
 	}
+}
+
+export interface MatchLiveInfos {
+	room_socket: any,
+	started: boolean,
+	waiting: boolean,
+	stopMatch: boolean,
+	customInfos: CustomMatchInfos,
+
+	ballXPos: number,
+	ballYPos: number,
+	p1Ready: boolean,
+	p2Ready: boolean,
+	p1Pos: number,
+	p2Pos: number
+}
+
+export interface CustomMatchInfos {
+	ballSpeed: number,
+	racketSize: number,
+	increaseBallSpeed: boolean
 }

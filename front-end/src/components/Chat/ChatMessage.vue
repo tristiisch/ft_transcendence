@@ -63,7 +63,7 @@ function chooseArray() {
 </script>
 
 <template>
-    <div v-for="message in chooseArray()" :key="message.idMessage" class="flex gap-2 w-full mb-4 pl-8">
+    <div v-for="message in chooseArray()" :key="message.idMessage" class="flex gap-2 w-full mb-4 pl-8 pr-2">
 		<BaseButton v-if="isUserMessage(message.type)" link :to="redirectTo(message.idSender)" class="shrink-0">
 			<img class="self-center h-8 w-8 shrink-0 rounded-full object-cover border-[1px] border-red-400 sm:self-start" :src="message.avatarSender">
 		</BaseButton>
@@ -72,8 +72,23 @@ function chooseArray() {
 				<p class="text-sm">{{ message.usernameSender }}</p>
 				<p class="text-xxs pt-1">{{ message.date }}</p>
 			</div> 
-			<div v-if="message.type !== MessageType.GAME_INVITATION" :class="sizeText(message.type), colorMessage(message)" class="min-w-0 text-red-200 break-words">{{ displayMessage(message) }}</div>
-			<div v-else class="bg-red-600 w-full h-[20px]">{{ displayMessage(message) }}</div>
+			<div v-if="message.type !== MessageType.GAME_INVITATION" :class="sizeText(message.type), colorMessage(message)" class="min-w-0 text-red-200 break-words"> {{ displayMessage(message) }} </div>
+			<div v-else class="flex items-center gap-2 bg-neutral-100 border-[1px] border-blue-600 w-full h-[52px] rounded-full pl-1">
+				<img class=" h-11 w-11 shrink-0 rounded-full border-[1px] border-pink-400 object-cover" src='@/assets/invitationGame.jpg'>
+				<div class="pr-2 text-xs sm:text-xs text-blue-600"> {{ displayMessage(message) }} </div>
+				<div class="flex gap-1 pr-2">
+					<button class="bg-blue-600 rounded text-red-200 hover:text-neutral-100 p-1">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
+							<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+						</svg>
+					</button>
+					<button class="bg-red-600 rounded text-red-200 hover:text-neutral-100 p-1">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
+							<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+						</svg>
+					</button>
+				</div>
+			</div>
 		</div>
     </div>
 </template>

@@ -3,9 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
-import { MatchStats } from './entity/matchstats.entity';
+import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
-import MatchLiveInfos from './entity/matchliveinfos.entity';
 
 @Injectable()
 export class MatchStatsService {
@@ -15,8 +14,9 @@ export class MatchStatsService {
 		private matchsHistoryRepository: Repository<MatchStats>,
 	) {}
 
-	private matches = new Map<number, {stats: MatchStats, live_infos: MatchLiveInfos}>()
-	private players_queue = new Array<User>()
+	private matches = new Map<number, Match>()
+	private players_queue = new Map<number, {user: User, custom_match_infos: CustomMatchInfos}>()
+	private invites_queue = new Map<number, {user: User, invited_user: User}>()
 
 	private readonly winningScore = 5
 	private readonly stageWidth = 3989 / 1.5
@@ -38,32 +38,53 @@ export class MatchStatsService {
 	public getPlayersQueue() {
 		return this.players_queue
 	}
+	public getInvitesQueue() {
+		return this.invites_queue
+	}
 	public getStageWidth() {
 		return this.stageWidth
 	}
 
-	public addPlayerToQueue(socket) {
-		this.players_queue.push(socket)
+	public addPlayerToQueue(user_id, data) {
+		this.players_queue.set(user_id, data)
+	}
+	public removePlayerFromQueue(user_id) {
+		this.players_queue.delete(user_id)
+	}
+	public addInviteToQueue(user: User, invited_user: User) {
+		this.invites_queue.set(this.invites_queue.size, {user, invited_user})
 	}
 
-	async createNewMatch(p1, p2) {
+	public findUserToPlay(any: boolean) {
+		console.log(this.players_queue.entries())
+		if (any === false) {
+			for (const [key, value] of this.players_queue.entries()) {
+				if (!value.custom_match_infos)
+					return value
+			}
+		}
+		// else if (this.players_queue.size) return this.players_queue.entries().return
+		return null
+	}
+
+	async createNewMatch(p1: User, p2: User, custom_match_infos: CustomMatchInfos) {
 		const match_stats = new MatchStats()
 		match_stats.user1_id = p1.id
 		match_stats.user2_id = p2.id
 		match_stats.score = [0, 0]
-
 		const res = await this.save(match_stats)
 		const match_live_infos: MatchLiveInfos = {
 			room_socket: undefined,
 			started: false,
 			waiting: true,
 			stopMatch: false,
+			customInfos: custom_match_infos,
 			ballXPos: this.stageWidth/2,
 			ballYPos: this.stageHeight/2,
 			p1Ready: false,
 			p2Ready: false,
 			p1Pos: this.stageHeight/2 - this.blockerHeight/2,
-			p2Pos: this.stageHeight/2 - this.blockerHeight/2 
+			p2Pos: this.stageHeight/2 - this.blockerHeight/2
 		}
 		this.matches.set(res.id, {
 			stats: res, 
@@ -160,7 +181,7 @@ export class MatchStatsService {
 // 		setTimeout(() => this.launchMatchLoop(match, dx, dy), 0)
 	}
 
-	async startMatch(match: {stats: MatchStats, live_infos: MatchLiveInfos}) {
+	async startMatch(match: Match) {
 		let dx = 3
 		let dy = 3
 
@@ -172,10 +193,10 @@ export class MatchStatsService {
 			if (match.live_infos.stopMatch)
 				clearInterval(emitPosInterval)
 			match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-		}, 30)
+		}, 200)
 	}
 
-	async endMatch(match: {stats: MatchStats, live_infos: MatchLiveInfos}) {
+	async endMatch(match: Match) {
 		match.live_infos.stopMatch = true
 		match.live_infos.room_socket.emit("endMatch")
 		match.stats.timestamp_ended = new Date

@@ -132,35 +132,35 @@ function loadStage() {
 		visible: false
 	})
 
-	var stage_container = document.getElementById('stage-container')!
-	if (match.value.user1_id == userStore.userData.id) {
-		stage_container.addEventListener('mousemove', (event) => {
-			var stage_pos = stage_container.getBoundingClientRect()
-			var mouse_ypos = event.clientY - stage_pos.y
+	// var stage_container = document.getElementById('stage-container')!
+	// if (match.value.user1_id == userStore.userData.id) {
+	// 	stage_container.addEventListener('mousemove', (event) => {
+	// 		var stage_pos = stage_container.getBoundingClientRect()
+	// 		var mouse_ypos = event.clientY - stage_pos.y
 
-			if (mouse_ypos < computeBlockerHeight() / 2)
-				p1_blocker.y(0)
-			else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
-				p1_blocker.y(stage.height() - computeBlockerHeight())
-			else
-				p1_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
-			socket.emit("p1Pos", [match_id, p1_blocker.y() / backend_stage_ratio])
-		});
-	}
-	else if (match.value.user2_id == userStore.userData.id) {
-		stage_container.addEventListener('mousemove', (event) => {
-			var stage_pos = stage_container.getBoundingClientRect()
-			var mouse_ypos = event.clientY - stage_pos.y
+	// 		if (mouse_ypos < computeBlockerHeight() / 2)
+	// 			p1_blocker.y(0)
+	// 		else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
+	// 			p1_blocker.y(stage.height() - computeBlockerHeight())
+	// 		else
+	// 			p1_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
+	// 		socket.emit("p1Pos", [match_id, p1_blocker.y() / backend_stage_ratio])
+	// 	});
+	// }
+	// else if (match.value.user2_id == userStore.userData.id) {
+	// 	stage_container.addEventListener('mousemove', (event) => {
+	// 		var stage_pos = stage_container.getBoundingClientRect()
+	// 		var mouse_ypos = event.clientY - stage_pos.y
 
-			if (mouse_ypos < computeBlockerHeight() / 2)
-				p2_blocker.y(0)
-			else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
-				p2_blocker.y(stage.height() - computeBlockerHeight())
-			else
-				p2_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
-			socket.emit("p2Pos",  [match_id, p2_blocker.y() / backend_stage_ratio])
-		});
-	}
+	// 		if (mouse_ypos < computeBlockerHeight() / 2)
+	// 			p2_blocker.y(0)
+	// 		else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
+	// 			p2_blocker.y(stage.height() - computeBlockerHeight())
+	// 		else
+	// 			p2_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
+	// 		socket.emit("p2Pos",  [match_id, p2_blocker.y() / backend_stage_ratio])
+	// 	});
+	// }
 
 	layer.add(ball)
 	layer.add(p1_blocker)

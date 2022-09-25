@@ -2,7 +2,7 @@
 import { Inject, Injectable, InternalServerErrorException, Logger, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { AuthService } from 'auth/auth.service';
 import { FriendsService } from 'friends/friends.service';
-import { MatchStats } from 'game/matchs/entity/matchstats.entity';
+import { MatchStats } from 'game/matchs/entity/match.entity';
 import { MatchStatsService } from 'game/matchs/matchs.service';
 import { UserStats } from 'game/stats/entity/userstats.entity';
 import { StatsService } from 'game/stats/stats.service';
