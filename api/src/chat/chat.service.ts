@@ -387,9 +387,12 @@ export class ChatService {
 
 	async setAdmin(channel: Channel, user: User, newAdmin:{ list: User[], userWhoSelect: User}): Promise<ChannelFront> {
 		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
-		const usersIds: number[] = users.map(u => u.id); // TODO Verify ids
+		let usersIds: number[] | null = users.map(u => u.id); // TODO Verify ids
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate | Discussion;
-		
+
+		if (usersIds.length === 0) {
+			usersIds = null;
+		}
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
 				await this.channelPublicRepo.update(channel.id, { admins_ids: usersIds });
@@ -426,6 +429,8 @@ export class ChatService {
 	async setMuted(channel: Channel, user: User, usersIds: number[]): Promise<ChannelFront> {
 		let ch: ChannelPublic | ChannelProtected | ChannelPrivate;
 
+		if (usersIds.length === 0)
+			usersIds = null;
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
 				await this.channelPublicRepo.update(channel.id, { muted_ids: usersIds });
@@ -459,6 +464,8 @@ export class ChatService {
 	async setBanned(channel: Channel, user: User, usersIds: number[]): Promise<ChannelFront> {
 		let ch: ChannelPublic | ChannelProtected | ChannelPrivate;
 
+		if (usersIds.length === 0)
+			usersIds = null;
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
 				await this.channelPublicRepo.update(channel.id, { banned_ids: usersIds });

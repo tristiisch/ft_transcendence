@@ -32,12 +32,9 @@ const emit = defineEmits<{
 
 function launchGame() {
 	if (mode.value === 'random')
-	{
-		socket.emit('createCustomMatch', { ballSpeed: globalStore.ballSpeed, racketSize: globalStore.racketSize, increaseBallSpeed: globalStore.increaseSpeed, world: globalStore.world })
-		router.push({ name: 'Matchmaking', query: { custom: 'true' }});
-	}	
+		router.push({ name: 'MatchMaking', query: { custom: 'true' }});
 	else if (mode.value === 'invite' && props.invitedUser != undefined && globalStore.gameInvitation)
-		router.push({ name: 'Matchmaking', params: {}});
+		router.push({ name: 'MatchMaking', params: {}});
 }
 
 </script>

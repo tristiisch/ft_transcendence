@@ -2,6 +2,12 @@ import { NotAcceptableException, UnprocessableEntityException } from "@nestjs/co
 import { IsInt } from "class-validator";
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
+export enum MatchMakingTypes {
+	NORMAL_MATCH,
+	ANY_MATCH,
+	OWN_MATCH
+}
+
 export interface Match {
 	stats: MatchStats,
 	live_infos: MatchLiveInfos

@@ -6,6 +6,8 @@ import { useRoute, useRouter } from 'vue-router';
 import useMatchService from '@/services/MatchService';
 import socket from '@/plugin/socketInstance';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
+import { useGlobalStore } from '@/stores/globalStore';
+import { MatchMakingTypes } from '@/types/MatchMaking';
 
 const searchingMatch = ref(false)
 
@@ -14,10 +16,11 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore();
 const userData = userStore.userData
+const globalStore = useGlobalStore()
 
-function findMatch(any: boolean) {
+function findMatch(type: number, match_live_infos: any) {
 	searchingMatch.value = true
-	socket.emit('findMatch', any)
+	socket.emit('findMatch', {type, match_live_infos: match_live_infos})
 	socket.on('foundMatch', (id) => {
 		router.replace('match/' + id)
 	})
@@ -26,9 +29,19 @@ function findMatch(any: boolean) {
 onBeforeMount(() => {
 	if (route.query.custom) {
 		searchingMatch.value = true
-		socket.on('foundMatch', (id) => {
-			router.replace('match/' + id)
+		findMatch(MatchMakingTypes.OWN_MATCH, {
+			ballSpeed: globalStore.ballSpeed,
+			racketSize: globalStore.racketSize,
+			increaseBallSpeed: globalStore.increaseSpeed,
+			world: globalStore.world
 		})
+	}
+})
+
+onBeforeUnmount(() => {
+	if (searchingMatch.value) {
+		socket.emit('cancelFindMatch')
+		socket.off('foundMatch')
 	}
 })
 
@@ -36,8 +49,11 @@ onBeforeMount(() => {
 
 <template>
 	<div v-if="!searchingMatch" class="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
-		<button-gradient class="m-3 h-[50px]" style="width:180px" @click="findMatch(false)">Normal Match</button-gradient>
-		<button-gradient class="m-3 h-[50px]" style="width:180px" @click="findMatch(true)">Any Match</button-gradient>
+		<button-gradient class="m-3 h-[50px]" style="width:180px" @click="findMatch(MatchMakingTypes.NORMAL_MATCH, null)">Normal Match</button-gradient>
+		<button-gradient class="m-3 h-[50px]" style="width:180px" @click="findMatch(MatchMakingTypes.ANY_MATCH, null)">Any Match</button-gradient>
 	</div>
-	<base-spinner game v-if="searchingMatch"></base-spinner>
+	<div v-if="searchingMatch" class="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
+		<base-spinner game></base-spinner>
+		<button-gradient class="m-3 h-[50px]" style="width:180px" @click="router.push('/home')">Cancel</button-gradient>
+	</div>
 </template>

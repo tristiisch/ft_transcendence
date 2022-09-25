@@ -12,7 +12,9 @@ export interface GlobalState {
 	ballSpeed: number,
 	racketSize: number,
 	increaseSpeed: boolean,
-	world: string,
+	world: number,
+	gameInvitation: boolean,
+	neededPointsForVictory: number
 }
 
 export default GlobalState;

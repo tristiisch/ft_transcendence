@@ -266,12 +266,12 @@ export class UsersService {
 
 	async addBlockedUser(user: User, target: User): Promise<User> {
 		if (user.id === target.id)
-			throw new WsException("Can't block yourself");
+			throw new PreconditionFailedException("Can't block yourself");
 		if (!user.blocked_ids) {
 			user.blocked_ids = new Array();
 			await this.usersRepository.update(user.id, { blocked_ids: [target.id] });
 		} else if (user.blocked_ids.indexOf(target.id) !== -1)
-			throw new WsException('User is already blocked')
+			throw new PreconditionFailedException(`${target.username} is already blocked`)
 
 		user.blocked_ids.push(target.id);
 		try {
