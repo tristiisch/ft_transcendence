@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/stores/globalStore';
+import { useChatStore } from '@/stores/chatStore';
 import { onBeforeMount, ref, watch } from 'vue'
 import type User from '@/types/User';
+import PartToDisplay from '@/types/ChatPartToDisplay';
 import type Channel from '@/types/Channel';
 
 const globalStore = useGlobalStore();
+const chatStore = useChatStore();
 const showCheckMark = ref([] as boolean[])
 
 const props = defineProps<{
@@ -92,5 +95,5 @@ onBeforeMount(() => {
 			</button>
 		</div>
 	</div>
-	<div v-else class="flex justify-center items-center w-full h-full text-xl text-neutral-100 font-Arlon">NO PERSON SELECTABLE</div>
+	<div v-else class="flex justify-center items-center w-full h-full text-xl text-neutral-100 font-Arlon"> {{ chatStore.cardRightPartToDisplay === PartToDisplay.ADD_CHANNEL ?  'NO CHANNEL' : 'NO PERSON SELECTABLE' }}</div>
 </template>

@@ -13,7 +13,7 @@ const emit = defineEmits<{
 
 <template>
 	<h1 class="flex justify-center items-center shrink-0 w-3/4 h-[30px] sm:h-[50px] text-sm sm:text-base text-red-200 border-b border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500">CHOOSE SETTINGS</h1>
-	<div class="flex flex-col justify-center items-center gap-3 sm:gap-6 w-3/4 h-full text-red-200">
+	<div class="flex flex-col justify-center items-center gap-3 lg:gap-6 w-3/4 h-full text-red-200">
 		 <label class="text-xs sm:text-sm">NEEDED POINTS FOR VICTORY</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
             <span class="absolute -top-[14px] sm:-top-4 text-red-700 text-xs sm:text-sm">{{ globalStore.neededPointsForVictory }}pts</span>
