@@ -21,7 +21,8 @@ const app = createApp(App);
 const pinia = createPinia();
 
 const options = {
-	position: POSITION.TOP_CENTER
+	position: POSITION.TOP_CENTER,
+	pauseOnFocusLoss: false,
     // You can set your default options here
 };
 

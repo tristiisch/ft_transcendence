@@ -117,10 +117,8 @@ export class MatchStatsService {
 
 	async launchMatchLoop(match, dx, dy, ballPosInterval) {
 		let matchLoopInterval = setInterval(() => {
-			if (match.live_infos.stopMatch) {
+			if (match.live_infos.stopMatch)
 				this.endMatch(match, ballPosInterval, matchLoopInterval)
-				// clearInterval(interval)
-			}
 			if (match.live_infos.ballXPos + dx < 0) {
 				match.stats.score[1]++
 				match.live_infos.room_socket.emit('p2Scored')
@@ -131,10 +129,8 @@ export class MatchStatsService {
 				match.live_infos.room_socket.emit('p1Scored')
 				dx = -dx
 			}
-			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
+			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore)
 				this.endMatch(match, ballPosInterval, matchLoopInterval)
-				// clearInterval(interval)
-			}
 			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
 				dy = -dy
 

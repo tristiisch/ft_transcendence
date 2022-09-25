@@ -28,7 +28,7 @@ const router = createRouter({
 		{
 			path: '/matchmaking',
 			name: 'MatchMaking',
-			component: () => import('@/views/MatchMaking.vue'),
+			component: () => import('@/views/Matchmaking.vue'),
 		},
 		{
 			path: '/profile/:id(\\d+)',

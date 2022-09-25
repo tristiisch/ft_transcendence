@@ -1,8 +1,8 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Logger, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, ForbiddenException, forwardRef, Get, HttpCode, HttpStatus, Inject, Logger, Param, ParseArrayPipe, Post, PreconditionFailedException, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guard';
+import { JwtAuthGuard, JwtTFAuthGuard } from './guard';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'users/entity/user.entity';
 import { UserAuth } from './entity/user-auth.entity';
@@ -47,9 +47,15 @@ export class AuthController {
 		const { user, userAuth } = await this.authService.UserConnecting(userInfo);
 		delete userAuth.twoFactorSecret; // TODO Verif this method
 
-		if (user && userAuth.has_2fa === true)
+		if (!user)
+			throw new BadRequestException('User is null');
+
+		if (userAuth.has_2fa === true) {
+			const jwtToken2FA: string = await this.authService.createTFAToken(user.id);
+			userAuth.token_jwt = jwtToken2FA;
 			res.json({ auth: userAuth });
-		else if (user)
+		}
+		else
 			res.json({ auth: userAuth, user: user });
 	}
 
@@ -74,7 +80,11 @@ export class AuthController {
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
 export class TFAController {
-	constructor(private readonly authService: AuthService,) {}
+
+	constructor(private readonly authService: AuthService) {}
+
+	@Inject(forwardRef(() => UsersService))
+	private readonly usersService: UsersService;
 
 	@Get('generate')
 	@UseGuards(JwtAuthGuard)
@@ -99,11 +109,12 @@ export class TFAController {
 
 	@Post('authenticate')
 	@HttpCode(200)
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtTFAuthGuard)
 	async authenticate(@Req() req, @Body() data) {
-		const user: User = req.user;
+		const userAuth: UserAuth = req.user;
+		const user: User = await this.usersService.findOne(userAuth.user_id);
+
 		const code: string = data.otpToken;
-		const userAuth: UserAuth = await this.authService.findOne(user.id);
 		const isCodeValid = this.authService.TFACodeValidationAuthenticate(code, userAuth);
 		if (!isCodeValid) {
 			throw new ForbiddenException('Wrong authentication code');

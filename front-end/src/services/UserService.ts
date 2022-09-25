@@ -42,6 +42,10 @@ class UserService {
 		return axios.get('users/delete');
 	}
 
+	getBlockedUsers() {
+		return axios.get('users/blocked-users');
+	}
+
 	blockUser(targetId: number) {
 		return axios.post('users/block', { id: targetId });
 	}

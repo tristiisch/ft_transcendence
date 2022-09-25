@@ -10,14 +10,22 @@ class AuthService {
 	
 	getJwtToken() {
 		try {
-			const token = localStorage.getItem('userAuth');
-			if (token) return JSON.parse(token)
-			return ''
-		}
-		catch {
-			return null
+			return localStorage.getItem('userAuth');
+		} catch {
+			return null;
 		}
 	}
+
+	/*private getJwt2FAToken() {
+		try {
+			const token = localStorage.getItem('userAuth2FA');
+			if (token) return token;
+			return '';
+		}
+		catch {
+			return null;
+		}
+	}*/
 	
 	login(code: string) {
 		return axios.post('auth/42/redirect', { code })/*.then((response) => {
@@ -43,6 +51,12 @@ class AuthService {
 	}
 
 	login2FA(otpToken: string) {
+		/*let config2FA = {
+			headers: {
+				Authorization: `Bearer ${this.getJwt2FAToken()}`
+			}
+		}
+		console.log('jwt token 2fa', this.getJwt2FAToken());*/
 		return axios.post('2fa/authenticate', { otpToken })/*.then((response) => {
 			console.log(response.data)
 			if (response.data.auth.token_jwt) {
