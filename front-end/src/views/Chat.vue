@@ -101,6 +101,10 @@ socket.on("exception", (err) => {
 	toast.warning(`Error socket: ${err.message}`)
 });
 
+socket.on("gameInvitation", (gameId: number) => {
+	router.push('match/' + gameId)
+});
+
 function scrollToTop() {
 	if (scroll.value) {
 		scroll.value.scrollTop = 0;
@@ -168,6 +172,7 @@ onBeforeUnmount(() => {
 	socket.off("chatChannelMessage");
 	socket.off("chatChannelNamePassword");
 	socket.off("exception");
+	socket.off("gameInvitation")
 })
 </script>
 
