@@ -60,7 +60,10 @@ function invitePlayer()
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			invitation.value = false
+			invitedUser.value = undefined
+			if (error.response.status === 400) toast.warning(error.response.data.message)
+			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		})
 }
 

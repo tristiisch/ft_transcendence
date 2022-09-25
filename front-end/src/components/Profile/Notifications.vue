@@ -26,6 +26,10 @@ function isGameNotification(notification: Notification) {
 
 function acceptInvitation(notification: Notification) {
 	globalStore.acceptInvitation(notification)
+		.then((response) => {
+			if (notification.type  == NotificationType.MATCH_REQUEST)
+				router.push('match/' + response?.data.id)
+		})
 		.catch((error) => {
 			if (error.response.status === 406)
 			{
