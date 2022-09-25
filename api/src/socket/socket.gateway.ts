@@ -210,9 +210,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(user, null);
-			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channel, newMsgFront, user);
+			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
+			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channelFront, newMsgFront, user);
 
-			return [ channel, newMsgFront ];
+			return [ channelFront , newMsgFront ] ;
 		} catch (err) {
 			throw new WsException(err.message);
 		}
