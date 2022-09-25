@@ -416,6 +416,7 @@ export const useChatStore = defineStore('chatStore', {
 			for (const discussion of this.userDiscussions) {
 				if (discussion.user.id === userId) {
 					this.loadDiscussion(discussion);
+					this.setLeftPartToDisplay('discussion');
 					return 1;
 				}
 			}
