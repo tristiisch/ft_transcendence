@@ -500,8 +500,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('createCustomMatch')
 	async createCustomMatch(@MessageBody() custom_match_infos, @ConnectedSocket() client: Socket): Promise<any> {
 		const user = await this.socketService.getUserFromSocket(client)
-		if (!this.players_queue.has(user.id)) this.matchService.addPlayerToQueue(user.id, custom_match_infos)
+		if (!this.players_queue.has(user.id)) this.matchService.addPlayerToQueue(user.id, {user, custom_match_infos})
+		console.log(this.players_queue)
 	}
+
+	@SubscribeMessage('cancelCustomMatch')
+	async cancelCustomMatch(@ConnectedSocket() client: Socket): Promise<any> {
+		const user = await this.socketService.getUserFromSocket(client)
+		if (!this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
+	}
+
 
 	@SubscribeMessage('createMatchInvitation')
 	async createMatchInvitation(@MessageBody() username: string, @ConnectedSocket() client: Socket): Promise<any> {

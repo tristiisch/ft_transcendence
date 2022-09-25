@@ -99,5 +99,6 @@ export interface MatchLiveInfos {
 export interface CustomMatchInfos {
 	ballSpeed: number,
 	racketSize: number,
-	increaseBallSpeed: boolean
+	increaseBallSpeed: boolean,
+	world: number
 }

@@ -56,14 +56,10 @@ export class MatchStatsService {
 	}
 
 	public findUserToPlay(any: boolean) {
-		console.log(this.players_queue.entries())
-		if (any === false) {
-			for (const [key, value] of this.players_queue.entries()) {
-				if (!value.custom_match_infos)
-					return value
-			}
+		for (const [key, value] of this.players_queue.entries()) {
+			if (any || (!any && !value.custom_match_infos))
+				return value
 		}
-		// else if (this.players_queue.size) return this.players_queue.entries().return
 		return null
 	}
 
