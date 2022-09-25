@@ -5,6 +5,7 @@ import type User from '@/types/User';
 import ButtonPlus from '@/components/Button/ButtonPlus.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import { useGlobalStore } from '@/stores/globalStore';
+import socket from '@/plugin/socketInstance';
 
 const globalStore = useGlobalStore();
 const mode = ref('random')
@@ -31,7 +32,10 @@ const emit = defineEmits<{
 
 function launchGame() {
 	if (mode.value === 'random')
-		router.push({ name: 'Matchmaking', params: {}});
+	{
+		socket.emit('createCustomMatch', { ballSpeed: globalStore.ballSpeed, racketSize: globalStore.racketSize, increaseBallSpeed: globalStore.increaseSpeed, world: globalStore.world })
+		router.push({ name: 'Matchmaking', query: { custom: 'true' }});
+	}	
 	else if (mode.value === 'invite' && props.invitedUser != undefined && globalStore.gameInvitation)
 		router.push({ name: 'Matchmaking', params: {}});
 }
@@ -42,8 +46,8 @@ function launchGame() {
     <div class="flex flex-col items-center w-full h-full">
         <h1 class="flex justify-center items-center w-3/4 h-[40px] sm:h-[50px] text-sm sm:text-base text-red-200 border-b border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500 shrink-0">PLAYERS</h1>
         <div class="inline-flex justify-center w-full pt-4 sm:pt-6">
-            <button @click="changeMode()" class="btn-base rounded-l-md border" :class="mode === 'random' && !invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Random</button>
-            <button @click="changeMode()" class="btn-base rounded-r-md border-t border-b" :class="mode === 'invite' || invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Invite</button>
+            <button @click="changeMode()" class="w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600 rounded-l-md border" :class="mode === 'random' && !invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Random</button>
+            <button @click="changeMode()" class="w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600 rounded-r-md border-t border-b" :class="mode === 'invite' || invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Invite</button>
         </div>
         <div v-if="mode === 'invite' || invitation === true" class="flex flex-col justify-center items-center py-2 sm:py-4 w-3/4 bg-neutral-100 border border-blue-600 rounded-lg mt-2 3xl:mt-6 h-1/2">
             <div v-if="!invitation" class="flex items-center gap-2">
@@ -74,10 +78,3 @@ function launchGame() {
     </div>
 	<button-return-next  @click="emit('return')" side="previous" class="self-end mb-1"></button-return-next>
 </template>
-    
-
-<style scoped>
-.btn-base {
-	@apply w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600;
-}
-</style>
