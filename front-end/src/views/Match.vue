@@ -27,12 +27,6 @@ onBeforeMount(() => {
 	socket.emit('update_status', status.ONLINE)
 	MatchService.loadMatch(match_id)
 		.then((response) => {
-			if (response.data === "") {
-				router.replace({
-					name: 'Error',
-					params: { pathMatch: route.path.substring(1).split('/') },
-				});
-			}
 			match.value = response.data
 			console.log(match.value)
 			Promise.all([
@@ -46,12 +40,13 @@ onBeforeMount(() => {
 					isPlayer.value = true
 				// console.log(player1.value)
 				// console.log(player2.value)
-			})
+			}) // TODO catch error 
 		})
 		.catch((e) => {
 			router.replace({
 				name: 'Error',
 				params: { pathMatch: route.path.substring(1).split('/') },
+				query: { code: e.response?.status, message: e.response?.data.message }
 			});
 	})
 })

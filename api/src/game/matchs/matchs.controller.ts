@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotFoundException, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'auth/guard';
 import { UserSelectDTO } from 'users/entity/user-select.dto';
 import { User } from 'users/entity/user.entity';
@@ -22,6 +22,8 @@ export class MatchsStatsController {
 	@Get(':id')
 	sendMatchInfos(@Param('id') id: number) {
 		// console.log("get : ", this.matchService.getMatches().get(id).stats)
+		if (!this.matchsService.getMatches().has(id))
+			throw new NotFoundException(`Unknown match ${id}`);
 		return this.matchsService.getMatches().get(id)?.stats;
 	}
 
