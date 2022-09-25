@@ -68,7 +68,7 @@ onUnmounted(() => {
 			<div v-if="imageLoaded">
 				<div class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 					<div class="flex justify-center items-center h-full">
-						<base-button link :to="{ name: 'Matchmaking', params: {}}" :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</base-button>
+						<base-button link :to="{ name: 'MatchMaking', params: {}}" :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</base-button>
 					</div>
 				</div>
 				<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-3 h-3/4 bg-stone-800"></div>
