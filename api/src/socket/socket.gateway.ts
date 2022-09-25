@@ -89,7 +89,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.updateStatus(clientSocket, user, UserStatus.OFFLINE);
 			this.socketService.deleteClientSocket(user.id);
 		} catch (err) {
-			Logger.error(`Cannot get user from socket for handleDisconnect:  ${err.message}`, 'WebSocket');
+			Logger.error(`Cannot get user from socket for handleDisconnect: ${err.message}`, 'WebSocket');
 		}
 	}
 
@@ -616,4 +616,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match.stats))
 			match.live_infos.stopMatch = true
 	}
+
+	// UpdateLeaderboard
+	// AdduUserLeaderboard
 }

@@ -23,6 +23,10 @@ export class SocketService {
 
 	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
+		if (!token || token.length === 0) {
+			Logger.debug(`Token is null or empty`, 'WebSocket');
+			throw new UnauthorizedException('Invalid token.');
+		}
 		const user = await this.authService.getUserFromAuthenticationToken(token);
 		if (!user) {
 			throw new UnauthorizedException('Invalid credentials.');
