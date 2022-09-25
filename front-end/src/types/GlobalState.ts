@@ -13,7 +13,6 @@ export interface GlobalState {
 	racketSize: number,
 	increaseSpeed: boolean,
 	world: string,
-	gameInvitation: boolean
 }
 
 export default GlobalState;
