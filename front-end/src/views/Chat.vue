@@ -142,6 +142,7 @@ onBeforeMount(() => {
 						.then((response) => {
 							const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: response.data, messages: [] as Message[] };
 							chatStore.createNewDiscussion(newDiscussion, true);
+							chatStore.setLeftPartToDisplay('discussion');
 						})
 						.catch((error) => {
 							router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
