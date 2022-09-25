@@ -69,6 +69,10 @@ function updateMatch(match: Match) {
 	if (index !== -1) matchs.value[index].score = match.score;
 }
 
+socket.on('gameInvitation', (gameId: number) => {
+	router.push('match/' + gameId)
+});
+
 onBeforeMount(() => {
 	fetchCurrentMatchs();
 	socket.on('UpdateMatch', updateMatch);
@@ -79,6 +83,7 @@ onBeforeMount(() => {
 
 onBeforeUnmount(() => {
 	socket.off('UpdateMatch', updateMatch);
+	socket.off('gameInvitation')
 });
 </script>
 
