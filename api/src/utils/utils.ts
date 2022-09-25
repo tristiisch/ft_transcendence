@@ -72,7 +72,7 @@ export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>)
 		return undefined;
 	const newArray: T[] = new Array();
 	array.forEach(nb => {
-		if (!arrayToSubstract && arrayToSubstract.indexOf(nb) === -1)
+		if (arrayToSubstract && arrayToSubstract.indexOf(nb) === -1)
 			newArray.push(nb);
 	});
 	return newArray;
