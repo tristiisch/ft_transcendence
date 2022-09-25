@@ -486,7 +486,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
 		const user = await this.socketService.getUserFromSocket(client)
 		const match_found = this.matchService.findUserToPlay(data.type)
-		console.log("match_found", match_found)
 		if (match_found) {
 			this.matchService.removePlayerFromQueue(match_found.user.id)
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
@@ -494,7 +493,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
 			client.emit('foundMatch', match_id)
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
-			console.log("PlayersQueue:", this.matchService.getPlayersQueue())
 		}
 		else this.matchService.addPlayerToQueue(user.id, {user: user, match_type: data.type, custom_match_infos: data.custom_match_infos})
 	}
@@ -503,24 +501,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user = await this.socketService.getUserFromSocket(client)
 		if (this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
 	}
-
-	// @SubscribeMessage('createCustomMatch')
-	// async createCustomMatch(@MessageBody() custom_match_infos, @ConnectedSocket() client: Socket): Promise<any> {
-	// 	// const user = await this.socketService.getUserFromSocket(client)
-	// 	// if (!this.players_queue.has(user.id)) {
-	// 	// 	const match_found = this.matchService.findUserToPlay(FindPlayerToPlayTypes.OWN_MATCH)
-	// 	// 	if (match_found) {
-	// 	// 		this.matchService.removePlayerFromQueue(match_found.user.id)
-	// 	// 		const match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
-	// 	// 		this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
-	// 	// 		client.emit('foundMatch', match_id)
-	// 	// 		this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
-	// 	// 		console.log("PlayersQueue:", this.matchService.getPlayersQueue())
-	// 	// 	}
-	// 	// 	else this.matchService.addPlayerToQueue(user.id, {user, custom_match_infos})
-	// 	// }
-	// 	// console.log(this.players_queue)
-	// }
 
 	// @SubscribeMessage('createMatchInvitation')
 	// async createMatchInvitation(@MessageBody() username: string, @ConnectedSocket() client: Socket): Promise<any> {
