@@ -137,11 +137,11 @@ onBeforeMount(() => {
 				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
 				// if (discussion) chatStore.loadDiscussion(discussion);
 				if (!chatStore.isNewDiscussion(parseInt(route.query.discussion as string))) {
-					// const user = globalStore.getUser(parseInt(route.query.discussion as string));//TODO replace by fetch or socket.
 					UserService.getUser(parseInt(route.query.discussion as string))
 						.then((response) => {
 							const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: response.data, messages: [] as Message[] };
 							chatStore.createNewDiscussion(newDiscussion, true);
+							chatStore.setLeftPartToDisplay('discussion');
 						})
 						.catch((error) => {
 							router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
@@ -197,13 +197,13 @@ onBeforeUnmount(() => {
 					</div>
 					<div class="flex flex-col overflow-x-auto sm:overflow-y-auto h-full w-full" ref="scroll">
 						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
-							<discussion-list @click.right="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
+							<discussion-list @click.right.prevent="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
 							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
 						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
 							<channels-list
 								v-if="memberInChannel(channel)"
-								@click.right="setDisplayDelete(index)"
+								@click.right.prevent="setDisplayDelete(index)"
 								@click.left="chatStore.loadChannel(channel), scrollToTop()"
 								:channel="channel"
 								:index="index"
