@@ -43,7 +43,7 @@ class UserService {
 	}
 
 	getBlockedUsers() {
-		return axios.get('blocked-users');
+		return axios.get('users/blocked-users');
 	}
 
 	blockUser(targetId: number) {
