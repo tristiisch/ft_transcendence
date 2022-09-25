@@ -67,7 +67,8 @@ export class Channel extends Chat {
 	}
 
 	public sendMessageFrom?(sockerService: SocketService, user: User, room: string, ...args: any) {
-		const emitUsers: number[] = this.users_ids.filter(u => u !== user.id && !user.isBlockedUser(u))
+		const emitUsers: number[] = this.users_ids.filter(u => u !== user.id) // TODO  && !user.isBlockedUser(u)
+		console.log('emitUsers', emitUsers, room, args);
 		sockerService.emitIds(emitUsers, room, ...args);
 	}
 }
