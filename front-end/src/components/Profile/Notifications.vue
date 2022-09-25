@@ -37,7 +37,7 @@ function acceptInvitation(notification: Notification) {
 }
 
 function declineInvitation(notification: Notification) {
-	globalStore.acceptInvitation(notification)
+	globalStore.declineInvitation(notification)
 		.catch((error) => {
 			if (error.response.status === 406)
 			{
