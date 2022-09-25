@@ -12,11 +12,8 @@ const instance = axios.create({
 
 instance.interceptors.request.use(function (config) {
 	const userStore = useUserStore();
-
-
 	if (!userStore.isLoggedIn) config.headers!.Authorization = `Bearer ${userStore.userAuth.token_jwt}`
 	else config.headers!.Authorization = `Bearer ${AuthService.getJwtToken()}`
-	//config.headers!.Authorization =  token ? `Bearer ${token}` : '';
 		return config;
 	}, function (error) {
 		return Promise.reject(error);
