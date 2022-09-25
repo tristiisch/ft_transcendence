@@ -3,7 +3,7 @@ import { JwtAuthGuard } from 'auth/guard';
 import { UserSelectDTO } from 'users/entity/user-select.dto';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
-import { MatchStats } from './entity/matchstats.entity';
+import { MatchStats } from './entity/match.entity';
 import { MatchStatsService } from './matchs.service';
 
 @Controller('matchs')
