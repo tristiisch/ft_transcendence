@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
@@ -6,6 +6,10 @@ import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
 import { StatsService } from 'game/stats/stats.service';
+import { Notification, NotificationType } from 'notification/entity/notification.entity';
+import { SocketService } from 'socket/socket.service';
+import { NotificationService } from 'notification/notification.service';
+import { mapGetByValue } from 'utils/utils';
 
 @Injectable()
 export class MatchStatsService {
@@ -31,6 +35,10 @@ export class MatchStatsService {
 	private readonly userService: UsersService;
 	@Inject(forwardRef(() => StatsService))
 	private readonly matchStatsService: StatsService;
+	@Inject(forwardRef(() => NotificationService))
+	private readonly notifService: NotificationService;
+	@Inject(forwardRef(() => SocketService))
+	private readonly socketService: SocketService;
 
 	public getRepo() {
 		return this.matchsHistoryRepository;
@@ -119,9 +127,9 @@ export class MatchStatsService {
 	}
 
 	async launchMatchLoop(match, dx, dy, ballPosInterval) {
-		let matchLoopInterval = setInterval(() => {
+		let matchLoopInterval = setInterval(async () => {
 			if (match.live_infos.stopMatch)
-				this.endMatch(match, ballPosInterval, matchLoopInterval)
+				await this.endMatch(match, ballPosInterval, matchLoopInterval, true)
 			if (match.live_infos.ballXPos + dx < 0) {
 				match.stats.score[1]++
 				match.live_infos.room_socket.emit('p2Scored')
@@ -133,7 +141,7 @@ export class MatchStatsService {
 				dx = -dx
 			}
 			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore)
-				this.endMatch(match, ballPosInterval, matchLoopInterval)
+				await this.endMatch(match, ballPosInterval, matchLoopInterval)
 			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
 				dy = -dy
 
@@ -196,15 +204,17 @@ export class MatchStatsService {
 		}, 3000)
 	}
 
-	async endMatch(match: Match, ballPosInterval, matchLoopInterval) {
+	async endMatch(match: Match, ballPosInterval, matchLoopInterval, forceEnd?: boolean) {
 		clearInterval(ballPosInterval)
 		clearInterval(matchLoopInterval)
 		match.live_infos.room_socket.emit("endMatch")
 		match.stats.timestamp_ended = new Date
-		this.save(match.stats);
 
-		this.matchStatsService.addDefeat(match.stats.getLoser());
-		this.matchStatsService.addVictory(match.stats.getWinner());
+		if (forceEnd != true) {
+			await this.save(match.stats);
+			await this.matchStatsService.addDefeat(match.stats.getLoser());
+			await this.matchStatsService.addVictory(match.stats.getWinner());
+		}
 
 		this.matches.delete(match.stats.id)
 	}
@@ -266,7 +276,30 @@ export class MatchStatsService {
 	async save(match: MatchStats) {
 		return this.matchsHistoryRepository.save(match)
 	}
+
 	async add(matchHistory: MatchStats) {
 		return this.matchsHistoryRepository.save(matchHistory);
+	}
+
+	private readonly requests: Map<number, number> = new Map();
+
+	getRequest(idTarget: number) {
+		mapGetByValue(this.requests, idTarget);
+	}
+
+	async addRequest(user: User, id: any) {
+		const target: User = await this.userService.findOne(id);
+		
+		if (this.requests.has(target.id))
+			throw new BadRequestException(`You have already invited this user.`);
+
+		let notif: Notification = new Notification();
+		notif.user_id = target.id;
+		notif.from_user_id = user.id;
+		notif.type = NotificationType.MATCH_REQUEST;
+		notif = await this.notifService.addNotif(notif);
+		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
+
+		this.requests.set(user.id, id)
 	}
 }

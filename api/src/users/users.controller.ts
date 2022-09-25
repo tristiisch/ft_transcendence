@@ -48,7 +48,11 @@ export class UsersController {
 		//Logger.debug(`blocked_ids ${user.blocked_ids}`)
 		if (!user.blocked_ids)
 			return [];
-		return user.blocked_ids.map(async id => await this.usersService.findOne(id));
+		const blockedUsers: User[] = new Array();
+		for (const id of user.blocked_ids)
+			blockedUsers.push(await this.usersService.findOne(id));
+		console.log('blockedUsers', blockedUsers);
+		return blockedUsers;
 	}
 
 	@UseGuards(JwtAuthGuard)
