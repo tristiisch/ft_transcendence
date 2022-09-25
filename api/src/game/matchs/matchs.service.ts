@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
-import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos } from './entity/match.entity';
+import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class MatchStatsService {
 	) {}
 
 	private matches = new Map<number, Match>()
-	private players_queue = new Map<number, {user: User, custom_match_infos: CustomMatchInfos}>()
+	private players_queue = new Map<number, {user: User, match_type: MatchMakingTypes, custom_match_infos: CustomMatchInfos}>()
 	private invites_queue = new Map<number, {user: User, invited_user: User}>()
 
 	private readonly winningScore = 5
@@ -55,10 +55,13 @@ export class MatchStatsService {
 		this.invites_queue.set(this.invites_queue.size, {user, invited_user})
 	}
 
-	public findUserToPlay(any: boolean) {
+	public findUserToPlay(match_type: MatchMakingTypes) {
+		console.log("match_type:", match_type)
 		for (const [key, value] of this.players_queue.entries()) {
-			if (any || (!any && !value.custom_match_infos))
-				return value
+			if ((match_type === MatchMakingTypes.NORMAL_MATCH && value.match_type !== MatchMakingTypes.OWN_MATCH) ||
+				(match_type === MatchMakingTypes.ANY_MATCH) ||
+				(match_type === MatchMakingTypes.OWN_MATCH && value.match_type === MatchMakingTypes.ANY_MATCH))
+					return value
 		}
 		return null
 	}
@@ -112,11 +115,11 @@ export class MatchStatsService {
 		return 0
 	}
 
-	async launchMatchLoop(match, dx, dy) {
-		let interval = setInterval(() => {
+	async launchMatchLoop(match, dx, dy, ballPosInterval) {
+		let matchLoopInterval = setInterval(() => {
 			if (match.live_infos.stopMatch) {
-				this.endMatch(match)
-				clearInterval(interval)
+				this.endMatch(match, ballPosInterval, matchLoopInterval)
+				// clearInterval(interval)
 			}
 			if (match.live_infos.ballXPos + dx < 0) {
 				match.stats.score[1]++
@@ -129,8 +132,8 @@ export class MatchStatsService {
 				dx = -dx
 			}
 			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
-				this.endMatch(match)
-				clearInterval(interval)
+				this.endMatch(match, ballPosInterval, matchLoopInterval)
+				// clearInterval(interval)
 			}
 			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
 				dy = -dy
@@ -184,16 +187,19 @@ export class MatchStatsService {
 		console.log("startMatch " + match.stats.id)
 		match.live_infos.room_socket.emit("startMatch")
 
-		setTimeout(() => this.launchMatchLoop(match, dx, dy), 3000)
-		let emitPosInterval = setInterval(() => {
-			if (match.live_infos.stopMatch)
-				clearInterval(emitPosInterval)
-			match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-		}, 200)
+		setTimeout(() => {
+			let ballPosInterval = setInterval(() => {
+				// if (match.live_infos.stopMatch)
+				// 	clearInterval(ballPosInterval)
+				match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
+			}, 10)
+			this.launchMatchLoop(match, dx, dy, ballPosInterval)
+		}, 3000)
 	}
 
-	async endMatch(match: Match) {
-		match.live_infos.stopMatch = true
+	async endMatch(match: Match, ballPosInterval, matchLoopInterval) {
+		clearInterval(ballPosInterval)
+		clearInterval(matchLoopInterval)
 		match.live_infos.room_socket.emit("endMatch")
 		match.stats.timestamp_ended = new Date
 		this.save(match.stats)
