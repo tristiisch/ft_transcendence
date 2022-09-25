@@ -127,4 +127,12 @@ export class UsersController {
 		await this.usersService.removeBlockedUser(user, target);
 		return { user: target, message: `You have unblock ${target.username}.` };
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post('blocked-users')
+	async blockedUsers(@Req() req) {
+		const user: User = req.user;
+
+		return user.blocked_ids.map(async id => await this.usersService.findOne(id));
+	}
 }
