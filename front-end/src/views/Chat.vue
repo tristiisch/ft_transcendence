@@ -131,7 +131,7 @@ onBeforeMount(() => {
 		console.log(error)
 		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 	});*/
-	chatStore.fetchUserChats(null, null)
+	chatStore.fetchAll()
 		.then(() => {
 			if (route.query.discussion) {
 				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));

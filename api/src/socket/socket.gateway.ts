@@ -446,7 +446,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.chatService.setReadMessage(user, idChannel, msg);
 	}
 
-	@UseGuards(JwtSocketGuard)
+	/*@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatFindAll')
 	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<any[]> {
 		const user: User = req.user;
@@ -456,7 +456,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(user, userCached);
 
 		return [discussionFront, channelsFront];
-	}
+	}*/
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelNamePassword')
@@ -466,7 +466,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const newNamePassword: { name: string | null, password: string | null, userWhoChangeName: User } = body[1];
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
-		let msg: Message = await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${channel.name}`, channel);
+		let msg: Message = await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}`, channel);
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
 		channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)

@@ -47,14 +47,17 @@ export const useChatStore = defineStore('chatStore', {
 		},
 	},
 	actions: {
-		/*async fetchAll() {
+		async fetchAll() {
 			try {
-				// await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
-				await Promise.all([this.fetchUserChats(null, null)])
+				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
+				//await Promise.all([this.fetchUserChats(null, null)])
 			} catch (error: any) {
 				throw error;
 			}
-		},*/
+		},
+		/**
+		 * @Deprecated
+		 */
 		async fetchUserChats(func: { (discu: Discussion[], channel: Channel[]): any } | null, err: { (error: any): any } | null) {
 			socket.emit('chatFindAll', (body: any[]) => {
 				this.userDiscussions = body[0];
@@ -65,9 +68,6 @@ export const useChatStore = defineStore('chatStore', {
 			// if (err)
 			// 	err(null);
 		},
-		/**
-		 * @Deprecated
-		 */
 		async fetchUserChannels() {
 			if (!this.userChannels.length)
 			{
@@ -79,9 +79,6 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 		},
-		/**
-		 * @Deprecated
-		 */
 		async fetchUserDiscussions() {
 			if (!this.userDiscussions.length)
 			{

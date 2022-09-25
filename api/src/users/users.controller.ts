@@ -1,5 +1,5 @@
 /** @prettier */
-import { Body, Controller, Delete, forwardRef, Get, Inject, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { isNumberPositive } from 'utils/utils';
 import { JwtAuthGuard } from 'auth/guard';
@@ -41,6 +41,17 @@ export class UsersController {
 	*/
 
 	@UseGuards(JwtAuthGuard)
+	@Get('blocked-users')
+	async blockedUsers(@Req() req) {
+		const user: User = req.user;
+
+		//Logger.debug(`blocked_ids ${user.blocked_ids}`)
+		if (!user.blocked_ids)
+			return [];
+		return user.blocked_ids.map(async id => await this.usersService.findOne(id));
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Patch('register')
 	registerUser(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
@@ -79,11 +90,6 @@ export class UsersController {
 		return this.usersService.anonymizeUser(user);
 	}
 
-	@UseGuards(JwtAuthGuard)
-	@Get(':id')
-	getUser(@Param('id') id: number): Promise<User> {
-		return this.usersService.findOne(id);
-	}
 
 	/*@Delete(':id')
 	deleteUser(@Param('id') id: number) {
@@ -129,10 +135,8 @@ export class UsersController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Post('blocked-users')
-	async blockedUsers(@Req() req) {
-		const user: User = req.user;
-
-		return user.blocked_ids.map(async id => await this.usersService.findOne(id));
+	@Get(':id')
+	getUser(@Param('id') id: number): Promise<User> {
+		return this.usersService.findOne(id);
 	}
 }
