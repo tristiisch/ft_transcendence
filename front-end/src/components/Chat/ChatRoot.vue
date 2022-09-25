@@ -20,7 +20,7 @@ function scrollToEnd() {
 }
 
 function sendGameInvitation() {
-    if (chatStore.inDiscussion) chatStore.sendMessageDiscussion('Game invitation', MessageType.GAME_INVITATION, chatStore.inDiscussion);
+    if (chatStore.inDiscussion) chatStore.sendMessageDiscussion('Challenge me!', MessageType.GAME_INVITATION, chatStore.inDiscussion);
 }
 
 function sendMessage() { 

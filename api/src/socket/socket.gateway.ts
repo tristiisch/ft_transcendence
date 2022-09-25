@@ -502,41 +502,33 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
 	}
 
-	// @SubscribeMessage('createMatchInvitation')
-	// async createMatchInvitation(@MessageBody() username: string, @ConnectedSocket() client: Socket): Promise<any> {
-	// 	// console.log("createMatchInvitation", username)
-	// 	// const user = await this.socketService.getUserFromSocket(client)
-	// 	// const invited_user = username ? await this.userService.findOneByUsername(username) : null
-	// 	// this.matchService.addInviteToQueue(user, invited_user)
-	// 	// if (invited_user) {
-	// 	// 	// let notif: Notification = new Notification()
-	// 	// 	// notif.user_id = invited_user.id
-	// 	// 	// notif.from_user_id = user.id
-	// 	// 	// notif.type = NotificationType.MATCH_REQUEST
-	// 	// 	// notif = await this.notificationService.addNotif(notif)
-	// 	// 	// this.socketService.AddNotification(invited_user, await notif.toFront(this.userService, [user, invited_user]))
-	// 	// }
-	// }
+	@SubscribeMessage('createMatchInvitation')
+	async createMatchInvitation(@MessageBody() data, @ConnectedSocket() client: Socket): Promise<any> {
+		console.log("createMatchInvitation", data)
+		const user = await this.socketService.getUserFromSocket(client)
+		if (!this.invites_queue.has(user.id)) {
+			const invited_user = await this.userService.findOneByUsername(data.invited_user)
+			if (invited_user && invited_user.status !== UserStatus.OFFLINE)
+				this.matchService.addInviteToQueue(user, invited_user, data.custom_match_infos)
+			// send match notification here
+		}
+	}
 
 	@SubscribeMessage('acceptMatchInvitation')
-	async acceptMatchInvitation(@MessageBody() id: number, @ConnectedSocket() client: Socket): Promise<any> {
-		// const invited_user = await this.socketService.getUserFromSocket(client)
-		// const invitation = this.matchService.getInvitesQueue().get(id)
-		// if (invited_user.id === invitation.invited_user.id) {
-		// 	if (invitation.user.status === UserStatus.ONLINE || invitation.user.status === UserStatus.SPEC) {
-		// 		let match_id = await this.matchService.createNewMatch(invitation.user, invited_user, true)
-		// 		let match = this.matches.get(match_id)
-		// 		this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
-		// 	}
-		// 	else {
-		// 		if (invitation.user.status === UserStatus.IN_GAME) {
-		// 			// ask the user to watch the current game
-		// 		}
-		// 		else {
-		// 			// tell the user that the player isn't online
-		// 		}
-		// 	}
-		// }
+	async acceptMatchInvitation(@MessageBody() id: number, @ConnectedSocket() client: Socket): Promise<number> {
+		const invited_user = await this.socketService.getUserFromSocket(client)
+		const invitation = this.invites_queue.get(id)
+		if (invited_user.id === invitation.invited_user.id) {
+			if (invitation.user.status === UserStatus.ONLINE) {
+				let match_id = await this.matchService.createNewMatch(invitation.user, invited_user, invitation.custom_match_infos)
+				this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+				this.socketService.getSocketToEmit(invitation.user.id).emit('foundMatch', match_id)
+				return match_id
+			}
+			else {
+				// tell the user that the invitation expired
+			}
+		}
 	}
 
 	@SubscribeMessage('joinMatch')

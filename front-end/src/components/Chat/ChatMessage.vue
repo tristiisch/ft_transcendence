@@ -91,7 +91,7 @@ function chooseArray() {
 			<div v-else class="flex items-center gap-2 bg-neutral-100 border-[1px] border-blue-600 w-full h-[42px] sm:h-[52px] rounded-full pl-1">
 				<img class="h-8 w-8 sm:h-11 sm:w-11 shrink-0 rounded-full border-[1px] border-pink-400 object-cover" src='@/assets/invitationGame.jpg'>
 				<div class="flex flex-col justify-center items-center gap-1" >
-					<div class="pr-4 text-xs sm:text-xs text-blue-600"> Challenge me! </div>
+					<div class="pr-4 text-xs sm:text-xs text-blue-600"> {{ displayMessage(message) }} </div>
 					<div v-if="message.idSender !== userStore.userData.id" class="flex gap-1 pr-5">
 						<button @click="acceptInvitation()" class="bg-blue-600 rounded text-red-200 hover:text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">

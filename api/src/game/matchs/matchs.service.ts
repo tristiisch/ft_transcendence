@@ -20,8 +20,8 @@ export class MatchStatsService {
 	) {}
 
 	private matches = new Map<number, Match>()
-	private players_queue = new Map<number, {user: User, match_type: MatchMakingTypes, custom_match_infos: CustomMatchInfos}>()
-	private invites_queue = new Map<number, {user: User, invited_user: User}>()
+	private players_queue = new Map<number, { user: User, match_type: MatchMakingTypes, custom_match_infos: CustomMatchInfos }>()
+	private invites_queue = new Map<number, { user: User, invited_user: User, custom_match_infos: CustomMatchInfos }>()
 
 	private readonly winningScore = 5
 	private readonly stageWidth = 3989 / 1.5
@@ -62,8 +62,8 @@ export class MatchStatsService {
 	public removePlayerFromQueue(user_id) {
 		this.players_queue.delete(user_id)
 	}
-	public addInviteToQueue(user: User, invited_user: User) {
-		this.invites_queue.set(this.invites_queue.size, {user, invited_user})
+	public addInviteToQueue(user: User, invited_user: User, custom_match_infos: CustomMatchInfos) {
+		this.invites_queue.set(user.id, {user, invited_user, custom_match_infos})
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
@@ -199,7 +199,7 @@ export class MatchStatsService {
 				// if (match.live_infos.stopMatch)
 				// 	clearInterval(ballPosInterval)
 				match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-			}, 10)
+			}, 10000)
 			this.launchMatchLoop(match, dx, dy, ballPosInterval)
 		}, 3000)
 	}
