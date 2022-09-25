@@ -55,7 +55,6 @@ function treatNewChannelData()
             name: newChannelName.value,
             owner: null,
             avatar: newAvatar.value,
-            password: newPassword.value,
             hasPassword: newPassword.value != '' ? true : false,
             users: selection,
             admins: [],

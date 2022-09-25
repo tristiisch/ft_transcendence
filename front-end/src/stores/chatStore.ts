@@ -161,7 +161,6 @@ export const useChatStore = defineStore('chatStore', {
 				name: newChannel.name,
 				avatar_64: newChannel.avatar,
 				hasPassword: newChannel.hasPassword,
-				password: newChannel.password,
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, (channelCreated: Channel) => {
@@ -216,7 +215,7 @@ export const useChatStore = defineStore('chatStore', {
 		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | null, removePassword: boolean, userWhoChangeName: User }) {
 			const userStore = useUserStore();
 			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
-				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (!this.inChannel.password && newNamePassword.password !== '') || newNamePassword.removePassword)) {
+				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (this.inChannel.hasPassword === false && newNamePassword.password !== '') || newNamePassword.removePassword)) {
 					socket.emit('chatChannelNamePassword', channel, newNamePassword, (body: any[]) => {
 						const channelUpdated: Channel = body[0];
 						this.updateChannel(channelUpdated);
