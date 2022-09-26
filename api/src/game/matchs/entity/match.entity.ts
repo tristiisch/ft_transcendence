@@ -110,3 +110,8 @@ export interface CustomMatchInfos {
 	increaseBallSpeed: boolean,
 	world: number
 }
+
+export class GameInvitation {
+	toUserId: number;
+	matchInfo: CustomMatchInfos;
+}

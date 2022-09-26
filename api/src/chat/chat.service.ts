@@ -159,7 +159,7 @@ export class ChatService {
 				const msgsFront: MessageFront[] = new Array();
 				for (const msg of msgs) {
 					let target: User;
-					if (user.isBlockedUser(msg.id_sender))
+					if (msg.id_sender !== -1 && user.isBlockedUser(msg.id_sender))
 						continue;
 					if (msg.id_sender === -1)
 						target = null;
