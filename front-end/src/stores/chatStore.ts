@@ -118,10 +118,12 @@ export const useChatStore = defineStore('chatStore', {
 			this.setCardRightTitle(this.cardRightPartToDisplay);
 		},
 		loadChannel(channel: Channel) {
-				if (this.inDiscussion) this.inDiscussion = null;
-				this.inChannel = channel;
-				this.setRightPartToDisplay(PartToDisplay.CHAT);
-				this.shiftPositionUserChannel(channel);
+			if (this.inDiscussion) this.inDiscussion = null;
+			this.inChannel = channel;
+			this.setRightPartToDisplay(PartToDisplay.CHAT);
+			if (this.cardLeftPartToDisplay === PartToDisplay.DISCUSSIONS)
+				this.cardLeftPartToDisplay = PartToDisplay.CHANNELS;
+			this.shiftPositionUserChannel(channel);
 		},
 		loadDiscussion(discussion: Discussion) {
 			if (this.inChannel) this.inChannel = null;
@@ -174,8 +176,7 @@ export const useChatStore = defineStore('chatStore', {
 			const userStore = useUserStore();
 			socket.emit('chatChannelJoin', channel, userStore.userData, password, (channelUpdated: Channel) => {
 				this.userChannels.length ? this.userChannels.unshift(channelUpdated) : this.userChannels.push(channelUpdated);
-				this.inChannel = this.userChannels[0];
-				this.setRightPartToDisplay(PartToDisplay.CHAT);
+				this.loadChannel(this.userChannels[0]);
 			});
 		},
 		inviteUserToPrivateChannel(channel: Channel, users: User[]) {
