@@ -68,7 +68,7 @@ onBeforeMount(() => {
 			</div>
 		</div>
 		<div v-else class="h-full flex justify-center items-center w-full pt-2">
-			<button @click="launchGame" class="flex flex-col justify-center items-center bg-neutral-100 pl-1 border border-blue-600 text-blue-600 hover:text-red-700 hover:bg-yellow-400 hover:border-red-700 hover:border-2 rounded-full tracking-[0.3em] sm:tracking-[0.6em] min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.18_*_100vh)] h-[calc(0.18_*_100vh)] w-[calc(0.2_*_100vh)] h-[calc(0.2_*_100vh)]">
+			<button @click="launchGame" class="flex flex-col justify-center items-center bg-neutral-100 pl-1 border border-blue-600 text-blue-600 hover:text-red-700 hover:bg-yellow-400 hover:border-red-700 rounded-full tracking-[0.3em] sm:tracking-[0.6em] min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.18_*_100vh)] h-[calc(0.18_*_100vh)] w-[calc(0.2_*_100vh)] h-[calc(0.2_*_100vh)]">
 				<img src="@/assets/rocket.png" class="min-w-[80px] min-h-[80px] sm:min-w-[115px] sm:min-h-[115px] w-[calc(0.1_*_100vh)] h-[calc(0.12_*_100vh)] sm:w-[calc(0.14_*_100vh)] sm:h-[calc(0.16_*_100vh)]">
 				<label class="pl-1 pb-6 [font-size:_calc(0.012_*_100vh)]">LAUNCH</label>
 			</button>	
