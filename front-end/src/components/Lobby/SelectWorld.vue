@@ -31,7 +31,7 @@ function chooseImg() {
 			</span>
 		</button>
 		<div class="flex items-center duration-700 ease-in-out h-full">
-			<img :src=chooseImg() class="min-h-[70px] min-w-[120px] object-cover rounded-xl" alt="...">
+			<img :src=chooseImg() class="min-h-[70px] min-w-[120px] object-cover rounded-3xl" alt="...">
 		</div>
 		<button @click=nextPrevious() class="flex items-center justify-center h-full cursor-pointer group focus:outline-none">
 			<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-neutral-100 border border-blue-600">

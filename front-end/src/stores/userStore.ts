@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import type { UserState } from '@/types/UserState';
+import { useGlobalStore } from './globalStore';
+import { useChatStore } from '@/stores/chatStore';
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
 import type User from '@/types/User';
 import router from '@/router/index'
-import socket from '@/plugin/socketInstance';
 import Status from '@/types/Status';
+import socket from '@/plugin/socketInstance';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -77,10 +79,14 @@ export const useUserStore = defineStore('userStore', {
 			}
 		},
 		handleLogout() {
+			const globalStore = useGlobalStore();
+			const chatStore = useChatStore();
 			localStorage.clear();
 			this.$reset();
+			globalStore.$reset();
+			chatStore.$reset();
 			socket.disconnect()
-			router.push({ path: '/' });
+			router.replace({ path: '/' });
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {

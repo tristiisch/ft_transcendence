@@ -16,8 +16,8 @@ const chatStore = useChatStore();
 			<span class="border-b-[1px] border-red-400 w-full"></span>
 		</div>
 	</div>
-	<div v-else-if="chatStore.inChannel" class="flex flex-col items-center -mt-5">
-		<div class="flex -space-x-3 sm:-space-x-5 pb-2 overflow-x-auto">
+	<div v-else-if="chatStore.inChannel" class="flex flex-col items-center -mt-3 sm:-mt-5">
+		<div class="flex -space-x-3 sm:-space-x-5 pb-2 overflow-y-auto pl-3 sm:pl-5 flex-wrap max-h-[32px] sm:max-h-[48px] mb-2">
 			<base-button  v-for="user in chatStore.inChannel.users" link :to="{ name: 'Profile', params: { id: user.id }}" class="flex shrink-0">
 				<img class="h-8 w-8 sm:h-12 sm:w-12 shrink-0 rounded-full object-cover border-[1px] border-red-400" :src=user.avatar>
 			</base-button>
