@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/userStore';
 import type Notification from '@/types/Notification';
 import { useToast } from 'vue-toastification';
 import { NotificationType } from '@/types/Notification';
-import { useRouter } from 'vue-router';
+import router from '@/router/index'
 import Status from '@/types/Status';
 import ButtonToast from "@/components/Button/ButtonToast.vue";
 
@@ -18,7 +18,6 @@ socket.on("connect", () => {
 	console.log(socket.id)
 	const globalStore = useGlobalStore();
 	const userStore = useUserStore();
-	const router = useRouter();
 	const toast = useToast();
 
 	socket.on('addNotification', (notification: Notification) => {

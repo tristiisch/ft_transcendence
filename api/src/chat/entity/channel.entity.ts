@@ -62,14 +62,13 @@ export class Channel extends Chat {
 		return this.users_ids.indexOf(user.id) !== -1;
 	}
 
-	public sendMessage?(sockerService: SocketService, room: string, ...args: any) {
-		sockerService.emitIds(this.users_ids, room, ...args);
+	async sendMessage?(sockerService: SocketService, room: string, ...args: any) {
+		await sockerService.emitIds(null, this.users_ids, room, ...args);
 	}
 
-	public sendMessageFrom?(sockerService: SocketService, user: User, room: string, ...args: any) {
-		const emitUsers: number[] = this.users_ids.filter(u => u !== user.id) // TODO  && !user.isBlockedUser(u)
-		console.log('emitUsers', emitUsers, room, args);
-		sockerService.emitIds(emitUsers, room, ...args);
+	async sendMessageFrom?(sockerService: SocketService, user: User, room: string, ...args: any) {
+		const emitUsers: number[] = this.users_ids.filter(u => u !== user.id);
+		await sockerService.emitIds(user, emitUsers, room, ...args);
 	}
 }
 

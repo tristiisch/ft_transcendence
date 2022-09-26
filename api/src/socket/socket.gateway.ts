@@ -119,7 +119,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
 			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
 
-			channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channelFront, user);
+			await channel.sendMessageFrom(this.socketService, user, "chatChannelCreate", channelFront, user);
 			return channelFront;
 		} catch (err) {
 			throw new WsException(err.message);
@@ -156,8 +156,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: User = req.user;
 		const targetId: number = body[0];
 		const messageDTO: MessageFront = body[1];
+		const target: User = await this.userService.findOne(targetId);
 
 		messageDTO.idSender = user.id;
+
+		if (target.isBlockedUser(user.id)) {
+			Logger.verbose(`${target.username} blocked ${user.username}, so he can't see his private msg '${messageDTO.message}'.`)
+			return;
+		}
 
 		const discu: Discussion = await this.chatService.findOrCreateDiscussion(messageDTO.idSender, targetId);
 		try {
@@ -211,7 +217,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			msg = await this.chatService.addMessage(msg);
 			const newMsgFront: MessageFront = msg.toFront(user, null);
 			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-			channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channelFront, newMsgFront, user);
+			await channel.sendMessageFrom(this.socketService, user, "chatChannelMessage", channelFront, newMsgFront, user);
 
 			return [ channelFront , newMsgFront ] ;
 		} catch (err) {
@@ -242,7 +248,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
-		//channel.sendMessageFrom(this.socketService, user, "chatChannelDelete", channel, user);
+		//await channel.sendMessageFrom(this.socketService, user, "chatChannelDelete", channel, user);
 
 		this.chatService.deleteChannel(channel);
 	}
@@ -268,7 +274,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel = await this.chatService.joinChannel(joinedUser, channel);
 		const channelFront = await channel.toFront(this.chatService, joinedUser, [joinedUser]);
 
-		channel.sendMessage(this.socketService, 'chatChannelJoin', channelFront);
+		await channel.sendMessage(this.socketService, 'chatChannelJoin', channelFront);
 
 		return channel.toFront(this.chatService, joinedUser, [joinedUser]);
 	}
@@ -284,14 +290,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const tmpChannel = await this.chatService.leaveChannel(leaveUser, channel);
 		if (!tmpChannel) {
 			const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
-			channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelDelete', channelFront);
+			await channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelDelete', channelFront);
 			return [true];
 		}
 		channel = tmpChannel;
 
 		const channelFront = await channel.toFront(this.chatService, leaveUser, [leaveUser]);
 
-		channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelLeave', channelFront);
+		await channel.sendMessageFrom(this.socketService, leaveUser, 'chatChannelLeave', channelFront);
 		return [true];
 	}
 
@@ -313,8 +319,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
-		channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
-		this.socketService.emitIds(users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
+		await channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
+		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
 
 		return [channelFront];
 	}
@@ -334,8 +340,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const channelFront: ChannelFront = await this.chatService.setBanned(channel, user, users.map(user => user.id));
 
-		channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
-		this.socketService.emitIds(newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
+		await this.socketService.emitIds(user, newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
 		return [channelFront];
 	}
 
@@ -352,7 +358,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelFront: ChannelFront = await this.chatService.setAdmin(channel, user, newAdmin);
 
 		
-		channel.sendMessage(this.socketService, 'chatChannelAdmin', channelFront);
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelAdmin', channelFront);
 		return [channelFront];
 	}
 
@@ -369,7 +375,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
 
 		const channelFront: ChannelFront = await this.chatService.setMuted(channel, user, users.map(user => user.id));
-		channel.sendMessage(this.socketService, 'chatChannelMute', channelFront);
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelMute', channelFront);
 		return [channelFront];
 	}
 
@@ -390,11 +396,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
-		channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
-		this.socketService.emitIds(newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
+		await this.socketService.emitIds(user, newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		
 		 // TODO get user from db
-		channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
+		await channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		return [channelFront];
 	}
 
@@ -470,7 +476,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let msg: Message = await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}`, channel);
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)
+		await channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)
 		return [channelFront];
 	}
 

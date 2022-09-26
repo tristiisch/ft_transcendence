@@ -1,15 +1,14 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
-import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes } from './entity/match.entity';
+import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes, GameInvitation } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
 import { StatsService } from 'game/stats/stats.service';
 import { Notification, NotificationType } from 'notification/entity/notification.entity';
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
-import { getBackRelativeURL, mapGetByValue } from 'utils/utils';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
@@ -369,17 +368,20 @@ export class MatchStatsService {
 		return this.matchsHistoryRepository.save(matchHistory);
 	}
 
-	private readonly requests: Map<number, number> = new Map();
+	private readonly requests: Map<number, GameInvitation> = new Map();
 
-	getRequest(idTarget: number) {
-		mapGetByValue(this.requests, idTarget);
+	getRequest(idInvite: number, idTarget: number): [number, GameInvitation] | null {
+		const v = [...this.requests].find(([key, val]) => val.toUserId === idTarget && key === idInvite);
+		if (v.length > 0)
+			return v;
+		return null;
 	}
 
-	async addRequest(user: User, id: any) {
+	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos) {
 		const target: User = await this.userService.findOne(id);
 		
 		if (this.requests.has(target.id))
-			throw new BadRequestException(`You have already invited this user.`);
+			throw new BadRequestException(`You have already invited someone.`);
 
 		let notif: Notification = new Notification();
 		notif.user_id = target.id;
@@ -388,28 +390,38 @@ export class MatchStatsService {
 		notif = await this.notifService.addNotif(notif);
 		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
 
-		this.requests.set(user.id, id);
+		const gameInvit = new GameInvitation();
+		gameInvit.matchInfo = matchInfo;
+		gameInvit.toUserId = target.id;
+
+		this.requests.set(user.id, gameInvit);
 	}
 
-	async createInvitation(user: User, data: any) { // TODO change any to a type
+	/*async createInvitation(user: User, data: any) { // TODO change any to a type
 		const invited_user = await this.userService.findOneByUsername(data.invited_user)
 		if (invited_user && invited_user.status !== UserStatus.OFFLINE)
 			this.addInviteToQueue(user, invited_user, data.custom_match_infos) // TODO remove
 		// send match notification here
-	}
+	}*/
 
 	@WebSocketServer()
 	server: Server; // TODO verif this
 
-	async acceptInvitation(invited_user: User, invite_user: User, invitation?: any) { // todo add invitation 
-		if (invite_user.status === UserStatus.ONLINE) {
-			let match_id = await this.createNewMatch(invite_user, invited_user, invitation.custom_match_infos)
-			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
-			this.socketService.getSocketToEmit(invite_user.id).emit('foundMatch', match_id)
-			return match_id
+	async acceptInvitation(invitedUser: User, inviteUser: User) {
+		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
+		if (!req) {
+			throw new PreconditionFailedException(`You didn't have a invitation from user ${inviteUser.username} for game.`)
 		}
-		else {
-			// tell the user that the invitation expired
+
+		const custonGameInfo: CustomMatchInfos = req[1].matchInfo as CustomMatchInfos;
+
+		if (inviteUser.status === UserStatus.ONLINE) {
+			let match_id = await this.createNewMatch(inviteUser, invitedUser, custonGameInfo)
+			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+			this.socketService.getSocketToEmit(inviteUser.id).emit('foundMatch', match_id)
+			return match_id
+		} else {
+			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)
 		}
 	}
 }

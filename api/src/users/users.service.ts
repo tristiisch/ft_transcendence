@@ -314,4 +314,8 @@ export class UsersService {
 		delete user.avatar_64;
 		return user;
 	}
+
+	public isBlockedByUser(userBlocked: User, userWhoBlock: User) {
+		return userWhoBlock.isBlockedUser(userBlocked.id);
+	}
 }

@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Inject, NotFoundException, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotFoundException, Param, Patch, Post, PreconditionFailedException, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'auth/guard';
 import { UserSelectDTO } from 'users/entity/user-select.dto';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
+import { isNumberPositive } from 'utils/utils';
 import { MatchStats } from './entity/match.entity';
 import { MatchStatsService } from './matchs.service';
 
@@ -13,19 +14,6 @@ export class MatchsStatsController {
 	private readonly usersService: UsersService;
 
 	constructor(private readonly matchsService: MatchStatsService) {}
-
-	/**
-	 * @deprecated Only for test
-	 */
-
-	@UseGuards(JwtAuthGuard)
-	@Get(':id')
-	sendMatchInfos(@Param('id') id: number) {
-		// console.log("get : ", this.matchService.getMatches().get(id).stats)
-		if (!this.matchsService.getMatches().has(id))
-			throw new NotFoundException(`Unknown match ${id}`);
-		return this.matchsService.getMatches().get(id)?.stats;
-	}
 
 	@Post('start')
 	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<MatchStats> {
@@ -60,6 +48,23 @@ export class MatchsStatsController {
 	@UseGuards(JwtAuthGuard)
 	@Post('request/add')
 	async addRequestMatch(@Req() req, @Body() body) {
-		return await this.matchsService.addRequest(req.user, body.id);
+		if (Number.isNaN(body.id) || !body.matchInfo) {
+			throw new PreconditionFailedException(`Missing id or matchInfo on request`);
+		}
+		return await this.matchsService.addRequest(req.user, body.id, body.matchInfo);
 	}
+
+	/**
+	 * @deprecated Only for test
+	 */
+
+	 @UseGuards(JwtAuthGuard)
+	 @Get(':id')
+	 sendMatchInfos(@Param('id') id: number) {
+		 // console.log("get : ", this.matchService.getMatches().get(id).stats)
+		 isNumberPositive(id, 'get match');
+		 if (!this.matchsService.getMatches().has(id))
+			 throw new NotFoundException(`Unknown match ${id}`);
+		 return this.matchsService.getMatches().get(id)?.stats;
+	 }
 }
