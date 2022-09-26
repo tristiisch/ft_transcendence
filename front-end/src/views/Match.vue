@@ -95,17 +95,14 @@ function loadStage() {
 	var backend_stage_ratio = stage.width() / backend_stage_width
 
 	var layer = new Konva.Layer()
-
 	var ball_radius = computeBallSize()
 	var ball = new Konva.Circle({
-		x: stage.width() / ball_xpos_quotient,
-		y: stage.height() / ball_ypos_quotient,
+		x: stage.width() / 2,
+		y: -50,
 		radius: ball_radius,
 		fill: 'dark',
 		visible: false
 	})
-
-
 	var blockers_width = computeBlockerWidth()
 	var blockers_height = computeBlockerHeight()
 	var p1_blocker: Konva.Rect = new Konva.Rect({
@@ -126,6 +123,13 @@ function loadStage() {
 		cornerRadius: 2,
 		visible: false
 	})
+	// var line = new Konva.Line({
+	// 	x: stage.width() / 2 - 1,
+	// 	y: 0,
+	// 	width: 2,
+	// 	height: stage.height(),
+	// 	fill: "white"
+	// })
 
 	// var stage_container = document.getElementById('stage-container')!
 	// if (match.value.user1_id == userStore.userData.id) {
@@ -160,6 +164,7 @@ function loadStage() {
 	layer.add(ball)
 	layer.add(p1_blocker)
 	layer.add(p2_blocker)
+	// layer.add(line)
 
 	//with ballAnimation
 	// let dx = 75 * backend_stage_ratio
@@ -171,20 +176,20 @@ function loadStage() {
 	let ball_x = stage_width/2
 	let ball_y = stage_height/2
 
-	var ballAnimation = new Konva.Animation(function(frame) {
-		if (ball.x() + dx < 0 || ball.x() + dx > stage_width) { dx = -dx; }
-		if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-		if ((ball.x() > p1_blocker.x() && ball.x() < p1_blocker.x() + blockers_width && ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-			(ball.x() > p2_blocker.x() && ball.x() < p2_blocker.x() + blockers_width && ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-				dy = -dy
-		else if ((ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-				(ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-				dx = -dx
-		ball.x(ball.x() + dx)
-		ball.y(ball.y() + dy)
-		// ball.x(ball_x)
-		// ball.y(ball_y)
-	}, layer)
+	// var ballAnimation = new Konva.Animation(function(frame) {
+	// 	if (ball.x() + dx < 0 || ball.x() + dx > stage_width) { dx = -dx; }
+	// 	if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+	// 	if ((ball.x() > p1_blocker.x() && ball.x() < p1_blocker.x() + blockers_width && ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+	// 		(ball.x() > p2_blocker.x() && ball.x() < p2_blocker.x() + blockers_width && ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+	// 			dy = -dy
+	// 	else if ((ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+	// 			(ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+	// 			dx = -dx
+	// 	ball.x(ball.x() + dx)
+	// 	ball.y(ball.y() + dy)
+	// 	// ball.x(ball_x)
+	// 	// ball.y(ball_y)
+	// }, layer)
 
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
@@ -234,8 +239,36 @@ function loadStage() {
 		socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
 	}
 
-	socket.on("p1Scored", () => { match.value.score[0]++ })
-	socket.on("p2Scored", () => { match.value.score[1]++ })
+	socket.on("newMatchRound", (data) => {
+		console.log(data)
+		ball.x(data.ballX)
+		ball.y(data.ballY)
+		// dx = data.dx
+		// dy = data.dy
+		if (data.scored === 'p1') match.value.score[0]++
+		else if (data.scored === 'p2') match.value.score[1]++
+	})
+	socket.on("endMatch", () => {
+		router.replace('/home')
+	})
+
+	socket.emit("joinMatch", match_id, (match_infos: any) => {
+		ball.y(-50)
+		ball.visible(true)
+		backend_stage_width = match_infos.stageWidth
+		backend_stage_ratio = stage.width() / backend_stage_width
+		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
+		if (match_infos.started) {
+			// launchMatchLoop()
+		}
+		else if (isPlayer)
+			socket.emit("readyToPlay", match_id)
+		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
+		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
+		p1_blocker.visible(true)
+		p2_blocker.visible(true)
+		// console.log(match_live_infos)
+	})
 
 	async function launchMatchLoop() {
 		setInterval(() => {
@@ -263,38 +296,12 @@ function loadStage() {
 		// setTimeout(launchMatchLoop, 0)
 	}
 
-	socket.on("startMatch", () => {
-		// ballAnimation.start()
-		// setTimeout(launchMatchLoop, 3000)
-		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
-		ball.visible(true)
-	})
-	socket.on("endMatch", () => {
-		router.replace('/home')
-	})
-
-	socket.emit("joinMatch", match_id, (match_infos: any) => {
-		backend_stage_width = match_infos.stageWidth
-		backend_stage_ratio = stage.width() / backend_stage_width
-		if (match_infos.started) {
-			launchMatchLoop()
-			ball.visible(true)
-			setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
-		}
-		else if (isPlayer)
-			socket.emit("readyToPlay", match_id)
-		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
-		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
-		p1_blocker.visible(true)
-		p2_blocker.visible(true)
-		// console.log(match_live_infos)
-	})
-
 // -----------------------------------------------------
 }
 
 function leaveMatch() {
-	socket.emit("leaveMatch", match_id)
+	if (isPlayer)
+		socket.emit("leaveMatch", match_id)
 	router.replace('')
 }
 
@@ -336,7 +343,7 @@ onBeforeUnmount(() => {
 			</base-button>
 			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
-		<!-- <div class="w-[100vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div> -->
+		<div class="w-[100vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div>
 		<div class="rounded-3xl w-[100vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 		</div>
