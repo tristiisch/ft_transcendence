@@ -61,7 +61,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.on("ping", (count) => {
-				// Logger.debug(`Ping ${count}`, 'WebSocket');
+				Logger.debug(`Ping ${count}`, 'WebSocket');
 			});
 		});
 	}

@@ -192,14 +192,19 @@ export class MatchStatsService {
 	}
 
 	async startMatch(match: Match) {
-		let dx = 5
-		let dy = 5
-
-		console.log("startMatch " + match.stats.id)
-		match.live_infos.room_socket.emit("startMatch")
-
+		this.setNewMatchRoundVar(match.live_infos)
 		setTimeout(() => {
-			this.startMatchLoop(match.live_infos)
+			this.startMatchLoop(match)
+			// setInterval(() => {
+			// 	if (match.live_infos.ballXPos > this.p2XPos) {
+			// 		match.stats.score[0]++
+			// 		match.live_infos.room_socket.emit('p1Scored')
+			// 	}
+			// 	else if (match.live_infos.ballXPos < this.p1XPos) {
+			// 		match.stats.score[1]++
+			// 		match.live_infos.room_socket.emit('p2Scored')
+			// 	}
+			// }, 10)
 			// let ballPosInterval = setInterval(() => {
 			// 	// if (match.live_infos.stopMatch)
 			// 	// 	clearInterval(ballPosInterval)
@@ -208,40 +213,52 @@ export class MatchStatsService {
 			// this.launchMatchLoop(match, dx, dy, ballPosInterval)
 		}, 3000)
 	}
-
-	async startMatchLoop(match: MatchLiveInfos) {
+	setNewMatchRoundVar(match: MatchLiveInfos) {
+		match.ballXPos = this.stageWidth / 2
+		match.ballYPos = Math.random() * this.stageHeight
+		match.ballXDir = (Math.round(Math.random() * 10)) % 2 ? 2 : -2
+		match.ballYDir = (Math.round(Math.random() * 10)) % 2 ? 2 : -2
+	}
+	async startMatchLoop(match: Match) {
 		var T = new Date
+		match.live_infos.room_socket.emit("newMatchRound", {
+			ballX: match.live_infos.ballXPos,
+			ballY: match.live_infos.ballYPos,
+			dx: match.live_infos.ballXDir,
+			dy: match.live_infos.ballYDir,
+			scored: undefined
+		})
 		function update() {
 			T = this.calcBallPos(T, match)
-			match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
-			console.log("ballXPos", match.ballXPos)
-			setTimeout(update.bind(this), 100)
+			match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
+			setTimeout(update.bind(this), 10)
 		}
 		update.bind(this)()
 	}
 
- 	calcBallPos(T: Date, match: MatchLiveInfos) {
+ 	calcBallPos(T: Date, match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - T.getTime()
-		match.ballXPos = this.calcBallXPos(match, tdiff)
-		match.ballYPos = this.calcBallYPos(match, tdiff)
-		return T2
-	}
-	calcBallXPos(match, tdiff): number {
-		var x2 = match.ballXPos + (tdiff * match.ballXDir)
-		if (x2 < 0 || x2 > this.stageWidth) {
-			if ((x2 / this.stageWidth) % 2) match.ballXDir *= -1
-			x2 = this.stageWidth - (this.mod(x2, this.stageWidth))
+		var x2 = match.live_infos.ballXPos + (tdiff * match.live_infos.ballXDir)
+		if (x2 < 0 || x2 >= this.stageWidth) {
+			if (x2 < 0) match.stats.score[1]++
+			else match.stats.score[0]++
+			this.setNewMatchRoundVar(match.live_infos)
+			match.live_infos.room_socket.emit('newMatchRound', {
+				dx: match.live_infos.ballXDir,
+				dy: match.live_infos.ballYDir,
+				scored: x2 < 0 ? 'p2' : 'p1'
+			})
+			return new Date
 		}
-		return x2
-	}
-	calcBallYPos(match, tdiff): number {
-		var y2 = match.ballYPos + (tdiff * match.ballYDir)
-		if (y2 < 0 || y2 > this.stageHeight) {
-			if ((y2 / this.stageHeight) % 2) match.ballYDir *= -1
+		var y2 = match.live_infos.ballYPos + (tdiff * match.live_infos.ballYDir)
+		if (y2 < 0 || y2 >= this.stageHeight) {
+			if ((y2 / this.stageHeight) % 2) match.live_infos.ballYDir *= -1
 			y2 = this.stageHeight - (this.mod(y2, this.stageHeight))
 		}
-		return y2
+		match.live_infos.ballXPos = x2
+		match.live_infos.ballYPos = y2
+		return T2
 	}
 	mod(n, m) { // modulo funtion because JS : https://web.archive.org/web/20090717035140if_/javascript.about.com/od/problemsolving/a/modulobug.htm
 		return ((n % m) + m) % m;
