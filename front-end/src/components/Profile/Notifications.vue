@@ -25,10 +25,13 @@ function isGameNotification(notification: Notification) {
 }
 
 function acceptInvitation(notification: Notification) {
-	globalStore.acceptInvitation(notification)
+	UserService.notificationAction(notification.id, true)
 		.then((response) => {
+			globalStore.removeNotification(notification.id)
 			if (notification.type  == NotificationType.MATCH_REQUEST)
 				router.push('match/' + response?.data.id)
+			else if(notification.type  == NotificationType.FRIEND_REQUEST)
+				globalStore.addFriend(notification.from_user)
 		})
 		.catch((error) => {
 			if (error.response.status === 406)
@@ -41,7 +44,12 @@ function acceptInvitation(notification: Notification) {
 }
 
 function declineInvitation(notification: Notification) {
-	globalStore.declineInvitation(notification)
+	UserService.notificationAction(notification.id, false)
+		.then(() => {
+			globalStore.removeNotification(notification.id)
+			if(notification.type  == NotificationType.FRIEND_REQUEST)
+				globalStore.removePendingFriend(notification.from_user_id)
+		})
 		.catch((error) => {
 			if (error.response.status === 406)
 			{
