@@ -130,71 +130,74 @@ export class MatchStatsService {
 		return 0
 	}
 
-	async launchMatchLoop(match, dx, dy, ballPosInterval) {
-		let matchLoopInterval = setInterval(async () => {
-			if (match.live_infos.stopMatch)
-				await this.endMatch(match, ballPosInterval, matchLoopInterval, true)
-			if (match.live_infos.ballXPos + dx < 0) {
-				match.stats.score[1]++
-				match.live_infos.room_socket.emit('p2Scored')
-				dx = -dx
-			}
-			else if (match.live_infos.ballXPos + dx > this.stageWidth) {
-				match.stats.score[0]++
-				match.live_infos.room_socket.emit('p1Scored')
-				dx = -dx
-			}
-			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore)
-				await this.endMatch(match, ballPosInterval, matchLoopInterval)
-			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
-				dy = -dy
+	// async launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir, ballPosInterval) {
+	// 	let matchLoopInterval = setInterval(async () => {
+	// 		if (match.live_infos.stopMatch)
+	// 			await this.endMatch(match, ballPosInterval, matchLoopInterval, true)
+	// 		if (match.live_infos.ballXPos + match.live_infos.ballXDir < 0) {
+	// 			match.stats.score[1]++
+	// 			match.live_infos.room_socket.emit('p2Scored')
+		// 		match.live_infos.ballXDir = -match.live_infos.ballXDir
+		// 	}
+		// 	else if (match.live_infos.ballXPos + match.live_infos.ballXDir > this.stageWidth) {
+		// 		match.stats.score[0]++
+		// 		match.live_infos.room_socket.emit('p1Scored')
+		// 		match.live_infos.ballXDir = -match.live_infos.ballXDir
+		// 	}
+		// 	if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore)
+		// 		await this.endMatch(match, ballPosInterval, matchLoopInterval)
+		// 	if (match.live_infos.ballYPos + match.live_infos.ballYDir < 0 || match.live_infos.ballYPos + match.live_infos.ballYDir > this.stageHeight)
+		// 		match.live_infos.ballYDir = -match.live_infos.ballYDir
 
-			if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-				(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPos && match.live_infos.ballXPos + dx < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-					dy = -dy
-			else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-					(match.live_infos.ballXPos + dx > this.p2XPos && match.live_infos.ballXPos + dx < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-					dx = -dx
-			match.live_infos.ballXPos += dx
-			match.live_infos.ballYPos += dy
-		}, 0)
+		// 	if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 		(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballYDir = -match.live_infos.ballYDir
+		// 	else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 			(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
+		// 	match.live_infos.ballXPos += match.live_infos.ballXDir
+		// 	match.live_infos.ballYPos += match.live_infos.ballYDir
+		// }, 0)
 // 		if (match.live_infos.stopMatch) {
 // 			this.endMatch(match)
 // 			return
 // 		}
-// 		if (match.live_infos.ballXPos + dx < 0) {
+// 		if (match.live_infos.ballXPos + match.live_infos.ballXDir < 0) {
 // 			match.stats.score[1]++
 // 			match.live_infos.room_socket.emit('p2Scored')
-// 			dx = -dx
+// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
 // 		}
-// 		else if (match.live_infos.ballXPos + dx > this.stageWidth) {
+// 		else if (match.live_infos.ballXPos + match.live_infos.ballXDir > this.stageWidth) {
 // 			match.stats.score[0]++
 // 			match.live_infos.room_socket.emit('p1Scored')
-// 			dx = -dx
+// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
 // 		}
 // 		if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
 // 			this.endMatch(match)
 // 			return
 // 		}
-// 		if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
-// 			dy = -dy
+// 		if (match.live_infos.ballYPos + match.live_infos.ballYDir < 0 || match.live_infos.ballYPos + match.live_infos.ballYDir > this.stageHeight)
+// 			match.live_infos.ballYDir = -match.live_infos.ballYDir
 
-// 		if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-// 			(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-// 				dy = -dy
-// 		else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-// 				(match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-// 				dx = -dx
-// 		match.live_infos.ballXPos += dx
-// 		match.live_infos.ballYPos += dy
+// 		if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+// 			(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPpos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+// 				match.live_infos.ballYDir = -match.live_infos.ballYDir
+// 		else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+// 				(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPpos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+// 				match.live_infos.ballXDir = -match.live_infos.ballXDir
+// 		match.live_infos.ballXPos += match.live_infos.ballXDir
+// 		match.live_infos.ballYPos += match.live_infos.ballYDir
 // // match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-// 		setTimeout(() => this.launchMatchLoop(match, dx, dy), 0)
-	}
+// 		setTimeout(() => this.launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir), 0)
+	// }
 
 	async startMatch(match: Match) {
 		this.setNewMatchRoundVar(match.live_infos)
 		setTimeout(() => {
 			this.startMatchLoop(match)
+			setInterval(() => {
+				match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
+			}, 10)
 			// setInterval(() => {
 			// 	if (match.live_infos.ballXPos > this.p2XPos) {
 			// 		match.stats.score[0]++
@@ -210,7 +213,7 @@ export class MatchStatsService {
 			// 	// 	clearInterval(ballPosInterval)
 			// 	match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
 			// }, 50)
-			// this.launchMatchLoop(match, dx, dy, ballPosInterval)
+			// this.launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir, ballPosInterval)
 		}, 3000)
 	}
 	setNewMatchRoundVar(match: MatchLiveInfos) {
@@ -228,14 +231,39 @@ export class MatchStatsService {
 			dy: match.live_infos.ballYDir,
 			scored: undefined
 		})
-		function update() {
-			T = this.calcBallPos(T, match)
-			match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
-			setTimeout(update.bind(this), 10)
-		}
-		update.bind(this)()
-	}
+		// function update() {
+		// 	T = this.calcBallPos(T, match)
+		// 	// match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
 
+		// 	if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 		(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballYDir *= -1
+		// 	else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 			(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballXDir *= -1
+
+		// 	// if ((match.live_infos.ballXPos >= this.p2XPos && match.live_infos.ballYPos >= match.live_infos.p2Pos && match.live_infos.ballYPos < match.live_infos.p2Pos + this.blockerHeight) ||
+		// 	// 	(match.live_infos.ballXPos + this.blockerWidth <= this.p1XPos && match.live_infos.ballYPos >= match.live_infos.p1Pos && match.live_infos.ballYPos < match.live_infos.p1Pos + this.blockerHeight))
+		// 	// 		match.live_infos.ballXDir *= -1
+		// 	setTimeout(update.bind(this), 0)
+		// }
+		// update.bind(this)()
+		setInterval(() => {
+			T = this.calcBallPos(T, match)
+			// match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
+
+			if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+				(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+					match.live_infos.ballYDir *= -1
+			else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+					(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+					match.live_infos.ballXDir *= -1
+
+			// if ((match.live_infos.ballXPos >= this.p2XPos && match.live_infos.ballYPos >= match.live_infos.p2Pos && match.live_infos.ballYPos < match.live_infos.p2Pos + this.blockerHeight) ||
+			// 	(match.live_infos.ballXPos + this.blockerWidth <= this.p1XPos && match.live_infos.ballYPos >= match.live_infos.p1Pos && match.live_infos.ballYPos < match.live_infos.p1Pos + this.blockerHeight))
+			// 		match.live_infos.ballXDir *= -1
+		}, 0)
+	}
  	calcBallPos(T: Date, match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - T.getTime()
