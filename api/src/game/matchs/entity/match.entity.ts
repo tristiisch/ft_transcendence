@@ -96,6 +96,8 @@ export interface MatchLiveInfos {
 
 	ballXPos: number,
 	ballYPos: number,
+	ballXDir: number,
+	ballYDir: number,
 	p1Ready: boolean,
 	p2Ready: boolean,
 	p1Pos: number,

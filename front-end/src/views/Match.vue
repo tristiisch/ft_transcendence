@@ -240,15 +240,15 @@ function loadStage() {
 	async function launchMatchLoop() {
 		setInterval(() => {
 			if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
-			if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-			if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-				(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-					dy = -dy
-			else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-					(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-					dx = -dx
+			// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+			// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+			// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+			// 		dy = -dy
+			// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+			// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+			// 		dx = -dx
 			ball_x += dx
-			ball_y += dy
+			// ball_y += dy
 		}, 1)
 		// if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
 		// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
@@ -265,7 +265,7 @@ function loadStage() {
 
 	socket.on("startMatch", () => {
 		// ballAnimation.start()
-		setTimeout(launchMatchLoop, 3000)
+		// setTimeout(launchMatchLoop, 3000)
 		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		ball.visible(true)
 	})

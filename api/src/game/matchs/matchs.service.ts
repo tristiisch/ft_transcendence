@@ -9,7 +9,7 @@ import { StatsService } from 'game/stats/stats.service';
 import { Notification, NotificationType } from 'notification/entity/notification.entity';
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
-import { mapGetByValue } from 'utils/utils';
+import { getBackRelativeURL, mapGetByValue } from 'utils/utils';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
@@ -93,6 +93,8 @@ export class MatchStatsService {
 			customInfos: custom_match_infos,
 			ballXPos: this.stageWidth/2,
 			ballYPos: this.stageHeight/2,
+			ballXDir: 1,
+			ballYDir: 1,
 			p1Ready: false,
 			p2Ready: false,
 			p1Pos: this.stageHeight/2 - this.blockerHeight/2,
@@ -197,33 +199,52 @@ export class MatchStatsService {
 		match.live_infos.room_socket.emit("startMatch")
 
 		setTimeout(() => {
-			// this.startMatchLoop(match.live_infos)
-			let ballPosInterval = setInterval(() => {
-				// if (match.live_infos.stopMatch)
-				// 	clearInterval(ballPosInterval)
-				match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-			}, 50)
-			this.launchMatchLoop(match, dx, dy, ballPosInterval)
+			this.startMatchLoop(match.live_infos)
+			// let ballPosInterval = setInterval(() => {
+			// 	// if (match.live_infos.stopMatch)
+			// 	// 	clearInterval(ballPosInterval)
+			// 	match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
+			// }, 50)
+			// this.launchMatchLoop(match, dx, dy, ballPosInterval)
 		}, 3000)
 	}
 
 	async startMatchLoop(match: MatchLiveInfos) {
-		var dx = 1
-		var dy = 0
-		const timeout = this.p2XPos - match.ballXPos
-		console.log("ballXpos", match.ballXPos, "timeout", timeout, "p1XPos", this.p2XPos)
-		const ballInterval = setInterval((e) => {
-			console.log(e)
-			match.ballXPos += dx
-			match.ballYPos += dy
-		}, 100)
-		setTimeout(() => {
-			clearInterval(ballInterval)
-			console.log("ballXpos", match.ballXPos)
-			if (match.ballXPos >= this.p2XPos - 10 && match.ballXPos <= this.p2XPos + 10) {
-				console.log("perfect timing")
-			}
-		}, timeout)
+		var T = new Date
+		function update() {
+			T = this.calcBallPos(T, match)
+			match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
+			console.log("ballXPos", match.ballXPos)
+			setTimeout(update.bind(this), 100)
+		}
+		update.bind(this)()
+	}
+
+ 	calcBallPos(T: Date, match: MatchLiveInfos) {
+		let T2 = new Date
+		let tdiff = T2.getTime() - T.getTime()
+		match.ballXPos = this.calcBallXPos(match, tdiff)
+		match.ballYPos = this.calcBallYPos(match, tdiff)
+		return T2
+	}
+	calcBallXPos(match, tdiff): number {
+		var x2 = match.ballXPos + (tdiff * match.ballXDir)
+		if (x2 < 0 || x2 > this.stageWidth) {
+			if ((x2 / this.stageWidth) % 2) match.ballXDir *= -1
+			x2 = this.stageWidth - (this.mod(x2, this.stageWidth))
+		}
+		return x2
+	}
+	calcBallYPos(match, tdiff): number {
+		var y2 = match.ballYPos + (tdiff * match.ballYDir)
+		if (y2 < 0 || y2 > this.stageHeight) {
+			if ((y2 / this.stageHeight) % 2) match.ballYDir *= -1
+			y2 = this.stageHeight - (this.mod(y2, this.stageHeight))
+		}
+		return y2
+	}
+	mod(n, m) { // modulo funtion because JS : https://web.archive.org/web/20090717035140if_/javascript.about.com/od/problemsolving/a/modulobug.htm
+		return ((n % m) + m) % m;
 	}
 
 	async endMatch(match: Match, ballInterval, matchLoopInterval, forceEnd?: boolean) {
