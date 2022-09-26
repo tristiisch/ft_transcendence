@@ -21,8 +21,8 @@ export const useGlobalStore = defineStore('globalStore', {
 		racketSize: 100,
 		increaseSpeed: false,
 		world: 1,
+		neededPointsForVictory: 5,
 		gameInvitation: false,
-		neededPointsForVictory: 5
 	}),
 	getters: {
 		isTypeArrayUsers: (state) => {

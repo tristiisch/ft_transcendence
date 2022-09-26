@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NotificationType } from '@/types/Notification';
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref, onBeforeMount, onUnmounted, computed } from 'vue';
+import { onUnmounted, computed } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useRouter, useRoute } from 'vue-router';
 import UserService from '@/services/UserService';

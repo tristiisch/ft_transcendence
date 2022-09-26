@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type Notification from '@/types/Notification';
-import { NotificationType } from '@/types/Notification';
-import { useGlobalStore } from '@/stores/globalStore';
 import { ref, onBeforeMount } from 'vue';
-
 
 const countDown = ref(5)
 

@@ -52,14 +52,12 @@ function displayMessage(message: Message) {
 }
 
 function acceptInvitation() {
-	chatStore.sendMessageChannel("Invitation accepted", MessageType.AUTOMATIC_MESSAGE, chatStore.inChannel!)
 	socket.emit("gameInvitation", true, (gameId: number) => {
 		router.push('match/' + gameId)
 	})
 }
 
 function declineInvitation() {
-	chatStore.sendMessageChannel(userStore.userData.username + " declined the Invitation", MessageType.AUTOMATIC_MESSAGE, chatStore.inChannel!)
 	socket.emit("gameInvitation", false);
 }
 
