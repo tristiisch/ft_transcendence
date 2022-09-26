@@ -159,10 +159,13 @@ export class ChatService {
 				const msgsFront: MessageFront[] = new Array();
 				for (const msg of msgs) {
 					let target: User;
+					if (user.isBlockedUser(msg.id_sender))
+						continue;
 					if (msg.id_sender === -1)
 						target = null;
-					else
+					else {
 						target = await this.userService.findOneWithCache(msg.id_sender, usersCached);
+					}
 					msgsFront.push(msg.toFront(target, chatRead));
 				}
 				return msgsFront;
@@ -589,7 +592,7 @@ export class ChatService {
 		const joinMessage = async () => {
 			let msg: Message = await this.createAutoMsg(`⚪️　${user.username} just joined the channel`, channel);
 			msg = await this.addMessage(msg);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(user, null));
+			await channel.sendMessage(this.socketService, 'chatChannelMessage', msg.toFront(user, null));
 		};
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
@@ -629,7 +632,7 @@ export class ChatService {
 
 		const leaveMessage = async () => {
 			let leaveMessage: Message = await this.createAutoMsg(`🔴　${user.username} just leaved the channel`, channel);
-			channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
+			await channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		};
 
 		switch (channel.type) {

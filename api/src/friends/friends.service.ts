@@ -175,6 +175,11 @@ export class FriendsService {
 			throw new NotAcceptableException(`You didn't have a friend request with ${target.username}.`);
 		}
 
+		if (friendship.status === FriendshipStatus.ACCEPTED) {
+			this.removeFriendship(user, target);
+			return;
+		}
+
 		if (friendship.user2_id === user.id) {
 			let notif: Notification = new Notification();
 			notif.user_id = friendship.user1_id;

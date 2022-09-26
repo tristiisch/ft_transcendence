@@ -83,7 +83,7 @@ export class NotificationService {
 		const target: User = await this.userService.findOne(notif.from_user_id);
 
 		if (user.isBlockedUser(target.id)) {
-			throw new NotAcceptableException(`You have blocked ${target}. You can't add him as friends.`);
+			throw new NotAcceptableException(`You have blocked ${target}. You can't do this.`);
 		}
 
 		if (notif.type === NotificationType.FRIEND_REQUEST) {

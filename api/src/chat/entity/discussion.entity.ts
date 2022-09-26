@@ -32,8 +32,6 @@ export class Discussion extends Chat {
 
 	public sendMessage?(socketService: SocketService, sender: User, room: string, ...args: any) {
 		const targetId: number = this.getTarget(sender);
-		if (sender.isBlockedUser(targetId))
-			return;
 		socketService.emitId(targetId, room, ...args);
 	}
 
