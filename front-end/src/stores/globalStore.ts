@@ -5,7 +5,6 @@ import type User from '@/types/User';
 import type Channel from '@/types/Channel';
 import type Notification from '@/types/Notification';
 import { NotificationType } from '@/types/Notification';
-import { useToast } from 'vue-toastification';
 
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
@@ -173,37 +172,5 @@ export const useGlobalStore = defineStore('globalStore', {
 				|| notification.type == NotificationType.FRIEND_REMOVE)
 				.forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
 		},
-		async acceptInvitation(notification: Notification) {
-			if (notification.type == NotificationType.FRIEND_REQUEST || notification.type == NotificationType.MATCH_REQUEST)
-			{
-				try {
-					const response = await UserService.notificationAction(notification.id, true)
-					this.removeNotification(notification.id)
-					this.addFriend(notification.from_user)
-					console.log('test')
-					return Promise.resolve(response)
-					/*const toast = useToast();
-					if (response.data.message) toast.info(response.data.message)*/
-				}
-				catch (error: any) {
-					throw error;
-				}
-			}
-		},
-		async declineInvitation(notification: Notification) {
-			if (notification.type == NotificationType.FRIEND_REQUEST || notification.type == NotificationType.MATCH_REQUEST)
-			{
-				try {
-					const response = await UserService.notificationAction(notification.id, false)
-					this.removeNotification(notification.id)
-					this.removePendingFriend(notification.from_user_id)
-					const toast = useToast();
-					if (response.data.message) toast.info(response.data.message)
-				}
-				catch (error: any) {
-					throw error;
-				}
-			}
-		}
 	}
 });

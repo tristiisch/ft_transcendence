@@ -26,12 +26,12 @@ export class MatchStatsService {
 	private invites_queue = new Map<number, { user: User, invited_user: User, custom_match_infos: CustomMatchInfos }>()
 
 	private readonly winningScore = 5
-	private readonly stageWidth = 3989 / 1.5
-	private readonly stageHeight = 2976 / 1.5
+	private readonly stageWidth = 3989
+	private readonly stageHeight = 2976
 	private readonly blockerWidth = this.stageWidth / 50
 	private readonly blockerHeight = this.stageHeight / 5
 	private readonly p1XPos = this.stageWidth / 10
-	private readonly p2XPpos = this.stageWidth - this.p1XPos
+	private readonly p2XPos = this.stageWidth - this.p1XPos
 
 	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService;
@@ -148,14 +148,14 @@ export class MatchStatsService {
 				dy = -dy
 
 			if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-				(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
+				(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPos && match.live_infos.ballXPos + dx < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
 					dy = -dy
 			else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-					(match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
+					(match.live_infos.ballXPos + dx > this.p2XPos && match.live_infos.ballXPos + dx < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
 					dx = -dx
 			match.live_infos.ballXPos += dx
 			match.live_infos.ballYPos += dy
-		}, 1)
+		}, 0)
 // 		if (match.live_infos.stopMatch) {
 // 			this.endMatch(match)
 // 			return
@@ -190,24 +190,44 @@ export class MatchStatsService {
 	}
 
 	async startMatch(match: Match) {
-		let dx = 3
-		let dy = 3
+		let dx = 5
+		let dy = 5
 
 		console.log("startMatch " + match.stats.id)
 		match.live_infos.room_socket.emit("startMatch")
 
 		setTimeout(() => {
+			// this.startMatchLoop(match.live_infos)
 			let ballPosInterval = setInterval(() => {
 				// if (match.live_infos.stopMatch)
 				// 	clearInterval(ballPosInterval)
 				match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-			}, 10000)
+			}, 50)
 			this.launchMatchLoop(match, dx, dy, ballPosInterval)
 		}, 3000)
 	}
 
-	async endMatch(match: Match, ballPosInterval, matchLoopInterval, forceEnd?: boolean) {
-		clearInterval(ballPosInterval)
+	async startMatchLoop(match: MatchLiveInfos) {
+		var dx = 1
+		var dy = 0
+		const timeout = this.p2XPos - match.ballXPos
+		console.log("ballXpos", match.ballXPos, "timeout", timeout, "p1XPos", this.p2XPos)
+		const ballInterval = setInterval((e) => {
+			console.log(e)
+			match.ballXPos += dx
+			match.ballYPos += dy
+		}, 100)
+		setTimeout(() => {
+			clearInterval(ballInterval)
+			console.log("ballXpos", match.ballXPos)
+			if (match.ballXPos >= this.p2XPos - 10 && match.ballXPos <= this.p2XPos + 10) {
+				console.log("perfect timing")
+			}
+		}, timeout)
+	}
+
+	async endMatch(match: Match, ballInterval, matchLoopInterval, forceEnd?: boolean) {
+		clearInterval(ballInterval)
 		clearInterval(matchLoopInterval)
 		match.live_infos.room_socket.emit("endMatch")
 		match.stats.timestamp_ended = new Date
