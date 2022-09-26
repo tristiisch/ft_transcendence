@@ -104,6 +104,8 @@ function onClose() {
 		selectPlayer.value = false;
 	else 
 		emit('close');
+	if (globalStore.selectedItems.length)	
+		globalStore.resetSelectedItems();
 }
 
 watch(() => newChannelName.value, () => {
