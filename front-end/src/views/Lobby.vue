@@ -76,8 +76,14 @@ socket.on('gameInvitation', (gameId: number) => {
 	router.push('match/' + gameId)
 });
 
+function onClose() {
+	rightPartToDisplay.value = 'selectPlayer';
+	if (globalStore.selectedItems[0])
+		globalStore.resetSelectedItems();
+}
+
 onBeforeMount(() => {
-	fetchCurrentMatchs();
+	// fetchCurrentMatchs();
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;
@@ -111,7 +117,7 @@ onBeforeUnmount(() => {
 					</div>
 					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="rightPartToDisplay = 'selectWorld'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation" :invitedUser="invitedUser"></select-player>
 					<users-search v-if="rightPartToDisplay === 'invitePlayer'" :singleSelection="true" :type="'users'"></users-search>
-					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></button-close-validate>
+					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="onClose()"></button-close-validate>
 				</div>
 			</card-right>
 		</div>

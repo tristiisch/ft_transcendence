@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { ref, computed } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import Status, { ChatStatus } from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import SettingsBanMuteAdminKick from '@/components/Chat/ChannelSettings/SettingsBanMuteAdminKick.vue';
@@ -12,6 +13,7 @@ import SettingsInvite from '@/components/Chat/ChannelSettings/SettingsInvite.vue
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
 const displayPasswordPage = ref(false);
 const displayAdminPage = ref(false);
 const displayMutePage = ref(false);
@@ -89,6 +91,8 @@ function resetDisplayPage() {
 		displayPasswordPage.value = !displayPasswordPage.value
 	else
 		displayInvitePage.value = !displayInvitePage.value
+	if (globalStore.selectedItems.length)
+		globalStore.resetSelectedItems();
 }
 
 const isType = computed(() => {

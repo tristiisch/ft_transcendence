@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useToast } from 'vue-toastification';
+import { useGlobalStore } from '@/stores/globalStore';
 import { ref } from 'vue'
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import { useChatStore } from '@/stores/chatStore';
@@ -9,6 +10,7 @@ import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 
 const toast = useToast();
 const chatStore = useChatStore();
+const globalStore = useGlobalStore();
 const error = ref('');
 const displayCreateChannel = ref(false);
 const displayJoinChannel = ref(false);
@@ -22,6 +24,8 @@ function resetDisplay() {
 		displayCreateChannel.value = false
 	else (displayJoinChannel.value)
 		displayJoinChannel.value = false
+	if (globalStore.selectedItems.length)
+		globalStore.resetSelectedItems();
 }
 
 </script>

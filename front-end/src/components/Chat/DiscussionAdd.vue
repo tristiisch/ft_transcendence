@@ -20,11 +20,17 @@ function createNewDiscussion()
         globalStore.resetSelectedItems();
     }
 }
+
+function onClose() {
+	chatStore.setRightPartToDisplay(PartToDisplay.CHAT);
+	if (globalStore.selectedItems[0])
+		globalStore.resetSelectedItems();
+}
 </script>
 
 <template>
     <div class="flex flex-col justify-between items-center h-full w-full px-8 3xl:px-10">
         <users-search :singleSelection="true" :type="'users'"></users-search>
-        <button-close-validate @validate="createNewDiscussion()" @close="chatStore.setRightPartToDisplay(PartToDisplay.CHAT)"></button-close-validate>
+        <button-close-validate @validate="createNewDiscussion()" @close="onClose()"></button-close-validate>
     </div>
 </template>
