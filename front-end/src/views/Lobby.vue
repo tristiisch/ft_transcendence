@@ -98,7 +98,7 @@ function onClose() {
 }
 
 onBeforeMount(() => {
-	//fetchCurrentMatchs();
+	fetchCurrentMatchs();
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;

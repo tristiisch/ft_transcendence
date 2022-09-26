@@ -1,15 +1,14 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
-import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes } from './entity/match.entity';
+import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes, GameInvitation } from './entity/match.entity';
 import { MatchOwn } from './entity/own-match.entity';
 import { StatsService } from 'game/stats/stats.service';
 import { Notification, NotificationType } from 'notification/entity/notification.entity';
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
-import { getBackRelativeURL, mapGetByValue } from 'utils/utils';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
@@ -130,71 +129,74 @@ export class MatchStatsService {
 		return 0
 	}
 
-	async launchMatchLoop(match, dx, dy, ballPosInterval) {
-		let matchLoopInterval = setInterval(async () => {
-			if (match.live_infos.stopMatch)
-				await this.endMatch(match, ballPosInterval, matchLoopInterval, true)
-			if (match.live_infos.ballXPos + dx < 0) {
-				match.stats.score[1]++
-				match.live_infos.room_socket.emit('p2Scored')
-				dx = -dx
-			}
-			else if (match.live_infos.ballXPos + dx > this.stageWidth) {
-				match.stats.score[0]++
-				match.live_infos.room_socket.emit('p1Scored')
-				dx = -dx
-			}
-			if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore)
-				await this.endMatch(match, ballPosInterval, matchLoopInterval)
-			if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
-				dy = -dy
+	// async launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir, ballPosInterval) {
+	// 	let matchLoopInterval = setInterval(async () => {
+	// 		if (match.live_infos.stopMatch)
+	// 			await this.endMatch(match, ballPosInterval, matchLoopInterval, true)
+	// 		if (match.live_infos.ballXPos + match.live_infos.ballXDir < 0) {
+	// 			match.stats.score[1]++
+	// 			match.live_infos.room_socket.emit('p2Scored')
+		// 		match.live_infos.ballXDir = -match.live_infos.ballXDir
+		// 	}
+		// 	else if (match.live_infos.ballXPos + match.live_infos.ballXDir > this.stageWidth) {
+		// 		match.stats.score[0]++
+		// 		match.live_infos.room_socket.emit('p1Scored')
+		// 		match.live_infos.ballXDir = -match.live_infos.ballXDir
+		// 	}
+		// 	if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore)
+		// 		await this.endMatch(match, ballPosInterval, matchLoopInterval)
+		// 	if (match.live_infos.ballYPos + match.live_infos.ballYDir < 0 || match.live_infos.ballYPos + match.live_infos.ballYDir > this.stageHeight)
+		// 		match.live_infos.ballYDir = -match.live_infos.ballYDir
 
-			if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-				(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPos && match.live_infos.ballXPos + dx < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-					dy = -dy
-			else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-					(match.live_infos.ballXPos + dx > this.p2XPos && match.live_infos.ballXPos + dx < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-					dx = -dx
-			match.live_infos.ballXPos += dx
-			match.live_infos.ballYPos += dy
-		}, 0)
+		// 	if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 		(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballYDir = -match.live_infos.ballYDir
+		// 	else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 			(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
+		// 	match.live_infos.ballXPos += match.live_infos.ballXDir
+		// 	match.live_infos.ballYPos += match.live_infos.ballYDir
+		// }, 0)
 // 		if (match.live_infos.stopMatch) {
 // 			this.endMatch(match)
 // 			return
 // 		}
-// 		if (match.live_infos.ballXPos + dx < 0) {
+// 		if (match.live_infos.ballXPos + match.live_infos.ballXDir < 0) {
 // 			match.stats.score[1]++
 // 			match.live_infos.room_socket.emit('p2Scored')
-// 			dx = -dx
+// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
 // 		}
-// 		else if (match.live_infos.ballXPos + dx > this.stageWidth) {
+// 		else if (match.live_infos.ballXPos + match.live_infos.ballXDir > this.stageWidth) {
 // 			match.stats.score[0]++
 // 			match.live_infos.room_socket.emit('p1Scored')
-// 			dx = -dx
+// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
 // 		}
 // 		if (match.stats.score[0] === this.winningScore || match.stats.score[1] === this.winningScore) {
 // 			this.endMatch(match)
 // 			return
 // 		}
-// 		if (match.live_infos.ballYPos + dy < 0 || match.live_infos.ballYPos + dy > this.stageHeight)
-// 			dy = -dy
+// 		if (match.live_infos.ballYPos + match.live_infos.ballYDir < 0 || match.live_infos.ballYPos + match.live_infos.ballYDir > this.stageHeight)
+// 			match.live_infos.ballYDir = -match.live_infos.ballYDir
 
-// 		if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-// 			(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-// 				dy = -dy
-// 		else if ((match.live_infos.ballXPos + dx > this.p1XPos && match.live_infos.ballXPos + dx < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p1Pos && match.live_infos.ballYPos + dy < match.live_infos.p1Pos + this.blockerHeight) ||
-// 				(match.live_infos.ballXPos + dx > this.p2XPpos && match.live_infos.ballXPos + dx < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + dy > match.live_infos.p2Pos && match.live_infos.ballYPos + dy < match.live_infos.p2Pos + this.blockerHeight))
-// 				dx = -dx
-// 		match.live_infos.ballXPos += dx
-// 		match.live_infos.ballYPos += dy
+// 		if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+// 			(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPpos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+// 				match.live_infos.ballYDir = -match.live_infos.ballYDir
+// 		else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+// 				(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPpos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+// 				match.live_infos.ballXDir = -match.live_infos.ballXDir
+// 		match.live_infos.ballXPos += match.live_infos.ballXDir
+// 		match.live_infos.ballYPos += match.live_infos.ballYDir
 // // match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-// 		setTimeout(() => this.launchMatchLoop(match, dx, dy), 0)
-	}
+// 		setTimeout(() => this.launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir), 0)
+	// }
 
 	async startMatch(match: Match) {
 		this.setNewMatchRoundVar(match.live_infos)
 		setTimeout(() => {
 			this.startMatchLoop(match)
+			setInterval(() => {
+				match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
+			}, 10)
 			// setInterval(() => {
 			// 	if (match.live_infos.ballXPos > this.p2XPos) {
 			// 		match.stats.score[0]++
@@ -210,7 +212,7 @@ export class MatchStatsService {
 			// 	// 	clearInterval(ballPosInterval)
 			// 	match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
 			// }, 50)
-			// this.launchMatchLoop(match, dx, dy, ballPosInterval)
+			// this.launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir, ballPosInterval)
 		}, 3000)
 	}
 	setNewMatchRoundVar(match: MatchLiveInfos) {
@@ -228,14 +230,39 @@ export class MatchStatsService {
 			dy: match.live_infos.ballYDir,
 			scored: undefined
 		})
-		function update() {
-			T = this.calcBallPos(T, match)
-			match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
-			setTimeout(update.bind(this), 10)
-		}
-		update.bind(this)()
-	}
+		// function update() {
+		// 	T = this.calcBallPos(T, match)
+		// 	// match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
 
+		// 	if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 		(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballYDir *= -1
+		// 	else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+		// 			(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+		// 			match.live_infos.ballXDir *= -1
+
+		// 	// if ((match.live_infos.ballXPos >= this.p2XPos && match.live_infos.ballYPos >= match.live_infos.p2Pos && match.live_infos.ballYPos < match.live_infos.p2Pos + this.blockerHeight) ||
+		// 	// 	(match.live_infos.ballXPos + this.blockerWidth <= this.p1XPos && match.live_infos.ballYPos >= match.live_infos.p1Pos && match.live_infos.ballYPos < match.live_infos.p1Pos + this.blockerHeight))
+		// 	// 		match.live_infos.ballXDir *= -1
+		// 	setTimeout(update.bind(this), 0)
+		// }
+		// update.bind(this)()
+		setInterval(() => {
+			T = this.calcBallPos(T, match)
+			// match.live_infos.room_socket.emit('ballPos', match.live_infos.ballXPos, match.live_infos.ballYPos)
+
+			if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+				(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+					match.live_infos.ballYDir *= -1
+			else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
+					(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
+					match.live_infos.ballXDir *= -1
+
+			// if ((match.live_infos.ballXPos >= this.p2XPos && match.live_infos.ballYPos >= match.live_infos.p2Pos && match.live_infos.ballYPos < match.live_infos.p2Pos + this.blockerHeight) ||
+			// 	(match.live_infos.ballXPos + this.blockerWidth <= this.p1XPos && match.live_infos.ballYPos >= match.live_infos.p1Pos && match.live_infos.ballYPos < match.live_infos.p1Pos + this.blockerHeight))
+			// 		match.live_infos.ballXDir *= -1
+		}, 0)
+	}
  	calcBallPos(T: Date, match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - T.getTime()
@@ -341,17 +368,20 @@ export class MatchStatsService {
 		return this.matchsHistoryRepository.save(matchHistory);
 	}
 
-	private readonly requests: Map<number, number> = new Map();
+	private readonly requests: Map<number, GameInvitation> = new Map();
 
-	getRequest(idTarget: number) {
-		mapGetByValue(this.requests, idTarget);
+	getRequest(idInvite: number, idTarget: number): [number, GameInvitation] | null {
+		const v = [...this.requests].find(([key, val]) => val.toUserId === idTarget && key === idInvite);
+		if (v.length > 0)
+			return v;
+		return null;
 	}
 
-	async addRequest(user: User, id: any) {
+	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos) {
 		const target: User = await this.userService.findOne(id);
 		
 		if (this.requests.has(target.id))
-			throw new BadRequestException(`You have already invited this user.`);
+			throw new BadRequestException(`You have already invited someone.`);
 
 		let notif: Notification = new Notification();
 		notif.user_id = target.id;
@@ -360,28 +390,38 @@ export class MatchStatsService {
 		notif = await this.notifService.addNotif(notif);
 		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
 
-		this.requests.set(user.id, id);
+		const gameInvit = new GameInvitation();
+		gameInvit.matchInfo = matchInfo;
+		gameInvit.toUserId = target.id;
+
+		this.requests.set(user.id, gameInvit);
 	}
 
-	async createInvitation(user: User, data: any) { // TODO change any to a type
+	/*async createInvitation(user: User, data: any) { // TODO change any to a type
 		const invited_user = await this.userService.findOneByUsername(data.invited_user)
 		if (invited_user && invited_user.status !== UserStatus.OFFLINE)
 			this.addInviteToQueue(user, invited_user, data.custom_match_infos) // TODO remove
 		// send match notification here
-	}
+	}*/
 
 	@WebSocketServer()
 	server: Server; // TODO verif this
 
-	async acceptInvitation(invited_user: User, invite_user: User, invitation?: any) { // todo add invitation 
-		if (invite_user.status === UserStatus.ONLINE) {
-			let match_id = await this.createNewMatch(invite_user, invited_user, invitation.custom_match_infos)
-			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
-			this.socketService.getSocketToEmit(invite_user.id).emit('foundMatch', match_id)
-			return match_id
+	async acceptInvitation(invitedUser: User, inviteUser: User) {
+		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
+		if (!req) {
+			throw new PreconditionFailedException(`You didn't have a invitation from user ${inviteUser.username} for game.`)
 		}
-		else {
-			// tell the user that the invitation expired
+
+		const custonGameInfo: CustomMatchInfos = req[1].matchInfo as CustomMatchInfos;
+
+		if (inviteUser.status === UserStatus.ONLINE) {
+			let match_id = await this.createNewMatch(inviteUser, invitedUser, custonGameInfo)
+			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+			this.socketService.getSocketToEmit(inviteUser.id).emit('foundMatch', match_id)
+			return match_id
+		} else {
+			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)
 		}
 	}
 }

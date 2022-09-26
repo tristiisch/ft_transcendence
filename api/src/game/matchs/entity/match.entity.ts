@@ -111,3 +111,8 @@ export interface CustomMatchInfos {
 	world: number,
 	neededPointsForVictory: number
 }
+
+export class GameInvitation {
+	toUserId: number;
+	matchInfo: CustomMatchInfos;
+}
