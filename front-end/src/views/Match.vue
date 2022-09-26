@@ -15,7 +15,6 @@ var match = ref()
 var match_id = parseInt(route.params.id as string)
 
 const userStore = useUserStore()
-const userService = UserService
 var player1 = ref()
 var player2 = ref()
 
@@ -23,32 +22,33 @@ var isLoaded = ref(false)
 var isMounted = ref(false)
 var isPlayer = ref(false)
 
+MatchService.loadMatch(match_id)
+	.then((response) => {
+		match.value = response.data
+		console.log(match.value)
+		Promise.all([
+			UserService.getUser(match.value.user1_id),
+			UserService.getUser(match.value.user2_id),])
+			.then((res) => {
+			player1.value = res[0].data
+			player2.value = res[1].data
+			isLoaded.value = true
+			if (userStore.userData.id === player1.value.id || userStore.userData.id === player2.value.id)
+				isPlayer.value = true
+			// console.log(player1.value)
+			// console.log(player2.value)
+		}) // TODO catch error 
+	})
+	.catch((e) => {
+		router.replace({
+			name: 'Error',
+			params: { pathMatch: route.path.substring(1).split('/') },
+			query: { code: e.response?.status, message: e.response?.data.message }
+		});
+})
+
 onBeforeMount(() => {
 	socket.emit('update_status', status.ONLINE)
-	MatchService.loadMatch(match_id)
-		.then((response) => {
-			match.value = response.data
-			console.log(match.value)
-			Promise.all([
-				userService.getUser(match.value.user1_id),
-				userService.getUser(match.value.user2_id),])
-				.then((res) => {
-				player1.value = res[0].data
-				player2.value = res[1].data
-				isLoaded.value = true
-				if (userStore.userData.id === player1.value.id || userStore.userData.id === player2.value.id)
-					isPlayer.value = true
-				// console.log(player1.value)
-				// console.log(player2.value)
-			}) // TODO catch error 
-		})
-		.catch((e) => {
-			router.replace({
-				name: 'Error',
-				params: { pathMatch: route.path.substring(1).split('/') },
-				query: { code: e.response?.status, message: e.response?.data.message }
-			});
-	})
 })
 
 watch([isLoaded, isMounted], () => {
@@ -58,7 +58,7 @@ watch([isLoaded, isMounted], () => {
 
 onMounted(() => {
 	isMounted.value = true
-	socket.emit('updateUserStatus', status.INGAME )
+	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
 })
 
 function loadStage() {
@@ -171,21 +171,20 @@ function loadStage() {
 	let ball_x = stage_width/2
 	let ball_y = stage_height/2
 
-	// var ballAnimation = new Konva.Animation(function(frame) {
-	// 	if (ball.x() + dx < ball_radius) {
-	// 		dx = -dx
-	// 		// match.value.score[1]++
-	// 	}
-	// 	else if (ball.x() + dx > stage_width - ball_radius) {
-	// 		dx = -dx
-	// 		// match.value.score[0]++
-	// 	}
-	// 	// if (ball.y() + dy < ball_radius || ball.y() + dy > stage_height - ball_radius) dy = -dy
-	// 	// if (ball.x() + dx < p1_blocker.x() + ball_radius || ball.x() + dx > p2_blocker.x() - ball_radius) dx = -dx
-	// 	// checkCollisions()
-	// 	ball.x(ball.x() + dx);
-	// 	// ball.y(ball.y() + dy);
-	// }, layer)
+	var ballAnimation = new Konva.Animation(function(frame) {
+		if (ball.x() + dx < 0 || ball.x() + dx > stage_width) { dx = -dx; }
+		if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+		if ((ball.x() > p1_blocker.x() && ball.x() < p1_blocker.x() + blockers_width && ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+			(ball.x() > p2_blocker.x() && ball.x() < p2_blocker.x() + blockers_width && ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+				dy = -dy
+		else if ((ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+				(ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+				dx = -dx
+		ball.x(ball.x() + dx)
+		ball.y(ball.y() + dy)
+		// ball.x(ball_x)
+		// ball.y(ball_y)
+	}, layer)
 
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
@@ -265,6 +264,7 @@ function loadStage() {
 	}
 
 	socket.on("startMatch", () => {
+		// ballAnimation.start()
 		setTimeout(launchMatchLoop, 3000)
 		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		ball.visible(true)
@@ -399,14 +399,14 @@ onBeforeUnmount(() => {
 		opacity: 0.95;
 	}
 }
-
+/* 
 .animationFlicker {
 	animation: flicker 0.15s infinite alternate;
 }
 
 .animationRefresh {
 	animation: refresh 5s linear infinite;
-}
+} */
 
 
 </style>

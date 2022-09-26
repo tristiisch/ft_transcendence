@@ -155,15 +155,16 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channelUpdated);	
 		},
-		createNewChannel(newChannel: Channel, selection: User[]) {
+		createNewChannel(newChannel: Channel, selection: User[], password?: string) {
 			const userStore = useUserStore();
+			password = (password === '' ? undefined : password);
 			socket.emit('chatChannelCreate', userStore.userData, {
 				name: newChannel.name,
 				avatar_64: newChannel.avatar,
 				hasPassword: newChannel.hasPassword,
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
-			}, (channelCreated: Channel) => {
+			}, password, (channelCreated: Channel) => {
 				console.log('channelCreated', channelCreated)
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
 				this.loadChannel(this.userChannels[0]);
