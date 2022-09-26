@@ -48,10 +48,10 @@ export class MatchsStatsController {
 	@UseGuards(JwtAuthGuard)
 	@Post('request/add')
 	async addRequestMatch(@Req() req, @Body() body) {
-		if (Number.isNaN(body.id) || !body.matchInfo) {
+		if (Number.isNaN(body.id) || !body.gameInfo) {
 			throw new PreconditionFailedException(`Missing id or matchInfo on request`);
 		}
-		return await this.matchsService.addRequest(req.user, body.id, body.matchInfo);
+		return await this.matchsService.addRequest(req.user, body.id, body.gameInfo);
 	}
 
 	/**
@@ -64,7 +64,7 @@ export class MatchsStatsController {
 		 // console.log("get : ", this.matchService.getMatches().get(id).stats)
 		 isNumberPositive(id, 'get match');
 		 if (!this.matchsService.getMatches().has(id))
-			 throw new NotFoundException(`Unknown match ${id}`);
+			throw new NotFoundException(`Unknown match ${id}`);
 		 return this.matchsService.getMatches().get(id)?.stats;
 	 }
 }

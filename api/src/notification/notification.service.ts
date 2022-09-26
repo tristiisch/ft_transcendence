@@ -100,7 +100,7 @@ export class NotificationService {
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
 			if (notifAction.accept) {
-				this.matchstatsService.acceptInvitation(user, target);
+				return await this.matchstatsService.acceptInvitation(user, target);
 			} else {
 
 			}

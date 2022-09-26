@@ -404,9 +404,6 @@ export class MatchStatsService {
 		// send match notification here
 	}*/
 
-	@WebSocketServer()
-	server: Server; // TODO verif this
-
 	async acceptInvitation(invitedUser: User, inviteUser: User) {
 		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
 		if (!req) {
@@ -417,9 +414,9 @@ export class MatchStatsService {
 
 		if (inviteUser.status === UserStatus.ONLINE) {
 			let match_id = await this.createNewMatch(inviteUser, invitedUser, custonGameInfo)
-			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+			this.matches.get(match_id).live_infos.room_socket = this.socketService.server.to('match_' + match_id)
 			this.socketService.getSocketToEmit(inviteUser.id).emit('foundMatch', match_id)
-			return match_id
+			return { id: match_id };
 		} else {
 			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)
 		}
