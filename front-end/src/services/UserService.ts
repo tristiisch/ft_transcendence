@@ -1,7 +1,7 @@
 import axios from '@/plugin/axiosInstance';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
-import type Match from '@/types/MatchHistory';
+import type { MatchInfo } from '@/types/Match';
 import type Discussion from '@/types/Discussion';
 
 class UserService {
@@ -74,8 +74,8 @@ class UserService {
 		return axios.post(`friends/remove`, { id: targetId });
 	}
 
-	sendGameRequest(targetId: number) {
-		return axios.post(`matchs/request/add`, { id: targetId });
+	sendGameRequest(targetId: number, gameInfo: MatchInfo) {
+		return axios.post(`matchs/request/add`, { id: targetId, gameInfo: gameInfo });
 	}
 
 	getLeaderboard() {

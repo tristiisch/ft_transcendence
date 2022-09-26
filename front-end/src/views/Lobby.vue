@@ -57,7 +57,13 @@ function invitePlayer()
 	console.log(globalStore.invitedUser)
 	if (globalStore.invitedUser)
 	{
-		UserService.sendGameRequest(globalStore.invitedUser.id)
+		UserService.sendGameRequest(globalStore.invitedUser.id, {
+			ballSpeed: globalStore.ballSpeed,
+			racketSize: globalStore.racketSize,
+			increaseBallSpeed: globalStore.increaseSpeed,
+			world: globalStore.world,
+			neededPointsForVictory: globalStore.neededPointsForVictory
+		})
 		.then((response) => {
 			if (response.data.message) toast.info(response.data.message)
 		})
@@ -102,7 +108,7 @@ onBeforeMount(() => {
 	{
 		rightPartToDisplay.value = 'selectPlayer';
 		invitation.value = true
-	}	
+	}
 });
 
 onBeforeUnmount(() => {

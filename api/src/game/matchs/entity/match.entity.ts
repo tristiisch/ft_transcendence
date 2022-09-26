@@ -48,7 +48,7 @@ export class MatchStats extends BaseEntity {
 
 		const score_user1 = this.score[0];
 		const score_user2 = this.score[1];
-		
+
 		if (score_user1 > score_user2)
 			return this.user1_id;
 		else if (score_user2 > score_user1)
@@ -62,7 +62,7 @@ export class MatchStats extends BaseEntity {
 
 		const score_user1 = this.score[0];
 		const score_user2 = this.score[1];
-		
+
 		if (score_user1 < score_user2)
 			return this.user1_id;
 		else if (score_user2 < score_user1)
@@ -108,5 +108,6 @@ export interface CustomMatchInfos {
 	ballSpeed: number,
 	racketSize: number,
 	increaseBallSpeed: boolean,
-	world: number
+	world: number,
+	neededPointsForVictory: number
 }
