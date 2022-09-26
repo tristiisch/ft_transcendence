@@ -24,7 +24,6 @@ const matchs = ref([] as Match[]);
 const isLoading = ref(false);
 const rightPartToDisplay = ref('gameSettings');
 const invitation = ref(false);
-const invitedUser = ref<User | undefined>();
 
 function setRightPartToDisplay()
 {
@@ -52,19 +51,29 @@ function invitePlayer()
 	rightPartToDisplay.value = 'selectPlayer'
 	invitation.value = true
     if (globalStore.isTypeUser(globalStore.selectedItems[0])) {
-        invitedUser.value = globalStore.selectedItems[0];
+        globalStore.invitedUser = globalStore.selectedItems[0];
         globalStore.resetSelectedItems();
     }
-	UserService.sendGameRequest(invitedUser.value!.id)
+	console.log(globalStore.invitedUser)
+	if (globalStore.invitedUser)
+	{
+		UserService.sendGameRequest(globalStore.invitedUser.id)
 		.then((response) => {
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
 			invitation.value = false
-			invitedUser.value = undefined
+			globalStore.invitedUser = undefined
 			if (error.response.status === 400) toast.warning(error.response.data.message)
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		})
+	}
+}
+
+function unsetInvitedUser() {
+	rightPartToDisplay.value = 'selectWorld'
+	globalStore.invitedUser = undefined
+	invitation.value = false
 }
 
 function updateMatch(match: Match) {
@@ -76,13 +85,24 @@ socket.on('gameInvitation', (gameId: number) => {
 	router.push('match/' + gameId)
 });
 
+function onClose() {
+	rightPartToDisplay.value = 'selectPlayer';
+	if (globalStore.selectedItems[0])
+		globalStore.resetSelectedItems();
+}
+
 onBeforeMount(() => {
-	fetchCurrentMatchs();
+	//fetchCurrentMatchs();
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;
 	globalStore.world = 1;
 	globalStore.neededPointsForVictory = 5;
+	if (globalStore.invitedUser)
+	{
+		rightPartToDisplay.value = 'selectPlayer';
+		invitation.value = true
+	}	
 });
 
 onBeforeUnmount(() => {
@@ -109,9 +129,9 @@ onBeforeUnmount(() => {
 						<button-return-next v-if="rightPartToDisplay === 'selectWorld'" @click="rightPartToDisplay = 'gameSettings'" side="previous" class="mb-1"></button-return-next>
 						<button-return-next  @click="setRightPartToDisplay()" side="next" class="mb-1"></button-return-next>
 					</div>
-					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="rightPartToDisplay = 'selectWorld'" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation" :invitedUser="invitedUser"></select-player>
+					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="unsetInvitedUser()" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
 					<users-search v-if="rightPartToDisplay === 'invitePlayer'" :singleSelection="true" :type="'users'"></users-search>
-					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="rightPartToDisplay = 'selectPlayer'"></button-close-validate>
+					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="onClose()"></button-close-validate>
 				</div>
 			</card-right>
 		</div>

@@ -5,6 +5,7 @@ import UserService from '@/services/UserService';
 import type User from '@/types/User';
 import router from '@/router/index'
 import socket from '@/plugin/socketInstance';
+import Status from '@/types/Status';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
@@ -18,8 +19,11 @@ export const useUserStore = defineStore('userStore', {
 	actions: {
 		logUser() {
 			if (this.userAuth.token_jwt)
+			{
 				localStorage.setItem('userAuth', this.userAuth.token_jwt);
-			this.userAuth.islogin = true
+				this.userAuth.islogin = true
+				this.userData.status = Status.ONLINE
+			}
 		},
 		verifyState(state: string) {
 			const randomString = localStorage.getItem('state')

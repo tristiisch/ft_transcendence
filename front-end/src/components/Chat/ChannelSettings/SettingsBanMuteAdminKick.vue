@@ -52,7 +52,6 @@ function updateChangeInChannel() {
 				list: globalStore.selectedItems,
 				userWhoSelect: userStore.userData
 			};
-			let selection: {unlisted: User[], listed: User[]} | null;
 			if (props.type === 'admin' && globalStore.checkChangeInArray(chatStore.inChannel.admins))
 				chatStore.updateAdminList(chatStore.inChannel, newList);
 			else if (props.type === 'ban' && globalStore.checkChangeInArray(chatStore.inChannel.banned))
