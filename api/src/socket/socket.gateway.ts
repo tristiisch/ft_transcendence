@@ -316,7 +316,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		channel.sendMessage(this.socketService, 'chatChannelInvitation', channelFront);
 		this.socketService.emitIds(users.map(user => user.id), 'chatChannelInvitation', channelFront, user);
 
-		return channelFront;
+		return [channelFront];
 	}
 
 	@UseGuards(JwtSocketGuard)
