@@ -88,7 +88,7 @@ function chooseArray() {
 				<p class="text-xxs pt-1">{{ message.date }}</p>
 			</div> 
 			<div v-if="message.type !== MessageType.GAME_INVITATION" :class="sizeText(message.type), colorMessage(message)" class="min-w-0 text-red-200 break-words"> {{ displayMessage(message) }} </div>
-			<div v-else class="flex items-center gap-2 bg-neutral-100 border-[1px] border-blue-600 w-full h-[42px] sm:h-[52px] rounded-full pl-1">
+			<div v-else class="flex items-center gap-2 bg-neutral-100 border-[1px] border-blue-600 w-full h-[42px] sm:h-[52px] rounded-lg pl-1">
 				<img class="h-8 w-8 sm:h-11 sm:w-11 shrink-0 rounded-full border-[1px] border-pink-400 object-cover" src='@/assets/invitationGame.jpg'>
 				<div class="flex flex-col justify-center items-center gap-1" >
 					<div class="pr-4 text-xs sm:text-xs text-blue-600"> {{ displayMessage(message) }} </div>

@@ -55,7 +55,7 @@ function treatNewChannelData()
             name: newChannelName.value,
             owner: null,
             avatar: newAvatar.value,
-            hasPassword: newPassword.value != '' ? true : false,
+            hasPassword: newPassword.value !== '' ? true : false,
             users: selection,
             admins: [],
             muted: [],
@@ -64,7 +64,7 @@ function treatNewChannelData()
             messages: [],
         }
         if (!globalStore.isTypeUser(newChannel)) {
-            chatStore.createNewChannel(newChannel, selection)
+            chatStore.createNewChannel(newChannel, selection, newPassword.value)
             globalStore.resetSelectedItems();
         }
     }
