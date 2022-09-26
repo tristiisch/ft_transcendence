@@ -51,7 +51,6 @@ export class UsersController {
 		const blockedUsers: User[] = new Array();
 		for (const id of user.blocked_ids)
 			blockedUsers.push(await this.usersService.findOne(id));
-		console.log('blockedUsers', blockedUsers);
 		return blockedUsers;
 	}
 

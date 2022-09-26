@@ -180,8 +180,10 @@ export const useGlobalStore = defineStore('globalStore', {
 					const response = await UserService.notificationAction(notification.id, true)
 					this.removeNotification(notification.id)
 					this.addFriend(notification.from_user)
-					const toast = useToast();
-					if (response.data.message) toast.info(response.data.message)
+					console.log('test')
+					return Promise.resolve(response)
+					/*const toast = useToast();
+					if (response.data.message) toast.info(response.data.message)*/
 				}
 				catch (error: any) {
 					throw error;

@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'users/entity/user.entity';
+import { User, UserStatus } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { Match, MatchStats, MatchLiveInfos, CustomMatchInfos, MatchMakingTypes } from './entity/match.entity';
@@ -10,6 +10,8 @@ import { Notification, NotificationType } from 'notification/entity/notification
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
 import { mapGetByValue } from 'utils/utils';
+import { WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class MatchStatsService {
@@ -300,6 +302,28 @@ export class MatchStatsService {
 		notif = await this.notifService.addNotif(notif);
 		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
 
-		this.requests.set(user.id, id)
+		this.requests.set(user.id, id);
+	}
+
+	async createInvitation(user: User, data: any) { // TODO change any to a type
+		const invited_user = await this.userService.findOneByUsername(data.invited_user)
+		if (invited_user && invited_user.status !== UserStatus.OFFLINE)
+			this.addInviteToQueue(user, invited_user, data.custom_match_infos) // TODO remove
+		// send match notification here
+	}
+
+	@WebSocketServer()
+	server: Server; // TODO verif this
+
+	async acceptInvitation(invited_user: User, invite_user: User, invitation?: any) { // todo add invitation 
+		if (invite_user.status === UserStatus.ONLINE) {
+			let match_id = await this.createNewMatch(invite_user, invited_user, invitation.custom_match_infos)
+			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+			this.socketService.getSocketToEmit(invite_user.id).emit('foundMatch', match_id)
+			return match_id
+		}
+		else {
+			// tell the user that the invitation expired
+		}
 	}
 }

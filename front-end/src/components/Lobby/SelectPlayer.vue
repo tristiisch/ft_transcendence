@@ -33,8 +33,6 @@ const emit = defineEmits<{
 function launchGame() {
 	if (mode.value === 'random')
 		router.push({ name: 'MatchMaking', query: { custom: 'true' }});
-	else if (mode.value === 'invite' && props.invitedUser != undefined && globalStore.gameInvitation)
-		router.push({ name: 'MatchMaking', params: {}});
 }
 
 </script>

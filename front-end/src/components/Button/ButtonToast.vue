@@ -16,14 +16,11 @@ const props = defineProps<{
 }>()
 
 function acceptInvitation(notification: Notification) {
-	if (notification.type == NotificationType.MATCH_REQUEST)
-	{
-		socket.emit("gameInvitation", true, (gameId: number) => {
-			router.push('match/' + gameId)
-		})
-	}
-	else {
 		globalStore.acceptInvitation(notification)
+		.then((response) => {
+			if (notification.type  == NotificationType.MATCH_REQUEST)
+				router.push('match/' + response?.data.id)
+		})
 		.catch((error) => {
 			if (error.response.status === 406)
 			{
@@ -32,14 +29,9 @@ function acceptInvitation(notification: Notification) {
 			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
-	}
-	
 }
 
 function declineInvitation(notification: Notification) {
-	if (notification.type == NotificationType.MATCH_REQUEST)
-		socket.emit("gameInvitation", false);
-	else {
 		globalStore.declineInvitation(notification)
 		.catch((error) => {
 			if (error.response.status === 406)
@@ -49,7 +41,6 @@ function declineInvitation(notification: Notification) {
 			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
-	}
 }
 </script>
 	

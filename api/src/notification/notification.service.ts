@@ -7,6 +7,7 @@ import { UsersService } from 'users/users.service';
 import { DeleteQueryBuilder, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';
+import { MatchStatsService } from 'game/matchs/matchs.service';
 
 @Injectable()
 export class NotificationService {
@@ -19,12 +20,17 @@ export class NotificationService {
 		private readonly friendService: FriendsService,
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
+		@Inject(forwardRef(() => MatchStatsService))
+		private readonly matchstatsService: MatchStatsService,
 	) {}
 
 	public async addNotif(notif: Notification): Promise<Notification> {
 		return await this.notifsRepository.save(notif);
 	}
 
+	/**
+	 * @Deprecated
+	 */
 	public async removeNotifFriendRequest(user: User, target: User): Promise<DeleteResult> {
 		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
 
@@ -70,7 +76,7 @@ export class NotificationService {
 		}, this.userService.lambdaDatabaseUnvailable);
 	}
 
-	async action(user: User, notifAction: NotificationAction): Promise<boolean> {
+	async action(user: User, notifAction: NotificationAction): Promise<any> {
 		const notif: Notification = await this.notifsRepository.findOneBy({ id: notifAction.id });
 		if (!notif)
 			throw new NotFoundException(`Unable to find notification n°${notifAction.id}.`);
@@ -94,13 +100,12 @@ export class NotificationService {
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
 			if (notifAction.accept) {
-
+				this.matchstatsService.acceptInvitation(user, target);
 			} else {
 
 			}
 		}
 		notif.is_deleted = true;
 		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });
-		return true;
 	}
 }
