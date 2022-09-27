@@ -13,7 +13,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 const route = useRoute()
 const router = useRouter()
 var match = ref()
-var match_id = route.params.id as string
+var match_id = route.params.uuid as string
 
 const userStore = useUserStore()
 const globalStore = useGlobalStore()

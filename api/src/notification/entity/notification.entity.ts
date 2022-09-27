@@ -52,6 +52,8 @@ export class Notification {
 			notifFront.message = `Game request from ${notifFront.from_user.username}.`;
 		} else if (this.type == NotificationType.MATCH_ACCEPT) {
 			notifFront.message = `${notifFront.from_user.username} accepted your game invitation, you will be redirected soon...`;
+		} else if (this.type == NotificationType.MATCH_DECLINE) {
+			notifFront.message = `${notifFront.from_user.username} decline your game invitation.`;
 		} else if (this.type == NotificationType.FRIEND_ACCEPT) {
 			notifFront.message = `${notifFront.from_user.username} is now friend with you.`;
 		} else if (this.type == NotificationType.FRIEND_DECLINE) {

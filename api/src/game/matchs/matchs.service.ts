@@ -300,8 +300,8 @@ export class MatchService {
 
 	private readonly requests: Map<number, GameInvitation> = new Map();
 
-	getRequest(idInvite: number, idTarget: number): [number, GameInvitation] | null {
-		const v = [...this.requests].find(([key, val]) => val.toUserId === idTarget && key === idInvite);
+	getRequest(inviteUser: number, invitedUser: number): [number, GameInvitation] | null {
+		const v = [...this.requests].find(([key, val]) => val.toUserId === invitedUser && key === inviteUser);
 		if (v && v.length > 0)
 			return v;
 		return null;
@@ -310,8 +310,8 @@ export class MatchService {
 	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos) {
 		const target: User = await this.userService.findOne(id);
 		
-		if (this.requests.has(target.id))
-			throw new BadRequestException(`You have already invited someone.`);
+		/*if (this.requests.has(user.id))
+			throw new BadRequestException(`You have already invited someone.`);*/
 
 		let notif: Notification = new Notification();
 		notif.user_id = target.id;
@@ -356,5 +356,32 @@ export class MatchService {
 		} else {
 			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)
 		}
+	}
+
+	async declineInvitation(invitedUser: User, inviteUser: User) {
+		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
+		if (!req) {
+			throw new PreconditionFailedException(`You didn't have a invitation from user ${inviteUser.username} for game.`)
+		}
+
+		let notif: Notification = new Notification();
+		notif.user_id = inviteUser.id;
+		notif.from_user_id = invitedUser.id;
+		notif.type = NotificationType.MATCH_DECLINE;
+		notif = await this.notifService.addNotif(notif);
+		this.socketService.AddNotification(inviteUser, await notif.toFront(this.userService, [invitedUser, inviteUser]));
+
+		this.requests.delete(inviteUser.id);
+	}
+
+	async removeOwnGameInvitation(inviteUser: User) {
+		const gameInvit: GameInvitation = this.requests.get(inviteUser.id);
+		if (!gameInvit) {
+			throw new PreconditionFailedException(`You didn't have a invitation.`)
+		}
+		const inviteduser: User = await this.userService.findOne(gameInvit.toUserId);
+
+		await this.notifService.removeNotifMatchRequest(inviteUser, inviteduser);
+		this.requests.delete(inviteUser.id);
 	}
 }

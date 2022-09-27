@@ -27,6 +27,7 @@ export class TestDbService {
 		await this.friendsService.getRepo().clear();
 		await this.statsService.getRepo().clear();
 		await this.matchHistoryService.getRepo().clear();
+		this.matchHistoryService.getMatches().clear();
 		await this.authService.getRepo().clear();
 		await this.chatService.getRepoChat().clear();
 		await this.chatService.getRepoMsg().clear();

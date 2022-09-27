@@ -21,7 +21,7 @@ const router = createRouter({
 			component: () => import('@/views/Home.vue'),
 		},
 		{
-			path: '/match/:id',
+			path: '/match/:uuid',
 			name: 'Match',
 			component: () => import('@/views/Match.vue'),
 		},
