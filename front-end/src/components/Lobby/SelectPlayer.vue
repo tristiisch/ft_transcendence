@@ -24,14 +24,21 @@ function changeMode(type: string) {
             mode.value = 'random';
     }
 }
+
 const emit = defineEmits<{
 	(e: 'invitePlayer'): void,
     (e: 'return'): void,
+	(e: 'close'): void
 }>()
 
 function launchGame() {
 	if (mode.value === 'random')
 		router.push({ name: 'MatchMaking', query: { custom: 'true' }});
+}
+
+function closeInvitation() {
+	globalStore.invitedUser = undefined;
+	emit('close');
 }
 
 onBeforeMount(() => {
@@ -74,5 +81,8 @@ onBeforeMount(() => {
 			</button>	
 		</div>
     </div>
-	<button-return-next  @click="emit('return')" side="previous" class="self-end mb-1"></button-return-next>
+	<button v-if="globalStore.invitedUser" @click="closeInvitation()" class="bg-red-600 text-red-200 border border-red-700 hover:text-white rounded-lg mt-4 focus:ring-2 focus:ring-gray-300 p-1 sm:p-2 mb-1 self-end inline-flex h-6 w-6 sm:h-8 sm:w-8">
+		<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+	</button>
+	<button-return-next v-else @click="emit('return')" side="previous" class="mb-1 self-end"></button-return-next>
 </template>
