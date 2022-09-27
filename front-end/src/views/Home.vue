@@ -49,7 +49,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<div class="relative flex flex-col h-full mx-[8vw]">
+	<div class="relative flex flex-col h-full mx-[4vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
 			<the-footer v-if="smallScreen()"></the-footer>
@@ -80,6 +80,7 @@ onUnmounted(() => {
 		</div>
 		<the-footer v-if="!smallScreen()" class="absolute m-auto left-0 right-0 min-h-0 bottom-0 text-xs"></the-footer>
 	</div>
+	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>
 
 <style scoped>

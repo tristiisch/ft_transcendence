@@ -170,4 +170,5 @@ onBeforeMount(() => {
 			</form>
 		</BaseCard>
 	</div>
+	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>

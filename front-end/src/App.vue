@@ -3,6 +3,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
+import status from '@/types/Status';
 import AuthService from '@/services/AuthService';
 import socket from '@/plugin/socketInstance';
 
@@ -34,7 +35,7 @@ onBeforeMount(() => {
 <template>
 	<base-spinner v-if="isLoading"></base-spinner>
 	<router-view v-else></router-view>
-	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
+	<div v-if="isLoading" class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>
 
 <style>
