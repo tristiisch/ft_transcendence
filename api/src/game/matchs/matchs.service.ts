@@ -184,7 +184,7 @@ export class MatchStatsService {
 				match.room_socket.emit('p2Pos', match.p2Pos)
 				oldp2Pos = match.p2Pos
 			}
-		}, 300)
+		}, 10)
 
 		setTimeout(() => {
 			match.timestamp_started = new Date
@@ -223,18 +223,19 @@ export class MatchStatsService {
 		// update.bind(this)()
 		match.matchLoopInterval = setInterval(() => {
 			match.T = this.calcBallPos(match)
-
-			if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-				(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-					match.ballYDir *= -1
-			else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-					(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-					match.ballXDir *= -1
+			// console.log(match.ballXPos, match.ballYPos)
+			// if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+			// 	(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
+			// 		match.ballYDir *= -1
+			// else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+			// 		(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
+			// 		match.ballXDir *= -1
 		})
 	}
  	calcBallPos(match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - match.T.getTime()
+
 		var x2 = match.ballXPos + (tdiff * match.ballXDir)
 		if (x2 < 0 || x2 >= this.stageWidth) {
 			if (x2 < 0) match.score[1]++
@@ -251,13 +252,26 @@ export class MatchStatsService {
 			})
 			return new Date
 		}
+
 		var y2 = match.ballYPos + (tdiff * match.ballYDir)
 		if (y2 < 0 || y2 >= this.stageHeight) {
 			if ((y2 / this.stageHeight) % 2) match.ballYDir *= -1
 			y2 = this.stageHeight - (this.mod(y2, this.stageHeight))
 		}
+
+		// if ((x2 >= this.p1XPos && x2 < this.p1XPos + this.blockerWidth && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+		// 	(x2 >= this.p2XPos && x2 < this.p2XPos + this.blockerWidth && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight)) {
+		// 		console.log("Y hit !")
+		// 		match.ballYDir *= -1
+		// 		y2 = y2 + 2 * match.ballYDir
+		// 	}
+		else if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth / 2 && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth / 2 && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight))
+					match.ballXDir *= -1
+
 		match.ballXPos = x2
 		match.ballYPos = y2
+
 		return T2
 	}
 	mod(n, m) { // modulo funtion because JS : https://web.archive.org/web/20090717035140if_/javascript.about.com/od/problemsolving/a/modulobug.htm
@@ -315,9 +329,18 @@ export class MatchStatsService {
 	}
 
 	async findOnlineMatchs() : Promise<Match[]> {
-		let matches: Array<Match> = new Array()
+		let matches = new Array()
 		for (const [key, value]  of this.matches.entries())
-			matches.push(value)
+			matches.push({
+				id: value.id,
+				user1_id: value.user1_id,
+				user2_id: value.user2_id,
+				user1_username: value.user1_username,
+				user2_username: value.user2_username,
+				user1_avatar: value.user1_avatar,
+				user2_avatar: value.user2_avatar,
+				score: value.score
+			})
 		return matches
 	}
 

@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
 						<button-return-next v-if="rightPartToDisplay === 'selectWorld'" @click="rightPartToDisplay = 'gameSettings'" side="previous" class="mb-1"></button-return-next>
 						<button-return-next  @click="setRightPartToDisplay()" side="next" class="mb-1"></button-return-next>
 					</div>
-					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="unsetInvitedUser()" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
+					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="unsetInvitedUser()" @close="invitation = false" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
 					<users-search v-if="rightPartToDisplay === 'invitePlayer'" :singleSelection="true" :type="'users'"></users-search>
 					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="onClose()"></button-close-validate>
 				</div>
