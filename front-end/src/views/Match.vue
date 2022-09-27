@@ -89,9 +89,9 @@ function loadStage() {
 	})
 	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
-	var backend_stage_width = default_stage_width
-	var backend_stage_ratio = stage.width() / backend_stage_width
-	var backend_racket_size
+	var backend_stage_width: number = default_stage_width
+	var backend_stage_ratio: number = stage.width() / backend_stage_width
+	var backend_racket_size: number
 
 	var layer = new Konva.Layer()
 	var ball_radius = computeBallSize()
@@ -100,7 +100,7 @@ function loadStage() {
 		radius: ball_radius,
 		fill: 'dark',
 	})
-	var blockers_width = computeBlockerWidth()
+	var blockers_width: number = computeBlockerWidth()
 	var blockers_height
 	var p1_blocker: Konva.Rect = new Konva.Rect({
 		x: stage_width / blocker_xpos_quotient,
