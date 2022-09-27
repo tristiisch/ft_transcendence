@@ -32,6 +32,7 @@ socket.on("connect", () => {
 				setTimeout(() => router.push({ name: 'Match', params: { uuid: notification.match_uuid } }), 5000);
 			}
 		}
+		else if (notification.type == NotificationType.MATCH_CANCEL) globalStore.removeNotification(notification.id)
 		else {
 			globalStore.addNotification(notification);
 			if (notification.type == NotificationType.FRIEND_REQUEST) globalStore.addPendingFriend(notification.from_user)
