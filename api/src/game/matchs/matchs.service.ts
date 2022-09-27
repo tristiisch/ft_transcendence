@@ -184,7 +184,7 @@ export class MatchStatsService {
 				match.room_socket.emit('p2Pos', match.p2Pos)
 				oldp2Pos = match.p2Pos
 			}
-		}, 300)
+		}, 10)
 
 		setTimeout(() => {
 			match.timestamp_started = new Date
