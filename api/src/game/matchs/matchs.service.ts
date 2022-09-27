@@ -224,7 +224,6 @@ export class MatchStatsService {
 		match.matchLoopInterval = setInterval(() => {
 			match.T = this.calcBallPos(match)
 			// console.log(match.ballXPos, match.ballYPos)
-
 			// if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
 			// 	(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
 			// 		match.ballYDir *= -1
