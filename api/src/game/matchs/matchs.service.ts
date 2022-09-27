@@ -313,8 +313,12 @@ export class MatchService {
 	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos) {
 		const target: User = await this.userService.findOne(id);
 		
-		/*if (this.requests.has(user.id))
-			throw new BadRequestException(`You have already invited someone.`);*/
+		if (this.requests.has(user.id))
+			throw new BadRequestException(`You have already invited someone.`);
+		if (user.isBlockedUser(target.id))
+			throw new NotAcceptableException(`You have blocked ${target.username}. You can't invite him.`);
+		if (target.isBlockedUser(user.id))
+			throw new NotAcceptableException(`You are blocked by ${target.username}. You can't invite him.`);
 
 		let notif: Notification = new Notification();
 		notif.user_id = target.id;
