@@ -51,7 +51,10 @@ onBeforeMount(() => {
 	isMounted.value = true
 	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
 	if (globalStore.gameInvitation)
+	{
 		globalStore.gameInvitation = false
+		globalStore.invitedUser = undefined
+	}
 })
 
 function loadStage() {

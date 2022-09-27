@@ -64,7 +64,7 @@ onBeforeMount(() => {
 		<div v-if="mode === 'invite' || invitation === true" class="h-full flex flex-col justify-center items-center w-full pt-2 gap-4">
 			<div :class="updateBackground()" class="flex justify-center items-center border text-blue-600 rounded-full min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.18_*_100vh)] h-[calc(0.18_*_100vh)] w-[calc(0.2_*_100vh)] h-[calc(0.2_*_100vh)]">
 				<img v-if="globalStore.invitedUser" class="flex justify-center items-center min-w-[110px] min-h-[110px] sm:min-w-[140px] sm:min-h-[140px] w-[calc(0.165_*_100vh)] h-[calc(0.165_*_100vh)] w-[calc(0.185_*_100vh)] h-[calc(0.185_*_100vh)] rounded-full object-cover" :src=globalStore.invitedUser.avatar>
-				<div v-if="!invitation" class="flex items-center gap-2">
+				<div v-else class="flex items-center gap-2">
 					<button-plus @click="emit('invitePlayer')"></button-plus>
 					<label class="text-xs sm:text-sm text-blue-600">Choose Player</label>
 				</div>

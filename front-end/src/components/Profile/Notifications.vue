@@ -21,7 +21,7 @@ function isActionNotification(notification: Notification) {
 }
 
 function isGameNotification(notification: Notification) {
-	return (notification.type == NotificationType.MATCH_REQUEST)
+	return (notification.type == NotificationType.MATCH_REQUEST || notification.type == NotificationType.MATCH_DECLINE)
 }
 
 function acceptInvitation(notification: Notification) {
