@@ -345,16 +345,16 @@ onBeforeUnmount(() => {
 			</base-button>
 			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
-		<div class="w-[100vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-stone-800"></div>
-		<div class="rounded-3xl w-[100vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-3/4 bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+		<div class="w-[98vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-[71.2%] bg-stone-800 rounded-[260px]"></div>
+		<div class="rounded-3xl w-[98vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-[71.2%] rounded-[260px] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 		</div>
 		<div class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center w-[100vh] absolute m-auto top-0 bottom-0 left-0 right-0 h-3/4"></div>
 		<div id="stage-container"></div>
-<!--	<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full">
+		<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full">
 			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[20px]">
 			<img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
-		</div> -->
+		</div>
 	</div>
 		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
 	<!-- <div class="relative flex flex-col h-full w-full justify-center bg-[#9f9e89] bg-TvScreen-texture">
