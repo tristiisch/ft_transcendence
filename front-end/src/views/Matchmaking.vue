@@ -35,7 +35,8 @@ onBeforeMount(() => {
 			ballSpeed: globalStore.ballSpeed,
 			racketSize: globalStore.racketSize,
 			increaseBallSpeed: globalStore.increaseSpeed,
-			world: globalStore.world
+			world: globalStore.world,
+			winningScore: globalStore.winningScore
 		}
 	}
 	if (route.query.invite) {

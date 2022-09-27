@@ -94,6 +94,11 @@ export interface MatchLiveInfos {
 	stopMatch: boolean,
 	customInfos: CustomMatchInfos,
 
+	playersPosInterval: any,
+	ballPosInterval: any,
+	matchLoopInterval: any,
+
+	T: Date,
 	ballXPos: number,
 	ballYPos: number,
 	ballXDir: number,
@@ -109,7 +114,7 @@ export interface CustomMatchInfos {
 	racketSize: number,
 	increaseBallSpeed: boolean,
 	world: number,
-	neededPointsForVictory: number
+	winningScore: number
 }
 
 export class GameInvitation {

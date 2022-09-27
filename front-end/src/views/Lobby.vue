@@ -62,7 +62,7 @@ function invitePlayer()
 			racketSize: globalStore.racketSize,
 			increaseBallSpeed: globalStore.increaseSpeed,
 			world: globalStore.world,
-			neededPointsForVictory: globalStore.neededPointsForVictory
+			winningScore: globalStore.winningScore
 		})
 		.then((response) => {
 			if (response.data.message) toast.info(response.data.message)
@@ -103,7 +103,7 @@ onBeforeMount(() => {
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;
 	globalStore.world = 1;
-	globalStore.neededPointsForVictory = 5;
+	globalStore.winningScore = 5;
 	if (globalStore.invitedUser)
 	{
 		rightPartToDisplay.value = 'selectPlayer';

@@ -18,5 +18,5 @@ export interface MatchInfo {
 	racketSize: number,
 	increaseBallSpeed: boolean,
 	world: number
-	neededPointsForVictory: number
+	winningScore: number
 }

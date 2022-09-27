@@ -103,11 +103,8 @@ function loadStage() {
 	var layer = new Konva.Layer()
 	var ball_radius = computeBallSize()
 	var ball = new Konva.Circle({
-		x: stage.width() / 2,
-		y: -50,
 		radius: ball_radius,
 		fill: 'dark',
-		visible: false
 	})
 	var blockers_width = computeBlockerWidth()
 	var blockers_height = computeBlockerHeight()
@@ -180,7 +177,7 @@ function loadStage() {
 	let dx = ball_speed * backend_stage_ratio
 	let dy = ball_speed * backend_stage_ratio
 	let ball_x = stage_width/2
-	let ball_y = stage_height/2
+	let ball_y = -50
 
 	// var ballAnimation = new Konva.Animation(function(frame) {
 	// 	if (ball.x() + dx < 0 || ball.x() + dx > stage_width) { dx = -dx; }
@@ -259,8 +256,6 @@ function loadStage() {
 	})
 
 	socket.emit("joinMatch", match_id, (match_infos: any) => {
-		ball.y(-50)
-		ball.visible(true)
 		backend_stage_width = match_infos.stageWidth
 		backend_stage_ratio = stage.width() / backend_stage_width
 		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)

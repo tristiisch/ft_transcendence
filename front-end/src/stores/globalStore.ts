@@ -21,7 +21,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		racketSize: 100,
 		increaseSpeed: false,
 		world: 1,
-		neededPointsForVictory: 5,
+		winningScore: 5,
 		gameInvitation: false,
 	}),
 	getters: {

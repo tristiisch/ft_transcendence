@@ -55,10 +55,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.socketService.server = server;
 		this.server.on("connection", (socket) => {
 			socket.prependAny((eventName, ...args) => {
-				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.prependAnyOutgoing((eventName, ...args) => {
-				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.on("ping", (count) => {
 				Logger.debug(`Ping ${count}`, 'WebSocket');
@@ -487,7 +487,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	private matches = this.matchService.getMatches()
 	private players_queue = this.matchService.getPlayersQueue()
-	private invites_queue = this.matchService.getInvitesQueue()
 
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
@@ -507,35 +506,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async cancelFindMatch(@ConnectedSocket() client: Socket): Promise<void> {
 		const user = await this.socketService.getUserFromSocket(client)
 		if (this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
-	}
-
-	@SubscribeMessage('createMatchInvitation')
-	async createMatchInvitation(@MessageBody() data, @ConnectedSocket() client: Socket): Promise<any> {
-		console.log("createMatchInvitation", data)
-		const user = await this.socketService.getUserFromSocket(client)
-		if (!this.invites_queue.has(user.id)) {
-			const invited_user = await this.userService.findOneByUsername(data.invited_user)
-			if (invited_user && invited_user.status !== UserStatus.OFFLINE)
-				this.matchService.addInviteToQueue(user, invited_user, data.custom_match_infos)
-			// send match notification here
-		}
-	}
-
-	@SubscribeMessage('acceptMatchInvitation')
-	async acceptMatchInvitation(@MessageBody() id: number, @ConnectedSocket() client: Socket): Promise<number> {
-		const invited_user = await this.socketService.getUserFromSocket(client)
-		const invitation = this.invites_queue.get(id)
-		if (invited_user.id === invitation.invited_user.id) {
-			if (invitation.user.status === UserStatus.ONLINE) {
-				let match_id = await this.matchService.createNewMatch(invitation.user, invited_user, invitation.custom_match_infos)
-				this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
-				this.socketService.getSocketToEmit(invitation.user.id).emit('foundMatch', match_id)
-				return match_id
-			}
-			else {
-				// tell the user that the invitation expired
-			}
-		}
 	}
 
 	@SubscribeMessage('joinMatch')
@@ -580,31 +550,19 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('p1Pos')
 	updatePlayer1Pos(@MessageBody() data: number[], @ConnectedSocket() client: Socket) {
-		// console.log(data)
-		const id = data[0]
-		const pos = data[1]
-		if (this.matches.has(id)) {
-			const match = this.matches.get(id)
-			const user_id = match.stats.user1_id
-			if (client === this.socketService.getSocketToEmit(user_id)) {
-				match.live_infos.p1Pos = pos
-				client.to('match_' + id).emit('p1Pos', pos)
-			}
+		const match = this.matches.get(data[0])
+		if (match !== undefined) {
+			if (client === this.socketService.getSocketToEmit(match.stats.user1_id))
+				match.live_infos.p1Pos = data[1]
 		}
 	}
 
 	@SubscribeMessage('p2Pos')
 	updatePlayer2Pos(@MessageBody() data: number[], @ConnectedSocket() client: Socket) {
-		// console.log(data)
-		const id = data[0]
-		const pos = data[1]
-		if (this.matches.has(id)) {
-			const match = this.matches.get(id)
-			const user_id = match.stats.user2_id
-			if (client === this.socketService.getSocketToEmit(user_id)) {
-				match.live_infos.p2Pos = pos
-				client.to('match_' + id).emit('p2Pos', pos)
-			}
+		const match = this.matches.get(data[0])
+		if (match !== undefined) {
+			if (client === this.socketService.getSocketToEmit(match.stats.user2_id))
+				match.live_infos.p2Pos = data[1]
 		}
 	}
 
