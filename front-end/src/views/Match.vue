@@ -26,7 +26,7 @@ MatchService.loadMatch(match_id)
 	.then((response) => {
 		console.log(response.data)
 		match.value = response.data
-		if (userStore.userData.id === match.user1_id || userStore.userData.id === match.user2_id)
+		if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
 			isPlayer.value = true
 		isLoaded.value = true
 	})
@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
 		<div id="stage-container"></div>
 		<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full">
 			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[20px]">
-			<img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
+			<img src="@/assets/Tv-button.png" class="self-end h-[5vw] w-[5vw]">
 		</div>
 	</div>
 		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
@@ -345,7 +345,7 @@ onBeforeUnmount(() => {
 		</div>
 		<div class="flex flex-col bg-[#cdb887] w-full">
 			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[40px]">
-			<img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
+			<img src="@/assets/Tv-button.png" class="self-end h-[5vw] w-[5vw]">
 		</div>
     </div> -->
 </template>
