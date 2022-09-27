@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { ref, onBeforeMount, watch, computed, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import type { UserStatus } from '@/types/User';
 import UsersService from '@/services/UserService';
 import type User from '@/types/User';
 import type Stats from '@/types/Stats';
@@ -13,6 +14,7 @@ import PlayerProfile from '@/components/Profile/PlayerProfile.vue';
 import ButtonPart from '@/components/Profile/ButtonPart.vue';
 import Notifications from '@/components/Profile/Notifications.vue';
 import PlayerSettings from '@/components/Profile/PlayerSettings.vue';
+import socket from '@/plugin/socketInstance';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -71,22 +73,7 @@ const isMe = computed(() => {
 	return userId.value === userStore.userData.id;
 });
 
-watch(
-	() => userId.value,
-	() => {
-		if (userId.value)
-		{
-			if (isMe.value)
-			{
-				user.value = userStore.userData;
-				fetchMyStats()
-			}
-			else fetchAll()
-		}
-	}
-);
-
-onBeforeMount(() => {
+function treatAll() {
 	if (isMe.value)
 	{
 		user.value = userStore.userData;
@@ -98,7 +85,26 @@ onBeforeMount(() => {
 		partToDisplay.value = 'Notifications'
 		rightCardTitle.value = 'NOTIFICTIONS'
 	}
+}
+
+watch(
+	() => userId.value, () => {
+		if (userId.value) treatAll()
+	}
+);
+
+function updateStatus(data: UserStatus) {
+	if (user.value?.id === data.id) user.value.status = data.status
+}
+
+onBeforeMount(() => {
+	treatAll()
+	socket.on('updateUserStatus', updateStatus);
 });
+
+onBeforeUnmount(() => {
+	socket.off('updateUserStatus', updateStatus);
+})
 </script>
 
 <template>
@@ -106,9 +112,11 @@ onBeforeMount(() => {
 		<div class="flex flex-col h-full w-full sm:flex-row">
 			<card-left>
 				<div class="flex justify-around items-center h-full pb-2 sm:pb-0 sm:flex-col sm:justify-between">
-					<player-profile :user="user"></player-profile>
-					<button-part @change-display="setPartToDisplay"></button-part>
-					<rank-card :rank="userStats?.rank"></rank-card>
+					<div class="flex sm:flex-col justify-around sm:justify-center items-center w-full h-full gap-6 3xl:gap-10">
+						<player-profile :user="user"></player-profile>
+						<button-part @change-display="setPartToDisplay"></button-part>
+					</div>
+					<rank-card :rank="userStats?.rank" class="mr-6 sm:mr-0"></rank-card>
 				</div>
 			</card-left>
 			<card-right :title="rightCardTitle">

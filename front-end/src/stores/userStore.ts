@@ -1,34 +1,31 @@
 import { defineStore } from 'pinia';
-import type { UserState, Auth } from '@/types/UserState';
+import type { Auth, UserState } from '@/types/UserState';
+import { useGlobalStore } from './globalStore';
+import { useChatStore } from '@/stores/chatStore';
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
-import TokenService from '@/services/TokenService';
 import type User from '@/types/User';
-import status from '@/types/Status';
-import socket from '@/plugin/socketInstance';
 import router from '@/router/index'
+import Status from '@/types/Status';
+import socket from '@/plugin/socketInstance';
 
 export const useUserStore = defineStore('userStore', {
 	state: (): UserState => ({
-		userToken: TokenService.isLocalToken() ? TokenService.getLocalToken() : null,
-		userAuth: {} as Auth,
+		userAuth: { token_jwt: AuthService.getJwtToken() },
 		userData: {} as User,
 	}),
 	getters: {
-		isLoggedIn: (state) => state.userToken !== null,
+		isLoggedIn: (state) => state.userAuth.islogin === true,
 		isRegistered: (state) => state.userData.username !== null,
-		isLoaded: (state) => state.userData.id !== undefined && state.userData.username !== undefined && state.userData.avatar !== undefined
 	},
 	actions: {
-		saveToken() {
-			TokenService.setLocalToken(this.userAuth.token_jwt)
-			this.userToken = this.userAuth.token_jwt
-			console.log(this.userToken)
-		},
-		resetAll() {
-			localStorage.clear()
-			this.$reset()
-			router.replace({ name: 'Login' });
+		logUser() {
+			if (this.userAuth.token_jwt)
+			{
+				localStorage.setItem('userAuth', this.userAuth.token_jwt);
+				this.userAuth.islogin = true
+				this.userData.status = Status.ONLINE
+			}
 		},
 		verifyState(state: string) {
 			const randomString = localStorage.getItem('state')
@@ -38,57 +35,66 @@ export const useUserStore = defineStore('userStore', {
 		},
 		async handleLogin(code: string, state: string) {
 			try {
-				this.verifyState(state)
-				const data = await AuthService.login(code);
-				this.userAuth = data.auth;
-				console.log(this.userAuth)
+				this.verifyState(state);
+				const response = await AuthService.login(code);
+				this.userAuth = response.data.auth;
+				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
-					this.userData = data.user;
+					this.userData = response.data.user;
 					console.log(this.userData)
-					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
-				}
+					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
+				} 
+				/*else {
+					// TODO this.userAuth will be null here
+					localStorage.setItem('userAuth2FA', response.data.jwtToken2FA);
+				}*/
 			} catch (error: any) {
 				throw error;
 			}
 		},
 		async handleFakeLogin(username: string) {
 			try {
-				const data = await AuthService.fakeLogin(username);
-				this.userAuth = data.auth;
-				console.log(this.userAuth)
+				const response = await AuthService.fakeLogin(username);
+				this.userAuth = response.data.auth;
+				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
-					this.userData = data.user;
-					console.log(this.userData)
-					if (this.isRegistered && !this.userAuth.has_2fa) this.saveToken()
+					this.userData = response.data.user;
+					console.log(this.userData);
+					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				}
 			} catch (error: any) {
-				console.log('ERROR FAKE LOGIN')
 				throw error;
 			}
 		},
 		async handleLogin2Fa(twoFaCode: string) {
 			try {
-				const data = await AuthService.login2FA(twoFaCode);
-				this.userAuth = data.auth;
-				this.userData = data.user;
-				this.saveToken()
+				const response = await AuthService.login2FA(twoFaCode);
+				this.userAuth = response.data.auth;
+				this.userData = response.data.user;
+				this.logUser()
 			} catch (error: any) {
 				throw error;
 			}
 		},
 		handleLogout() {
-			socket.emit('update_status', status.OFFLINE )
-			localStorage.clear()
-			location.reload()
+			const globalStore = useGlobalStore();
+			const chatStore = useChatStore();
+			this.userAuth = {} as Auth
+			localStorage.clear();
+			globalStore.$reset();
+			chatStore.$reset();
+			socket.disconnect()
+			router.replace({ path: '/' });
 		},
 		async registerUser(newUsername: string, newAvatar: string) {
 			try {
+				if (this.userData.avatar === newAvatar) newAvatar = '';
 				await UserService.registerUser(newUsername, newAvatar);
+				if (newAvatar) this.userData.avatar = newAvatar;
 				this.userData.username = newUsername;
-				this.userData.avatar = newAvatar;
-				this.saveToken()
+				this.logUser()
 			} catch (error: any) {
 				throw error;
 			}
@@ -111,7 +117,7 @@ export const useUserStore = defineStore('userStore', {
 		async fetchAuth() {
 			try {
 				const response = await AuthService.getAuth();
-				this.userAuth = response.data;
+				this.userAuth.has_2fa = response.data.has_2fa;
 			} catch (error: any) {
 				throw error;
 			}
@@ -135,5 +141,13 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
+		/*async deleteAccount() {
+			try {
+				const res = await UserService.deleteAccount();
+				this.userData = res.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},*/
 	},
 });

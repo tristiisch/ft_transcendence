@@ -12,3 +12,11 @@ export default interface Match {
 	timestamp_started: string
 	timestamp_ended: string
   }
+
+export interface MatchInfo {
+	ballSpeed: number,
+	racketSize: number,
+	increaseBallSpeed: boolean,
+	world: number
+	winningScore: number
+}

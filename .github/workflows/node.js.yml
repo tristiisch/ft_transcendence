@@ -1,6 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
 name: Node.js CI
 
 on:
@@ -11,50 +8,243 @@ on:
 
 jobs:
   build_backend:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         node-version: [12.x, 14.x, 16.x, 18.x]
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: backend/nest.js/package-lock.json
+        cache-dependency-path: api/package-lock.json
+
+    - name: Install NestJS
+      run: |
+       npm install -g @nestjs/cli
+
+    - name: Environnement Informations Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        echo OS version
+        lsb_release -a
+        echo
+        echo Linux kernel version
+        uname -r
+        echo
+        echo Current User
+        whoami
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+        echo
+        echo NestJS version
+        nest --version
+  
+    - name: Environnement Informations macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        echo OS version
+        system_profiler SPSoftwareDataType
+        echo
+        echo Current User
+        whoami
+        echo
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+        echo
+        echo NestJS version
+        nest --version
+
     - name: Install node modules
       run: |
-       cd backend/nest.js
+       cd api
        npm ci
     - name: Build project
       run: |
-       cd backend/nest.js
+       cd api
        npm run build --if-present
     - name: Unit test Built In
       run: |
-       cd backend/nest.js
+       cd api
        npm test
 
   build_frontend:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        os: [ubuntu-latest, macos-latest]
+        node-version: [14.x, 16.x, 18.x]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: front-end/package-lock.json
+
+    - name: Environnement Informations Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        echo OS version
+        lsb_release -a
+        echo
+        echo Linux kernel version
+        uname -r
+        echo
+        echo Current User
+        whoami
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+  
+    - name: Environnement Informations macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        echo OS version
+        system_profiler SPSoftwareDataType
+        echo
+        echo Current User
+        whoami
+        echo
+        echo Node version
+        node --version
+        echo
+        echo NPM version
+        npm version
+  
     - name: Install node modules
       run: |
        cd front-end
        npm ci
+
     - name: Build project
       run: |
        cd front-end
        npm run build --if-present
-      continue-on-error: true
+
+  dockerfile-validator:
+    runs-on: ubuntu-latest
+    needs: [build_backend, build_frontend]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run dockerfile-validator
+        uses: ghe-actions/dockerfile-validator@v1
+        with:
+          dockerfile: "api/Dockerfile"
+
+      - name: Run dockerfile-validator
+        uses: ghe-actions/dockerfile-validator@v1
+        with:
+          dockerfile: "front-end/Dockerfile"
+
+  docker-compose:
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    needs: dockerfile-validator
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Environnement Informations Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo OS version
+          lsb_release -a
+          echo
+          echo Linux kernel version
+          uname -r
+          echo
+          echo Current User
+          whoami
+
+      - name: Environnement Informations macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo OS version
+          system_profiler SPSoftwareDataType
+          echo
+          echo Current User
+          whoami
+          echo
+          echo Node version
+          node --version
+          echo
+          echo NPM version
+          npm version
+          echo
+          echo NestJS version
+          npm version
+
+      - name: Install Docker Linux
+        if: matrix.os == 'ubuntu-latest'
+        run : |
+          DISTRO=`lsb_release -a 2> /dev/null | grep Distributor | awk -F ' ' '{print $3}' | tr '[:upper:]' '[:lower:]'`
+          sudo apt update
+          sudo apt install -y ca-certificates curl gnupg lsb-release
+          curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt update
+          sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose docker-compose-plugin jq
+        shell: bash
+
+      - name: Install Homebrew MacOS
+        if: matrix.os == 'macos-latest'
+        run : |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        shell: bash
+
+      - name: Install Docker MacOS
+        if: matrix.os == 'macos-latest'
+        run : |
+          brew install docker
+          brew install docker-machine
+          brew install docker-compose
+        shell: bash
+
+      - name: Docker Infos 
+        run : |
+          docker version
+          docker-compose version
+        shell: bash
+
+      - name: Add 42API Credentials
+        run : |
+          ./credentials42.sh ${{ secrets.FT_UID }} ${{ secrets.FT_SECRET }}
+        shell: bash
+
+      - name: Setup containers
+        run : |
+          make setup -i
+        shell: bash
+
+      - name: Start containers
+        run : |
+          docker-compose up --detach
+        shell: bash
+
+      - name: Waiting for ready and close containers
+        run : |
+          docker-compose logs -f & ./autodocker.sh
+        shell: bash

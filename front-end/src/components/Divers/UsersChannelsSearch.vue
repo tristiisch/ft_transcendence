@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/stores/globalStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
 import { ref, onBeforeMount, watch, toDisplayString } from 'vue';
@@ -9,10 +10,12 @@ import ChatStatus from '@/types/ChatStatus';
 import type User from '@/types/User';
 import UsersList from '@/components/Divers/UsersChannelsList.vue';
 import BaseSpinner from '../Ui/BaseSpinner.vue';
+import socket from '@/plugin/socketInstance';
 
+const router = useRouter();
+const route = useRoute();
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
-const userStore = useUserStore();
 const toast = useToast();
 const userToggle = ref(false);
 const itemsToDisplay = ref<User[] | Channel[]>([]);
@@ -31,21 +34,19 @@ function changeDisplayToFriends() {
     filterButton.value = 'Friends';
 }
 function changeDisplayToAllUsers() {
-    itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
+    itemsToDisplay.value = globalStore.users;
     filterButton.value = 'All';
 }
 function changeDisplayToPublic() {
-	const ChannelsUserNotIn= chatStore.getChannelsFiltered(chatStore.userChannels);
-    itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PUBLIC);
+    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PUBLIC);
     filterButton.value = 'Public';
 }
 function changeDisplayToProtected() {
-	const ChannelsUserNotIn = chatStore.getChannelsFiltered(chatStore.userChannels);
-    itemsToDisplay.value = ChannelsUserNotIn.filter((channel) => channel.type === ChatStatus.PROTECTED);
+    itemsToDisplay.value = chatStore.channels.filter((channel) => channel.type === ChatStatus.PROTECTED);
     filterButton.value = 'Protected';
 }
 function changeDisplayToAllChannels() {
-    itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
+    itemsToDisplay.value = chatStore.channels;
 	filterButton.value = 'All';
 }
 
@@ -68,30 +69,40 @@ watch(
 );
 
 onBeforeMount(() => {
-	if (props.type === 'users') {
-		itemsToDisplay.value = globalStore.getUsersFiltered(userStore.userData);
-		isLoading.value = false;
-	}
-	else if (props.type === 'usersNotInChannel') {
-		itemsToDisplay.value = chatStore.UsersNotInChannels();
-		isLoading.value = false;
+	if (props.type === 'users' || props.type === 'usersNotInChannel') {
+		if (props.type === 'users') {
+			globalStore.fetchUsers()
+			.then(() => {
+			itemsToDisplay.value = globalStore.users;
+			isLoading.value = false;
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			});
+		}
+		else {
+			socket.emit('chatChannelOtherUsers', chatStore.inChannel, (usersNotInChannel: User[]) => {
+				globalStore.users = usersNotInChannel;
+				itemsToDisplay.value = globalStore.users;
+				isLoading.value = false;
+			});
+		}
 	}
 	else {
 		chatStore.fetchChannels()
 		.then(() => {
-			itemsToDisplay.value = chatStore.getChannelsFiltered(chatStore.userChannels);
+			itemsToDisplay.value = chatStore.channels;
 			isLoading.value = false;
 		})
-		.catch((e: Error) => {
-			error.value = e.message;
-			toast.error(error.value);
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
 	}
 });
 </script>
 
 <template>
-	<base-spinner v-if="isLoading"></base-spinner>
+	<base-spinner small v-if="isLoading"></base-spinner>
 	<form v-if="!isLoading" class="flex w-full pb-4" @submit.prevent>
 		<div class="self-start relative">
 			<button
@@ -135,5 +146,5 @@ onBeforeMount(() => {
 			/>
 		</div>
 	</form>
-	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySlectedUsers="null" :type="'user'"></users-list>
+	<users-list v-if="!isLoading" :selectableItems="searchPlayer()" :singleSelection="singleSelection" :alreadySelectedUsers="null" :type="'user'"></users-list>
 </template>

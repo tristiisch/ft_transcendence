@@ -55,11 +55,7 @@ function treatNewChannelData()
             name: newChannelName.value,
             owner: null,
             avatar: newAvatar.value,
-            password: null,
-            hasPassword: newPassword.value != '' ? true : false,
-            // admins & owner should not be defined here
-            // It is the backend that must define this by putting the user who made the request
-            // Otherwise anyone could create channels for others
+            hasPassword: newPassword.value !== '' ? true : false,
             users: selection,
             admins: [],
             muted: [],
@@ -68,7 +64,7 @@ function treatNewChannelData()
             messages: [],
         }
         if (!globalStore.isTypeUser(newChannel)) {
-            chatStore.createNewChannel(newChannel, selection)
+            chatStore.createNewChannel(newChannel, selection, newPassword.value)
             globalStore.resetSelectedItems();
         }
     }
@@ -103,6 +99,15 @@ function labelInputPassword() {
         return 'Password:'
 }
 
+function onClose() {
+	if (selectPlayer.value === true)
+		selectPlayer.value = false;
+	else 
+		emit('close');
+	if (globalStore.selectedItems.length)	
+		globalStore.resetSelectedItems();
+}
+
 watch(() => newChannelName.value, () => {
     if (newChannelName.value !== '')
         error.value = '';
@@ -115,9 +120,9 @@ watch(() => newPassword.value, () => {
 </script>
 
 <template>
-    <div v-if="!selectPlayer" class="flex flex-col justify-center items-center gap-6 h-full w-full">
+    <div v-if="!selectPlayer" class="flex flex-col justify-center items-center gap-2 sm:gap-6 h-full w-full">
         <form class="mb-2 w-full lg:w-4/5" @submit.prevent>
-            <label class="block mb-2 text-sm font-medium" :class="error === 'name empty' ? 'text-red-700' : 'text-red-200'">{{ labelInputChannelName() }}</label>
+            <label class="block mb-1 sm:mb-2 text-sm font-medium" :class="error === 'name empty' ? 'text-red-700' : 'text-red-200'">{{ labelInputChannelName() }}</label>
             <input type="text" v-model="newChannelName" :class="error === 'name empty' ? 'border-red-800' : 'border-blue-600'" class="bg-neutral-100 border placeholder:text-slate-300 placeholder:text-center text-center text-blue-600 text-sm rounded-lg block w-full p-2" placeholder="choose name">
         </form>
         <div class="inline-flex shadow-sm w-full lg:w-4/5">
@@ -132,17 +137,17 @@ watch(() => newPassword.value, () => {
             </button>
         </div>
         <form v-if="newChannelType === ChatStatus.PROTECTED" class="w-full lg:w-4/5" @submit.prevent>
-            <label class="block mb-2 text-sm font-medium" :class="error === 'password empty'? 'text-red-700' : 'text-red-200'">{{ labelInputPassword() }}</label>
+            <label class="block mb-1 sm:mb-2 text-sm font-medium" :class="error === 'password empty'? 'text-red-700' : 'text-red-200'">{{ labelInputPassword() }}</label>
             <input type="text" v-model="newPassword" :class="error === 'password empty' ? 'border-red-800' : 'border-blue-600'" class="bg-neutral-100 border placeholder:text-slate-300 text-blue-600 text-sm rounded-lg w-full p-2" placeholder="choose password">
         </form>
         <div class="flex flex-col justify-center items-center w-full sm:w-4/5">
             <label class="block mb-2 text-sm font-medium text-red-200">Choose image:</label>
-            <div class="flex items-end gap-5 shrink-0">
+            <div class="flex items-center gap-5 shrink-0">
                 <img class="w-10 h-10 sm:w-20 sm:h-20 rounded object-cover border-[1px] border-zinc-300" :src="newAvatar" alt="Rounded avatar">
                 <upload-avatar @image-loaded="uploadImage"></upload-avatar>
             </div>
         </div>
     </div>
     <users-search v-else :singleSelection="false" :type="'users'"></users-search>
-    <button-close-validate @validate="onValidation()" @close="emit('close')"></button-close-validate>
+    <button-close-validate @validate="onValidation()" @close="onClose()"></button-close-validate>
 </template>

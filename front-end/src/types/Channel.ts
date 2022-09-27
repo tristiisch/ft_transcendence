@@ -12,7 +12,6 @@ export default interface Channel extends Chat {
 	name: string,
 	owner: User | null,
 	avatar: string,
-	password: string | null
 	hasPassword: boolean,
 	users: User[],
 	admins: User[],

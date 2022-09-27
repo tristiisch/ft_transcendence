@@ -1,26 +1,31 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useUserStore } from '@/stores/userStore';
+import type { UserStatus } from '@/types/User';
 import UserService from '@/services/UserService';
 import socket from '@/plugin/socketInstance';
 import type LeaderboardUser from '@/types/Leaderboard';
-import type { UserStatus} from '@/types/User';
 import Toogle from '@/components/Divers/ToogleButton.vue';
 import CardLeaderboard from '@/components/Leaderboard/CardLeaderboard.vue';
 
 const router = useRouter();
 const route = useRoute();
-const users = ref<LeaderboardUser[]>();
-const friends = ref<LeaderboardUser[]>();
-const playerToDisplay = ref<LeaderboardUser[]>();
+const userStore = useUserStore();
+const leaderboard = ref([] as LeaderboardUser[]);
+const leaderboardFriends = ref([] as LeaderboardUser[]);
+const globalStore = useGlobalStore();
 const isLoading = ref(false);
 const playerName = ref('');
 const type = ref('All');
 
 function searchPlayer() {
-	if (playerName.value != '' && playerToDisplay.value) {
-		return playerToDisplay.value.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
-	} else return playerToDisplay.value;
+	if (leaderboard.value && type.value === 'All' && playerName.value !== '') {
+		return leaderboard.value.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
+	} else if (leaderboardFriends.value && type.value === 'Friends' && playerName.value !== '') {
+		return leaderboardFriends.value.filter((player) => player.username.toLowerCase().includes(playerName.value.toLowerCase()));
+	} else return leaderboardFriends.value;
 }
 
 watch(
@@ -32,11 +37,11 @@ watch(
 
 function rankOrder() {
 	if (type.value === 'All') {
-		users.value?.sort((a, b) => {
+		leaderboard.value.sort((a, b) => {
 			return a.rank - b.rank;
 		});
 	} else {
-		friends.value?.sort((a, b) => {
+		leaderboardFriends.value.sort((a, b) => {
 			return a.rank - b.rank;
 		});
 	}
@@ -44,7 +49,7 @@ function rankOrder() {
 
 function nameOrder() {
 	if (type.value === 'All') {
-		users.value?.sort((a, b) => {
+		leaderboard.value.sort((a, b) => {
 			let fa = a.username;
 			let fb = b.username;
 			if (fa < fb) return -1;
@@ -52,7 +57,7 @@ function nameOrder() {
 			return 0;
 		});
 	} else {
-		friends.value?.sort((a, b) => {
+		leaderboardFriends.value.sort((a, b) => {
 			let fa = a.username;
 			let fb = b.username;
 			if (fa < fb) return -1;
@@ -64,11 +69,29 @@ function nameOrder() {
 
 function statusOrder() {
 	if (type.value === 'All') {
-		users.value?.sort((a, b) => {
-			return b.status - a.status;
+		leaderboard.value.sort((a, b) => {
+			let fa = globalStore.isFriend(a.id) || userStore.userData.id === a.id;
+			let fb = globalStore.isFriend(b.id) || userStore.userData.id === b.id;
+			if (fa == false && fb == true) return 1;
+			else if (fa == true && fb == false) return -1;
+			else return 0
+		});
+		leaderboard.value.sort((a, b) => {
+			let fa = globalStore.isPendingFriend(a.id);
+			let fb = globalStore.isPendingFriend(b.id);
+			if (fa == false && fb == true) return -1;
+			else if (fa == true && fb == false) return 1;
+			else return 0
+		});
+		leaderboard.value.sort((a, b) => {
+			let fa = globalStore.isBlockedUser(a.id);
+			let fb =  globalStore.isBlockedUser(b.id);
+			if (fa == false && fb == true) return -1;
+			else if (fa == true && fb == false) return 1;
+			else return 0
 		});
 	} else {
-		friends.value?.sort((a, b) => {
+		leaderboardFriends.value.sort((a, b) => {
 			return b.status - a.status;
 		});
 	}
@@ -86,8 +109,8 @@ function fetchLeaderboard() {
 	isLoading.value = true
 	UserService.getLeaderboard()
 		.then((response) => {
-			playerToDisplay.value = users.value = response.data.leaderBoard;
-			friends.value = response.data.leaderBoardFriends;
+			leaderboard.value = response.data.leaderBoard;
+			leaderboardFriends.value = response.data.leaderBoardFriends;
 			isLoading.value = false
 		})
 		.catch((error) => {
@@ -96,33 +119,50 @@ function fetchLeaderboard() {
 }
 
 const displayUser = computed(() => {
-	if (playerName.value != '') return searchPlayer();
-	else if (type.value === 'All') return users.value;
-	else return friends.value;
+	if (playerName.value !== '') return searchPlayer();
+	else if (type.value === 'All') return leaderboard.value;
+	else return leaderboardFriends.value;
 });
 
-function updateStatus(data: UserStatus) {
-	if (users.value) {
-		const index = users.value.findIndex((user) => user.id === data.id);
-		if (index !== -1) users.value[index].status = data.status;
+function addFriend(targetId: number) {
+	const user = leaderboard.value.find((user) => user.id === targetId)
+	if (user) leaderboardFriends.value.push(user)
+}
+
+function removeFriend(targetId: number) {
+	const index = leaderboardFriends.value.findIndex(friend => friend.id === targetId);
+	if (index !== -1) leaderboardFriends.value.splice(index, 1);
+}
+
+function updateLeaderboard(data: { leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[] }) {
+	leaderboard.value = data.leaderBoard;
+	leaderboardFriends.value = data.leaderBoardFriends;
+}
+
+function updateStatus(target: UserStatus) {
+	if (leaderboard.value) {
+		const index = leaderboard.value.findIndex((user) => user.id === target.id);
+		if (index !== -1) leaderboard.value[index].status = target.status;
 	}
-	if (friends.value) {
-		const index = friends.value.findIndex((user) => user.id === data.id);
-		if (index !== -1) friends.value[index].status = data.status;
+	if (leaderboardFriends.value) {
+		const index = leaderboardFriends.value.findIndex((user) => user.id === target.id);
+		if (index !== -1) leaderboardFriends.value[index].status = target.status;
 	}
 }
 
 onBeforeMount(() => {
-	fetchLeaderboard();
-	socket.on('update_status', (data) => {
-		updateStatus(data);
-	});
+	fetchLeaderboard()
+	socket.on('UpdateLeaderboard', updateLeaderboard);
+	socket.on('updateUserStatus', updateStatus);
+	socket.on('addFriendLeaderboard', addFriend);
+	socket.on('removeFriendLeaderboard', removeFriend);
 });
 
 onBeforeUnmount(() => {
-	socket.off('update_status', (data) => {
-		updateStatus(data);
-	});
+	socket.off('UpdateLeaderboard', updateLeaderboard);
+	socket.off('updateUserStatus', updateStatus);
+	socket.off('addFriendLeaderboard', addFriend);
+	socket.off('removeFriendLeaderboard', removeFriend);
 });
 </script>
 

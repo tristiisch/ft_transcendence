@@ -1,22 +1,9 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed, onBeforeMount } from 'vue';
-import { useUserStore } from '@/stores/userStore';
-import { useGlobalStore } from '@/stores/globalStore';
-import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'vue-toastification';
-import socket from '@/plugin/socketInstance';
-import type Notification from '@/types/Notification';
-import type User from '@/types/User';
+import { ref, onUnmounted, onBeforeMount } from 'vue';
 
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
 const imageLoaded = ref(false);
-const isLoading = ref(false);
-const userStore = useUserStore();
-const globalStore = useGlobalStore();
-const route = useRoute();
-const router = useRouter();
-const toast = useToast();
 
 function tvSize() {
 	if (windowHeight.value > windowWidth.value) return 'w-[calc(0.6_*_100vw)]';
@@ -39,7 +26,7 @@ function screenSize() {
 }
 
 function smallScreen() {
-	if (windowWidth.value < 640) return true;
+	if (windowWidth.value < 640 && windowHeight.value > 666) return true;
 	else return false;
 }
 
@@ -54,40 +41,6 @@ function onImageLoad() {
 
 onBeforeMount(() => {
 	window.addEventListener('resize', handleResize);
-
-	isLoading.value = true;
-	globalStore
-		.fetchAll()
-		.then(() => {
-			isLoading.value = false;
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-		});
-
-	socket.on('AddUser', (user: User) => {
-		globalStore.addUser(user);
-	});
-
-	socket.on('FriendRequest', (senderId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
-		globalStore.addPendingFriend(senderId)
-		toast.info(notification.message)
-	});
-
-	socket.on('AddFriend', (targetId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
-		globalStore.addFriend(targetId)
-		toast.info(notification.message)
-	});
-
-	socket.on('RemoveFriend', (targetId: number, notification: Notification) => {
-		globalStore.addNotification(notification);
-		globalStore.removeFriend(targetId)
-		toast.info(notification.message)
-	});
-
-	socket.emit('test', { name: 'Nest' }, (data: any) => console.log(data));
 })
 
 onUnmounted(() => {
@@ -96,11 +49,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<base-spinner v-if="isLoading"></base-spinner>
-	<div v-else class="relative flex flex-col h-full mx-[8vw]">
+	<div class="relative flex flex-col h-full mx-[4vw]">
 		<the-header :isHomePage="true"></the-header>
 		<div class="flex justify-center h-full pt-[115px] min-h-[130px]">
-			<the-footer v-if="smallScreen()" class=""></the-footer>
+			<the-footer v-if="smallScreen()"></the-footer>
 		</div>
 		<div :class="titleSize()" class="absolute m-auto left-0 right-0 top-[calc(0.15_*_100vh)] text-center font-Vibur neon-text">
             <span class="px-[2vw]">W</span>
@@ -116,7 +68,7 @@ onUnmounted(() => {
 			<div v-if="imageLoaded">
 				<div class="absolute top-0 h-full w-full text-center z-10 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 					<div class="flex justify-center items-center h-full">
-						<base-button link :to="{ name: 'Matchmaking', params: {}}" :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</base-button>
+						<base-button link :to="{ name: 'MatchMaking', params: {}}" :class="screenTitleSize()" class="hover:text-yellow-300">PLAY</base-button>
 					</div>
 				</div>
 				<div :class="screenSize()" class="absolute m-auto left-0 right-0 top-3 h-3/4 bg-stone-800"></div>
@@ -128,6 +80,7 @@ onUnmounted(() => {
 		</div>
 		<the-footer v-if="!smallScreen()" class="absolute m-auto left-0 right-0 min-h-0 bottom-0 text-xs"></the-footer>
 	</div>
+	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>
 
 <style scoped>

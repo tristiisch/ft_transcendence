@@ -10,7 +10,6 @@ export interface ChatState {
 	inDiscussion: Discussion | null;
 	userChannels: Channel[];
 	inChannel: Channel | null;
-	inChannelRegistration: boolean;
 	cardRightPartToDisplay: PartToDisplay;
 	cardLeftPartToDisplay: PartToDisplay;
 	cardRightTitle: string;

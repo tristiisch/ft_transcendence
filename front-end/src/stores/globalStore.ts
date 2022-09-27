@@ -4,6 +4,7 @@ import type GlobalState from '@/types/GlobalState';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
 import type Notification from '@/types/Notification';
+import { NotificationType } from '@/types/Notification';
 
 type selectedItems = User[] | Channel[];
 type selectedItem = User | Channel;
@@ -13,8 +14,15 @@ export const useGlobalStore = defineStore('globalStore', {
 		users: [],
 		friends: [],
 		pendingFriends: [],
+		blockedUsers: [],
 		notifications: [],
 		selectedItems: [],
+		ballSpeed: 100,
+		racketSize: 100,
+		increaseSpeed: false,
+		world: 1,
+		winningScore: 5,
+		gameInvitation: false,
 	}),
 	getters: {
 		isTypeArrayUsers: (state) => {
@@ -24,137 +32,150 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (user: selectedItem): user is User => (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
-			return (userId: number) => state.friends.some((friendId) => friendId === userId);
+			return (userId: number) => state.friends.some((friend) => friend.id === userId);
 		},
 		isPendingFriend: (state) => {
-			return (userId: number) => state.pendingFriends.some((pendingId) => pendingId === userId);
+			return (userId: number) => state.pendingFriends.some((pendingFriend) => pendingFriend.id === userId);
 		},
-		getUserName: (state) => {
-			return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
+		isBlockedUser: (state) => {
+			return (userId: number) => state.blockedUsers.some((blockedUser) => blockedUser.id === userId);
 		},
-		getUserAvatar: (state) => {
-			return (idSender: number) => state.users.find((user) => user.id === idSender)?.avatar;
-		},
-		getUserId: (state) => {
-			return (idSender: number) => state.users.find((user) => user.id === idSender)?.id;
-		},
+		// getUserName: (state) => {
+		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
+		// },
+		// getUserAvatar: (state) => {
+		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.avatar;
+		// },
+		// getUserId: (state) => {
+		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.id;
+		// },
 		getUser: (state) => {
-			return (userId: number) => state.users.find((user) => user.id === userId);
+			return (userId: number) => state.users.find((user) => user.id === userId);  //TODO remove
 		},
 		getIndexSelectedItems: (state) => {
 			return  (user: User) => state.selectedItems.findIndex((userSelectioned) => userSelectioned.id === user.id);
 		},
-		getUsersFiltered: (state) => {
-			return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
-		},
+		// getUsersFiltered: (state) => {
+		// 	return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
+		// },
 	},
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchUsers(), this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications()]);
+				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers()]);
 			} catch (error: any) {
 				throw error;
 			}
 		},
 		async fetchUsers() {
-			if (!this.users.length)
-			{
-				try {
-					const response = await UserService.getUsers();
-					this.users = response.data;
-				} catch (error: any) {
-					throw error;
-				}
+			try {
+				const response = await UserService.getUsers();
+				this.users = response.data;
+			} catch (error: any) {
+				throw error;
 			}
 		},
 		async fetchfriends() {
-			if (!this.friends.length)
-			{
-				try {
-					const response = await UserService.getFriends();
-					this.friends = response.data;
-				} catch (error: any) {
-					throw error;
-				}
+			try {
+				const response = await UserService.getFriends();
+				this.friends = response.data;
+			} catch (error: any) {
+				throw error;
 			}
 		},
 		async fetchPendingfriends() {
-			if (!this.pendingFriends.length)
-			{
-				try {
-					const response = await UserService.getPendingFriends();
-					this.pendingFriends = response.data;
-				} catch (error: any) {
-					throw error;
-				}
+			try {
+				const response = await UserService.getPendingFriends();
+				this.pendingFriends = response.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchblockedUsers() {
+			try {
+				const response = await UserService.getBlockedUsers();
+				this.blockedUsers = response.data;
+			} catch (error: any) {
+				throw error;
 			}
 		},
 		async fetchNotifications() {
-			if (!this.notifications.length)
-			{
-				try {
-					const response = await UserService.getNotifications();
-					this.notifications = response.data;
-				} catch (error: any) {
-					throw error;
-				}
+			try {
+				const response = await UserService.getNotifications();
+				this.notifications = response.data;
+			} catch (error: any) {
+				throw error;
 			}
 		},
 		checkChangeInArray(baseArray: User[]) {
-			let unlisted: User[] = [];
-			let listed: User[] = [];
-			for (const userBa of baseArray) {
-				const index = this.getIndexSelectedItems(userBa);
-				if (index < 0) unlisted.push(userBa);
+			if (baseArray) {
+				for (const userBa of baseArray) {
+					const index = this.getIndexSelectedItems(userBa);
+					if (index < 0) return 1
+				}
+				for (const selectedUser of this.selectedItems) {
+					const index = baseArray.findIndex((user) => user.id === selectedUser.id);
+					if (index < 0 && this.isTypeUser(selectedUser)) return 1;
+				}
+				return 0
 			}
-			for (const selectedUser of this.selectedItems) {
-				const index = baseArray.findIndex((user) => user.id === selectedUser.id);
-				if (index < 0 && this.isTypeUser(selectedUser)) listed.push(selectedUser);
-			}
-			return (unlisted.length || listed.length) ? { unlisted, listed } : null
+			if (this.isTypeArrayUsers(this.selectedItems))
+				return this.selectedItems.length ? 1 : 0
 		},
 		resetSelectedItems() {
 			this.selectedItems = []
 		},
-		addUser(user: User) {
-			this.users.push(user);
+		// addUser(user: User) {
+		// 	this.users.push(user);
+		// },
+		addFriend(friend: User) {
+			this.removePendingFriend(friend.id)
+			this.friends.push(friend);
 		},
-		addFriend(friendId: number) {
-			this.removePendingFriend(friendId)
-			this.friends.push(friendId);
+		addPendingFriend(pendingFriend: User) {
+			this.pendingFriends.push(pendingFriend);
 		},
-		addPendingFriend(pendingFriendId: number) {
-			this.pendingFriends.push(pendingFriendId);
+		addBlockedUser(blockedUser: User) {
+			this.blockedUsers.push(blockedUser);
 		},
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
 		},
-		removeUser(userToRemoveId: number) {
-			const index = this.users.findIndex(user => user.id === userToRemoveId);
-			this.users.splice(index, 1);
-		},
+		// removeUser(userToRemoveId: number) {
+		// 	const index = this.users.findIndex(user => user.id === userToRemoveId);
+		// 	this.users.splice(index, 1);
+		// },
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
-			const index = this.friends.findIndex(friendId => friendId === friendToRemoveId);
-			this.friends.splice(index, 1);
+			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
+			if (index !== -1) this.friends.splice(index, 1);
 		},
 		removePendingFriend(pendingFriendToRemoveId: number) {
-			const index = this.pendingFriends.findIndex(pendingFriendId => pendingFriendId === pendingFriendToRemoveId);
-			this.pendingFriends.splice(index, 1);
+			const index = this.pendingFriends.findIndex(pendingFriend => pendingFriend.id === pendingFriendToRemoveId);
+			if (index !== -1) this.pendingFriends.splice(index, 1);
+		},
+		removeBlockedUser(blockedUserToRemoveId: number) {
+			const index = this.blockedUsers.findIndex(blockedUser => blockedUser.id === blockedUserToRemoveId);
+			if (index !== -1) this.blockedUsers.splice(index, 1);
 		},
 		removeNotification(notificationToRemoveId: number) {
 			const index = this.notifications.findIndex(notification => notification.id === notificationToRemoveId);
-			this.notifications.splice(index, 1);
+			if (index !== -1) this.notifications.splice(index, 1);
 		},
-		updateUser(userToChange: User) {
-			const index = this.users.findIndex(user => user.id === userToChange.id);
-			this.users[index] = userToChange
-			if (this.isFriend(userToChange.id))
-			{
-				const index = this.friends.findIndex(friend => friend.id === userToChange.id);
-				this.users[index] = userToChange
-			}
-		}
-
+		removeNotificationByUserId(userId: number) {
+			const index = this.notifications.findIndex(notification => notification.from_user_id === userId);
+			if (index !== -1) this.notifications.splice(index, 1);
+		},
+		removeNotActionNotification() {
+			this.notifications.filter(notification => notification.type == NotificationType.FRIEND_ACCEPT 
+				|| notification.type == NotificationType.FRIEND_DECLINE 
+				|| notification.type == NotificationType.FRIEND_REMOVE
+				|| notification.type == NotificationType.MATCH_DECLINE)
+				.forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
+		},
+		removeNotifCancel(notif: Notification, notifType: NotificationType) {
+			this.notifications = this.notifications.filter(notification => notification.from_user_id !== notif.from_user_id
+				&& notification.type !== notifType);
+		},
 	}
 });

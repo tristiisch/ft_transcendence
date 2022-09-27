@@ -2,7 +2,9 @@
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from 'vue-toastification';
-import { ref, watch, onBeforeMount, ErrorCodes } from 'vue';
+import { ref, watch, onBeforeMount } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router'
+import { useGlobalStore } from '@/stores/globalStore';
 import socket from '@/plugin/socketInstance';
 import BaseCard from '@/components/Ui/BaseCard.vue';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
@@ -12,20 +14,25 @@ const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 const toast = useToast();
+const globalStore = useGlobalStore();
 
 const username = ref(userStore.userData.login_42);
 const image = ref(userStore.userData.avatar);
 const twoFaCode = ref('');
 const isLoading = ref(false);
 
+// var currentUrl = window.location.host;
+// console.log('host', window.location.host, 'hostname', window.location.hostname, window.location.protocol, window.location.port);
+
 function redirectTo42LoginPage(): void {
-	const baseUrl = import.meta.env.VITE_42_API_URL;
+	const baseUrl = import.meta.env.VITE_FT_API_OAUTH;
 	const randomString = (Math.random() + 1).toString(36).substring(2);
 	localStorage.setItem('state', JSON.stringify(randomString))
 
 	const options = {
-		client_id: import.meta.env.VITE_CLIENT_ID,
-		redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT,
+		client_id: import.meta.env.VITE_FT_UID,
+		// http://172.26.43.86:8001/login
+		redirect_uri: `${window.location.protocol}//${window.location.host}/login`,
 		scope: 'public',
 		state: randomString,
 		response_type: 'code',
@@ -57,13 +64,13 @@ function submit2faForm() {
 	userStore
 	.handleLogin2Fa(twoFaCode.value)
 	.then(() => {
-		socket.connect()
 		router.replace({ name: 'Home' });
 	})
 	.catch((error) => {
 		console.log(error)
-		if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-		else userStore.resetAll()
+		if (error.response.status === 403) toast.error(error.response.data.message)
+		else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+		else userStore.handleLogout()
 	});
 }
 
@@ -72,39 +79,53 @@ function onlyLettersAndNumbers(str: string) {
 }
 
 function submitRegistrationForm() {
-	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.error('Username should have at least 2 and at most 16 characters.');
-	else if (!onlyLettersAndNumbers(username.value)) toast.error('Username can only contain alphanumeric characters.');
+	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.warning('Username should have at least 2 and at most 16 characters.');
+	else if (!onlyLettersAndNumbers(username.value)) toast.warning('Username can only contain alphanumeric characters.');
 	else {
 		isLoading.value = true;
 		userStore
 			.registerUser(username.value, image.value)
 			.then(() => {
-				socket.connect()
 				router.replace({ name: 'Home' });
 			})
 			.catch((error) => {
 				isLoading.value = false;
-				//check for name already exist in database --> Code === 403 ?
-				if (error.response && error.response.status === 403) toast.error(error.response.data.message)
-				else userStore.resetAll()
+				if (error.response.status === 403) toast.error(error.response.data.message)
+				else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+				else userStore.handleLogout()
 			});
 	}
 }
+
+onBeforeRouteLeave((to, _) => {
+	if (to.name === 'Home')
+	{
+		socket.auth = { token: userStore.userAuth.token_jwt }
+		socket.connect()
+		isLoading.value = true;
+		globalStore
+			.fetchAll()
+			.then(() => {
+				isLoading.value = false;
+			})
+			.catch((error) => {
+				router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+			});
+	}
+})
 
 onBeforeMount(() => {
 	if (route.query.code !== undefined && route.query.state !== undefined && !userStore.isLoggedIn) {
 		isLoading.value = true;
 		userStore.handleLogin(route.query.code as string, route.query.state as string)
 		.then(() => {
-			if (userStore.isRegistered && !userStore.userAuth.has_2fa) {
-				socket.connect()
-				router.replace({ name: 'Home' });
-			}
+			if (userStore.isRegistered && !userStore.userAuth.has_2fa) router.replace({ name: 'Home' });
 			else isLoading.value = false;
 		})
 		.catch((error) => {
 			isLoading.value = false;
-			if (error.response && error.response.data) toast.error(error.response.data.message)
+			if (error.response.data) toast.error(error.response.data.message)
+			else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
 			router.replace({ name: 'Login' });
 		});
 	}
@@ -149,4 +170,5 @@ onBeforeMount(() => {
 			</form>
 		</BaseCard>
 	</div>
+	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>

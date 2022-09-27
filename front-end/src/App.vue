@@ -3,10 +3,10 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
-import TokenService from '@/services/TokenService';
-import axios from '@/plugin/axiosInstance';
+import status from '@/types/Status';
+import AuthService from '@/services/AuthService';
 import socket from '@/plugin/socketInstance';
-import type User from '@/types/User';
+import Status from '@/types/Status';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
@@ -15,26 +15,29 @@ const route = useRoute();
 const isLoading = ref(false);
 
 onBeforeMount(() => {
-	if (TokenService.isLocalToken()) {
-	axios.defaults.headers.common['Authorization'] = `Bearer ${TokenService.getLocalToken()}`;
-	isLoading.value = true
-	Promise.all([userStore.fetchAll(), globalStore.fetchAll()])
-	.then(() => {
-		isLoading.value = false
-		socket.auth = { token: TokenService.getLocalToken() };
-		socket.connect()
-	})
-	.catch((error) => {
-		isLoading.value = false
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
-	})
-}})
+	const token_jwt = AuthService.getJwtToken()
+	if (token_jwt) {
+		isLoading.value = true
+		userStore.userAuth.islogin = true
+		Promise.all([userStore.fetchAll(), globalStore.fetchAll()])
+		.then(() => {
+			isLoading.value = false
+			userStore.userData.status = Status.ONLINE;
+			socket.auth = { token: token_jwt };
+			socket.connect()
+		})
+		.catch((error) => {
+			isLoading.value = false
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		})
+	}
+})
 </script>
 
 <template>
 	<base-spinner v-if="isLoading"></base-spinner>
 	<router-view v-else></router-view>
-	<div class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
+	<div v-if="isLoading" class="h-full w-full fixed bg-brick bg-bottom bg-cover top-0 left-0 -z-20 [transform:_scale(1.2)]"></div>
 </template>
 
 <style>

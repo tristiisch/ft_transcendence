@@ -26,7 +26,8 @@ module.exports = {
 		Vibur:["Vibur", "sans-serif"]
       },
 	  fontSize: {
-		'xxs': '.5rem'
+		'xxxs': '.5rem',
+		'xxs': '.6rem'
 	  },
       screens: {
         'tvxs': { 'raw': '(max-height: 375px)' },

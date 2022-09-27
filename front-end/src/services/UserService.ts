@@ -1,7 +1,7 @@
 import axios from '@/plugin/axiosInstance';
 import type User from '@/types/User';
 import type Channel from '@/types/Channel';
-import type Match from '@/types/MatchHistory';
+import type { MatchInfo } from '@/types/Match';
 import type Discussion from '@/types/Discussion';
 
 class UserService {
@@ -19,7 +19,7 @@ class UserService {
 	}
 
 	getPendingFriends() {
-		return axios.get('friends/request/pending');
+		return axios.get('friends/request');
 	}
 
 	getUser(id: number) {
@@ -36,6 +36,22 @@ class UserService {
 
 	updateAvatar(avatar_64: string) {
 		return axios.patch(`users/set-avatar`, { avatar_64 });
+	}
+
+	deleteAccount() {
+		return axios.get('users/delete');
+	}
+
+	getBlockedUsers() {
+		return axios.get('users/blocked-users');
+	}
+
+	blockUser(targetId: number) {
+		return axios.post('users/block', { id: targetId });
+	}
+
+	unblockUser(targetId: number) {
+		return axios.post('users/unblock', { id: targetId });
 	}
 
 	getUserfriends() {
@@ -56,6 +72,14 @@ class UserService {
 
 	removeFriend(targetId: number) {
 		return axios.post(`friends/remove`, { id: targetId });
+	}
+
+	removeInvitation() {
+		return axios.get('matchs/request/remove');
+	}
+
+	sendGameRequest(targetId: number, gameInfo: MatchInfo) {
+		return axios.post(`matchs/request/add`, { id: targetId, gameInfo: gameInfo });
 	}
 
 	getLeaderboard() {
@@ -79,6 +103,10 @@ class UserService {
 
 	notificationAction(notifId: number, accept: boolean) {
 		return axios.post(`notification/action`, { id: notifId, accept: accept });
+	}
+
+	removeNotActionNotification() {
+		return axios.get('notification/remove');
 	}
 
 	getStats(id: number) {

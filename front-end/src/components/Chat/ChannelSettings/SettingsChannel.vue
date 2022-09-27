@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/userStore';
 import { ref, computed } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
+import { useGlobalStore } from '@/stores/globalStore';
 import Status, { ChatStatus } from '@/types/ChatStatus';
 import PartToDisplay from '@/types/ChatPartToDisplay';
 import SettingsBanMuteAdminKick from '@/components/Chat/ChannelSettings/SettingsBanMuteAdminKick.vue';
@@ -12,6 +13,7 @@ import SettingsInvite from '@/components/Chat/ChannelSettings/SettingsInvite.vue
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
+const globalStore = useGlobalStore();
 const displayPasswordPage = ref(false);
 const displayAdminPage = ref(false);
 const displayMutePage = ref(false);
@@ -24,9 +26,11 @@ function playerStatus() {
 	if (chatStore.inChannel && chatStore.inChannel.owner) {
 		if (chatStore.inChannel.owner.id === userStore.userData.id) return 'OWNER'
 		else {
-			for (const member of chatStore.inChannel.admins)
-				if (member.id === userStore.userData.id)
-					return 'ADMINISTRATOR'
+			if (chatStore.inChannel.admins) {
+				for (const member of chatStore.inChannel.admins)
+					if (member.id === userStore.userData.id)
+						return 'ADMINISTRATOR'
+			}
 			return 'MEMBER'
 		}
 	}
@@ -87,6 +91,8 @@ function resetDisplayPage() {
 		displayPasswordPage.value = !displayPasswordPage.value
 	else
 		displayInvitePage.value = !displayInvitePage.value
+	if (globalStore.selectedItems.length)
+		globalStore.resetSelectedItems();
 }
 
 const isType = computed(() => {
@@ -131,7 +137,7 @@ function leaveChannel() {
 				<button v-if="isAdmin() || isOwner()" @click="displayBanPage = !displayBanPage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Ban
 				</button>
-				<button v-if="isAdmin()|| isOwner() && chatStore.inChannel?.type === ChatStatus.PRIVATE" @click="displayInvitePage = !displayInvitePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
+				<button v-if="(isAdmin() || isOwner()) && chatStore.inChannel?.type === ChatStatus.PRIVATE" @click="displayInvitePage = !displayInvitePage" class="py-2 px-4 text-xs text-blue-600 bg-neutral-100 rounded-md border border-blue-600 sm:text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white">
 					Invite
 				</button>
 				<button :class="setColSpan()" @click="leaveChannel()" class="bg-neutral-100 text-red-600 py-2 px-4 text-xs rounded-md border border-red-600 hover:bg-red-600 hover:text-white sm:text-sm">LEAVE</button>

@@ -3,7 +3,7 @@ import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
 import axios from 'axios';
-import VueAxios from 'vue-axios';
+//import VueAxios from 'vue-axios';
 import './index.css';
 import BaseButton from '@/components/Ui/BaseButton.vue';
 import BaseCard from '@/components/Ui/BaseCard.vue';
@@ -21,14 +21,15 @@ const app = createApp(App);
 const pinia = createPinia();
 
 const options = {
-	position: POSITION.TOP_CENTER
+	position: POSITION.TOP_CENTER,
+	pauseOnFocusLoss: false,
     // You can set your default options here
 };
 
 app.use(Toast, options);
 app.use(pinia);
 app.use(router);
-app.use(VueAxios, axios);
+//app.use(VueAxios, axios);
 app.provide('axios', app.config.globalProperties.axios);
 
 app.component('base-button', BaseButton);
