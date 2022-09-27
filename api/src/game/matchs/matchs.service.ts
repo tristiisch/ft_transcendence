@@ -329,9 +329,18 @@ export class MatchStatsService {
 	}
 
 	async findOnlineMatchs() : Promise<Match[]> {
-		let matches: Array<Match> = new Array()
+		let matches = new Array()
 		for (const [key, value]  of this.matches.entries())
-			matches.push(value)
+			matches.push({
+				id: value.id,
+				user1_id: value.user1_id,
+				user2_id: value.user2_id,
+				user1_username: value.user1_username,
+				user2_username: value.user2_username,
+				user1_avatar: value.user1_avatar,
+				user2_avatar: value.user2_avatar,
+				score: value.score
+			})
 		return matches
 	}
 
