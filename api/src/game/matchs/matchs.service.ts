@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, PreconditionFailedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
@@ -330,7 +330,7 @@ export class MatchService {
 	async acceptInvitation(invitedUser: User, inviteUser: User) {
 		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
 		if (!req) {
-			throw new PreconditionFailedException(`You didn't have a invitation from user ${inviteUser.username} for game.`)
+			throw new NotAcceptableException(`You didn't have a invitation of ${inviteUser.username} for playing pong.`)
 		}
 
 		const custonGameInfo: CustomMatchInfos = req[1].matchInfo as CustomMatchInfos;
@@ -361,7 +361,7 @@ export class MatchService {
 	async declineInvitation(invitedUser: User, inviteUser: User) {
 		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
 		if (!req) {
-			throw new PreconditionFailedException(`You didn't have a invitation from user ${inviteUser.username} for game.`)
+			throw new NotAcceptableException(`You didn't have a invitation of ${inviteUser.username} for playing pong.`)
 		}
 
 		let notif: Notification = new Notification();
@@ -377,7 +377,7 @@ export class MatchService {
 	async removeOwnGameInvitation(inviteUser: User) {
 		const gameInvit: GameInvitation = this.requests.get(inviteUser.id);
 		if (!gameInvit) {
-			throw new PreconditionFailedException(`You didn't have a invitation.`)
+			throw new NotAcceptableException(`You didn't have a invitation.`)
 		}
 		const inviteduser: User = await this.userService.findOne(gameInvit.toUserId);
 

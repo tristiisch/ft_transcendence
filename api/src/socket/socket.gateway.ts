@@ -162,8 +162,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		messageDTO.idSender = user.id;
 
 		if (target.isBlockedUser(user.id)) {
-			Logger.verbose(`${target.username} blocked ${user.username}, so he can't see his private msg '${messageDTO.message}'.`)
-			return;
+			throw new WsException(`You have been blocked by ${target.username}, you can't send him a message.`);
+		}
+		if (user.isBlockedUser(target.id)) {
+			throw new WsException(`You have blocked ${target.username}, you can't send him a message.`);
 		}
 
 		const discu: Discussion = await this.chatService.findOrCreateDiscussion(messageDTO.idSender, targetId);
@@ -306,7 +308,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatChannelInvitation')
 	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
-		const invitedUsers: User[] = body[1];
+		const invitedUsersDTO: User[] = body[1];
+
 		const user: User = req.user;
 		let channelTmp: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
@@ -315,8 +318,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(invitedUsers.map(user => user.id));
+		const users: User[] = await this.userService.findMany(invitedUsersDTO.map(user => user.id));
+
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
+
+		await this.chatService.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} been added to ${channel.name} by ${user.username}.`, channel);
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
@@ -337,12 +343,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newBanned.list.map(user => user.id));
+		newBanned.list = users;
+		newBanned.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id)); // TODO optimize
 
 		const channelFront: ChannelFront = await this.chatService.setBanned(channel, user, users.map(user => user.id));
 
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
-		await this.socketService.emitIds(user, newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
+		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
 		return [channelFront];
 	}
 
@@ -356,6 +364,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
+		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
+		newAdmin.list = users;
 		const channelFront: ChannelFront = await this.chatService.setAdmin(channel, user, newAdmin);
 
 		
@@ -374,6 +384,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
+		newMuted.list = users;
 
 		const channelFront: ChannelFront = await this.chatService.setMuted(channel, user, users.map(user => user.id));
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelMute', channelFront);
@@ -391,14 +402,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newKicked.list.map(user => user.id));
+		newKicked.list = users;
+		newKicked.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
-		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${newKicked.list.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
+		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
 		
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
-		await this.socketService.emitIds(user, newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
+		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		
 		 // TODO get user from db
 		await channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));

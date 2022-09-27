@@ -77,6 +77,6 @@ export class MatchsController {
 	removeOwnGameInvitation(@Req() req) {
 		const user: User = req.user;
 
-		return this.removeOwnGameInvitation(user);
+		return this.matchsService.removeOwnGameInvitation(user);
 	}
 }

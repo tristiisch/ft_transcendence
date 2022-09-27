@@ -37,7 +37,6 @@ function acceptInvitation(notification: Notification) {
 			if (error.response.status === 406)
 			{
 				toast.warning(error.response.data.message)
-				globalStore.removeNotification(notification.id)
 			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
@@ -54,7 +53,6 @@ function declineInvitation(notification: Notification) {
 			if (error.response.status === 406)
 			{
 				toast.warning(error.response.data.message)
-				globalStore.removeNotification(notification.id)
 			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})

@@ -326,7 +326,9 @@ export class ChatService {
 			throw err;
 		}
 
-		await this.createAutoMsg(`⚪️　${user.username} been added to ${channel.name} by ${user.username}`, channel);
+		const users: User[] = await this.userService.findMany(channel.users_ids.filter(id => id !== user.id));
+		await this.createAutoMsg(`⚪️　${user.username} is the creator of this channel.`, channel);
+		await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} been added to ${channel.name} by ${user.username}.`, channel);
 		return channel;
 	}
 
@@ -456,9 +458,9 @@ export class ChatService {
 		const mutesAdded: User[] = (await this.userService.findMany(mutesIdsAdded));
 
 		if (mutesAdded.length != 0)
-			await this.createAutoMsg(`⚪️　${mutesAdded.map(u => u.username).join(', ')} is now mute.`, channel);
+			await this.createAutoMsg(`⚪️　${mutesAdded.map(u => u.username).join(', ')} ${mutesAdded.length === 1 ? 'is' : 'are'} now mute.`, channel);
 		if (mutesRemoved.length != 0)
-			await this.createAutoMsg(`🔴　${mutesRemoved.map(u => u.username).join(', ')} is no more muted.`, channel);
+			await this.createAutoMsg(`🔴　${mutesRemoved.map(u => u.username).join(', ')} ${mutesRemoved.length === 1 ? 'is' : 'are'} no more muted.`, channel);
 			
 		const channelFront: ChannelFront = await ch.toFront(this, user, mutesAdded);
 		return channelFront;
@@ -492,9 +494,9 @@ export class ChatService {
 		const added: User[] = (await this.userService.findMany(idsAdded));
 
 		if (added.length != 0)
-			await this.createAutoMsg(`⚪️　${added.map(u => u.username).join(', ')} is now ban.`, channel);
+			await this.createAutoMsg(`⚪️　${added.map(u => u.username).join(', ')} ${added.length === 1 ? 'is' : 'are'} now ban.`, channel);
 		if (removed.length != 0)
-			await this.createAutoMsg(`🔴　${removed.map(u => u.username).join(', ')} is no more banned.`, channel);
+			await this.createAutoMsg(`🔴　${removed.map(u => u.username).join(', ')} ${removed.length === 1 ? 'is' : 'are'} no more banned.`, channel);
 			
 		const channelFront: ChannelFront = await ch.toFront(this, user, added);
 		return channelFront;

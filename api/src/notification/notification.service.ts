@@ -93,8 +93,10 @@ export class NotificationService {
 			throw new NotFoundException(`Unable to find notification n°${notifAction.id}.`);
 		const target: User = await this.userService.findOne(notif.from_user_id);
 
+		let ret: any;
+
 		if (user.isBlockedUser(target.id)) {
-			throw new NotAcceptableException(`You have blocked ${target}. You can't do this.`);
+			throw new NotAcceptableException(`You have blocked ${target.username}. You can't do this.`);
 		}
 
 		if (notif.type === NotificationType.FRIEND_REQUEST) {
@@ -111,12 +113,12 @@ export class NotificationService {
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
 			if (notifAction.accept) {
-				return await this.matchstatsService.acceptInvitation(user, target);
+				ret = await this.matchstatsService.acceptInvitation(user, target);
 			} else {
 				try {
-					return await this.matchstatsService.declineInvitation(user, target);
+					await this.matchstatsService.declineInvitation(user, target);
 				} catch (err) {
-					if (!(err instanceof PreconditionFailedException)) {
+					if (!(err instanceof NotAcceptableException)) {
 						throw err;
 					}
 				}
@@ -124,5 +126,6 @@ export class NotificationService {
 		}
 		notif.is_deleted = true;
 		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });
+		return ret;
 	}
 }
