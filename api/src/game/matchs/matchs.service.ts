@@ -382,9 +382,19 @@ export class MatchService {
 		if (!gameInvit) {
 			throw new NotAcceptableException(`You didn't have a invitation.`)
 		}
-		const inviteduser: User = await this.userService.findOne(gameInvit.toUserId);
+		const invitedUser: User = await this.userService.findOne(gameInvit.toUserId);
 
-		await this.notifService.removeNotifMatchRequest(inviteUser, inviteduser);
+		let notif: Notification = new Notification();
+		notif.user_id = invitedUser.id;
+		notif.from_user_id = inviteUser.id;
+		notif.type = NotificationType.MATCH_CANCEL;
+		notif.date = new Date();
+		//notif = await this.notifService.addNotif(notif);
+
+		const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);
+		this.socketService.AddNotification(invitedUser, notifFront);
+	
+		await this.notifService.removeNotifMatchRequest(inviteUser, invitedUser);
 		this.requests.delete(inviteUser.id);
 	}
 }

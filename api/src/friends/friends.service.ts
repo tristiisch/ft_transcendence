@@ -187,8 +187,16 @@ export class FriendsService {
 			notif.type = NotificationType.FRIEND_DECLINE;
 			notif = await this.notifService.addNotif(notif);
 			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
-	
+		} else {
+			let notif: Notification = new Notification();
+			notif.user_id = friendship.user2_id;
+			notif.from_user_id = friendship.user1_id;
+			notif.type = NotificationType.FRIEND_CANCEL;
+			notif.date = new Date();
+
+			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
 		}
+
 		return await this.friendsRepository.delete({ id: friendship.id }).then((value: DeleteResult) => {
 			if (!value.affected || value.affected == 0) throw new InternalServerErrorException(`Can't remove friend request of ${friendship.user1_id} and ${friendship.user2_id}.`);
 			else return { statusCode: 200, user: target, message: `You cancel the friend request with ${target.username}.` };

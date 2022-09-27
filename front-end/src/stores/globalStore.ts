@@ -173,5 +173,9 @@ export const useGlobalStore = defineStore('globalStore', {
 				|| notification.type == NotificationType.MATCH_DECLINE)
 				.forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
 		},
+		removeNotifCancel(notif: Notification, notifType: NotificationType) {
+			this.notifications = this.notifications.filter(notification => notification.from_user_id !== notif.from_user_id
+				&& notification.type !== notifType);
+		},
 	}
 });

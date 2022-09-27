@@ -116,6 +116,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
 		const user: User = req.user;
 		const channelDTO: ChannelCreateDTO = body[1];
+		const password: string = body[2];
+
+		channelDTO.password = password;
 		try {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
 			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);

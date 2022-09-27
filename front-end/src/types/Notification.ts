@@ -9,7 +9,8 @@ export enum NotificationType {
 	FRIEND_ACCEPT,
 	FRIEND_DECLINE,
 	FRIEND_REMOVE,
-	MATCH_CANCEL
+	MATCH_CANCEL,
+	FRIEND_CANCEL
 }
 
 export default interface Notification {

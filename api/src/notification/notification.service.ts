@@ -1,5 +1,5 @@
 /** @prettier */
-import { forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from 'friends/friends.service';
 import { User } from 'users/entity/user.entity';
@@ -28,9 +28,6 @@ export class NotificationService {
 		return await this.notifsRepository.save(notif);
 	}
 
-	/**
-	 * @Deprecated
-	 */
 	public async removeNotifFriendRequest(user1: User, user2: User): Promise<DeleteResult> {
 		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
 
@@ -39,7 +36,7 @@ export class NotificationService {
 		sqlStatement.orWhere('notification.user_id = :user_id2');
 		sqlStatement.andWhere('notification.from_user_id = :user_id1');
 		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
-		sqlStatement.andWhere(`notification.type <> '${NotificationType.FRIEND_REQUEST}'`);
+		sqlStatement.andWhere(`notification.type = :notif_type`, { notif_type: NotificationType.FRIEND_REQUEST});
 	
 		return await sqlStatement.execute();
 	}
@@ -47,11 +44,13 @@ export class NotificationService {
 	public async removeNotifMatchRequest(inviteUser: User, invitedUser: User): Promise<DeleteResult> {
 		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
 
-		sqlStatement.where('notification.user_id = :invitedUser_id', { invitedUser_id: invitedUser.id });
-		sqlStatement.andWhere('notification.from_user_id = :inviteUser_id', { inviteUser_id: inviteUser.id });
+		sqlStatement.where('notification.user_id = :to_user', { to_user: invitedUser.id });
+		sqlStatement.andWhere('notification.from_user_id = :from_user', { from_user: inviteUser.id });
 		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
-		sqlStatement.andWhere(`notification.type <> '${NotificationType.MATCH_REQUEST}'`);
+		sqlStatement.andWhere(`notification.type = :notif_type`, { notif_type: NotificationType.MATCH_REQUEST});
 	
+		Logger.debug(`${sqlStatement.getQueryAndParameters()}`, 'DeleteQueryBuilder');
+
 		return await sqlStatement.execute();
 	}
 
