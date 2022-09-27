@@ -5,13 +5,13 @@ import { NotificationModule } from 'notification/notification.module';
 import { NotificationService } from 'notification/notification.service';
 import { SocketModule } from 'socket/socket.module';
 import { UsersModule } from 'users/users.module';
-import { Match, MatchStats, MatchLiveInfos } from './entity/match.entity';
+import { Match, MatchLiveInfos } from './entity/match.entity';
 import { MatchsStatsController as MatchsStatsController } from './matchs.controller';
 import { MatchStatsService as MatchStatsService } from './matchs.service';
 // import MatchLiveInfos from './entity/matchliveinfos.entity';
 
 @Module({
-	imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([MatchStats]), forwardRef(() => StatsModule), forwardRef(() => NotificationModule), forwardRef(() => SocketModule)],
+	imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([Match]), forwardRef(() => StatsModule), forwardRef(() => NotificationModule), forwardRef(() => SocketModule)],
 	controllers: [MatchsStatsController],
 	providers: [MatchStatsService],
 	exports: [MatchStatsService]

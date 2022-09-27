@@ -2,7 +2,7 @@
 import { Inject, Injectable, InternalServerErrorException, Logger, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { AuthService } from 'auth/auth.service';
 import { FriendsService } from 'friends/friends.service';
-import { MatchStats } from 'game/matchs/entity/match.entity';
+import { Match } from 'game/matchs/entity/match.entity';
 import { MatchStatsService } from 'game/matchs/matchs.service';
 import { UserStats } from 'game/stats/entity/userstats.entity';
 import { StatsService } from 'game/stats/stats.service';
@@ -40,18 +40,18 @@ export class TestFakeService {
 		const data = new Array();
 		const allUserIds: number[] = await this.getUsersIds();
 		for (let i: number = 1; i <= nbUsers; ++i) {
-			let fakeUser: { user: User; matchs: MatchStats } = await this.createFakeUser(allUserIds);
+			let fakeUser: { user: User; matchs: Match } = await this.createFakeUser(allUserIds);
 			data.push(fakeUser);
 			allUserIds.push(fakeUser.user.id);
 		}
 		return data;
 	}
 
-	async createFakeUser(allUserIds: number[]): Promise<{ user: User; matchs: MatchStats }> {
+	async createFakeUser(allUserIds: number[]): Promise<{ user: User; matchs: Match }> {
 		const user: User = await this.initUser();
 		const allUserIdsExceptUser: number[] = removeFromArray(allUserIds, user.id);
 
-		const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
+		const matchs: Match = await this.initMatchHistory(user, allUserIdsExceptUser);
 		const usersWithoutRelation: number[] = removesFromArray(allUserIdsExceptUser, await this.friendsService.findAllRelationsId(user.id));
 
 		this.initNewFriendship(user, usersWithoutRelation);
@@ -63,7 +63,7 @@ export class TestFakeService {
 
 		let iMatchs = -1;
 		while (++iMatchs < allUserIdsExceptUser.length) {
-			const matchs: MatchStats = await this.initMatchHistory(user, allUserIdsExceptUser);
+			const matchs: Match = await this.initMatchHistory(user, allUserIdsExceptUser);
 			if (matchs == null) break;
 		}
 		const userWithRelationsIds: number[] = await this.friendsService.findAllRelationsId(user.id);
@@ -107,13 +107,13 @@ export class TestFakeService {
 		return user;
 	}
 
-	async initMatchHistory(user: User, userIds: number[]): Promise<MatchStats> {
+	async initMatchHistory(user: User, userIds: number[]): Promise<Match> {
 		if (userIds.length === 0) {
 			Logger.warn(`Can't find a valid userId for matchHistory of ${JSON.stringify(user)}`, 'Fake Match')
 			return null;
 		}
 		const targetId: number = randomElement(userIds);
-		const matchHistory: MatchStats = new MatchStats();
+		const matchHistory: Match = new Match();
 
 		if (randomNumber(0, 2) === 1) {
 			matchHistory.user2_id = user.id;

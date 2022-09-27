@@ -496,7 +496,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.matchService.removePlayerFromQueue(match_found.user.id)
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
 			var match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
-			this.matches.get(match_id).live.room_socket = this.server.to('match_' + match_id)
+			this.matches.get(match_id).room_socket = this.server.to('match_' + match_id)
 			client.emit('foundMatch', match_id)
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
 		}
@@ -514,7 +514,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log(client.id, "wants to join : ", id)
 		if (this.matches.has(id)) {
 			let stageWidth = this.matchService.getStageWidth()
-			let match = this.matches.get(id).live
+			let match = this.matches.get(id)
 			let started = match.started
 			let waiting = match.waiting
 			// let ballXPos = match.ballXPos
@@ -536,14 +536,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleReadyPlayerFromMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		const user = await this.socketService.getUserFromSocket(client)
 		const match = this.matches.get(id)
-		if (match.stats.user1_id === user.id)
-			match.live.p1Ready = true
-		else if (match.stats.user2_id === user.id)
-			match.live.p2Ready = true
-		if (!match.live.started && match.live.p1Ready && match.live.p2Ready)
+		if (match.user1_id === user.id)
+			match.p1Ready = true
+		else if (match.user2_id === user.id)
+			match.p2Ready = true
+		if (!match.started && match.p1Ready && match.p2Ready)
 		{
 			console.log("match ", id, "ready !")
-			match.live.started = true
+			match.started = true
 			this.matchService.startMatch(match)
 		}
 	}
@@ -552,8 +552,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	updatePlayer1Pos(@MessageBody() data: {id: string, pos: number}, @ConnectedSocket() client: Socket) {
 		const match = this.matches.get(data.id)
 		if (match !== undefined) {
-			if (client === this.socketService.getSocketToEmit(match.stats.user1_id))
-				match.live.p1Pos = data.pos
+			if (client === this.socketService.getSocketToEmit(match.user1_id))
+				match.p1Pos = data.pos
 		}
 	}
 
@@ -561,8 +561,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	updatePlayer2Pos(@MessageBody() data: {id: string, pos: number}, @ConnectedSocket() client: Socket) {
 		const match = this.matches.get(data.id)
 		if (match !== undefined) {
-			if (client === this.socketService.getSocketToEmit(match.stats.user2_id))
-				match.live.p2Pos = data.pos
+			if (client === this.socketService.getSocketToEmit(match.user2_id))
+				match.p2Pos = data.pos
 		}
 	}
 
@@ -570,7 +570,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
-		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match.stats))
+		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match))
 			this.matchService.endMatch(match)
 	}
 

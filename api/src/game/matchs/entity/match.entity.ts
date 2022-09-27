@@ -8,15 +8,10 @@ export enum MatchMakingTypes {
 	OWN_MATCH
 }
 
-export interface Match {
-	stats: MatchStats,
-	live: MatchLiveInfos
-}
-
-export interface MatchStats extends MatchLiveInfos {}
+export interface Match extends MatchLiveInfos {}
 
 @Entity()
-export class MatchStats extends BaseEntity {
+export class Match extends BaseEntity {
 
 	@PrimaryColumn({ default: "for api/test/" + Math.random().toString() })
 	id: string
@@ -121,4 +116,13 @@ export interface CustomMatchInfos {
 export class GameInvitation {
 	toUserId: number;
 	matchInfo: CustomMatchInfos;
+}
+
+export class MatchOwn {
+
+	opponent: string; // opponent_username
+	score: number[];
+	won?: boolean;
+	date: Date;
+	end: Date;
 }

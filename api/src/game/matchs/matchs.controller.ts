@@ -4,7 +4,7 @@ import { UserSelectDTO } from 'users/entity/user-select.dto';
 import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { isNumberPositive } from 'utils/utils';
-import { MatchStats } from './entity/match.entity';
+import { Match } from './entity/match.entity';
 import { MatchStatsService } from './matchs.service';
 
 @Controller('matchs')
@@ -16,10 +16,10 @@ export class MatchsStatsController {
 	constructor(private readonly matchsService: MatchStatsService) {}
 
 	@Post('start')
-	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<MatchStats> {
+	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<Match> {
 		const user: User = await usersSelected[0].resolveUser(this.usersService);
 		const target: User = await usersSelected[1].resolveUser(this.usersService);
-		const match: MatchStats = new MatchStats();
+		const match: Match = new Match();
 		match.user1_id = user.id;
 		match.user2_id = target.id;
 		return await this.matchsService.save(match);
@@ -61,8 +61,18 @@ export class MatchsStatsController {
 	 @UseGuards(JwtAuthGuard)
 	 @Get(':id')
 	 sendMatchInfos(@Param('id') id: string) {
-		 if (!this.matchsService.getMatches().has(id))
+		if (!this.matchsService.getMatches().has(id))
 			throw new NotFoundException(`Unknown match`);
-		 return this.matchsService.getMatches().get(id)?.stats;
+		let match = this.matchsService.getMatches().get(id)
+		return {
+			id: match.id,
+			user1_id: match.user1_id,
+			user2_id: match.user2_id,
+			user1_username: match.user1_username,
+			user2_username: match.user2_username,
+			user1_avatar: match.user1_avatar,
+			user2_avatar: match.user2_avatar,
+			score: [0, 0]
+		}
 	 }
 }
