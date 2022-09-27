@@ -22,7 +22,7 @@ const globalStore = useGlobalStore()
 
 function findMatch(type: number, match_live_infos: any) {
 	searchingMatch.value = true
-	socket.emit('findMatch', {type, match_live_infos: match_live_infos})
+	socket.emit('findMatch', {type, custom_match_infos: match_live_infos})
 	socket.on('foundMatch', (id) => {
 		router.replace('match/' + id)
 	})
@@ -38,12 +38,6 @@ onBeforeMount(() => {
 			world: globalStore.world,
 			winningScore: globalStore.winningScore
 		}
-	}
-	if (route.query.invite) {
-		waitingForPlayer.value = true
-		socket.emit('createMatchInvitation', {invited_user: route.query.invite, custom_match_infos})
-	}
-	else if (route.query.custom) {
 		searchingMatch.value = true
 		findMatch(MatchMakingTypes.OWN_MATCH, custom_match_infos)
 	}

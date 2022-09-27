@@ -3,7 +3,7 @@ import { Inject, Injectable, InternalServerErrorException, Logger, NotAcceptable
 import { AuthService } from 'auth/auth.service';
 import { FriendsService } from 'friends/friends.service';
 import { Match } from 'game/matchs/entity/match.entity';
-import { MatchStatsService } from 'game/matchs/matchs.service';
+import { MatchService } from 'game/matchs/matchs.service';
 import { UserStats } from 'game/stats/entity/userstats.entity';
 import { StatsService } from 'game/stats/stats.service';
 import { UserSelectDTO } from 'users/entity/user-select.dto';
@@ -27,8 +27,8 @@ export class TestFakeService {
 	private readonly friendsService: FriendsService;
 	@Inject(StatsService)
 	private readonly statsService: StatsService;
-	@Inject(MatchStatsService)
-	private readonly matchHistoryService: MatchStatsService;
+	@Inject(MatchService)
+	private readonly matchHistoryService: MatchService;
 	@Inject(AuthService)
 	private readonly authService: AuthService;
 	@Inject(ChatService)

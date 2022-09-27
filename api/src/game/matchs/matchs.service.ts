@@ -11,7 +11,7 @@ import { NotificationService } from 'notification/notification.service';
 import { v4 as uuid } from "uuid"
 
 @Injectable()
-export class MatchStatsService {
+export class MatchService {
 
 	constructor(
 		@InjectRepository(Match)
@@ -84,11 +84,24 @@ export class MatchStatsService {
 		match.started = false
 		match.waiting = true
 		match.stopMatch = false
-		match.ballSpeed = this.ballSpeed
-		match.racketSize = this.blockerHeight
-		match.increaseBallSpeed = this.increaseBallSpeed
-		match.world = this.world
-		match.winningScore = this.winningScore
+		
+		if (custom) {
+			console.log("custom!")
+			match.ballSpeed = custom.ballSpeed
+			match.racketSize = custom.racketSize
+			match.increaseBallSpeed = custom.increaseBallSpeed
+			match.world = custom.world
+			match.winningScore = custom.winningScore
+		}
+		else {
+			console.log("not custom!")
+			match.ballSpeed = this.ballSpeed
+			match.racketSize = this.blockerHeight
+			match.increaseBallSpeed = this.increaseBallSpeed
+			match.world = this.world
+			match.winningScore = this.winningScore
+		}
+
 		match.ballXPos = this.stageWidth/2
 		match.ballYPos = this.stageHeight/2
 		match.ballXDir = 1,
@@ -109,67 +122,6 @@ export class MatchStatsService {
 		return 0
 	}
 
-	// async launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir, ballPosInterval) {
-	// 	let matchLoopInterval = setInterval(async () => {
-	// 		if (match.live_infos.stopMatch)
-	// 			await this.endMatch(match, ballPosInterval, matchLoopInterval, true)
-	// 		if (match.live_infos.ballXPos + match.live_infos.ballXDir < 0) {
-	// 			match.score[1]++
-	// 			match.live_infos.room_socket.emit('p2Scored')
-		// 		match.live_infos.ballXDir = -match.live_infos.ballXDir
-		// 	}
-		// 	else if (match.live_infos.ballXPos + match.live_infos.ballXDir > this.stageWidth) {
-		// 		match.score[0]++
-		// 		match.live_infos.room_socket.emit('p1Scored')
-		// 		match.live_infos.ballXDir = -match.live_infos.ballXDir
-		// 	}
-		// 	if (match.score[0] === this.winningScore || match.score[1] === this.winningScore)
-		// 		await this.endMatch(match, ballPosInterval, matchLoopInterval)
-		// 	if (match.live_infos.ballYPos + match.live_infos.ballYDir < 0 || match.live_infos.ballYPos + match.live_infos.ballYDir > this.stageHeight)
-		// 		match.live_infos.ballYDir = -match.live_infos.ballYDir
-
-		// 	if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
-		// 		(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
-		// 			match.live_infos.ballYDir = -match.live_infos.ballYDir
-		// 	else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
-		// 			(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
-		// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
-		// 	match.live_infos.ballXPos += match.live_infos.ballXDir
-		// 	match.live_infos.ballYPos += match.live_infos.ballYDir
-		// }, 0)
-// 		if (match.live_infos.stopMatch) {
-// 			this.endMatch(match)
-// 			return
-// 		}
-// 		if (match.live_infos.ballXPos + match.live_infos.ballXDir < 0) {
-// 			match.score[1]++
-// 			match.live_infos.room_socket.emit('p2Scored')
-// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
-// 		}
-// 		else if (match.live_infos.ballXPos + match.live_infos.ballXDir > this.stageWidth) {
-// 			match.score[0]++
-// 			match.live_infos.room_socket.emit('p1Scored')
-// 			match.live_infos.ballXDir = -match.live_infos.ballXDir
-// 		}
-// 		if (match.score[0] === this.winningScore || match.score[1] === this.winningScore) {
-// 			this.endMatch(match)
-// 			return
-// 		}
-// 		if (match.live_infos.ballYPos + match.live_infos.ballYDir < 0 || match.live_infos.ballYPos + match.live_infos.ballYDir > this.stageHeight)
-// 			match.live_infos.ballYDir = -match.live_infos.ballYDir
-
-// 		if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
-// 			(match.live_infos.ballXPos > this.p2XPpos && match.live_infos.ballXPos < this.p2XPpos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPpos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
-// 				match.live_infos.ballYDir = -match.live_infos.ballYDir
-// 		else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
-// 				(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPpos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPpos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
-// 				match.live_infos.ballXDir = -match.live_infos.ballXDir
-// 		match.live_infos.ballXPos += match.live_infos.ballXDir
-// 		match.live_infos.ballYPos += match.live_infos.ballYDir
-// // match.live_infos.room_socket.emit("ballPos", match.live_infos.ballXPos, match.live_infos.ballYPos)
-// 		setTimeout(() => this.launchMatchLoop(match, match.live_infos.ballXDir, match.live_infos.ballYDir), 0)
-	// }
-
 	async startMatch(match: Match) {
 		this.setNewMatchRoundVar(match)
 
@@ -184,21 +136,21 @@ export class MatchStatsService {
 				match.room_socket.emit('p2Pos', match.p2Pos)
 				oldp2Pos = match.p2Pos
 			}
-		}, 10)
+		}, 1)
 
 		setTimeout(() => {
 			match.timestamp_started = new Date
 			match.ballPosInterval = setInterval(() => {
 				match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
-			}, 10)
+			}, 1)
 			this.startMatchLoop(match)
 		}, 3000)
 	}
 	setNewMatchRoundVar(match: Match) {
 		match.ballXPos = this.stageWidth / 2
 		match.ballYPos = Math.random() * this.stageHeight
-		match.ballXDir = (Math.round(Math.random() * 10)) % 2 ? this.ballSpeed : -this.ballSpeed
-		match.ballYDir = (Math.round(Math.random() * 10)) % 2 ? this.ballSpeed : -this.ballSpeed
+		match.ballXDir = (Math.round(Math.random() * 10)) % 2 ? match.ballSpeed : -match.ballSpeed
+		match.ballYDir = (Math.round(Math.random() * 10)) % 2 ? match.ballSpeed : -match.ballSpeed
 	}
 	async startMatchLoop(match: Match) {
 		match.T = new Date
@@ -210,14 +162,8 @@ export class MatchStatsService {
 			scored: undefined
 		})
 		// function update() {
-		// 	match.live_infos.T = this.calcBallPos(match)
+		// 	match.T = this.calcBallPos(match)
 
-		// 	if ((match.live_infos.ballXPos > this.p1XPos && match.live_infos.ballXPos < this.p1XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
-		// 		(match.live_infos.ballXPos > this.p2XPos && match.live_infos.ballXPos < this.p2XPos + this.blockerWidth && match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
-		// 			match.live_infos.ballYDir *= -1
-		// 	else if ((match.live_infos.ballXPos + match.live_infos.ballXDir > this.p1XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p1XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p1Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p1Pos + this.blockerHeight) ||
-		// 			(match.live_infos.ballXPos + match.live_infos.ballXDir > this.p2XPos && match.live_infos.ballXPos + match.live_infos.ballXDir < this.p2XPos + this.blockerWidth && match.live_infos.ballYPos + match.live_infos.ballYDir > match.live_infos.p2Pos && match.live_infos.ballYPos + match.live_infos.ballYDir < match.live_infos.p2Pos + this.blockerHeight))
-		// 			match.live_infos.ballXDir *= -1
 		// 	setTimeout(update.bind(this), 0)
 		// }
 		// update.bind(this)()
@@ -230,7 +176,7 @@ export class MatchStatsService {
 			// else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
 			// 		(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
 			// 		match.ballXDir *= -1
-		})
+		}, 0)
 	}
  	calcBallPos(match: Match) {
 		let T2 = new Date
@@ -265,8 +211,8 @@ export class MatchStatsService {
 		// 		match.ballYDir *= -1
 		// 		y2 = y2 + 2 * match.ballYDir
 		// 	}
-		else if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth / 2 && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth / 2 && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight))
+		if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight))
 					match.ballXDir *= -1
 
 		match.ballXPos = x2
@@ -282,8 +228,8 @@ export class MatchStatsService {
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
-		match.room_socket.emit("endMatch")
 		match.timestamp_ended = new Date
+		match.room_socket.emit("endMatch")
 
 		if (forceEnd != true) {
 			await this.save(match);

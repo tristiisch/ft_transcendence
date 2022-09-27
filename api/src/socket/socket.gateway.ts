@@ -22,7 +22,7 @@ import { comparePassword } from 'utils/bcrypt';
 import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 import { UsersService } from 'users/users.service';
 import { AuthService } from 'auth/auth.service';
-import { MatchStatsService } from 'game/matchs/matchs.service';
+import { MatchService } from 'game/matchs/matchs.service';
 import { validate, validateOrReject } from 'class-validator';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Notification, NotificationType } from 'notification/entity/notification.entity';
@@ -45,8 +45,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly userService: UsersService,
 		@Inject(forwardRef(() => AuthService))
 		private readonly authService: AuthService,
-		@Inject(forwardRef(() => MatchStatsService))
-		private readonly matchService: MatchStatsService,
+		@Inject(forwardRef(() => MatchService))
+		private readonly matchService: MatchService,
 		// @Inject(forwardRef(() => NotificationService))
 		// private readonly notificationService: NotificationService
 	) {}
