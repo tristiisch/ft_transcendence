@@ -518,6 +518,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			let match = this.matches.get(id)
 			let started = match.started
 			let waiting = match.waiting
+			let racketSize = match.racketSize
 			// let ballXPos = match.ballXPos
 			// let ballYPos = match.ballYPos
 			let p1Ready = match.p1Ready
@@ -529,7 +530,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			console.log("match_" + id, "nb clients = ", clients.size)
 			// if (started)
 				// return { stageWidth, started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
-			return { stageWidth, started, waiting, p1Ready, p2Ready, p1Pos, p2Pos }
+			return { stageWidth, started, waiting, racketSize, p1Ready, p2Ready, p1Pos, p2Pos }
 		}
 	}
 

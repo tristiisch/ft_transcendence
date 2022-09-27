@@ -24,6 +24,7 @@ function findMatch(type: number, match_live_infos: any) {
 	searchingMatch.value = true
 	socket.emit('findMatch', {type, custom_match_infos: match_live_infos})
 	socket.on('foundMatch', (id) => {
+		socket.off('foundMatch')
 		router.replace('match/' + id)
 	})
 }
