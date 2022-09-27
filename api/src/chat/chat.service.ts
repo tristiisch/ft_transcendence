@@ -737,7 +737,7 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 
 	async createAutoMsg(str: string, channel: Channel): Promise<Message> {
 		let msg: Message = new Message();
-		msg.message = '[DEBUG MSG CREATED BY BACK] ' + str;
+		msg.message = str;
 		msg.id_sender = -1;
 		msg.id_channel = channel.id;
 		msg.type = MessageType.AUTO;

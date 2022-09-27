@@ -48,7 +48,7 @@ export class NotificationService {
 		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
 
 		sqlStatement.where('notification.user_id = :invitedUser_id', { invitedUser_id: invitedUser.id });
-		sqlStatement.andWhere('notification.from_user_id = :inviteUser_id', { inviteUser: inviteUser.id });
+		sqlStatement.andWhere('notification.from_user_id = :inviteUser_id', { inviteUser_id: inviteUser.id });
 		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
 		sqlStatement.andWhere(`notification.type <> '${NotificationType.MATCH_REQUEST}'`);
 	
