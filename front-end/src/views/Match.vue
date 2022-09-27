@@ -8,6 +8,7 @@ import MatchService from '@/services/MatchService';
 import UserService from '@/services/UserService'
 import { useUserStore } from '@/stores/userStore';
 import status from '@/types/Status';
+import { useGlobalStore } from '@/stores/globalStore';
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +16,7 @@ var match = ref()
 var match_id = route.params.id as string
 
 const userStore = useUserStore()
+const globalStore = useGlobalStore();
 var player1 = ref()
 var player2 = ref()
 
@@ -51,7 +53,7 @@ MatchService.loadMatch(match_id)
 		});
 	})
 
-onBeforeMount(() => {
+onBeforeUnmount(() => {
 	socket.emit('update_status', status.ONLINE)
 })
 
@@ -60,9 +62,11 @@ watch([isLoaded, isMounted], () => {
 		loadStage()
 })
 
-onMounted(() => {
+onBeforeMount(() => {
 	isMounted.value = true
 	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
+	if (globalStore.gameInvitation)
+		globalStore.gameInvitation = false
 })
 
 function loadStage() {
