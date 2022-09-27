@@ -401,4 +401,8 @@ export class MatchService {
 		await this.notifService.removeNotifMatchRequest(inviteUser, invitedUser);
 		this.requests.delete(inviteUser.id);
 	}
+
+	getOwnRequest(user: User) : GameInvitation {
+		return this.requests.get(user.id);
+	}
 }
