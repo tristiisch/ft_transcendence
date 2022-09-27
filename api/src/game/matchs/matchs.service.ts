@@ -392,6 +392,14 @@ export class MatchStatsService {
 			let match_id = await this.createNewMatch(inviteUser, invitedUser, custonGameInfo)
 			this.matches.get(match_id).live.room_socket = this.socketService.server.to('match_' + match_id)
 			this.socketService.getSocketToEmit(inviteUser.id).emit('foundMatch', match_id)
+
+			let notif: Notification = new Notification();
+			notif.user_id = inviteUser.id;
+			notif.from_user_id = invitedUser.id;
+			notif.type = NotificationType.MATCH_ACCEPT;
+			notif = await this.notifService.addNotif(notif);
+			this.socketService.AddNotification(inviteUser, await notif.toFront(this.userService, [invitedUser, inviteUser]));
+
 			return { id: match_id };
 		} else {
 			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)

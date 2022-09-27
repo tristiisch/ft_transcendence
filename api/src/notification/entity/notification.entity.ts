@@ -9,6 +9,8 @@ export enum NotificationType {
 	UNKNOWN,
 	FRIEND_REQUEST,
 	MATCH_REQUEST,
+	MATCH_ACCEPT,
+	MATCH_DECLINE,
 	FRIEND_ACCEPT,
 	FRIEND_DECLINE,
 	FRIEND_REMOVE
@@ -51,6 +53,8 @@ export class Notification {
 			notifFront.message = `Friend request from ${notifFront.from_user.username}.`;
 		} else if (this.type == NotificationType.MATCH_REQUEST) {
 			notifFront.message = `Game request from ${notifFront.from_user.username}.`;
+		} else if (this.type == NotificationType.MATCH_ACCEPT) {
+			notifFront.message = `${notifFront.from_user.username} accepted your invitation, you will be redirected soon...`;
 		} else if (this.type == NotificationType.FRIEND_ACCEPT) {
 			notifFront.message = `${notifFront.from_user.username} is now friend with you.`;
 		} else if (this.type == NotificationType.FRIEND_DECLINE) {
