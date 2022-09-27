@@ -5,15 +5,15 @@ import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { isNumberPositive } from 'utils/utils';
 import { Match } from './entity/match.entity';
-import { MatchStatsService } from './matchs.service';
+import { MatchService } from './matchs.service';
 
 @Controller('matchs')
-export class MatchsStatsController {
+export class MatchsController {
 
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 
-	constructor(private readonly matchsService: MatchStatsService) {}
+	constructor(private readonly matchsService: MatchService) {}
 
 	@Post('start')
 	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<Match> {

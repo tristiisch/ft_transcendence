@@ -7,7 +7,7 @@ import { UsersService } from 'users/users.service';
 import { DeleteQueryBuilder, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';
-import { MatchStatsService } from 'game/matchs/matchs.service';
+import { MatchService } from 'game/matchs/matchs.service';
 
 @Injectable()
 export class NotificationService {
@@ -20,8 +20,8 @@ export class NotificationService {
 		private readonly friendService: FriendsService,
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
-		@Inject(forwardRef(() => MatchStatsService))
-		private readonly matchstatsService: MatchStatsService,
+		@Inject(forwardRef(() => MatchService))
+		private readonly matchstatsService: MatchService,
 	) {}
 
 	public async addNotif(notif: Notification): Promise<Notification> {

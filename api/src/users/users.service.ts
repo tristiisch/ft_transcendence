@@ -221,7 +221,9 @@ export class UsersService {
 	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
 		this.checkAvatar(avatar_64);
 		await this.usersRepository.update(userId, { avatar_64: avatar_64 }).catch(this.lambdaDatabaseUnvailable);
-		return await this.findOne(userId);
+		const user: User = await this.findOne(userId);
+
+		return user;
 	}
 
 	async register(userId: number, user: UserDTO) {

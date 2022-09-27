@@ -312,7 +312,6 @@ onBeforeUnmount(() => {
 			<h1 class="[font-size:_calc(0.15_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> / VS \</h1>
 			<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
 		</div>
-		
 		<base-button @click="leaveMatch()" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 			<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
 		</base-button>
@@ -368,7 +367,7 @@ onBeforeUnmount(() => {
 	bottom: 0;
 	top: 0;
 	z-index: 999;
-	border: 1px solid rgb(69, 69, 69);
+	border: 1px solid rgb(89, 89, 89);
 	/* background-color:rgba(1,255,1,1); */
 }
 
@@ -392,14 +391,14 @@ onBeforeUnmount(() => {
 		opacity: 0.95;
 	}
 }
-/* 
+
 .animationFlicker {
 	animation: flicker 0.15s infinite alternate;
 }
 
 .animationRefresh {
 	animation: refresh 5s linear infinite;
-} */
+}
 
 
 </style>
