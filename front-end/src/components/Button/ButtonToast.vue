@@ -25,7 +25,6 @@ onBeforeMount(() => {
 <template>
 	<div class="flex items-center pl-4 py-4 gap-4">
 		<img class=" h-11 w-11 shrink-0 rounded-full border-[1px] border-pink-400 object-cover" src='@/assets/invitationGame.jpg'>
-		<div class="pl-1">{{ notification.message}}</div>
-		<div class="pl-1">{{ countDown }}</div>
+		<div class="pl-1">{{ notification.message}} {{ countDown }}</div>
 	</div>
 </template>

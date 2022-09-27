@@ -25,8 +25,14 @@ socket.on("connect", () => {
 		if (notification.type == NotificationType.MATCH_ACCEPT) {
 			globalStore.gameInvitation = true
 			if (userStore.userData.status !== Status.INGAME) {
-				toast.info(ButtonToast)
-				//router.push('match' + id)
+				toast.info({
+					component: ButtonToast,
+					props:  {
+						notification: notification  // Optional
+					}})
+				setInterval(function(){ router.push({ name: 'Home' }) }, 5000);
+				//router.push({ name: 'Match', params: { id: notification.MatchId } });
+				;
 			}
 		}
 		else {

@@ -5,7 +5,7 @@ import { UsersService } from 'users/users.service';
 import { Brackets, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { Match, MatchOwn, CustomMatchInfos, MatchMakingTypes, GameInvitation } from './entity/match.entity';
 import { StatsService } from 'game/stats/stats.service';
-import { Notification, NotificationType } from 'notification/entity/notification.entity';
+import { Notification, NotificationFront, NotificationType } from 'notification/entity/notification.entity';
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
 import { v4 as uuid } from "uuid"
@@ -375,8 +375,12 @@ export class MatchStatsService {
 			notif.user_id = inviteUser.id;
 			notif.from_user_id = invitedUser.id;
 			notif.type = NotificationType.MATCH_ACCEPT;
-			notif = await this.notifService.addNotif(notif);
-			this.socketService.AddNotification(inviteUser, await notif.toFront(this.userService, [invitedUser, inviteUser]));
+			//notif = await this.notifService.addNotif(notif);
+	
+			const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);
+			notifFront.match_uuid = match_id;
+
+			this.socketService.AddNotification(inviteUser, notifFront);
 
 			return { id: match_id };
 		} else {

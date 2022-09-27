@@ -32,9 +32,6 @@ export class Notification {
 	@Column({ default: false })
 	is_deleted?: boolean;
 
-	@Column({ nullable: true, type: 'text', array: true })
-	arguments?: string[];
-
 	@Column({ type: 'enum', enum: NotificationType, default: NotificationType.UNKNOWN })
 	type: NotificationType;
 
@@ -54,7 +51,7 @@ export class Notification {
 		} else if (this.type == NotificationType.MATCH_REQUEST) {
 			notifFront.message = `Game request from ${notifFront.from_user.username}.`;
 		} else if (this.type == NotificationType.MATCH_ACCEPT) {
-			notifFront.message = `${notifFront.from_user.username} accepted your invitation, you will be redirected soon...`;
+			notifFront.message = `${notifFront.from_user.username} accepted your game invitation, you will be redirected soon...`;
 		} else if (this.type == NotificationType.FRIEND_ACCEPT) {
 			notifFront.message = `${notifFront.from_user.username} is now friend with you.`;
 		} else if (this.type == NotificationType.FRIEND_DECLINE) {
@@ -74,6 +71,7 @@ export class NotificationFront {
 	id: number;
 	from_user_id: number;
 	from_user: User;
+	match_uuid: string;
 	message: string;
 	date: string;
 	type: NotificationType;
