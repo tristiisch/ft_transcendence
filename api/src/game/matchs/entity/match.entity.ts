@@ -1,6 +1,6 @@
 import { NotAcceptableException, UnprocessableEntityException } from "@nestjs/common";
 import { IsInt } from "class-validator";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 
 export enum MatchMakingTypes {
 	NORMAL_MATCH,
@@ -10,14 +10,16 @@ export enum MatchMakingTypes {
 
 export interface Match {
 	stats: MatchStats,
-	live_infos: MatchLiveInfos
+	live: MatchLiveInfos
 }
+
+export interface MatchStats extends MatchLiveInfos {}
 
 @Entity()
 export class MatchStats extends BaseEntity {
 
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryColumn({ default: "for api/test/" + Math.random().toString() })
+	id: string
 
 	@Column()
 	@IsInt()
@@ -87,12 +89,11 @@ export class MatchStats extends BaseEntity {
 	}
 }
 
-export interface MatchLiveInfos {
+export interface MatchLiveInfos extends CustomMatchInfos {
 	room_socket: any,
 	started: boolean,
 	waiting: boolean,
 	stopMatch: boolean,
-	customInfos: CustomMatchInfos,
 
 	playersPosInterval: any,
 	ballPosInterval: any,
@@ -110,11 +111,11 @@ export interface MatchLiveInfos {
 }
 
 export interface CustomMatchInfos {
-	ballSpeed: number,
-	racketSize: number,
-	increaseBallSpeed: boolean,
-	world: number,
-	winningScore: number
+	ballSpeed?: number,
+	racketSize?: number,
+	increaseBallSpeed?: boolean,
+	world?: number,
+	winningScore?: number
 }
 
 export class GameInvitation {

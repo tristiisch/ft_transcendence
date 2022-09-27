@@ -12,7 +12,7 @@ import status from '@/types/Status';
 const route = useRoute()
 const router = useRouter()
 var match = ref()
-var match_id = parseInt(route.params.id as string)
+var match_id = route.params.id as string
 
 const userStore = useUserStore()
 var player1 = ref()
@@ -35,8 +35,6 @@ MatchService.loadMatch(match_id)
 			isLoaded.value = true
 			if (userStore.userData.id === player1.value.id || userStore.userData.id === player2.value.id)
 				isPlayer.value = true
-			// console.log(player1.value)
-			// console.log(player2.value)
 		}).catch((e) => {
 			router.replace({
 				name: 'Error',
@@ -146,7 +144,7 @@ function loadStage() {
 				p1_blocker.y(stage.height() - computeBlockerHeight())
 			else
 				p1_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
-			socket.emit("p1Pos", [match_id, p1_blocker.y() / backend_stage_ratio])
+			socket.emit("p1Pos", {id: match_id, pos: p1_blocker.y() / backend_stage_ratio})
 		});
 	}
 	else if (match.value.user2_id == userStore.userData.id) {
@@ -160,7 +158,7 @@ function loadStage() {
 				p2_blocker.y(stage.height() - computeBlockerHeight())
 			else
 				p2_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
-			socket.emit("p2Pos",  [match_id, p2_blocker.y() / backend_stage_ratio])
+			socket.emit("p2Pos", {id: match_id, pos: p2_blocker.y() / backend_stage_ratio})
 		});
 	}
 
@@ -268,7 +266,6 @@ function loadStage() {
 		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
 		p1_blocker.visible(true)
 		p2_blocker.visible(true)
-		// console.log(match_live_infos)
 	})
 
 	async function launchMatchLoop() {

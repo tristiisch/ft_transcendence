@@ -55,10 +55,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.socketService.server = server;
 		this.server.on("connection", (socket) => {
 			socket.prependAny((eventName, ...args) => {
-				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.prependAnyOutgoing((eventName, ...args) => {
-				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.on("ping", (count) => {
 				Logger.debug(`Ping ${count}`, 'WebSocket');
@@ -481,7 +481,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 
-		////////////////
+		///////////////
 		//	MATCH	//
 		/////////////
 
@@ -496,7 +496,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.matchService.removePlayerFromQueue(match_found.user.id)
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
 			var match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
-			this.matches.get(match_id).live_infos.room_socket = this.server.to('match_' + match_id)
+			this.matches.get(match_id).live.room_socket = this.server.to('match_' + match_id)
 			client.emit('foundMatch', match_id)
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
 		}
@@ -509,12 +509,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('joinMatch')
-	handleJoinMatch(@MessageBody() id: number, @ConnectedSocket() client: Socket) {
+	handleJoinMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		// once the match is created: for players and spectators
 		console.log(client.id, "wants to join : ", id)
 		if (this.matches.has(id)) {
 			let stageWidth = this.matchService.getStageWidth()
-			let match = this.matches.get(id).live_infos
+			let match = this.matches.get(id).live
 			let started = match.started
 			let waiting = match.waiting
 			// let ballXPos = match.ballXPos
@@ -533,45 +533,45 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('readyToPlay')
-	async handleReadyPlayerFromMatch(@MessageBody() id: number, @ConnectedSocket() client: Socket) {
+	async handleReadyPlayerFromMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		const user = await this.socketService.getUserFromSocket(client)
 		const match = this.matches.get(id)
 		if (match.stats.user1_id === user.id)
-			match.live_infos.p1Ready = true
+			match.live.p1Ready = true
 		else if (match.stats.user2_id === user.id)
-			match.live_infos.p2Ready = true
-		if (!match.live_infos.started && match.live_infos.p1Ready && match.live_infos.p2Ready)
+			match.live.p2Ready = true
+		if (!match.live.started && match.live.p1Ready && match.live.p2Ready)
 		{
 			console.log("match ", id, "ready !")
-			match.live_infos.started = true
+			match.live.started = true
 			this.matchService.startMatch(match)
 		}
 	}
 
 	@SubscribeMessage('p1Pos')
-	updatePlayer1Pos(@MessageBody() data: number[], @ConnectedSocket() client: Socket) {
-		const match = this.matches.get(data[0])
+	updatePlayer1Pos(@MessageBody() data: {id: string, pos: number}, @ConnectedSocket() client: Socket) {
+		const match = this.matches.get(data.id)
 		if (match !== undefined) {
 			if (client === this.socketService.getSocketToEmit(match.stats.user1_id))
-				match.live_infos.p1Pos = data[1]
+				match.live.p1Pos = data.pos
 		}
 	}
 
 	@SubscribeMessage('p2Pos')
-	updatePlayer2Pos(@MessageBody() data: number[], @ConnectedSocket() client: Socket) {
-		const match = this.matches.get(data[0])
+	updatePlayer2Pos(@MessageBody() data: {id: string, pos: number}, @ConnectedSocket() client: Socket) {
+		const match = this.matches.get(data.id)
 		if (match !== undefined) {
 			if (client === this.socketService.getSocketToEmit(match.stats.user2_id))
-				match.live_infos.p2Pos = data[1]
+				match.live.p2Pos = data.pos
 		}
 	}
 
 	@SubscribeMessage('leaveMatch')
-	async handleLeaveMatch(@MessageBody() id: number, @ConnectedSocket() client: Socket) {
+	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
 		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match.stats))
-			match.live_infos.stopMatch = true
+			this.matchService.endMatch(match)
 	}
 
 	// UpdateLeaderboard

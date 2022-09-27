@@ -60,11 +60,9 @@ export class MatchsStatsController {
 
 	 @UseGuards(JwtAuthGuard)
 	 @Get(':id')
-	 sendMatchInfos(@Param('id') id: number) {
-		 // console.log("get : ", this.matchService.getMatches().get(id).stats)
-		 isNumberPositive(id, 'get match');
+	 sendMatchInfos(@Param('id') id: string) {
 		 if (!this.matchsService.getMatches().has(id))
-			throw new NotFoundException(`Unknown match ${id}`);
+			throw new NotFoundException(`Unknown match`);
 		 return this.matchsService.getMatches().get(id)?.stats;
 	 }
 }
