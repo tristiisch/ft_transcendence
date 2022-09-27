@@ -21,14 +21,13 @@ socket.on("connect", () => {
 	const toast = useToast();
 
 	socket.on('addNotification', (notification: Notification) => {
-		globalStore.addNotification(notification);
 		if (notification.type == NotificationType.MATCH_ACCEPT) {
 			globalStore.gameInvitation = true
 			if (userStore.userData.status !== Status.INGAME) {
 				toast.info({
 					component: ButtonToast,
 					props:  {
-						notification: notification  // Optional
+						notification: notification
 					}})
 				setInterval(function(){ router.push({ name: 'Home' }) }, 5000);
 				//router.push({ name: 'Match', params: { id: notification.MatchId } });
@@ -36,6 +35,7 @@ socket.on("connect", () => {
 			}
 		}
 		else {
+			globalStore.addNotification(notification);
 			if (notification.type == NotificationType.FRIEND_REQUEST) globalStore.addPendingFriend(notification.from_user)
 			else if (notification.type == NotificationType.FRIEND_ACCEPT) globalStore.addFriend(notification.from_user)
 			else if (notification.type == NotificationType.FRIEND_DECLINE) globalStore.removePendingFriend(notification.from_user.id)

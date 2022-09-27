@@ -103,7 +103,7 @@ onUnmounted(() => {
 		<img
 			ref="sizeAvatar"
 			class="absolute left-[2%] top-[30%] rounded-full h-[40%] sm:left-0 sm:-top-[15%] sm:h-[150%] aspect-square sm:rounded-none sm:rounded-r-full object-cover"
-			:src="user?.avatar"
+			:src="userStore.userData.id === user?.id ? userStore.userData.avatar : user?.avatar"
 			alt="Rounded avatar"
 		/>
 		<div class="flex items-center pr-4" :style="avatarWidth">
