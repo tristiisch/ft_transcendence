@@ -6,6 +6,7 @@ import ButtonPlus from '@/components/Button/ButtonPlus.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import socket from '@/plugin/socketInstance';
+import UserService from '@/services/UserService';
 
 const globalStore = useGlobalStore();
 const mode = ref('random')
@@ -38,6 +39,10 @@ function launchGame() {
 
 function closeInvitation() {
 	globalStore.invitedUser = undefined;
+	UserService.removeInvitation()
+		.catch((error) => {
+			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		})
 	emit('close');
 }
 
