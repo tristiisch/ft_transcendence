@@ -7,7 +7,7 @@ import { UsersService } from 'users/users.service';
 import { DeleteQueryBuilder, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult } from 'typeorm';
 import { NotificationAction } from './entity/notification-action.entity';
 import { Notification, NotificationFront, NotificationType } from './entity/notification.entity';
-import { MatchStatsService } from 'game/matchs/matchs.service';
+import { MatchService } from 'game/matchs/matchs.service';
 
 @Injectable()
 export class NotificationService {
@@ -20,8 +20,8 @@ export class NotificationService {
 		private readonly friendService: FriendsService,
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
-		@Inject(forwardRef(() => MatchStatsService))
-		private readonly matchstatsService: MatchStatsService,
+		@Inject(forwardRef(() => MatchService))
+		private readonly matchstatsService: MatchService,
 	) {}
 
 	public async addNotif(notif: Notification): Promise<Notification> {
@@ -31,15 +31,26 @@ export class NotificationService {
 	/**
 	 * @Deprecated
 	 */
-	public async removeNotifFriendRequest(user: User, target: User): Promise<DeleteResult> {
+	public async removeNotifFriendRequest(user1: User, user2: User): Promise<DeleteResult> {
 		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
 
-		sqlStatement.where('notification.user_id = :user_id1', { user_id1: user.id });
-		sqlStatement.andWhere('notification.from_user_id = :user_id2', { user_id2: target.id });
+		sqlStatement.where('notification.user_id = :user_id1', { user_id1: user1.id });
+		sqlStatement.andWhere('notification.from_user_id = :user_id2', { user_id2: user2.id });
 		sqlStatement.orWhere('notification.user_id = :user_id2');
 		sqlStatement.andWhere('notification.from_user_id = :user_id1');
-		sqlStatement.orWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
 		sqlStatement.andWhere(`notification.type <> '${NotificationType.FRIEND_REQUEST}'`);
+	
+		return await sqlStatement.execute();
+	}
+
+	public async removeNotifMatchRequest(inviteUser: User, invitedUser: User): Promise<DeleteResult> {
+		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
+
+		sqlStatement.where('notification.user_id = :invitedUser_id', { invitedUser_id: invitedUser.id });
+		sqlStatement.andWhere('notification.from_user_id = :inviteUser_id', { inviteUser: inviteUser.id });
+		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.andWhere(`notification.type <> '${NotificationType.MATCH_REQUEST}'`);
 	
 		return await sqlStatement.execute();
 	}
@@ -102,7 +113,13 @@ export class NotificationService {
 			if (notifAction.accept) {
 				return await this.matchstatsService.acceptInvitation(user, target);
 			} else {
-
+				try {
+					return await this.matchstatsService.declineInvitation(user, target);
+				} catch (err) {
+					if (!(err instanceof PreconditionFailedException)) {
+						throw err;
+					}
+				}
 			}
 		}
 		notif.is_deleted = true;

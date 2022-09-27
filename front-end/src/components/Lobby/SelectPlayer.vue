@@ -41,6 +41,12 @@ function closeInvitation() {
 	emit('close');
 }
 
+function updateBackground() {
+	if (globalStore.gameInvitation) return 'bg-yellow-400 border-yellow-400'
+	else if (globalStore.invitedUser) return 'bg-red-700 border-yellow-700'
+	else return 'bg-neutral-100 border-blue-600'
+}
+
 onBeforeMount(() => {
 	if (globalStore.invitedUser)
 		mode.value = 'invite';
@@ -56,9 +62,9 @@ onBeforeMount(() => {
 			<button @click="changeMode('invite')" class="w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600 rounded-r-md border-t border-b" :class="mode === 'invite' || invitation ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Invite</button>
 		</div>
 		<div v-if="mode === 'invite' || invitation === true" class="h-full flex flex-col justify-center items-center w-full pt-2 gap-4">
-			<div :class="globalStore.gameInvitation ? 'bg-yellow-400 border-yellow-400' : 'bg-neutral-100 border-blue-600'" class="flex justify-center items-center border text-blue-600 rounded-full min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.18_*_100vh)] h-[calc(0.18_*_100vh)] w-[calc(0.2_*_100vh)] h-[calc(0.2_*_100vh)]">
-				<img v-if="globalStore.invitedUser" class="flex justify-center items-center min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.165_*_100vh)] h-[calc(0.165_*_100vh)] w-[calc(0.185_*_100vh)] h-[calc(0.185_*_100vh)] rounded-full object-cover" :src=globalStore.invitedUser.avatar>
-				<div v-if="!invitation" class="flex items-center gap-2">
+			<div :class="updateBackground()" class="flex justify-center items-center border text-blue-600 rounded-full min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.18_*_100vh)] h-[calc(0.18_*_100vh)] w-[calc(0.2_*_100vh)] h-[calc(0.2_*_100vh)]">
+				<img v-if="globalStore.invitedUser" class="flex justify-center items-center min-w-[110px] min-h-[110px] sm:min-w-[140px] sm:min-h-[140px] w-[calc(0.165_*_100vh)] h-[calc(0.165_*_100vh)] w-[calc(0.185_*_100vh)] h-[calc(0.185_*_100vh)] rounded-full object-cover" :src=globalStore.invitedUser.avatar>
+				<div v-else class="flex items-center gap-2">
 					<button-plus @click="emit('invitePlayer')"></button-plus>
 					<label class="text-xs sm:text-sm text-blue-600">Choose Player</label>
 				</div>

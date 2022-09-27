@@ -5,15 +5,15 @@ import { User } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
 import { isNumberPositive } from 'utils/utils';
 import { Match } from './entity/match.entity';
-import { MatchStatsService } from './matchs.service';
+import { MatchService } from './matchs.service';
 
 @Controller('matchs')
-export class MatchsStatsController {
+export class MatchsController {
 
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 
-	constructor(private readonly matchsService: MatchStatsService) {}
+	constructor(private readonly matchsService: MatchService) {}
 
 	@Post('start')
 	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<Match> {
@@ -54,16 +54,12 @@ export class MatchsStatsController {
 		return await this.matchsService.addRequest(req.user, body.id, body.gameInfo);
 	}
 
-	/**
-	 * @deprecated Only for test
-	 */
-
-	 @UseGuards(JwtAuthGuard)
-	 @Get(':id')
-	 sendMatchInfos(@Param('id') id: string) {
+	@UseGuards(JwtAuthGuard)
+	@Get(':id')
+	sendMatchInfos(@Param('id') id: string) {
 		if (!this.matchsService.getMatches().has(id))
 			throw new NotFoundException(`Unknown match`);
-		let match = this.matchsService.getMatches().get(id)
+		let match: Match = this.matchsService.getMatches().get(id)
 		return {
 			id: match.id,
 			user1_id: match.user1_id,
@@ -74,5 +70,13 @@ export class MatchsStatsController {
 			user2_avatar: match.user2_avatar,
 			score: [0, 0]
 		}
-	 }
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('request/remove')
+	removeOwnGameInvitation(@Req() req) {
+		const user: User = req.user;
+
+		return this.removeOwnGameInvitation(user);
+	}
 }

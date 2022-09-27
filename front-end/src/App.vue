@@ -6,6 +6,7 @@ import { onBeforeMount, ref, computed } from 'vue';
 import status from '@/types/Status';
 import AuthService from '@/services/AuthService';
 import socket from '@/plugin/socketInstance';
+import Status from '@/types/Status';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
@@ -21,6 +22,7 @@ onBeforeMount(() => {
 		Promise.all([userStore.fetchAll(), globalStore.fetchAll()])
 		.then(() => {
 			isLoading.value = false
+			userStore.userData.status = Status.ONLINE;
 			socket.auth = { token: token_jwt };
 			socket.connect()
 		})

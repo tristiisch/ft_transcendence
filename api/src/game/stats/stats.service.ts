@@ -125,7 +125,7 @@ export class StatsService {
 			leaderUser.avatar = target.getAvatarURL();
 			leaderUser.status = target.status;
 
-			if (friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
+			if (us.user_id === user.id || friendsIds.length !== 0 && friendsIds.indexOf(us.user_id) !== -1)
 				leaderBoardFriends.push(leaderUser);
 
 			leaderBoard.push(leaderUser);

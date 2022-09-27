@@ -13,7 +13,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 const route = useRoute()
 const router = useRouter()
 var match = ref()
-var match_id = route.params.id as string
+var match_id = route.params.uuid as string
 
 const userStore = useUserStore()
 const globalStore = useGlobalStore()
@@ -26,7 +26,7 @@ MatchService.loadMatch(match_id)
 	.then((response) => {
 		console.log(response.data)
 		match.value = response.data
-		if (userStore.userData.id === match.user1_id || userStore.userData.id === match.user2_id)
+		if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
 			isPlayer.value = true
 		isLoaded.value = true
 	})
@@ -51,7 +51,10 @@ onBeforeMount(() => {
 	isMounted.value = true
 	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
 	if (globalStore.gameInvitation)
+	{
 		globalStore.gameInvitation = false
+		globalStore.invitedUser = undefined
+	}
 })
 
 function loadStage() {
@@ -336,7 +339,7 @@ onBeforeUnmount(() => {
 		<div id="stage-container"></div>
 		<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full h-[calc(0.1*100vh)]">
 			<img src="@/assets/tv-bar.png" class="w-full h-[calc(0.02*100vh)]">
-			<img src="@/assets/tv-button.png" class="self-end aspect-square mt-2 mr-16 h-[calc(0.06*100vh)]">
+			<img src="@/assets/Tv-button.png" class="self-end aspect-square mt-2 mr-16 h-[calc(0.06*100vh)]">
 		</div>
 	</div>
 		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
@@ -345,7 +348,7 @@ onBeforeUnmount(() => {
 		</div>
 		<div class="flex flex-col bg-[#cdb887] w-full">
 			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[40px]">
-			<img src="@/assets/tv-button.png" class="self-end h-[5vw] w-[5vw]">
+			<img src="@/assets/Tv-button.png" class="self-end h-[5vw] w-[5vw]">
 		</div>
     </div> -->
 </template>

@@ -350,6 +350,4 @@ export class FriendsService {
 			return this.userService.lambdaDatabaseUnvailable(err);
 		}
 	}
-
-
 }

@@ -3,7 +3,7 @@ import { Inject, Injectable, InternalServerErrorException, Logger, NotAcceptable
 import { AuthService } from 'auth/auth.service';
 import { FriendsService } from 'friends/friends.service';
 import { Match } from 'game/matchs/entity/match.entity';
-import { MatchStatsService } from 'game/matchs/matchs.service';
+import { MatchService } from 'game/matchs/matchs.service';
 import { UserStats } from 'game/stats/entity/userstats.entity';
 import { StatsService } from 'game/stats/stats.service';
 import { UserSelectDTO } from 'users/entity/user-select.dto';
@@ -17,6 +17,7 @@ import { Chat, ChatStatus } from 'chat/entity/chat.entity';
 import { ChatService } from 'chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
 import { Message } from 'chat/entity/message.entity';
+import { v4 as uuid } from "uuid"
 
 @Injectable()
 export class TestFakeService {
@@ -26,8 +27,8 @@ export class TestFakeService {
 	private readonly friendsService: FriendsService;
 	@Inject(StatsService)
 	private readonly statsService: StatsService;
-	@Inject(MatchStatsService)
-	private readonly matchHistoryService: MatchStatsService;
+	@Inject(MatchService)
+	private readonly matchHistoryService: MatchService;
 	@Inject(AuthService)
 	private readonly authService: AuthService;
 	@Inject(ChatService)
@@ -109,12 +110,13 @@ export class TestFakeService {
 
 	async initMatchHistory(user: User, userIds: number[]): Promise<Match> {
 		if (userIds.length === 0) {
-			Logger.warn(`Can't find a valid userId for matchHistory of ${JSON.stringify(user)}`, 'Fake Match')
+			Logger.warn(`Can't find a valid userId for matchHistory of ${user.username}`, 'Fake Match')
 			return null;
 		}
 		const targetId: number = randomElement(userIds);
 		const matchHistory: Match = new Match();
 
+		matchHistory.id = uuid();
 		if (randomNumber(0, 2) === 1) {
 			matchHistory.user2_id = user.id;
 			matchHistory.user1_id = targetId;

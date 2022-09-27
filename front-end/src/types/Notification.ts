@@ -12,6 +12,7 @@ export enum NotificationType {
 }
 
 export default interface Notification {
+	match_uuid: string;
 	id: number,
 	from_user: User,
 	from_user_id: number
