@@ -29,9 +29,7 @@ socket.on("connect", () => {
 					props:  {
 						notification: notification
 					}})
-				setInterval(function(){ router.push({ name: 'Home' }) }, 5000);
-				//router.push({ name: 'Match', params: { id: notification.MatchId } });
-				;
+				setInterval(() => router.push({ name: 'Match', params: { id: notification.match_uuid } }), 5000);
 			}
 		}
 		else {

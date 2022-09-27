@@ -95,6 +95,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	updateStatus(clientSocket: Socket, user: User, status: UserStatus) {
 		clientSocket.broadcast.emit('updateUserStatus', ({ id: user.id, status: status }))
+		this.userService.getRepo().update(user.id, { status: status });
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -571,7 +572,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
 		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match))
-			this.matchService.endMatch(match)
+			await this.matchService.endMatch(match)
 	}
 
 	// UpdateLeaderboard

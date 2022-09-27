@@ -17,6 +17,7 @@ import { Chat, ChatStatus } from 'chat/entity/chat.entity';
 import { ChatService } from 'chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
 import { Message } from 'chat/entity/message.entity';
+import { v4 as uuid } from "uuid"
 
 @Injectable()
 export class TestFakeService {
@@ -115,6 +116,7 @@ export class TestFakeService {
 		const targetId: number = randomElement(userIds);
 		const matchHistory: Match = new Match();
 
+		matchHistory.id = uuid();
 		if (randomNumber(0, 2) === 1) {
 			matchHistory.user2_id = user.id;
 			matchHistory.user1_id = targetId;

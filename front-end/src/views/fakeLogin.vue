@@ -4,6 +4,7 @@ import { useUserStore } from "@/stores/userStore"
 import socket from "@/plugin/socketInstance"
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
+import Status from "@/types/Status";
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -13,6 +14,7 @@ const route = useRoute();
 userStore.handleFakeLogin(route.params.username as string).then(() => {
 	if (userStore.isRegistered && !userStore.userAuth.has_2fa)
 	{
+		userStore.userData.status = Status.ONLINE;
 		socket.auth = { token: userStore.userAuth.token_jwt };
 		socket.connect()
 		router.replace({ name: 'Home' });

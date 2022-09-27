@@ -241,7 +241,7 @@ export class MatchStatsService {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
 			if (match.score[0] === match.winningScore || match.score[1] === match.winningScore) {
-				this.endMatch(match)
+				this.endMatch(match) // TODO add await
 				return
 			}
 			this.setNewMatchRoundVar(match)
@@ -356,7 +356,7 @@ export class MatchStatsService {
 
 	getRequest(idInvite: number, idTarget: number): [number, GameInvitation] | null {
 		const v = [...this.requests].find(([key, val]) => val.toUserId === idTarget && key === idInvite);
-		if (v.length > 0)
+		if (v && v.length > 0)
 			return v;
 		return null;
 	}
@@ -398,6 +398,7 @@ export class MatchStatsService {
 			notif.user_id = inviteUser.id;
 			notif.from_user_id = invitedUser.id;
 			notif.type = NotificationType.MATCH_ACCEPT;
+			notif.date = new Date();
 			//notif = await this.notifService.addNotif(notif);
 	
 			const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);

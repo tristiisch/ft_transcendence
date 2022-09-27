@@ -73,11 +73,11 @@ export class SocketService {
 		socket.emit(room, ...args);
 	}
 
-	async emitIds(fromUser: User, userIds: number[], room: string, ...args: any) {
+	async emitIds(fromUser: User | null, userIds: number[], room: string, ...args: any) {
 		const users: User[] = await this.userService.findMany(userIds);
 
 		for (let u of users) {
-			if (!u.isBlockedUser(fromUser.id))
+			if (!fromUser || !u.isBlockedUser(fromUser.id))
 				this.emitId(u.id, room, ...args);
 		}
 	}
