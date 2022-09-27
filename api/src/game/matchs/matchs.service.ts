@@ -27,7 +27,7 @@ export class MatchService {
 	private readonly blockerHeight = this.stageHeight / 5
 	private readonly p1XPos = this.stageWidth / 10
 	private readonly p2XPos = this.stageWidth - this.p1XPos
-	private readonly winningScore = -1
+	private readonly winningScore = 5
 	private readonly ballSpeed = 2
 	private readonly increaseBallSpeed = false
 	private readonly world = 0
@@ -87,8 +87,8 @@ export class MatchService {
 		
 		if (custom) {
 			console.log("custom!")
-			match.ballSpeed = custom.ballSpeed
-			match.racketSize = custom.racketSize
+			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
+			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
 			match.increaseBallSpeed = custom.increaseBallSpeed
 			match.world = custom.world
 			match.winningScore = custom.winningScore
@@ -148,7 +148,9 @@ export class MatchService {
 	}
 	setNewMatchRoundVar(match: Match) {
 		match.ballXPos = this.stageWidth / 2
-		match.ballYPos = Math.random() * this.stageHeight
+		match.ballYPos = this.stageHeight / 2//Math.random() * this.stageHeight
+		if (match.increaseBallSpeed && match.ballSpeed <= 5)
+			match.ballSpeed += 0.2
 		match.ballXDir = (Math.round(Math.random() * 10)) % 2 ? match.ballSpeed : -match.ballSpeed
 		match.ballYDir = (Math.round(Math.random() * 10)) % 2 ? match.ballSpeed : -match.ballSpeed
 	}
@@ -183,7 +185,8 @@ export class MatchService {
 		let tdiff = T2.getTime() - match.T.getTime()
 
 		var x2 = match.ballXPos + (tdiff * match.ballXDir)
-		if (x2 < 0 || x2 >= this.stageWidth) {
+		if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
+		// if (x2 < 0 || x2 >= this.stageWidth) {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
 			if (match.score[0] === match.winningScore || match.score[1] === match.winningScore) {
@@ -211,8 +214,8 @@ export class MatchService {
 		// 		match.ballYDir *= -1
 		// 		y2 = y2 + 2 * match.ballYDir
 		// 	}
-		if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight))
+		if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
+				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
 					match.ballXDir *= -1
 
 		match.ballXPos = x2
