@@ -16,9 +16,7 @@ var match = ref()
 var match_id = route.params.id as string
 
 const userStore = useUserStore()
-const globalStore = useGlobalStore();
-var player1 = ref()
-var player2 = ref()
+const globalStore = useGlobalStore()
 
 var isLoaded = ref(false)
 var isMounted = ref(false)
@@ -26,24 +24,11 @@ var isPlayer = ref(false)
 
 MatchService.loadMatch(match_id)
 	.then((response) => {
+		console.log(response.data)
 		match.value = response.data
-		console.log(match.value)
-		Promise.all([
-			UserService.getUser(match.value.user1_id),
-			UserService.getUser(match.value.user2_id),])
-			.then((res) => {
-			player1.value = res[0].data
-			player2.value = res[1].data
-			isLoaded.value = true
-			if (userStore.userData.id === player1.value.id || userStore.userData.id === player2.value.id)
-				isPlayer.value = true
-		}).catch((e) => {
-			router.replace({
-				name: 'Error',
-				params: { pathMatch: route.path.substring(1).split('/') },
-				query: { code: e.response?.status, message: e.response?.data.message }
-			});
-		});
+		if (userStore.userData.id === match.user1_id || userStore.userData.id === match.user2_id)
+			isPlayer.value = true
+		isLoaded.value = true
 	})
 	.catch((e) => {
 		router.replace({
@@ -82,7 +67,6 @@ function loadStage() {
 	const blocker_width_quotient = 50 // the least, the bigger
 	const blocker_height_quotient = 5 // the least, the longer
 	const blocker_xpos_quotient = 10 // the more, the closer to the stage
-
 
 	function computeStageHeight(): number { return window.innerHeight * (stage_height_percentage / 100) }
 	function computeBallSize(): number { return stage.width() / ball_size_quotient }
@@ -333,17 +317,17 @@ onBeforeUnmount(() => {
 			<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
 		</base-button>
 		<div v-if="isLoaded" class="flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
-			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(player1.username) }}</h1>
+			<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="mt-20vh text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user1_username) }}</h1>
 			</base-button>
-			<img :src="player1.avatar" class="h-1/2 border-2 object-cover"/>
+			<img :src="match.user1_avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
 		<div class="w-[calc(0.8_*_100vh)]"></div>
 		<div v-if="isLoaded" class="flex flex-col h-full w-[calc(0.5_*_100vh)] mr-5">
-			<base-button link :to="{ name: 'Profile', params: { id: player2.id }}" class="mt-20vh text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(player2.username) }}</h1>
+			<base-button link :to="{ name: 'Profile', params: { id: match.user2_id }}" class="mt-20vh text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user2_username) }}</h1>
 			</base-button>
-			<img :src="player2.avatar" class="h-1/2 border-2 object-cover"/>
+			<img :src="match.user2_avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
 		<div class="w-[98vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-[71.2%] bg-stone-800 rounded-[260px]"></div>
 		<div class="rounded-3xl w-[98vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-[71.2%] rounded-[260px] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">

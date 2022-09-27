@@ -32,9 +32,6 @@ export class Notification {
 	@Column({ default: false })
 	is_deleted?: boolean;
 
-	@Column({ nullable: true, type: 'text', array: true })
-	arguments?: string[];
-
 	@Column({ type: 'enum', enum: NotificationType, default: NotificationType.UNKNOWN })
 	type: NotificationType;
 
@@ -74,6 +71,7 @@ export class NotificationFront {
 	id: number;
 	from_user_id: number;
 	from_user: User;
+	match_uuid: string;
 	message: string;
 	date: string;
 	type: NotificationType;
