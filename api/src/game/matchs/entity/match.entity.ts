@@ -39,7 +39,7 @@ export class Match extends BaseEntity {
 	@Column({ type: 'timestamptz', precision: null, nullable: true })
 	timestamp_ended: Date;
 
-	public getWinner(): number {
+	public getWinner?(): number {
 		if (this.timestamp_ended === null)
 			throw new UnprocessableEntityException('The game is not over, there is no winner yet.');
 
@@ -53,7 +53,7 @@ export class Match extends BaseEntity {
 		// throw new UnprocessableEntityException(`There was no winner, the match ended in a tie (${this.score}).`);
 	}
 
-	public getLoser(): number {
+	public getLoser?(): number {
 		if (this.timestamp_ended === null)
 			throw new UnprocessableEntityException('The game is not over, there is no loser yet.');
 
@@ -67,7 +67,7 @@ export class Match extends BaseEntity {
 		// throw new UnprocessableEntityException(`There was no loser, the match ended in a tie (${this.score}).`);
 	}
 
-	public getOpponent(userId: number): number {
+	public getOpponent?(userId: number): number {
 		if (userId === this.user1_id)
 			return this.user2_id;
 		else if (userId === this.user2_id)
@@ -75,11 +75,11 @@ export class Match extends BaseEntity {
 		throw new UnprocessableEntityException(`${userId} didn't play in this match.`);
 	}
 
-	public isWinner(userId: number): boolean {
+	public isWinner?(userId: number): boolean {
 		return this.getWinner() === userId;
 	}
 
-	public isEnded(): boolean {
+	public isEnded?(): boolean {
 		return this.timestamp_ended !== null;
 	}
 }

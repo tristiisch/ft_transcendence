@@ -169,7 +169,8 @@ export const useGlobalStore = defineStore('globalStore', {
 		removeNotActionNotification() {
 			this.notifications.filter(notification => notification.type == NotificationType.FRIEND_ACCEPT 
 				|| notification.type == NotificationType.FRIEND_DECLINE 
-				|| notification.type == NotificationType.FRIEND_REMOVE)
+				|| notification.type == NotificationType.FRIEND_REMOVE
+				|| notification.type == NotificationType.MATCH_DECLINE)
 				.forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
 		},
 	}

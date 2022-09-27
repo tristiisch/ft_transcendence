@@ -21,7 +21,7 @@ function isActionNotification(notification: Notification) {
 }
 
 function isGameNotification(notification: Notification) {
-	return (notification.type == NotificationType.MATCH_REQUEST)
+	return (notification.type == NotificationType.MATCH_REQUEST || notification.type == NotificationType.MATCH_DECLINE)
 }
 
 function acceptInvitation(notification: Notification) {
@@ -29,7 +29,7 @@ function acceptInvitation(notification: Notification) {
 		.then((response) => {
 			globalStore.removeNotification(notification.id)
 			if (notification.type  == NotificationType.MATCH_REQUEST)
-				router.push({ name: 'Match', params: { id: response?.data.id } });
+				router.push({ name: 'Match', params: { uuid: response?.data.id } });
 			else if(notification.type  == NotificationType.FRIEND_REQUEST)
 				globalStore.addFriend(notification.from_user)
 		})
@@ -37,7 +37,6 @@ function acceptInvitation(notification: Notification) {
 			if (error.response.status === 406)
 			{
 				toast.warning(error.response.data.message)
-				globalStore.removeNotification(notification.id)
 			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
@@ -54,7 +53,6 @@ function declineInvitation(notification: Notification) {
 			if (error.response.status === 406)
 			{
 				toast.warning(error.response.data.message)
-				globalStore.removeNotification(notification.id)
 			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})

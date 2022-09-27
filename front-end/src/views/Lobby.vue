@@ -48,13 +48,12 @@ function fetchCurrentMatchs() {
 
 function invitePlayer()
 {
-	rightPartToDisplay.value = 'selectPlayer'
-	invitation.value = true
-    if (globalStore.isTypeUser(globalStore.selectedItems[0])) {
+    if (globalStore.selectedItems[0] && globalStore.isTypeUser(globalStore.selectedItems[0])) {
+		invitation.value = true
+		rightPartToDisplay.value = 'selectPlayer'
         globalStore.invitedUser = globalStore.selectedItems[0];
         globalStore.resetSelectedItems();
     }
-	console.log(globalStore.invitedUser)
 	if (globalStore.invitedUser)
 	{
 		UserService.sendGameRequest(globalStore.invitedUser.id, {

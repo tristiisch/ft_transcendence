@@ -54,16 +54,12 @@ export class MatchsController {
 		return await this.matchsService.addRequest(req.user, body.id, body.gameInfo);
 	}
 
-	/**
-	 * @deprecated Only for test
-	 */
-
-	 @UseGuards(JwtAuthGuard)
-	 @Get(':id')
-	 sendMatchInfos(@Param('id') id: string) {
+	@UseGuards(JwtAuthGuard)
+	@Get(':id')
+	sendMatchInfos(@Param('id') id: string) {
 		if (!this.matchsService.getMatches().has(id))
 			throw new NotFoundException(`Unknown match`);
-		let match = this.matchsService.getMatches().get(id)
+		let match: Match = this.matchsService.getMatches().get(id)
 		return {
 			id: match.id,
 			user1_id: match.user1_id,
@@ -74,5 +70,13 @@ export class MatchsController {
 			user2_avatar: match.user2_avatar,
 			score: [0, 0]
 		}
-	 }
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('request/remove')
+	removeOwnGameInvitation(@Req() req) {
+		const user: User = req.user;
+
+		return this.matchsService.removeOwnGameInvitation(user);
+	}
 }

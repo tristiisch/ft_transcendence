@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { UserState } from '@/types/UserState';
+import type { Auth, UserState } from '@/types/UserState';
 import { useGlobalStore } from './globalStore';
 import { useChatStore } from '@/stores/chatStore';
 import AuthService from '@/services/AuthService';
@@ -81,8 +81,8 @@ export const useUserStore = defineStore('userStore', {
 		handleLogout() {
 			const globalStore = useGlobalStore();
 			const chatStore = useChatStore();
+			this.userAuth = {} as Auth
 			localStorage.clear();
-			this.$reset();
 			globalStore.$reset();
 			chatStore.$reset();
 			socket.disconnect()

@@ -31,15 +31,26 @@ export class NotificationService {
 	/**
 	 * @Deprecated
 	 */
-	public async removeNotifFriendRequest(user: User, target: User): Promise<DeleteResult> {
+	public async removeNotifFriendRequest(user1: User, user2: User): Promise<DeleteResult> {
 		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
 
-		sqlStatement.where('notification.user_id = :user_id1', { user_id1: user.id });
-		sqlStatement.andWhere('notification.from_user_id = :user_id2', { user_id2: target.id });
+		sqlStatement.where('notification.user_id = :user_id1', { user_id1: user1.id });
+		sqlStatement.andWhere('notification.from_user_id = :user_id2', { user_id2: user2.id });
 		sqlStatement.orWhere('notification.user_id = :user_id2');
 		sqlStatement.andWhere('notification.from_user_id = :user_id1');
-		sqlStatement.orWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
 		sqlStatement.andWhere(`notification.type <> '${NotificationType.FRIEND_REQUEST}'`);
+	
+		return await sqlStatement.execute();
+	}
+
+	public async removeNotifMatchRequest(inviteUser: User, invitedUser: User): Promise<DeleteResult> {
+		const sqlStatement: DeleteQueryBuilder<Notification> = this.notifsRepository.createQueryBuilder('notification').delete();
+
+		sqlStatement.where('notification.user_id = :invitedUser_id', { invitedUser_id: invitedUser.id });
+		sqlStatement.andWhere('notification.from_user_id = :inviteUser_id', { inviteUser_id: inviteUser.id });
+		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
+		sqlStatement.andWhere(`notification.type <> '${NotificationType.MATCH_REQUEST}'`);
 	
 		return await sqlStatement.execute();
 	}
@@ -82,8 +93,10 @@ export class NotificationService {
 			throw new NotFoundException(`Unable to find notification n°${notifAction.id}.`);
 		const target: User = await this.userService.findOne(notif.from_user_id);
 
+		let ret: any;
+
 		if (user.isBlockedUser(target.id)) {
-			throw new NotAcceptableException(`You have blocked ${target}. You can't do this.`);
+			throw new NotAcceptableException(`You have blocked ${target.username}. You can't do this.`);
 		}
 
 		if (notif.type === NotificationType.FRIEND_REQUEST) {
@@ -100,12 +113,19 @@ export class NotificationService {
 			}
 		} else if (notif.type === NotificationType.MATCH_REQUEST) {
 			if (notifAction.accept) {
-				return await this.matchstatsService.acceptInvitation(user, target);
+				ret = await this.matchstatsService.acceptInvitation(user, target);
 			} else {
-
+				try {
+					await this.matchstatsService.declineInvitation(user, target);
+				} catch (err) {
+					if (!(err instanceof NotAcceptableException)) {
+						throw err;
+					}
+				}
 			}
 		}
 		notif.is_deleted = true;
 		this.notifsRepository.update(notif.id, { is_deleted: notif.is_deleted });
+		return ret;
 	}
 }

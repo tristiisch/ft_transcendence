@@ -98,7 +98,7 @@ socket.on("chatChannelNamePassword", (channel: Channel, newNamePassword: { name:
 });
 
 socket.on("exception", (err) => {
-	toast.warning(`Error socket: ${err.message}`)
+	toast.warning(err.message)
 });
 
 // socket.on("gameInvitation", (gameId: number) => {
