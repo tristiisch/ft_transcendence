@@ -753,8 +753,8 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 
 		const sqlStatement: UpdateQueryBuilder<Message> = this.msgRepo.createQueryBuilder('message').update(Message);
 
-		sqlStatement.where('message.idSender = :inviteUser_id', { inviteUser_id: inviteUser.id });
-		sqlStatement.andWhere('message.idChat = :discu_id', { discu_id: discu.id });
+		sqlStatement.where('message.id_sender = :inviteUser_id', { inviteUser_id: inviteUser.id });
+		sqlStatement.andWhere('message.id_channel = :discu_id', { discu_id: discu.id });
 		sqlStatement.andWhere('message.type = :type', { type: MessageType.GAME_INVIT } );
 	
 		sqlStatement.set({ canUseButton: false });
