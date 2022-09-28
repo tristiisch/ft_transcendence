@@ -145,6 +145,7 @@ export class MatchService {
 			}
 		}, 1)
 
+		match.room_socket.emit("startMatch")
 		setTimeout(() => {
 			match.timestamp_started = new Date
 			match.ballPosInterval = setInterval(() => {
@@ -239,19 +240,15 @@ export class MatchService {
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
 		match.timestamp_ended = new Date
+
 		match.room_socket.emit("endMatch")
+		this.matches.delete(match.id)
 
 		if (match.user1_id === forfeitUserId)
-		{
-			console.log("setting user1 forfeit")
 			match.score[0] = -1
-		}
-		else if (match.user2_id === forfeitUserId){
-			console.log("setting user2 forfeit")
+		else if (match.user2_id === forfeitUserId)
 			match.score[1] = -1
-	}
 
-		console.log("forfeit!", forfeitUserId, match.score)
 		await this.save(match);
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());

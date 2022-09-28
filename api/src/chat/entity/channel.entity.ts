@@ -10,7 +10,6 @@ export class Channel extends Chat {
 
 	name: string;
 	owner_id: number;
-	avatar: string;
 	avatar_64: string;
 	admins_ids: number[] | null;
 	muted_ids: number[] | null;
@@ -22,11 +21,9 @@ export class Channel extends Chat {
 		const chFront: ChannelFront = {
 			name: this.name,
 			owner: await chatService.getUserService().findOneWithCache(this.owner_id, usersCached),
-			
-			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`, // TODO Dynamize url
+			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
 			hasPassword: false,
 			users: await chatService.getUserService().findManyWithCache(this.users_ids, usersCached),
-			// users: this.users_ids,
 			admins: await chatService.getUserService().findManyWithCache(this.admins_ids, usersCached),
 			muted: await chatService.getUserService().findManyWithCache(this.muted_ids, usersCached),
 			banned: await chatService.getUserService().findManyWithCache(this.banned_ids, usersCached),
@@ -43,30 +40,34 @@ export class Channel extends Chat {
 	}
 
 	public hasAdminPermission?(user: User): boolean {
-		return this.owner_id == user.id || this.isAdmin(user);
+		return this.owner_id === user.id || this.isAdmin(user);
 	}
 
 	public isAdmin?(user: User): boolean {
-		return this.admins_ids.indexOf(user.id) !== -1;
+		return this.admins_ids && this.admins_ids.indexOf(user.id) !== -1;
 	}
 
 	public isMute?(user: User): boolean {
-		return this.muted_ids.indexOf(user.id) !== -1;
+		return this.muted_ids && this.muted_ids.indexOf(user.id) !== -1;
 	}
 
 	public isBanned?(user: User): boolean {
-		return this.banned_ids.indexOf(user.id) !== -1;
+		return this.banned_ids && this.banned_ids.indexOf(user.id) !== -1;
 	}
 
 	public isIn?(user: User): boolean {
-		return this.users_ids.indexOf(user.id) !== -1;
+		return this.users_ids && this.users_ids.indexOf(user.id) !== -1;
 	}
 
 	async sendMessage?(sockerService: SocketService, room: string, ...args: any) {
+		if (!this.users_ids)
+			return;
 		await sockerService.emitIds(null, this.users_ids, room, ...args);
 	}
 
 	async sendMessageFrom?(sockerService: SocketService, user: User, room: string, ...args: any) {
+		if (!this.users_ids)
+			return;
 		const emitUsers: number[] = this.users_ids.filter(u => u !== user.id);
 		await sockerService.emitIds(user, emitUsers, room, ...args);
 	}
@@ -75,7 +76,7 @@ export class Channel extends Chat {
 @ChildEntity(ChatStatus.PUBLIC)
 export class ChannelPublic extends Channel {
 
-	@Column({ unique: true })
+	@Column()
 	name: string;
 
 	@Column()
@@ -98,7 +99,7 @@ export class ChannelPublic extends Channel {
 @ChildEntity(ChatStatus.PROTECTED)
 export class ChannelProtected extends Channel {
 
-	@Column({ unique: true })
+	@Column()
 	name: string;
 
 	@Column()
@@ -129,7 +130,7 @@ export class ChannelProtected extends Channel {
 @ChildEntity(ChatStatus.PRIVATE)
 export class ChannelPrivate extends Channel {
 
-	@Column({ unique: true })
+	@Column()
 	name: string;
 
 	@Column()
