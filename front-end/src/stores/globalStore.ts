@@ -62,7 +62,7 @@ export const useGlobalStore = defineStore('globalStore', {
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers()]);
+				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers(), this.fetchGameInvitation()]);
 			} catch (error: any) {
 				throw error;
 			}
@@ -103,6 +103,16 @@ export const useGlobalStore = defineStore('globalStore', {
 			try {
 				const response = await UserService.getNotifications();
 				this.notifications = response.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchGameInvitation() {
+			try {
+				const response = await UserService.getGameInvitation();
+				console.log(response)
+				if (response.data)
+					this.invitedUser = response.data
 			} catch (error: any) {
 				throw error;
 			}
