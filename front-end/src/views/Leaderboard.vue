@@ -204,10 +204,29 @@ onBeforeUnmount(() => {
 				<base-button @click="rankOrder()">Rank</base-button>
 			</div>
 		</div>
-		<div class="overflow-y-scroll h-3/4 bg-slate-900">
+		<div id="scrollbar" class="overflow-y-scroll h-3/4 bg-slate-900">
 			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] 3xl:h-[calc(100%_/_5)] pb-3 px-3">
 				<CardLeaderboard :user="user"></CardLeaderboard>
 			</div>
 		</div>
 	</base-ui>
 </template>
+
+<style>
+#scrollbar::-webkit-scrollbar-track
+{
+	background-color: transparent;
+	background-clip: content-box; 
+}
+
+#scrollbar::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: transparent;
+}
+
+#scrollbar::-webkit-scrollbar-thumb
+{
+	background-color: #4b5563;
+}
+</style>

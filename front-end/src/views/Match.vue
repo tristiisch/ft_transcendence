@@ -9,6 +9,7 @@ import UserService from '@/services/UserService'
 import { useUserStore } from '@/stores/userStore';
 import status from '@/types/Status';
 import { useGlobalStore } from '@/stores/globalStore';
+import ButtonCloseValidateVue from '@/components/Button/ButtonCloseValidate.vue';
 
 const route = useRoute()
 const router = useRouter()
@@ -24,6 +25,7 @@ const windowWidth = ref(window.innerWidth);
 var isLoaded = ref(false)
 var isMounted = ref(false)
 var isPlayer = ref(false)
+var matchStarted = ref(false)
 var matchEnded = ref(false)
 
 document.documentElement.style.overflow = 'hidden';
@@ -75,9 +77,10 @@ onUnmounted(() => {
 	socket.off("p2Pos")
 	socket.off("newMatchRound")
 	socket.off("endMatch")
-	if (matchEnded.value)
+	if (!matchEnded.value)
 		socket.emit("leaveMatch", match_id)
 	window.removeEventListener('resize', handleResize);
+	window.onresize = null
 });
 
 function loadStage() {
@@ -112,7 +115,7 @@ function loadStage() {
 
 	var layer = new Konva.Layer()
 	var ball_radius = computeBallSize()
-	var ball = new Konva.Circle({
+	var ball: Konva.Circle = new Konva.Circle({
 		x: stage_width / 2,
 		y: stage_height / 2,
 		radius: ball_radius,
@@ -120,7 +123,7 @@ function loadStage() {
 		visible: false
 	})
 	var blockers_width: number = computeBlockerWidth()
-	var blockers_height
+	var blockers_height: number
 	var p1_blocker: Konva.Rect = new Konva.Rect({
 		x: stage_width / blocker_xpos_quotient,
 		width: blockers_width,
@@ -128,7 +131,7 @@ function loadStage() {
 		cornerRadius: 2,
 		visible: false
 	})
-	var p2_blocker = new Konva.Rect({
+	var p2_blocker: Konva.Rect = new Konva.Rect({
 		x: stage.width() - stage.width() / blocker_xpos_quotient,
 		width: blockers_width,
 		fill: 'lightgreen',
@@ -143,7 +146,7 @@ function loadStage() {
 	// 	fill: "white"
 	// })
 
-	function moveRacket(event, racket: Konva.Rect, emit_message: string) {
+	function moveRacket(event: MouseEvent, racket: Konva.Rect, emit_message: string) {
 		var stage_pos = stage_container.getBoundingClientRect()
 		var mouse_ypos = event.clientY - stage_pos.y
 
@@ -191,7 +194,7 @@ function loadStage() {
 	function resizeStage() {
 		// stage.height(computeStageHeight())
 		stage.height(stage_container.offsetHeight)
-		stage.width(stage_container.offsetWidth)
+		stage.width(stage.height() * stage_ratio)
 		backend_stage_ratio = stage.width() / backend_stage_width
 
 		var ratio = stage.height() / stage_height
@@ -231,12 +234,9 @@ function loadStage() {
 	if (userStore.userData.id !== match.value.user1_id) socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
 	if (userStore.userData.id !== match.value.user2_id) socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
 
-	socket.on("startMatch", () => {
-		launchCountdown()
-		ball.visible(true)
-	})
+	socket.on("startMatch", () => launchCountdown())
 	socket.on("newMatchRound", (data) => {
-		console.log(data)
+		// console.log(data)
 		ball.x(data.ballX)
 		ball.y(data.ballY)
 		// dx = data.dx
@@ -252,12 +252,11 @@ function loadStage() {
 	socket.emit("joinMatch", match_id, (match_infos: any) => {
 		console.log("Joining match!")
 		backend_stage_width = match_infos.stageWidth
-		backend_stage_ratio = stage.width() / backend_stage_width
+		backend_stage_ratio = stage_width / backend_stage_width
 		backend_racket_size = match_infos.racketSize
-		console.log("racket", backend_racket_size)
 		blockers_height = computeBlockerHeight()
-		p1_blocker.height(computeBlockerHeight())
-		p2_blocker.height(computeBlockerHeight())
+		p1_blocker.height(blockers_height)
+		p2_blocker.height(blockers_height)
 
 		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
 		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
@@ -271,10 +270,6 @@ function loadStage() {
 			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"));
 		}
 
-		console.log(p1_blocker.x(), p1_blocker.y())
-		console.log(p2_blocker.x(), p2_blocker.y())
-		console.log(p1_blocker.visible(), p2_blocker.visible())
-
 		// setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		if (match_infos.started) {
 			ball.visible(true)
@@ -283,6 +278,13 @@ function loadStage() {
 		else if (isPlayer)
 			socket.emit("readyToPlay", match_id)
 	})
+
+	function launchCountdown() {
+		matchStarted.value = true
+		setTimeout(() => {
+			ball.visible(true)
+		}, 3000)
+	}
 
 	async function launchMatchLoop() {
 		setInterval(() => {
@@ -329,8 +331,6 @@ function handleResize() {
 	windowHeight.value = window.innerHeight;
 }
 
-function launchCountdown() {
-}
 
 </script>
 

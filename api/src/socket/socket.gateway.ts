@@ -535,7 +535,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 	@SubscribeMessage('cancelFindMatch')
 	async cancelFindMatch(@ConnectedSocket() client: Socket): Promise<void> {
-		console.log("cancelFindMatch!", client.id)
 		const user = await this.socketService.getUserFromSocket(client)
 		if (this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
 	}
@@ -604,8 +603,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
 		if (match){
-			if (this.matchService.isUserPlayerFromMatch(user.id, match))
+			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match))
 				await this.matchService.endMatch(match, user.id)
+			else {
+				if (!match.started) {
+					if (user.id === match.user1_id)
+						match.p1Ready = false
+					else if (user.id === match.user2_id)
+						match.p2Ready = false
+				}
+				client.leave("match_" + match.id)
+			}
 		}
 	}
 

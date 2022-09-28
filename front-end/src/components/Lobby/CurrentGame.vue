@@ -6,7 +6,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <div class="w-full overflow-y-auto h-full pt-4">
+    <div id="scrollbar" class="w-full overflow-y-auto h-full pt-4">
         <div v-for="match in matchs" :key="match.timestamp_started" class="flex w-full h-full sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)]">
             <base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="flex flex-col items-center gap-2 h-full text-slate-600 w-[40%] pr-4">
                 <img class="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border-[1px] border-slate-300" :src=match.user1_avatar alt="Rounded avatar">
@@ -31,3 +31,24 @@ const props = defineProps<{
         </div>
     </div>
 </template>
+
+<style>
+#scrollbar::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: transparent;
+	background-clip: content-box; 
+}
+
+#scrollbar::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: transparent;
+}
+
+#scrollbar::-webkit-scrollbar-thumb
+{
+	background-color: #334155;
+}
+</style>

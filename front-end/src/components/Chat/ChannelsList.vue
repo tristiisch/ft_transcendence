@@ -60,6 +60,11 @@ function borderColor(channel: Channel) {
 		return 'border-red-700'
 }
 
+function firstCard() {
+	if (props.index === 0)
+		return 'border-t-[1px]'
+}
+
 const numberOfUnreadedMessage = computed(() => {
     const nb = chatStore.nbUnreadMessageInChannel(props.channel);
     return nb;
@@ -67,7 +72,7 @@ const numberOfUnreadedMessage = computed(() => {
 </script>
 
 <template>
-     <button class="relative flex justify-between items-center w-full h-full border-b-[1px] border-slate-600 pr-2">
+     <button :class=firstCard() class="relative flex justify-between items-center w-full h-full border-b-[1px] border-slate-600 pr-2">
         <div class="shrink-0 flex items-center h-full gap-2">
             <img class="aspect-square h-8 sm:h-[80%] rounded object-cover border-[1.5px]" :class="borderColor(channel)" :src="channelAvatar()" alt="Rounded avatar">
         </div>
