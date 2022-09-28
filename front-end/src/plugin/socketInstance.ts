@@ -15,7 +15,6 @@ const socket = io(`${window.location.protocol}//${window.location.hostname}:${im
 
 socket.on("connect", () => {
 
-	console.log(socket.id)
 	const globalStore = useGlobalStore();
 	const userStore = useUserStore();
 	const toast = useToast();
@@ -44,6 +43,12 @@ socket.on("connect", () => {
 			if (userStore.userData.status !== Status.INGAME) toast.info(notification.message)
 		}
 	})
+})
+
+socket.on("disconnect", () => {
+	const userStore = useUserStore();
+	const toast = useToast();
+	userStore.handleLogout()
 })
 
 export default socket;
