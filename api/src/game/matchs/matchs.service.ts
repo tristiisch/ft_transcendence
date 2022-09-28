@@ -85,8 +85,8 @@ export class MatchService {
 		match.waiting = true
 		match.stopMatch = false
 		
-		if (custom) {
-			console.log("custom!")
+		if (custom) { // check custom infos
+			console.log("custom!", custom)
 			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
 			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
 			match.increaseBallSpeed = custom.increaseBallSpeed
