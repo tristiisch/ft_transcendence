@@ -45,10 +45,13 @@ socket.on("connect", () => {
 	})
 })
 
-socket.on("disconnect", () => {
+socket.on("disconnect", (reason) => {
 	const userStore = useUserStore();
 	const toast = useToast();
-	userStore.handleLogout()
+	if (reason === "io server disconnect") {
+		toast.error('Double connection')
+		userStore.handleLogout()
+	}
 })
 
 export default socket;
