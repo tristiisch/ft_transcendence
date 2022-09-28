@@ -220,11 +220,11 @@ function loadStage() {
 
 // -----------------------------------------------------
 // sockets after loading stage
-	// socket.on("ballPos", (x, y) => ball.position({x: x * backend_stage_ratio, y: y * backend_stage_ratio}))
-	socket.on("ballPos", (x, y) => {
-		ball_x = x * backend_stage_ratio
-		ball_y = y * backend_stage_ratio
-	})
+	socket.on("ballPos", (x, y) => ball.position({x: x * backend_stage_ratio, y: y * backend_stage_ratio}))
+	// socket.on("ballPos", (x, y) => {
+	// 	ball_x = x * backend_stage_ratio
+	// 	ball_y = y * backend_stage_ratio
+	// })
 	if (userStore.userData.id !== match.value.user1_id) {
 		console.log('p1Pos')
 		socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
@@ -265,7 +265,7 @@ function loadStage() {
 		console.log(p2_blocker.x(), p2_blocker.y())
 		console.log(p1_blocker.visible(), p2_blocker.visible())
 
-		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
+		// setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		if (match_infos.started) {
 			// launchMatchLoop()
 		}
