@@ -9,6 +9,8 @@ import { Notification, NotificationFront, NotificationType } from 'notification/
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
 import { v4 as uuid } from "uuid"
+import { ChatService } from 'chat/chat.service';
+import { Message } from 'chat/entity/message.entity';
 
 @Injectable()
 export class MatchService {
@@ -40,6 +42,8 @@ export class MatchService {
 	private readonly notifService: NotificationService;
 	@Inject(forwardRef(() => SocketService))
 	private readonly socketService: SocketService;
+	@Inject(forwardRef(() => ChatService))
+	private readonly chatService: ChatService;
 
 	public getRepo() {
 		return this.matchsHistoryRepository;
@@ -310,7 +314,7 @@ export class MatchService {
 		return null;
 	}
 
-	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos) {
+	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos | null) {
 		const target: User = await this.userService.findOne(id);
 		
 		if (this.requests.has(user.id))
@@ -328,7 +332,8 @@ export class MatchService {
 		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
 
 		const gameInvit = new GameInvitation();
-		gameInvit.matchInfo = matchInfo;
+		if (matchInfo)
+			gameInvit.matchInfo = matchInfo;
 		gameInvit.toUserId = target.id;
 
 		this.requests.set(user.id, gameInvit);
@@ -352,12 +357,14 @@ export class MatchService {
 			notif.from_user_id = invitedUser.id;
 			notif.type = NotificationType.MATCH_ACCEPT;
 			notif.date = new Date();
-			//notif = await this.notifService.addNotif(notif);
 	
 			const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);
 			notifFront.match_uuid = match_id;
 
 			this.socketService.AddNotification(inviteUser, notifFront);
+			this.requests.delete(inviteUser.id);
+
+			await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 
 			return { id: match_id };
 		} else {
@@ -393,7 +400,6 @@ export class MatchService {
 		notif.from_user_id = inviteUser.id;
 		notif.type = NotificationType.MATCH_CANCEL;
 		notif.date = new Date();
-		//notif = await this.notifService.addNotif(notif);
 
 		const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);
 		this.socketService.AddNotification(invitedUser, notifFront);

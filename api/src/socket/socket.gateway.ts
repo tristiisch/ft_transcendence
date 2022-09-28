@@ -14,7 +14,7 @@ import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from 'chat/en
 import { Server, Socket } from 'socket.io';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { SocketService } from './socket.service';
-import { Message, MessageFront } from 'chat/entity/message.entity';
+import { Message, MessageFront, MessageType } from 'chat/entity/message.entity';
 import { Chat, ChatFront, ChatStatus } from 'chat/entity/chat.entity';
 import { Discussion, DiscussionFront } from 'chat/entity/discussion.entity';
 import { ForbiddenException, forwardRef, Inject, Logger, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
@@ -47,8 +47,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly authService: AuthService,
 		@Inject(forwardRef(() => MatchService))
 		private readonly matchService: MatchService,
-		//@Inject(forwardRef(() => NotificationService))
-		//private readonly notifService: NotificationService
+		@Inject(forwardRef(() => NotificationService))
+		private readonly notifService: NotificationService
 	) {}
 
 	afterInit(server: Server): void {
@@ -179,6 +179,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			message.message = messageDTO.message;
 			message.type = messageDTO.type;
 
+			if (message.type === MessageType.GAME_INVIT) {
+				message.canUseButton = true;
+			}
+
 			message = await this.chatService.addMessage(message);
 			const msgFront: MessageFront = message.toFront(user, null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
@@ -191,6 +195,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			notif = await this.notifService.addNotif(notif);
 			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));*/
 			//////////////
+			await this.matchService.addRequest(req.user, target.id, null);
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);

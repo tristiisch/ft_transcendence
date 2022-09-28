@@ -2,7 +2,7 @@
 import { ForbiddenException, forwardRef, Inject, Injectable, Logger, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'users/users.service';
-import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
+import { ArrayContains, DeleteResult, InsertResult, Repository, UpdateQueryBuilder } from 'typeorm';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront, MessageType } from './entity/message.entity';
@@ -743,5 +743,22 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 		msg.type = MessageType.AUTO;
 		msg = await this.addMessage(msg);
 		return msg;
+	}
+
+	async disableButtonMessages(inviteUser: User, invitedUser: User) {
+
+		const discu: Discussion = await this.findDiscussion(inviteUser.id, invitedUser.id);
+		if (!discu)
+			return;
+
+		const sqlStatement: UpdateQueryBuilder<Message> = this.msgRepo.createQueryBuilder('message').update(Message);
+
+		sqlStatement.where('message.idSender = :inviteUser_id', { inviteUser_id: inviteUser.id });
+		sqlStatement.andWhere('message.idChat = :discu_id', { discu_id: discu.id });
+		sqlStatement.andWhere('message.type = :type', { type: MessageType.GAME_INVIT } );
+	
+		sqlStatement.set({ canUseButton: false });
+
+		return await sqlStatement.execute();
 	}
 }
