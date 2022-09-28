@@ -318,7 +318,7 @@ export class MatchService {
 		const target: User = await this.userService.findOne(id);
 		
 		if (this.requests.has(user.id))
-			throw new BadRequestException(`You have already invited someone.`);
+			throw new NotAcceptableException(`You have already invited someone.`);
 		if (user.isBlockedUser(target.id))
 			throw new NotAcceptableException(`You have blocked ${target.username}. You can't invite him.`);
 		if (target.isBlockedUser(user.id))
@@ -386,6 +386,7 @@ export class MatchService {
 		this.socketService.AddNotification(inviteUser, await notif.toFront(this.userService, [invitedUser, inviteUser]));
 
 		this.requests.delete(inviteUser.id);
+		await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 	}
 
 	async removeOwnGameInvitation(inviteUser: User) {

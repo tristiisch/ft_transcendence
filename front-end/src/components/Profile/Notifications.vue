@@ -35,9 +35,7 @@ function acceptInvitation(notification: Notification) {
 		})
 		.catch((error) => {
 			if (error.response.status === 406)
-			{
 				toast.warning(error.response.data.message)
-			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
 }
@@ -51,9 +49,7 @@ function declineInvitation(notification: Notification) {
 		})
 		.catch((error) => {
 			if (error.response.status === 406)
-			{
 				toast.warning(error.response.data.message)
-			}
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
 }

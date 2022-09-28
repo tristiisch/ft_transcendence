@@ -91,12 +91,12 @@ export class UsersService {
 	}
 
 	async findOne(id: number): Promise<User> {
-		isNumberPositive(id, 'get a user');
+		isNumberPositive(id, 'find a user');
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
 	async findOneWithCache(id: number, usersCached: User[]): Promise<User> {
-		isNumberPositive(id, 'get a user');
+		isNumberPositive(id, 'find a user');
 		let user: User = usersCached.find((user: User) => user.id === id);
 		if (user) {
 			delete user.avatar_64;
@@ -110,7 +110,7 @@ export class UsersService {
 
 	async findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
-			throw new PreconditionFailedException("Can't get a user by an empty name.");
+			throw new PreconditionFailedException("Can't find a user by an empty name.");
 		}
 		return await this.usersRepository.findOne({ where: {username : name }}).then((user: User) => {
 			return this.lambdaGetUser(user, name);
@@ -119,7 +119,7 @@ export class UsersService {
 
 	async findOneBy42Login(login42: string): Promise<User> {
 		if (!login42 || login42.length == 0) {
-			throw new PreconditionFailedException("Can't get a user by an empty 42login.");
+			throw new PreconditionFailedException("Can't find a user by an empty 42login.");
 		}
 		return await this.usersRepository.findOne({ where: { login_42: login42 } }).then((user: User) => {
 			return this.lambdaGetUser(user, login42);
