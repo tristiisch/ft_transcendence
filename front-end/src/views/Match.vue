@@ -43,9 +43,6 @@ MatchService.loadMatch(match_id)
 		});
 	})
 
-onBeforeUnmount(() => {
-	socket.emit('update_status', status.ONLINE)
-})
 
 watch([isLoaded, isMounted], () => {
 	if (isLoaded.value && isMounted.value)
@@ -54,6 +51,7 @@ watch([isLoaded, isMounted], () => {
 
 onBeforeMount(() => {
 	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
+	window.addEventListener('resize', handleResize);
 	if (globalStore.gameInvitation)
 	{
 		globalStore.gameInvitation = false
@@ -65,28 +63,32 @@ onMounted(() => {
 	isMounted.value = true
 })
 
+onBeforeUnmount(() => {
+	socket.emit('update_status', status.ONLINE)
+})
+
+
+onUnmounted(() => {
+	if (isPlayer)
+		socket.emit("leaveMatch", match_id)
+	window.removeEventListener('resize', handleResize);
+});
 
 
 function loadStage() {
 	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
-	const stage_height_percentage = 50
 	const stage_ratio = default_stage_width/default_stage_height
 	const ball_size_quotient = 100 // the least, the bigger
-	const ball_xpos_quotient = 2 // 2 being the center | min:1 max:inf
-	const ball_ypos_quotient = 2 // same
 	const ball_speed = 12
 
 	const blocker_width_quotient = 50 // the least, the bigger
-	const blocker_height_quotient = 5 // the least, the longer
 	const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
-	function computeStageHeight(): number { return window.innerHeight * (stage_height_percentage / 100) }
 	function computeBallSize(): number { return stage.width() / ball_size_quotient }
 	function computeBlockerWidth(): number { return stage.width() / blocker_width_quotient }
 	function computeBlockerHeight(): number { return backend_racket_size * backend_stage_ratio }
-	// function computeBlockerHeight(): number { return stage.height() / blocker_height_quotient }
 
 	var stage_height = stage_container.offsetHeight
 	var stage_width = stage_height * stage_ratio
@@ -106,9 +108,11 @@ function loadStage() {
 	var layer = new Konva.Layer()
 	var ball_radius = computeBallSize()
 	var ball = new Konva.Circle({
-		x: -50,
+		x: stage_width / 2,
+		y: stage_height / 2,
 		radius: ball_radius,
 		fill: 'dark',
+		visible: false
 	})
 	var blockers_width: number = computeBlockerWidth()
 	var blockers_height
@@ -228,6 +232,10 @@ function loadStage() {
 		socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
 	}
 
+	socket.on("startMatch", () => {
+		launchCountdown()
+		ball.visible(true)
+	})
 	socket.on("newMatchRound", (data) => {
 		console.log(data)
 		ball.x(data.ballX)
@@ -269,6 +277,7 @@ function loadStage() {
 
 		// setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		if (match_infos.started) {
+			ball.visible(true)
 			// launchMatchLoop()
 		}
 		else if (isPlayer)
@@ -305,9 +314,7 @@ function loadStage() {
 }
 
 function leaveMatch() {
-	if (isPlayer)
-		socket.emit("leaveMatch", match_id)
-	router.replace('')
+	router.push('/home')
 }
 
 function getShrunkUsername(username: string)
@@ -317,23 +324,14 @@ function getShrunkUsername(username: string)
 	return username
 }
 
-onBeforeUnmount(() => {
-	//socket.off(...)
-	socket.emit('updateUserStatus', status.ONLINE)
-});
-
 function handleResize() {
 	windowWidth.value = window.innerWidth;
 	windowHeight.value = window.innerHeight;
 }
 
-onBeforeMount(() => {
-	window.addEventListener('resize', handleResize);
-});
+function launchCountdown() {
+}
 
-onUnmounted(() => {
-	window.removeEventListener('resize', handleResize);
-});
 </script>
 
 <template>

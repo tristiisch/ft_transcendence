@@ -55,10 +55,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.socketService.server = server;
 		this.server.on("connection", (socket) => {
 			socket.prependAny((eventName, ...args) => {
-				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.prependAnyOutgoing((eventName, ...args) => {
-				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			socket.on("ping", (count) => {
 				Logger.debug(`Ping ${count}`, 'WebSocket');
