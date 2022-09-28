@@ -29,11 +29,11 @@ const label = computed(() => {
 
 function setRemovePassword() {
 	if (switchButtonActif.value) {
-		deletePassword.value = true;
-		switchButtonActif.value = true;
+		deletePassword.value = false;
+		switchButtonActif.value = false;
 	}
 	if (!switchButtonActif.value) {
-		deletePassword.value = false;
+		deletePassword.value = true;
 		switchButtonActif.value = true;
 	}
 	newPassword.value = '';
@@ -41,8 +41,7 @@ function setRemovePassword() {
 
 function updatePasswordName() {
     if (chatStore.inChannel) {
-        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value ? newPassword.value : (deletePassword.value ? null : undefined),
-			removePassword: switchButtonActif.value, userWhoChangeName: userStore.userData });	
+        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value ? newPassword.value : (deletePassword.value ? null : undefined), userWhoChangeName: userStore.userData });	
     }
     emit('close')
 }

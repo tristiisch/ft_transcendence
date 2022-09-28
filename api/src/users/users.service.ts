@@ -153,15 +153,19 @@ export class UsersService {
 		if (!array)
 			return null;
 		const users: User[] = new Array();
-		const usersToFetch: number[] = array.filter(id => usersCached.find(u => u.id !== id));
+		let usersToFetch: number[];
 
+		if (usersCached && usersCached.length !== 0)
+			usersToFetch = array.filter(id => usersCached.find(u => u.id !== id));
+		else
+			usersToFetch = array;
 		if (usersToFetch && usersToFetch.length > 0)
-			usersCached = [...usersCached, ...await this.findMany(usersToFetch)]
+			usersCached = usersCached.concat(await this.findMany(usersToFetch));
 	
 		for (const [index, id] of array.entries()) {
 			let cacheUser: User = usersCached.find((user: User) => user.id === id);
-			if (!cacheUser)
-				throw new UnprocessableEntityException(`Can't get user ${array} with cache ${usersCached.map(user => user.id)}.`);
+			if (cacheUser === undefined)
+				throw new UnprocessableEntityException(`Can't get user ${id} with cache ${JSON.stringify(usersCached.map(user => user.id))}.`);
 			users.push(cacheUser);
 		}
 		return users;
