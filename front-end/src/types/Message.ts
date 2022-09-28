@@ -10,5 +10,6 @@ export default interface Message {
 	send?: boolean,
 	read: boolean,
 	date: string,
-	type: MessageType
+	type: MessageType,
+	canUseButton?: boolean 
 }

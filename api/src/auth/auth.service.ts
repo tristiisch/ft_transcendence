@@ -90,6 +90,7 @@ export class AuthService {
 		return this.jwtService.signAsync(payload, {
 			secret: process.env.JWT_SECRET,
 		});
+		//expiresIn: "30sec"
 	}
 
 	/*public async createTempToken(id: number): Promise<string> {

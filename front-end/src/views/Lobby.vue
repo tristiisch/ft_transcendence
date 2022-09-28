@@ -69,7 +69,7 @@ function invitePlayer()
 		.catch((error) => {
 			invitation.value = false
 			globalStore.invitedUser = undefined
-			if (error.response.status === 400) toast.warning(error.response.data.message)
+			if (error.response.status === 406) toast.warning(error.response.data.message)
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		})
 	}

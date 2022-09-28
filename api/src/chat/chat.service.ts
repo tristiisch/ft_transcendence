@@ -2,7 +2,7 @@
 import { ForbiddenException, forwardRef, Inject, Injectable, Logger, NotAcceptableException, NotFoundException, NotImplementedException, PreconditionFailedException, Res, ServiceUnavailableException, UnauthorizedException, UnprocessableEntityException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'users/users.service';
-import { ArrayContains, DeleteResult, InsertResult, Repository } from 'typeorm';
+import { ArrayContains, DeleteResult, InsertResult, Repository, UpdateQueryBuilder } from 'typeorm';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected, ChannelPublic } from './entity/channel.entity';
 import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront, MessageType } from './entity/message.entity';
@@ -553,11 +553,12 @@ export class ChatService {
 
 		if (newName)
 			dataUpdate.name = newName;
-		if (channel.type === ChatStatus.PROTECTED && newPassword) {
-			if (channel.type !== ChatStatus.PROTECTED)
-				dataUpdate.type = ChatStatus.PROTECTED;
+		if (newPassword && channel.type === ChatStatus.PROTECTED) {
 			dataUpdate.password = newPassword;
+		} else if (channel.type !== ChatStatus.PROTECTED) {
+			dataUpdate.type = ChatStatus.PROTECTED;
 		}
+		
 
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
@@ -672,14 +673,7 @@ export class ChatService {
 		return discu;
 	}
 
-/*
-postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] ERROR:  duplicate key value violates unique constraint "UQ_cfd4f9d6e325ff227c481e027fa"
-postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] DETAIL:  Key (id_user, id_chat)=(261, 10) already exists.
-postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_read"("id_user", "id_chat", "id_message", "last_update") VALUES ($1, $2, $3, DEFAULT) RETURNING "id", "last_update"
-*/
 	async setReadMessage(user: User, chatId: number, message: Message) {
-		// if (!chat.users_ids || chat.users_ids.indexOf(user.id) === -1)
-		// 	throw new WsException('Unable to read a message from a channel where you are not in it.');
 		if (!chatId || Number.isNaN(chatId))
 			throw new WsException(`Unable to find channel id ${chatId}`);
 		let chatRead: ChatRead;
@@ -743,5 +737,22 @@ postgreSQL    | 2022-09-21 14:36:34.410 UTC [209] STATEMENT:  INSERT INTO "chat_
 		msg.type = MessageType.AUTO;
 		msg = await this.addMessage(msg);
 		return msg;
+	}
+
+	async disableButtonMessages(inviteUser: User, invitedUser: User) {
+
+		const discu: Discussion = await this.findDiscussion(inviteUser.id, invitedUser.id);
+		if (!discu)
+			return;
+
+		const sqlStatement: UpdateQueryBuilder<Message> = this.msgRepo.createQueryBuilder('message').update(Message);
+
+		sqlStatement.where('message.id_sender = :inviteUser_id', { inviteUser_id: inviteUser.id });
+		sqlStatement.andWhere('message.id_channel = :discu_id', { discu_id: discu.id });
+		sqlStatement.andWhere('message.type = :type', { type: MessageType.GAME_INVIT } );
+	
+		sqlStatement.set({ canUseButton: false });
+
+		return await sqlStatement.execute();
 	}
 }
