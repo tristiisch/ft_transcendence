@@ -55,24 +55,6 @@ export class MatchsController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get(':id')
-	sendMatchInfos(@Param('id') id: string) {
-		if (!this.matchsService.getMatches().has(id))
-			throw new NotFoundException(`Unknown match`);
-		let match: Match = this.matchsService.getMatches().get(id)
-		return {
-			id: match.id,
-			user1_id: match.user1_id,
-			user2_id: match.user2_id,
-			user1_username: match.user1_username,
-			user2_username: match.user2_username,
-			user1_avatar: match.user1_avatar,
-			user2_avatar: match.user2_avatar,
-			score: [0, 0]
-		}
-	}
-
-	@UseGuards(JwtAuthGuard)
 	@Get('request/remove')
 	removeOwnGameInvitation(@Req() req) {
 		const user: User = req.user;
@@ -90,5 +72,23 @@ export class MatchsController {
 			return null;
 		const target: User = await this.usersService.findOne(gameinvit.toUserId);
 		return target;
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get(':id')
+	sendMatchInfos(@Param('id') id: string) {
+		if (!this.matchsService.getMatches().has(id))
+			throw new NotFoundException(`Unknown match`);
+		let match: Match = this.matchsService.getMatches().get(id)
+		return {
+			id: match.id,
+			user1_id: match.user1_id,
+			user2_id: match.user2_id,
+			user1_username: match.user1_username,
+			user2_username: match.user2_username,
+			user1_avatar: match.user1_avatar,
+			user2_avatar: match.user2_avatar,
+			score: [0, 0]
+		}
 	}
 }
