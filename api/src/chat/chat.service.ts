@@ -284,7 +284,7 @@ export class ChatService {
 
 		await validateDTOforHttp(plainToInstance(ChannelCreateDTO, channelDTO));
 
-		if (this.isChannelExist(channelDTO.name)) {
+		if (await this.isChannelExist(channelDTO.name)) {
 			throw new WsException('A channel already exist with same name.')
 		}
 
