@@ -187,5 +187,10 @@ export const useGlobalStore = defineStore('globalStore', {
 			this.notifications = this.notifications.filter(notification => notification.from_user_id !== notif.from_user_id
 				&& notification.type !== notifType);
 		},
+		getNotifGameByUserID(userId: number) {
+			const index = this.notifications.findIndex(notification => notification.from_user_id === userId && notification.type == NotificationType.MATCH_REQUEST);
+			if (index !== -1) return this.notifications[index].id;
+			return null
+		},
 	}
 });

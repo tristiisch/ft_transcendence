@@ -25,7 +25,7 @@ import { AuthService } from 'auth/auth.service';
 import { MatchService } from 'game/matchs/matchs.service';
 import { validate, validateOrReject } from 'class-validator';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { Notification, NotificationType } from 'notification/entity/notification.entity';
+import { Notification, NotificationFront, NotificationType } from 'notification/entity/notification.entity';
 import { NotificationService } from 'notification/notification.service';
 import { MatchMakingTypes } from 'game/matchs/entity/match.entity';
 
@@ -47,8 +47,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly authService: AuthService,
 		@Inject(forwardRef(() => MatchService))
 		private readonly matchService: MatchService,
-		// @Inject(forwardRef(() => NotificationService))
-		// private readonly notificationService: NotificationService
+		//@Inject(forwardRef(() => NotificationService))
+		//private readonly notifService: NotificationService
 	) {}
 
 	afterInit(server: Server): void {
@@ -182,6 +182,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			message = await this.chatService.addMessage(message);
 			const msgFront: MessageFront = message.toFront(user, null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
+			
+			////////////
+			/*let notif: Notification = new Notification();
+			notif.user_id = target.id;
+			notif.from_user_id = user.id;
+			notif.type = NotificationType.MATCH_REQUEST;
+			notif = await this.notifService.addNotif(notif);
+			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));*/
+			//////////////
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
