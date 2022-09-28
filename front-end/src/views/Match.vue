@@ -20,7 +20,6 @@ const globalStore = useGlobalStore();
 
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
-const playGroundHeight = ref<HTMLInputElement | null>(null);
 
 var isLoaded = ref(false)
 var isMounted = ref(false)
@@ -54,7 +53,6 @@ watch([isLoaded, isMounted], () => {
 })
 
 onBeforeMount(() => {
-	isMounted.value = true
 	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
 	if (globalStore.gameInvitation)
 	{
@@ -63,7 +61,14 @@ onBeforeMount(() => {
 	}
 })
 
+onMounted(() => {
+	isMounted.value = true
+})
+
+
+
 function loadStage() {
+	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
 	const stage_height_percentage = 50
@@ -83,13 +88,13 @@ function loadStage() {
 	function computeBlockerHeight(): number { return backend_racket_size * backend_stage_ratio }
 	// function computeBlockerHeight(): number { return stage.height() / blocker_height_quotient }
 
-	var stage_height = computeStageHeight()
+	var stage_height = stage_container.offsetHeight
 	var stage_width = stage_height * stage_ratio
 	var stage = new Konva.Stage({
 		container: 'stage-container',
 		visible: true,
 		// height: computeStageHeight(),
-		height: playGroundHeight.value?.offsetHeight,
+		height: stage_height,
 		width: stage_width
 	})
 	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
@@ -129,34 +134,17 @@ function loadStage() {
 	// 	fill: "white"
 	// })
 
-	var stage_container = document.getElementById('stage-container')!
-	if (match.value.user1_id == userStore.userData.id) {
-		stage_container.addEventListener('mousemove', (event) => {
-			var stage_pos = stage_container.getBoundingClientRect()
-			var mouse_ypos = event.clientY - stage_pos.y
+	function moveRacket(event, racket: Konva.Rect, emit_message: string) {
+		var stage_pos = stage_container.getBoundingClientRect()
+		var mouse_ypos = event.clientY - stage_pos.y
 
-			if (mouse_ypos < computeBlockerHeight() / 2)
-				p1_blocker.y(0)
-			else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
-				p1_blocker.y(stage.height() - computeBlockerHeight())
-			else
-				p1_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
-			socket.emit("p1Pos", {id: match_id, pos: p1_blocker.y() / backend_stage_ratio})
-		});
-	}
-	else if (match.value.user2_id == userStore.userData.id) {
-		stage_container.addEventListener('mousemove', (event) => {
-			var stage_pos = stage_container.getBoundingClientRect()
-			var mouse_ypos = event.clientY - stage_pos.y
-
-			if (mouse_ypos < computeBlockerHeight() / 2)
-				p2_blocker.y(0)
-			else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
-				p2_blocker.y(stage.height() - computeBlockerHeight())
-			else
-				p2_blocker.y(mouse_ypos - computeBlockerHeight() / 2)
-			socket.emit("p2Pos", {id: match_id, pos: p2_blocker.y() / backend_stage_ratio})
-		});
+		if (mouse_ypos < computeBlockerHeight() / 2)
+			racket.y(0)
+		else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
+			racket.y(stage.height() - computeBlockerHeight())
+		else
+			racket.y(mouse_ypos - computeBlockerHeight() / 2)
+		socket.emit(emit_message, {id: match_id, pos: racket.y() / backend_stage_ratio})
 	}
 
 	layer.add(ball)
@@ -193,8 +181,8 @@ function loadStage() {
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
 		// stage.height(computeStageHeight())
-		stage.height(playGroundHeight.value?.offsetHeight!)
-		stage.width(stage.height() * stage_ratio)
+		stage.height(stage_container.offsetHeight)
+		stage.width(stage_container.offsetWidth)
 		backend_stage_ratio = stage.width() / backend_stage_width
 
 		var ratio = stage.height() / stage_height
@@ -265,8 +253,16 @@ function loadStage() {
 
 		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
 		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
+
 		p1_blocker.visible(true)
 		p2_blocker.visible(true)
+		if (match.value.user1_id == userStore.userData.id) {
+			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p1_blocker, "p1Pos"));
+		}
+		else if (match.value.user2_id == userStore.userData.id) {
+			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"));
+		}
+
 		console.log(p1_blocker.x(), p1_blocker.y())
 		console.log(p2_blocker.x(), p2_blocker.y())
 		console.log(p1_blocker.visible(), p2_blocker.visible())
@@ -379,7 +375,7 @@ onUnmounted(() => {
 					<img :src="match.user2_avatar" class="h-[80%] border-2 object-cover"/>
 				</div>
 				<img class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-transparent.png">
-				<div  id="stage-container" ref='playGroundHeight' class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
+				<div  id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
 				<div class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>

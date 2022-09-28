@@ -9,6 +9,7 @@ import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import { MatchMakingTypes } from '@/types/MatchMaking';
 import TheHeader from '../components/Ui/TheHeader.vue';
+import { MatchInfo } from '@/types/Match';
 
 
 const searchingMatch = ref(false)
@@ -31,15 +32,15 @@ function findMatch(type: number, match_live_infos: any) {
 }
 
 onBeforeMount(() => {
-	var custom_match_infos = null
 	if (route.query.custom) {
-		custom_match_infos = {
+		let custom_match_infos: MatchInfo = {
 			ballSpeed: globalStore.ballSpeed,
 			racketSize: globalStore.racketSize,
 			increaseBallSpeed: globalStore.increaseSpeed,
 			world: globalStore.world,
 			winningScore: globalStore.winningScore
 		}
+		console.log(custom_match_infos)
 		searchingMatch.value = true
 		findMatch(MatchMakingTypes.OWN_MATCH, custom_match_infos)
 	}

@@ -521,6 +521,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
+		console.log("findMatch!", client.id)
 		const user = await this.socketService.getUserFromSocket(client)
 		const match_found = this.matchService.findUserToPlay(data.type)
 		if (match_found) {
@@ -535,6 +536,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 	@SubscribeMessage('cancelFindMatch')
 	async cancelFindMatch(@ConnectedSocket() client: Socket): Promise<void> {
+		console.log("cancelFindMatch!", client.id)
 		const user = await this.socketService.getUserFromSocket(client)
 		if (this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
 	}
@@ -542,7 +544,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('joinMatch')
 	handleJoinMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		// once the match is created: for players and spectators
-		console.log(client.id, "wants to join : ", id)
+		console.log("joinMatch :", id, "!", client.id)
 		if (this.matches.has(id)) {
 			let stageWidth = this.matchService.getStageWidth()
 			let match = this.matches.get(id)
