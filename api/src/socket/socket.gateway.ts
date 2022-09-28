@@ -506,8 +506,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		await channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)
-		return [channelFront];
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, channel.id)
+		return [channelFront, channel.id];
 	}
 
 
