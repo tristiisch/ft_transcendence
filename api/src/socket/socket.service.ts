@@ -35,7 +35,10 @@ export class SocketService {
 	}
 
 	saveClientSocket(user: User, clientSocketId: string) {
+		console.log(this.usersSocket)
+		console.log(user.id)
 		const oldClientSocketId: string = this.usersSocket.get(user.id);
+		console.log(oldClientSocketId)
 		if (oldClientSocketId) {
 			const oldSocket: Socket = this.server.sockets.sockets.get(oldClientSocketId);
 			oldSocket.emit('');
@@ -43,6 +46,7 @@ export class SocketService {
 			Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
 		}
 		this.usersSocket.set(user.id, clientSocketId)
+		console.log(this.usersSocket)
 		return oldClientSocketId;
 	}
 

@@ -421,7 +421,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		newKicked.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
-		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been kicked by ${user.username}`, channel);
+		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been kicked by ${user.username}.`, channel);
 		
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
@@ -498,14 +498,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async editChannel(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
 		const channelDTO: ChannelFront = body[0];
-		const newNamePassword: { name: string | null, password: string | null, userWhoChangeName: User } = body[1];
+		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1];
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
-		let msg: Message = await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}`, channel);
+		if (newNamePassword.name !== channel.name)
+			await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}.`, channel);
+
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		await channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)
-		return [channelFront];
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, channel.id)
+		return [channelFront, channel.id];
 	}
 
 

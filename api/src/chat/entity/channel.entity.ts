@@ -21,11 +21,9 @@ export class Channel extends Chat {
 		const chFront: ChannelFront = {
 			name: this.name,
 			owner: await chatService.getUserService().findOneWithCache(this.owner_id, usersCached),
-			
-			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`, // TODO Dynamize url
+			avatar: `${process.env.API_URL}/chat/avatar-${ChatStatus[this.type].toLowerCase()}/${this.id}`,
 			hasPassword: false,
 			users: await chatService.getUserService().findManyWithCache(this.users_ids, usersCached),
-			// users: this.users_ids,
 			admins: await chatService.getUserService().findManyWithCache(this.admins_ids, usersCached),
 			muted: await chatService.getUserService().findManyWithCache(this.muted_ids, usersCached),
 			banned: await chatService.getUserService().findManyWithCache(this.banned_ids, usersCached),
@@ -78,7 +76,7 @@ export class Channel extends Chat {
 @ChildEntity(ChatStatus.PUBLIC)
 export class ChannelPublic extends Channel {
 
-	@Column({ unique: true })
+	@Column()
 	name: string;
 
 	@Column()
@@ -101,7 +99,7 @@ export class ChannelPublic extends Channel {
 @ChildEntity(ChatStatus.PROTECTED)
 export class ChannelProtected extends Channel {
 
-	@Column({ unique: true })
+	@Column()
 	name: string;
 
 	@Column()
@@ -132,7 +130,7 @@ export class ChannelProtected extends Channel {
 @ChildEntity(ChatStatus.PRIVATE)
 export class ChannelPrivate extends Channel {
 
-	@Column({ unique: true })
+	@Column()
 	name: string;
 
 	@Column()

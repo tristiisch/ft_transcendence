@@ -3,7 +3,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { ref } from 'vue';
 
 const globalStore = useGlobalStore();
-const imageTab = ref(['src/assets/world1.jpeg', 'src/assets/world2.jpg'] as string[])
+const imageTab = ref(['src/assets/world1.jpeg', 'src/assets/world2.jpeg'] as string[])
 const index = ref(0);
 
 function nextPrevious() { 
