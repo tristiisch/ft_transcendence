@@ -407,6 +407,7 @@ export class MatchService {
 	
 		await this.notifService.removeNotifMatchRequest(inviteUser, invitedUser);
 		this.requests.delete(inviteUser.id);
+		await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 	}
 
 	getOwnRequest(user: User) : GameInvitation {
