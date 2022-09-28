@@ -282,7 +282,7 @@ function loadStage() {
 	function launchCountdown() {
 		matchStarted.value = true
 		setTimeout(() => {
-			ball.visible = true
+			ball.visible(true)
 		}, 3000)
 	}
 
