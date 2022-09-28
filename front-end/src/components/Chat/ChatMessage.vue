@@ -52,8 +52,8 @@ function displayMessage(message: Message) {
 }
 
 function acceptInvitation() {
-	socket.emit("gameInvitation", true, (gameId: number) => {
-		router.push('match/' + gameId)
+	socket.emit("gameInvitation", true, (match_uuid: string) => {
+		router.push({ name: 'Match', params: { uuid: match_uuid } })
 	})
 }
 
