@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, onBeforeMount, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import Konva from 'konva'
 import socket from '@/plugin/socketInstance'
 import { useRoute, useRouter } from 'vue-router';
@@ -15,8 +15,12 @@ const router = useRouter()
 var match = ref()
 var match_id = route.params.uuid as string
 
-const userStore = useUserStore()
-const globalStore = useGlobalStore()
+const userStore = useUserStore();
+const globalStore = useGlobalStore();
+
+const windowHeight = ref(window.innerHeight);
+const windowWidth = ref(window.innerWidth);
+const playGroundHeight = ref<HTMLInputElement | null>(null);
 
 var isLoaded = ref(false)
 var isMounted = ref(false)
@@ -81,7 +85,8 @@ function loadStage() {
 	var stage = new Konva.Stage({
 		container: 'stage-container',
 		visible: true,
-		height: computeStageHeight(),
+		// height: computeStageHeight(),
+		height: playGroundHeight.value?.offsetHeight,
 		width: stage_width
 	})
 	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
@@ -186,7 +191,8 @@ function loadStage() {
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
-		stage.height(computeStageHeight())
+		// stage.height(computeStageHeight())
+		stage.height(playGroundHeight.value?.offsetHeight!)
 		stage.width(stage.height() * stage_ratio)
 		backend_stage_ratio = stage.width() / backend_stage_width
 
@@ -301,64 +307,97 @@ function getShrunkUsername(username: string)
 	return username
 }
 
+function returnSizePlayGround() {
+	// if (windowWidth.value < 1280) {
+	// 	return 'w-[70%] [aspect-ratio:_3989/2976]'
+	// }
+	// else if (windowWidth.value >= 1280)
+		return 'h-[70%] [aspect-ratio:_3989/2976]'
+
+}
+
 onBeforeUnmount(() => {
 	//socket.off(...)
 	socket.emit('updateUserStatus', status.ONLINE)
 });
 
+function handleResize() {
+	windowWidth.value = window.innerWidth;
+	windowHeight.value = window.innerHeight;
+}
+
+onBeforeMount(() => {
+	window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+	window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
-	<div class="flex justify-center h-full w-full bg-[#9f9e89] bg-TvScreen-texture">
-		<div class="flex items-center justify-center w-full absolute m-auto left-0 right-0 top-p1.5 h-p10">
-			<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[0] }}</h1>
-			<h1 class="[font-size:_calc(0.15_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"> / VS \</h1>
-			<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
-		</div>
-		<base-button @click="leaveMatch()" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-			<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
-		</base-button>
-		<div v-if="isLoaded" class="flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
-			<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="mt-20vh text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user1_username) }}</h1>
+	<div class="flex flex-col justify-between w-full h-full bg-[#9f9e89] bg-TvScreen-texture">
+		<div class="flex justify-center pt-[1vh] h-[15%] gap-4">
+			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col justify-center items-center h-full w-full gap-2">
+				<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+					<h1 class="[font-size:_calc(0.01_*_100vw)] hover:text-yellow-300">{{ getShrunkUsername(match.user1_username) }}</h1>
+				</base-button>
+				<img :src="match.user1_avatar" class="aspect-square w-[calc(0.1_*_100vw)] border-2 object-cover"/>
+			</div>
+			<div class="flex items-center justify-center">
+				<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vw)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[0] }}</h1>
+				<h1 class="[font-size:_calc(0.1_*_100vw)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"><span>/</span>VS<span>\</span></h1>
+				<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vw)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
+			</div>
+			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col  justify-center items-center h-full w-full gap-2">
+				<base-button link :to="{ name: 'Profile', params: { id: match.user2_id }}" class="text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+					<h1 class="[font-size:_calc(0.01_*_100vw)] hover:text-yellow-300">{{ getShrunkUsername(match.user2_username) }}</h1>
+				</base-button>
+				<img :src="match.user2_avatar" class="aspect-square w-[calc(0.1_*_100vw)] border-2 object-cover"/>
+			</div>
+			<base-button @click="leaveMatch()" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
 			</base-button>
-			<img :src="match.user1_avatar" class="h-1/2 border-2 object-cover"/>
 		</div>
-		<div class="w-[calc(0.8_*_100vh)]"></div>
-		<div v-if="isLoaded" class="flex flex-col h-full w-[calc(0.5_*_100vh)] mr-5">
-			<base-button link :to="{ name: 'Profile', params: { id: match.user2_id }}" class="mt-20vh text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user2_username) }}</h1>
-			</base-button>
-			<img :src="match.user2_avatar" class="h-1/2 border-2 object-cover"/>
+		<div class="flex flex-col justify-center items-center w-full pb-[calc(0.04*100vh)] h-[75%]">
+			<div class="relative [aspect-ratio:_3989/2976] w-full">
+				<div v-if="isLoaded && (windowWidth > 1500)" class="absolute left-6 top-0 flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
+					<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+						<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user1_username) }}</h1>
+					</base-button>
+					<img :src="match.user1_avatar" class="h-[80%] border-2 object-cover"/>
+				</div>
+				<div v-if="isLoaded && (windowWidth > 1500)" class="absolute right-6 top-0 flex flex-col h-full w-[calc(0.5_*_100vh)] mr-5">
+					<base-button link :to="{ name: 'Profile', params: { id: match.user2_id }}" class="text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+						<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user2_username) }}</h1>
+					</base-button>
+					<img :src="match.user2_avatar" class="h-[80%] border-2 object-cover"/>
+				</div>
+				<img class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-transparent.png">
+				<div  id="stage-container" ref='playGroundHeight' :class="returnSizePlayGround()" class="absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
+				<div class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
+				</div>
+			</div>
 		</div>
-		<div class="w-[98vh] absolute m-auto left-0 right-0 top-0 bottom-0 h-[71.1%] bg-stone-800 rounded-[calc(0.21*100vh)]"></div>
-		<div class="w-[98vh] animationFlicker absolute m-auto left-0 right-0 top-0 bottom-0 h-[71.1%] rounded-[calc(0.21*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
-			<div class="animationRefresh absolute w-full h-[80px] bottom-full opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
-		</div>
-		<div class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center w-[100vh] absolute m-auto top-0 bottom-0 left-0 right-0 h-3/4"></div>
-		<div id="stage-container"></div>
-		<div class="absolute bottom-0 flex flex-col bg-[#cdb887] w-full h-[calc(0.1*100vh)]">
+		<div class="flex flex-col bg-[#cdb887] w-full h-[10%]">
 			<img src="@/assets/tv-bar.png" class="w-full h-[calc(0.02*100vh)]">
-			<img src="@/assets/Tv-button.png" class="self-end aspect-square mt-2 mr-16 h-[calc(0.06*100vh)]">
+			<div class="flex justify-between items-center w-full mt-[0.4%]">
+				<img src="@/assets/Tv-button.png" class="rotate-[75deg] aspect-square ml-16 h-[calc(0.06*100vh)]">
+				<img src="@/assets/Tv-button.png" class="aspect-square mr-16 h-[calc(0.06*100vh)]">
+			</div>
 		</div>
 	</div>
-		<!-- <div id="stage-container" class="bg-contain bg-TvScreen-transparent bg-no-repeat bg-center"></div> -->
-	<!-- <div class="relative flex flex-col h-full w-full justify-center bg-[#9f9e89] bg-TvScreen-texture">
-		<div class="h-full w-full bg-contain bg-TvScreen bg-no-repeat bg-center z-10 xl:my-6 flex">
-		</div>
-		<div class="flex flex-col bg-[#cdb887] w-full">
-			<img src="@/assets/tv-bar.png" class="w-full sm:max-h-[40px]">
-			<img src="@/assets/Tv-button.png" class="self-end h-[5vw] w-[5vw]">
-		</div>
-    </div> -->
 </template>
 
 <style scoped>
 
-#stage-container {
+/* v-if="isLoaded"   */
+/* id="stage-container" */
+/* #stage-container {
 	height: 50%;
 	/* max-width: 3989px;
-	max-height: 2976px; */
+	max-height: 2976px;
 	aspect-ratio: 3989/2976;
 	position: absolute;
 	margin-right: auto;
@@ -371,8 +410,8 @@ onBeforeUnmount(() => {
 	top: 0;
 	z-index: 999;
 	border: 1px solid rgb(89, 89, 89);
-	/* background-color:rgba(1,255,1,1); */
-}
+	/* background-color:rgba(1,255,1,1);
+} */
 
 @keyframes refresh {
 	0% {

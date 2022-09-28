@@ -18,8 +18,8 @@ const emit = defineEmits<{
         <div class="flex justify-center items-center gap-2 w-full relative">
             <span class="absolute -top-[14px] sm:-top-4 text-red-700 text-xs sm:text-sm">{{ globalStore.winningScore }}pts</span>
             <span class="text-xs sm:text-sm"> 1 </span>
-            <input v-model="globalStore.winningScore" id="small-range" type="range" min="1" max="10" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
-            <span class="text-xs sm:text-sm"> 10 </span>
+            <input v-model="globalStore.winningScore" id="small-range" type="range" min="1" max="50" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
+            <span class="text-xs sm:text-sm"> 50 </span>
         </div>
         <label class="text-xs sm:text-sm">BALL SPEED</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
