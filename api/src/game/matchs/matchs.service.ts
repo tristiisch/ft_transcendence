@@ -57,11 +57,14 @@ export class MatchService {
 	public getStageWidth() {
 		return this.stageWidth
 	}
-	public addPlayerToQueue(user_id, data) {
+	public addPlayerToQueue(user_id: number, data: { user: User, match_type: MatchMakingTypes, custom_match_infos: CustomMatchInfos }) {
 		this.players_queue.set(user_id, data)
 	}
-	public removePlayerFromQueue(user_id) {
+	public removePlayerFromQueue(user_id: number) {
 		this.players_queue.delete(user_id)
+	}
+	public getMatch(user_id: number): Match | undefined {
+		return [...this.matches.values()].find((match) => match.user1_id === user_id || match.user2_id === user_id)
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
@@ -343,6 +346,10 @@ export class MatchService {
 		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
 		if (!req) {
 			throw new NotAcceptableException(`You didn't have a invitation of ${inviteUser.username} for playing pong.`)
+		}
+
+		if (this.getMatch(inviteUser.id) !== undefined) {
+			throw new NotAcceptableException(`${inviteUser.username} is already in a match.`)
 		}
 
 		const custonGameInfo: CustomMatchInfos = req[1].matchInfo as CustomMatchInfos;

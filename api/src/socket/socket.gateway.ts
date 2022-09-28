@@ -181,6 +181,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			if (message.type === MessageType.GAME_INVIT) {
 				message.canUseButton = true;
+				await this.matchService.addRequest(req.user, target.id, null);
 			}
 
 			message = await this.chatService.addMessage(message);
@@ -195,7 +196,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			notif = await this.notifService.addNotif(notif);
 			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));*/
 			//////////////
-			await this.matchService.addRequest(req.user, target.id, null);
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
@@ -339,7 +339,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
-		await this.chatService.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} been added to ${channel.name} by ${user.username}.`, channel);
+		await this.chatService.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
@@ -423,7 +423,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		newKicked.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
-		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
+		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been kicked by ${user.username}`, channel);
 		
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);

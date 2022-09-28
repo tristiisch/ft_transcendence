@@ -328,7 +328,7 @@ export class ChatService {
 
 		const users: User[] = await this.userService.findMany(channel.users_ids.filter(id => id !== user.id));
 		await this.createAutoMsg(`⚪️　${user.username} is the creator of this channel.`, channel);
-		await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} been added to ${channel.name} by ${user.username}.`, channel);
+		await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
 		return channel;
 	}
 
@@ -439,11 +439,11 @@ export class ChatService {
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:
 				await this.channelPublicRepo.update(channel.id, { muted_ids: usersIds });
-				ch = await  this.channelPublicRepo.findOneBy({ id: channel.id });
+				ch = await this.channelPublicRepo.findOneBy({ id: channel.id });
 				break;
 			case ChatStatus.PROTECTED:
 				await this.channelProtectedRepo.update(channel.id, { muted_ids: usersIds });
-				ch = await  this.channelProtectedRepo.findOneBy({ id: channel.id });
+				ch = await this.channelProtectedRepo.findOneBy({ id: channel.id });
 				break;
 			case ChatStatus.PRIVATE:
 				await this.channelPrivateRepo.update(channel.id, { muted_ids: usersIds });
@@ -555,10 +555,17 @@ export class ChatService {
 			dataUpdate.name = newName;
 		if (newPassword && channel.type === ChatStatus.PROTECTED) {
 			dataUpdate.password = newPassword;
-		} else if (channel.type !== ChatStatus.PROTECTED) {
-			dataUpdate.type = ChatStatus.PROTECTED;
+		} else if (newPassword && channel.type !== ChatStatus.PROTECTED) {
+			await this.deleteChannel(channel);
+			channel.type = ChatStatus.PROTECTED;
+			await this.addChatToDB(channel);
+			return channel;
+		} else if (newPassword === null && channel.type === ChatStatus.PROTECTED) {
+			await this.deleteChannel(channel);
+			channel.type = ChatStatus.PUBLIC;
+			await this.addChatToDB(channel);
+			return channel;
 		}
-		
 
 		switch (channel.type) {
 			case ChatStatus.PUBLIC:

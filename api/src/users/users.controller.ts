@@ -19,8 +19,8 @@ export class UsersController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get()
-	getAllUsers(@Req() req): Promise<User[]> {
-		return this.usersService.findAllExcept(req.user);
+	async getAllUsers(@Req() req): Promise<User[]> {
+		return await this.usersService.findAllExcept(req.user);
 	}
 
 	/*@Post()
@@ -56,9 +56,9 @@ export class UsersController {
 
 	@UseGuards(JwtAuthGuard)
 	@Patch('register')
-	registerUser(@Req() req, @Body() userToUpdate: UserDTO) {
+	async egisterUser(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
-		return this.usersService.register(user.id, userToUpdate);
+		await this.usersService.register(user.id, userToUpdate);
 	}
 
 	@UseGuards(JwtAuthGuard)
