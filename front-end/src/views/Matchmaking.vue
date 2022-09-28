@@ -9,7 +9,7 @@ import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import { MatchMakingTypes } from '@/types/MatchMaking';
 import TheHeader from '../components/Ui/TheHeader.vue';
-import { MatchInfo } from '@/types/Match';
+import type { MatchInfo } from '@/types/Match';
 
 
 const searchingMatch = ref(false)
