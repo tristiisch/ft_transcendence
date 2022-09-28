@@ -273,10 +273,21 @@ export class ChatService {
 		return this.findChannelAvatar(channel, res);
 	}
 
+	async isChannelExist(name: string) {
+		return await this.channelPublicRepo.findOneBy({ name: name })
+			|| await this.channelProtectedRepo.findOneBy({ name: name })
+			|| await this.channelPrivateRepo.findOneBy({ name: name });
+	}
+
 	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
 		let channel: Channel;
 
 		await validateDTOforHttp(plainToInstance(ChannelCreateDTO, channelDTO));
+
+		if (this.isChannelExist(channelDTO.name)) {
+			throw new WsException('A channel already exist with same name.')
+		}
+
 		switch (channelDTO.type) {
 			case ChatStatus.PUBLIC:
 				channel = new ChannelPublic();
@@ -314,13 +325,7 @@ export class ChatService {
 		else if (channel.users_ids.indexOf(user.id) == -1)
 			channel.users_ids.push(user.id);
 
-		try {
-			channel = await this.addChatToDB(channel) as Channel;
-		} catch (err) {
-			if (err.message.includes('duplicate key value violates unique constraint'))
-				throw new WsException('A channel already exist with same name.');
-			throw err;
-		}
+		channel = await this.addChatToDB(channel) as Channel;
 
 		const users: User[] = await this.userService.findMany(channel.users_ids.filter(id => id !== user.id));
 		await this.createAutoMsg(`⚪️　${user.username} is the creator of this channel.`, channel);
@@ -540,7 +545,7 @@ export class ChatService {
 		return chat;
 	}
 
-	channelPublicToProtected(chat: ChannelPublic, passwd: string, newName: string) {
+	async channelPublicToProtected(chat: ChannelPublic, passwd: string, newName: string) {
 		const newChannel: ChannelProtected = new ChannelProtected();
 		if (newName)
 			newChannel.name = newName;
@@ -551,7 +556,7 @@ export class ChatService {
 		newChannel.admins_ids = chat.admins_ids;
 		newChannel.muted_ids = chat.muted_ids;
 		newChannel.banned_ids = chat.banned_ids;
-		newChannel.password = passwd;
+		newChannel.password = await hashPassword(passwd);
 		newChannel.type = ChatStatus.PROTECTED;
 		newChannel.users_ids = chat.users_ids;
 
@@ -581,11 +586,12 @@ export class ChatService {
 
 		if (newName)
 			dataUpdate.name = newName;
-		if (newPassword && channel.type === ChatStatus.PROTECTED) {
-			dataUpdate.password = newPassword;
+		if (newPassword !== undefined && newPassword !== null && channel.type === ChatStatus.PROTECTED) {
+			dataUpdate.password = await hashPassword(newPassword);
+			await this.createAutoMsg(`⚪️　 ${userWhoChangeName.username} update the password to join.`, channel);
 
 		} else if (newPassword && channel.type !== ChatStatus.PROTECTED) {
-			const newChannel = await this.addChatToDB(this.channelPublicToProtected(channel, newPassword, newName)) as ChannelProtected;
+			const newChannel = await this.addChatToDB(await this.channelPublicToProtected(channel, newPassword, newName)) as ChannelProtected;
 			await this.updateChannelByOther(channel, newChannel);
 			await this.createAutoMsg(`🔴　 ${userWhoChangeName.username} set a password to join the channel.`, newChannel);
 			return newChannel;
