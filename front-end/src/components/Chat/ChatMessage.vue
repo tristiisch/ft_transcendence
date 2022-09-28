@@ -2,17 +2,21 @@
 import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
-import { useRouter } from 'vue-router';
 import { onUpdated } from 'vue';
+import { useToast } from 'vue-toastification';
+import { useRouter, useRoute } from 'vue-router';
 import type Message from '@/types/Message';
 import BaseButton from '@/components/Ui/BaseButton.vue';
 import MessageType from '@/types/MessageType';
 import socket from '@/plugin/socketInstance';
+import UserService from '@/services/UserService';
 
 const globalStore = useGlobalStore();
 const chatStore = useChatStore();
 const userStore = useUserStore();
 const router = useRouter();
+const route = useRoute();
+const toast = useToast();
 
 const emit = defineEmits<{
 	(e: 'scroll'): void
@@ -51,15 +55,54 @@ function displayMessage(message: Message) {
 	return message.message;
 }
 
-function acceptInvitation() {
-	socket.emit("gameInvitation", true, (gameId: number) => {
-		router.push('match/' + gameId)
+function acceptInvitation(senderId: number) {
+	const notifId =globalStore.getNotifGameByUserID(senderId)
+	if (notifId) {
+		UserService.notificationAction(notifId, true)
+			.then((response) => {
+				globalStore.removeNotification(notifId)
+					router.push({ name: 'Match', params: { uuid: response?.data.id } });
+			})
+			.catch((error) => {
+				if (error.response.status === 406)
+				{
+					toast.warning(error.response.data.message)
+				}
+				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			})
+	}
+}
+
+function declineInvitation(senderId: number) {
+	const notifId =globalStore.getNotifGameByUserID(senderId)
+	if (notifId) {
+		UserService.notificationAction(notifId, false)
+			.then(() => {
+				globalStore.removeNotification(notifId)
+			})
+			.catch((error) => {
+				if (error.response.status === 406)
+				{
+					toast.warning(error.response.data.message)
+				}
+				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			})
+	}
+}
+
+function isNotifGame(senderId: number) {
+	return globalStore.getNotifGameByUserID(senderId)
+}
+
+/*function acceptInvitation() {
+	socket.emit("gameInvitation", true, (match_uuid: string) => {
+		router.push({ name: 'Match', params: { uuid: match_uuid } })
 	})
 }
 
 function declineInvitation() {
 	socket.emit("gameInvitation", false);
-}
+}*/
 
 onUpdated(()=> {
     emit('scroll')
@@ -90,13 +133,13 @@ function chooseArray() {
 				<img class="h-8 w-8 sm:h-11 sm:w-11 shrink-0 rounded-full border-[1px] border-pink-400 object-cover" src='@/assets/invitationGame.jpg'>
 				<div class="flex flex-col justify-center items-center gap-1" >
 					<div class="pr-4 text-xs sm:text-xs text-blue-600"> {{ displayMessage(message) }} </div>
-					<div v-if="message.idSender !== userStore.userData.id" class="flex gap-1 pr-5">
-						<button @click="acceptInvitation()" class="bg-blue-600 text-neutral-100 p-1">
+					<div v-if="message.idSender !== userStore.userData.id && isNotifGame(message.idSender)" class="flex gap-1 pr-5">
+						<button @click="acceptInvitation(message.idSender)" class="bg-blue-600 text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
 								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 							</svg>
 						</button>
-						<button @click="declineInvitation()" class="bg-red-600 text-neutral-100 p-1">
+						<button @click="declineInvitation(message.idSender)" class="bg-red-600 text-neutral-100 p-1">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
 								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
 							</svg>

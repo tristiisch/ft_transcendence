@@ -32,9 +32,11 @@ socket.on("connect", () => {
 				setTimeout(() => router.push({ name: 'Match', params: { uuid: notification.match_uuid } }), 5000);
 			}
 		}
+		else if (notification.type == NotificationType.FRIEND_CANCEL) globalStore.removeNotifCancel(notification, NotificationType.FRIEND_REQUEST);
 		else {
 			globalStore.addNotification(notification);
-			if (notification.type == NotificationType.FRIEND_REQUEST) globalStore.addPendingFriend(notification.from_user)
+			if (notification.type == NotificationType.MATCH_CANCEL) globalStore.removeNotifCancel(notification, NotificationType.MATCH_REQUEST);
+			else if (notification.type == NotificationType.FRIEND_REQUEST) globalStore.addPendingFriend(notification.from_user)
 			else if (notification.type == NotificationType.FRIEND_ACCEPT) globalStore.addFriend(notification.from_user)
 			else if (notification.type == NotificationType.FRIEND_DECLINE) globalStore.removePendingFriend(notification.from_user.id)
 			else if (notification.type == NotificationType.FRIEND_REMOVE) globalStore.removeFriend(notification.from_user.id)

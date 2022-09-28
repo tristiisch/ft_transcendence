@@ -62,7 +62,7 @@ export const useGlobalStore = defineStore('globalStore', {
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers()]);
+				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers(), this.fetchGameInvitation()]);
 			} catch (error: any) {
 				throw error;
 			}
@@ -103,6 +103,16 @@ export const useGlobalStore = defineStore('globalStore', {
 			try {
 				const response = await UserService.getNotifications();
 				this.notifications = response.data;
+			} catch (error: any) {
+				throw error;
+			}
+		},
+		async fetchGameInvitation() {
+			try {
+				const response = await UserService.getGameInvitation();
+				console.log(response)
+				if (response.data)
+					this.invitedUser = response.data
 			} catch (error: any) {
 				throw error;
 			}
@@ -172,6 +182,15 @@ export const useGlobalStore = defineStore('globalStore', {
 				|| notification.type == NotificationType.FRIEND_REMOVE
 				|| notification.type == NotificationType.MATCH_DECLINE)
 				.forEach(notification => this.notifications.splice(this.notifications.indexOf(notification), 1));
+		},
+		removeNotifCancel(notif: Notification, notifType: NotificationType) {
+			this.notifications = this.notifications.filter(notification => notification.from_user_id !== notif.from_user_id
+				&& notification.type !== notifType);
+		},
+		getNotifGameByUserID(userId: number) {
+			const index = this.notifications.findIndex(notification => notification.from_user_id === userId && notification.type == NotificationType.MATCH_REQUEST);
+			if (index !== -1) return this.notifications[index].id;
+			return null
 		},
 	}
 });

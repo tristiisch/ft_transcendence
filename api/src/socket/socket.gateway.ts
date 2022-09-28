@@ -25,7 +25,7 @@ import { AuthService } from 'auth/auth.service';
 import { MatchService } from 'game/matchs/matchs.service';
 import { validate, validateOrReject } from 'class-validator';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { Notification, NotificationType } from 'notification/entity/notification.entity';
+import { Notification, NotificationFront, NotificationType } from 'notification/entity/notification.entity';
 import { NotificationService } from 'notification/notification.service';
 import { MatchMakingTypes } from 'game/matchs/entity/match.entity';
 
@@ -47,8 +47,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly authService: AuthService,
 		@Inject(forwardRef(() => MatchService))
 		private readonly matchService: MatchService,
-		// @Inject(forwardRef(() => NotificationService))
-		// private readonly notificationService: NotificationService
+		//@Inject(forwardRef(() => NotificationService))
+		//private readonly notifService: NotificationService
 	) {}
 
 	afterInit(server: Server): void {
@@ -116,6 +116,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
 		const user: User = req.user;
 		const channelDTO: ChannelCreateDTO = body[1];
+		const password: string = body[2];
+
+		channelDTO.password = password;
 		try {
 			const channel: Channel = await this.chatService.createChannel(user, channelDTO);
 			const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
@@ -162,8 +165,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		messageDTO.idSender = user.id;
 
 		if (target.isBlockedUser(user.id)) {
-			Logger.verbose(`${target.username} blocked ${user.username}, so he can't see his private msg '${messageDTO.message}'.`)
-			return;
+			throw new WsException(`You have been blocked by ${target.username}, you can't send him a message.`);
+		}
+		if (user.isBlockedUser(target.id)) {
+			throw new WsException(`You have blocked ${target.username}, you can't send him a message.`);
 		}
 
 		const discu: Discussion = await this.chatService.findOrCreateDiscussion(messageDTO.idSender, targetId);
@@ -177,6 +182,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			message = await this.chatService.addMessage(message);
 			const msgFront: MessageFront = message.toFront(user, null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
+			
+			////////////
+			/*let notif: Notification = new Notification();
+			notif.user_id = target.id;
+			notif.from_user_id = user.id;
+			notif.type = NotificationType.MATCH_REQUEST;
+			notif = await this.notifService.addNotif(notif);
+			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));*/
+			//////////////
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
@@ -306,7 +320,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatChannelInvitation')
 	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const channelDTO: ChannelFront = body[0];
-		const invitedUsers: User[] = body[1];
+		const invitedUsersDTO: User[] = body[1];
+
 		const user: User = req.user;
 		let channelTmp: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
@@ -315,8 +330,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		let channel: ChannelPrivate = channelTmp as ChannelPrivate;
 		channel.checkAdminPermission(user);
-		const users: User[] = await this.userService.findMany(invitedUsers.map(user => user.id));
+		const users: User[] = await this.userService.findMany(invitedUsersDTO.map(user => user.id));
+
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
+
+		await this.chatService.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} been added to ${channel.name} by ${user.username}.`, channel);
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
@@ -337,12 +355,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newBanned.list.map(user => user.id));
+		newBanned.list = users;
+		newBanned.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id)); // TODO optimize
 
 		const channelFront: ChannelFront = await this.chatService.setBanned(channel, user, users.map(user => user.id));
 
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
-		await this.socketService.emitIds(user, newBanned.list.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
+		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
 		return [channelFront];
 	}
 
@@ -356,6 +376,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
+		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
+		newAdmin.list = users;
 		const channelFront: ChannelFront = await this.chatService.setAdmin(channel, user, newAdmin);
 
 		
@@ -374,6 +396,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
+		newMuted.list = users;
 
 		const channelFront: ChannelFront = await this.chatService.setMuted(channel, user, users.map(user => user.id));
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelMute', channelFront);
@@ -391,14 +414,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newKicked.list.map(user => user.id));
+		newKicked.list = users;
+		newKicked.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
-		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${newKicked.list.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
+		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
 		
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
-		await this.socketService.emitIds(user, newKicked.list.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
+		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
 		
 		 // TODO get user from db
 		await channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
@@ -518,6 +543,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			let match = this.matches.get(id)
 			let started = match.started
 			let waiting = match.waiting
+			let racketSize = match.racketSize
 			// let ballXPos = match.ballXPos
 			// let ballYPos = match.ballYPos
 			let p1Ready = match.p1Ready
@@ -529,7 +555,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			console.log("match_" + id, "nb clients = ", clients.size)
 			// if (started)
 				// return { stageWidth, started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
-			return { stageWidth, started, waiting, p1Ready, p2Ready, p1Pos, p2Pos }
+			return { stageWidth, started, waiting, racketSize, p1Ready, p2Ready, p1Pos, p2Pos }
 		}
 	}
 

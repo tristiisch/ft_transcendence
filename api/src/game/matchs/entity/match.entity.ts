@@ -50,7 +50,7 @@ export class Match extends BaseEntity {
 			return this.user1_id;
 		else if (score_user2 > score_user1)
 			return this.user2_id;
-		throw new UnprocessableEntityException(`There was no winner, the match ended in a tie (${this.score}).`);
+		// throw new UnprocessableEntityException(`There was no winner, the match ended in a tie (${this.score}).`);
 	}
 
 	public getLoser?(): number {
@@ -64,7 +64,7 @@ export class Match extends BaseEntity {
 			return this.user1_id;
 		else if (score_user2 < score_user1)
 			return this.user2_id;
-		throw new UnprocessableEntityException(`There was no loser, the match ended in a tie (${this.score}).`);
+		// throw new UnprocessableEntityException(`There was no loser, the match ended in a tie (${this.score}).`);
 	}
 
 	public getOpponent?(userId: number): number {

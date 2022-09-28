@@ -26,6 +26,8 @@ var isLoaded = ref(false)
 var isMounted = ref(false)
 var isPlayer = ref(false)
 
+document.documentElement.style.overflow = 'hidden';
+
 MatchService.loadMatch(match_id)
 	.then((response) => {
 		console.log(response.data)
@@ -78,7 +80,8 @@ function loadStage() {
 	function computeStageHeight(): number { return window.innerHeight * (stage_height_percentage / 100) }
 	function computeBallSize(): number { return stage.width() / ball_size_quotient }
 	function computeBlockerWidth(): number { return stage.width() / blocker_width_quotient }
-	function computeBlockerHeight(): number { return stage.height() / blocker_height_quotient }
+	function computeBlockerHeight(): number { return backend_racket_size * backend_stage_ratio }
+	// function computeBlockerHeight(): number { return stage.height() / blocker_height_quotient }
 
 	var stage_height = computeStageHeight()
 	var stage_width = stage_height * stage_ratio
@@ -91,31 +94,29 @@ function loadStage() {
 	})
 	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
-	var backend_stage_width = default_stage_width
-	var backend_stage_ratio = stage.width() / backend_stage_width
+	var backend_stage_width: number = default_stage_width
+	var backend_stage_ratio: number = stage.width() / backend_stage_width
+	var backend_racket_size: number
 
 	var layer = new Konva.Layer()
 	var ball_radius = computeBallSize()
 	var ball = new Konva.Circle({
+		x: -50,
 		radius: ball_radius,
 		fill: 'dark',
 	})
-	var blockers_width = computeBlockerWidth()
-	var blockers_height = computeBlockerHeight()
+	var blockers_width: number = computeBlockerWidth()
+	var blockers_height
 	var p1_blocker: Konva.Rect = new Konva.Rect({
+		x: stage_width / blocker_xpos_quotient,
 		width: blockers_width,
-		height: blockers_height,
-		x: stage.width() / blocker_xpos_quotient,
-		y: stage.height() / 2 - blockers_height / 2,
 		fill: 'lightgreen',
 		cornerRadius: 2,
 		visible: false
 	})
 	var p2_blocker = new Konva.Rect({
-		width: blockers_width,
-		height: blockers_height,
 		x: stage.width() - stage.width() / blocker_xpos_quotient,
-		y: stage.height() / 2 - blockers_height / 2,
+		width: blockers_width,
 		fill: 'lightgreen',
 		cornerRadius: 2,
 		visible: false
@@ -202,16 +203,18 @@ function loadStage() {
 		dx = dx < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 		dy = dy < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 
-		blockers_width = computeBlockerWidth()
-		blockers_height = computeBlockerHeight()
-		p1_blocker.width(blockers_width)
-		p1_blocker.height(blockers_height)
-		p1_blocker.x(p1_blocker.x() * ratio)
-		p1_blocker.y(p1_blocker.y() * ratio)
-		p2_blocker.width(blockers_width)
-		p2_blocker.height(blockers_height)
-		p2_blocker.x(p2_blocker.x() * ratio)
-		p2_blocker.y(p2_blocker.y() * ratio)
+		if (backend_racket_size) {
+			p1_blocker.x(p1_blocker.x() * ratio)
+			p1_blocker.y(p1_blocker.y() * ratio)
+			p2_blocker.x(p2_blocker.x() * ratio)
+			p2_blocker.y(p2_blocker.y() * ratio)
+			blockers_width = computeBlockerWidth()
+			blockers_height = computeBlockerHeight()
+			p1_blocker.width(blockers_width)
+			p1_blocker.height(blockers_height)
+			p2_blocker.width(blockers_width)
+			p2_blocker.height(blockers_height)
+		}
 
 		stage_height = stage.height()
 		stage_width = stage.width()
@@ -223,11 +226,11 @@ function loadStage() {
 
 // -----------------------------------------------------
 // sockets after loading stage
-	// socket.on("ballPos", (x, y) => ball.position({x: x * backend_stage_ratio, y: y * backend_stage_ratio}))
-	socket.on("ballPos", (x, y) => {
-		ball_x = x * backend_stage_ratio
-		ball_y = y * backend_stage_ratio
-	})
+	socket.on("ballPos", (x, y) => ball.position({x: x * backend_stage_ratio, y: y * backend_stage_ratio}))
+	// socket.on("ballPos", (x, y) => {
+	// 	ball_x = x * backend_stage_ratio
+	// 	ball_y = y * backend_stage_ratio
+	// })
 	if (userStore.userData.id !== match.value.user1_id) {
 		console.log('p1Pos')
 		socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
@@ -251,18 +254,29 @@ function loadStage() {
 	})
 
 	socket.emit("joinMatch", match_id, (match_infos: any) => {
+		console.log("Joining match!")
 		backend_stage_width = match_infos.stageWidth
 		backend_stage_ratio = stage.width() / backend_stage_width
-		setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
+		backend_racket_size = match_infos.racketSize
+		console.log("racket", backend_racket_size)
+		blockers_height = computeBlockerHeight()
+		p1_blocker.height(computeBlockerHeight())
+		p2_blocker.height(computeBlockerHeight())
+
+		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
+		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
+		p1_blocker.visible(true)
+		p2_blocker.visible(true)
+		console.log(p1_blocker.x(), p1_blocker.y())
+		console.log(p2_blocker.x(), p2_blocker.y())
+		console.log(p1_blocker.visible(), p2_blocker.visible())
+
+		// setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		if (match_infos.started) {
 			// launchMatchLoop()
 		}
 		else if (isPlayer)
 			socket.emit("readyToPlay", match_id)
-		p1_blocker.y(match_infos.p1Pos * backend_stage_ratio)
-		p2_blocker.y(match_infos.p2Pos * backend_stage_ratio)
-		p1_blocker.visible(true)
-		p2_blocker.visible(true)
 	})
 
 	async function launchMatchLoop() {

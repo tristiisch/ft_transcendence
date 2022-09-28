@@ -55,6 +55,26 @@ export class MatchsController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Get('request/remove')
+	removeOwnGameInvitation(@Req() req) {
+		const user: User = req.user;
+
+		return this.matchsService.removeOwnGameInvitation(user);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('request')
+	async getRequest(@Req() req) {
+		const user: User = req.user;
+		const gameinvit = this.matchsService.getOwnRequest(user);
+
+		if (!gameinvit)
+			return null;
+		const target: User = await this.usersService.findOne(gameinvit.toUserId);
+		return target;
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Get(':id')
 	sendMatchInfos(@Param('id') id: string) {
 		if (!this.matchsService.getMatches().has(id))
@@ -70,13 +90,5 @@ export class MatchsController {
 			user2_avatar: match.user2_avatar,
 			score: [0, 0]
 		}
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Get('request/remove')
-	removeOwnGameInvitation(@Req() req) {
-		const user: User = req.user;
-
-		return this.removeOwnGameInvitation(user);
 	}
 }

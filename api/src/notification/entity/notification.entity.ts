@@ -13,7 +13,9 @@ export enum NotificationType {
 	MATCH_DECLINE,
 	FRIEND_ACCEPT,
 	FRIEND_DECLINE,
-	FRIEND_REMOVE
+	FRIEND_REMOVE,
+	MATCH_CANCEL,
+	FRIEND_CANCEL
 }
 
 @Entity()
@@ -51,15 +53,19 @@ export class Notification {
 		} else if (this.type == NotificationType.MATCH_REQUEST) {
 			notifFront.message = `Game request from ${notifFront.from_user.username}.`;
 		} else if (this.type == NotificationType.MATCH_ACCEPT) {
-			notifFront.message = `${notifFront.from_user.username} accepted your game invitation, you will be redirected soon...`;
+			notifFront.message = `${notifFront.from_user.username} accepted your game invitation.`;
 		} else if (this.type == NotificationType.MATCH_DECLINE) {
 			notifFront.message = `${notifFront.from_user.username} decline your game invitation.`;
+		} else if (this.type == NotificationType.MATCH_CANCEL) {
+			notifFront.message = `${notifFront.from_user.username} cancel the game invitation.`;
 		} else if (this.type == NotificationType.FRIEND_ACCEPT) {
 			notifFront.message = `${notifFront.from_user.username} is now friend with you.`;
 		} else if (this.type == NotificationType.FRIEND_DECLINE) {
 			notifFront.message = `${notifFront.from_user.username} decline your friend request.`;
 		} else if (this.type == NotificationType.FRIEND_REMOVE) {
 			notifFront.message = `${notifFront.from_user.username} is no longer friend with you.`;
+		} else if (this.type == NotificationType.FRIEND_CANCEL) {
+			notifFront.message = `${notifFront.from_user.username} cancel friend request.`;
 		} else {
 			throw new NotFoundException(`Unknown notif type ${this.type}.`);
 		}

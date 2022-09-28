@@ -281,7 +281,7 @@ export class UsersService {
 		user.blocked_ids.push(target.id);
 		try {
 			await this.friendsService.declineFriendShipIgnore(user, target); // TODO verif
-			//await this.notifService.removeNotifFriendRequest(user, target); // TODO same
+			await this.notifService.removeNotifFriendRequest(user, target); // TODO same
 		} catch (err) {
 			if (!(err instanceof NotAcceptableException))
 				throw err;
