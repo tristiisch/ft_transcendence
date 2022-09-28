@@ -214,7 +214,7 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel);
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | null, removePassword: boolean, userWhoChangeName: User }) {
+		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | undefined | null, removePassword: boolean, userWhoChangeName: User }) {
 			const userStore = useUserStore();
 			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
 				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (this.inChannel.hasPassword === false && newNamePassword.password !== '') || newNamePassword.removePassword)) {
