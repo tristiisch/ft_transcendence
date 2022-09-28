@@ -70,12 +70,9 @@ export function randomEnum<T>(enumeration: T) {
 export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>): Array<T> {
 	if (!array)
 		return undefined;
-	const newArray: T[] = new Array();
-	array.forEach(nb => {
-		if (arrayToSubstract && arrayToSubstract.indexOf(nb) === -1)
-			newArray.push(nb);
-	});
-	return newArray;
+	if (!arrayToSubstract)
+		return array;
+	return array.filter(o => arrayToSubstract.indexOf(o) === -1);
 }
 
 export function removeFromArray<T>(array: Array<T>, key: T): Array<T> {

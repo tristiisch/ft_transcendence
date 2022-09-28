@@ -1,5 +1,6 @@
 import { NotAcceptableException, UnprocessableEntityException } from "@nestjs/common";
 import { IsInt } from "class-validator";
+import { SocketGateway } from "socket/socket.gateway";
 import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 
 export enum MatchMakingTypes {
