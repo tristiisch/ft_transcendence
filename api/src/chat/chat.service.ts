@@ -540,9 +540,12 @@ export class ChatService {
 		return chat;
 	}
 
-	channelPublicToProtected(chat: ChannelPublic, passwd: string) {
+	channelPublicToProtected(chat: ChannelPublic, passwd: string, newName: string) {
 		const newChannel: ChannelProtected = new ChannelProtected();
-		newChannel.name = chat.name;
+		if (newName)
+			newChannel.name = newName;
+		else
+			newChannel.name = chat.name;
 		newChannel.owner_id = chat.owner_id;
 		newChannel.avatar_64 = chat.avatar_64;
 		newChannel.admins_ids = chat.admins_ids;
@@ -555,9 +558,12 @@ export class ChatService {
 		return newChannel;
 	}
 
-	channelProtectedToPublic(chat: ChannelProtected) {
+	channelProtectedToPublic(chat: ChannelProtected, newName: string) {
 		const newChannel: ChannelPublic = new ChannelPublic();
-		newChannel.name = chat.name;
+		if (newName)
+			newChannel.name = newName;
+		else
+			newChannel.name = chat.name;
 		newChannel.owner_id = chat.owner_id;
 		newChannel.avatar_64 = chat.avatar_64;
 		newChannel.admins_ids = chat.admins_ids;
@@ -579,13 +585,13 @@ export class ChatService {
 			dataUpdate.password = newPassword;
 
 		} else if (newPassword && channel.type !== ChatStatus.PROTECTED) {
-			const newChannel = await this.addChatToDB(this.channelPublicToProtected(channel, newPassword)) as ChannelProtected;
+			const newChannel = await this.addChatToDB(this.channelPublicToProtected(channel, newPassword, newName)) as ChannelProtected;
 			await this.updateChannelByOther(channel, newChannel);
 			await this.createAutoMsg(`🔴　 ${userWhoChangeName.username} set a password to join the channel.`, newChannel);
 			return newChannel;
 
 		} else if (newPassword === null && channel.type === ChatStatus.PROTECTED) {
-			const newChannel = await this.addChatToDB(this.channelProtectedToPublic(channel as ChannelProtected)) as ChannelPublic;
+			const newChannel = await this.addChatToDB(this.channelProtectedToPublic(channel as ChannelProtected, newName)) as ChannelPublic;
 			await this.updateChannelByOther(channel, newChannel);
 			await this.createAutoMsg(`⚪️　 ${userWhoChangeName.username} remove the password to join.`, newChannel);
 			return newChannel;

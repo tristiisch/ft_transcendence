@@ -261,7 +261,7 @@ export class MatchService {
 				web.where('matchhistory.user1_id = :id', { id: userId }),
 				web.orWhere('matchhistory.user2_id = :id')
 			}))
-			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
+			.addOrderBy('matchhistory.timestamp_ended', 'DESC', 'NULLS LAST');
 		try {
 			return await sqlStatement.getMany().then(async (matchs: Match[]) => {
 				const matchsFormatted: MatchOwn[] = new Array();
