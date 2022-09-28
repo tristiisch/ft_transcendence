@@ -321,15 +321,6 @@ function getShrunkUsername(username: string)
 	return username
 }
 
-function returnSizePlayGround() {
-	// if (windowWidth.value < 1280) {
-	// 	return 'w-[70%] [aspect-ratio:_3989/2976]'
-	// }
-	// else if (windowWidth.value >= 1280)
-		return 'h-[70%] [aspect-ratio:_3989/2976]'
-
-}
-
 onBeforeUnmount(() => {
 	//socket.off(...)
 	socket.emit('updateUserStatus', status.ONLINE)
@@ -351,29 +342,29 @@ onUnmounted(() => {
 
 <template>
 	<div class="flex flex-col justify-between w-full h-full bg-[#9f9e89] bg-TvScreen-texture">
-		<div class="flex justify-center pt-[1vh] h-[15%] gap-4">
-			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col justify-center items-center h-full w-full gap-2">
-				<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-					<h1 class="[font-size:_calc(0.01_*_100vw)] hover:text-yellow-300">{{ getShrunkUsername(match.user1_username) }}</h1>
+		<div class="flex justify-center pt-[1vh] h-[15%] sm:gap-4">
+			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col justify-center items-center h-full w-full">
+				<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="pb-1 text-left z-1 text-white font-VS brightness-100  tracking-[0.3rem] sm:tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+					<h1 class="[font-size:_calc(4px_+_0.01_*_100vw)] lg:[font-size:_calc(0.01_*_100vh)] hover:text-yellow-300">{{ getShrunkUsername(match.user1_username) }}</h1>
 				</base-button>
-				<img :src="match.user1_avatar" class="aspect-square w-[calc(0.1_*_100vw)] border-2 object-cover"/>
+				<img :src="match.user1_avatar" class="aspect-square w-[calc(0.1_*_100vw)] sm:w-[calc(0.1_*_100vh)] border-2 object-cover"/>
 			</div>
 			<div class="flex items-center justify-center">
-				<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vw)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[0] }}</h1>
-				<h1 class="[font-size:_calc(0.1_*_100vw)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"><span>/</span>VS<span>\</span></h1>
-				<h1 v-if="isLoaded" class="[font-size:_calc(0.15_*_100vw)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
+				<h1 v-if="isLoaded" class="[font-size:_calc(0.08_*_100vw)] lg:[font-size:_calc(0.1_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[0] }}</h1>
+				<h1 class="[font-size:_calc(0.08_*_100vw)] lg:[font-size:_calc(0.1_*_100vh)] text-black pl-[calc(0.01_*_100vw)] pr-[calc(0.01_*_100vw)] font-VS brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]"><span>/</span>VS<span>\</span></h1>
+				<h1 v-if="isLoaded" class="[font-size:_calc(0.08_*_100vw)] lg:[font-size:_calc(0.1_*_100vh)] text-white font-skyfont brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">{{ match.score[1] }}</h1>
 			</div>
-			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col  justify-center items-center h-full w-full gap-2">
-				<base-button link :to="{ name: 'Profile', params: { id: match.user2_id }}" class="text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
-					<h1 class="[font-size:_calc(0.01_*_100vw)] hover:text-yellow-300">{{ getShrunkUsername(match.user2_username) }}</h1>
+			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col  justify-center items-center h-full w-full">
+				<base-button link :to="{ name: 'Profile', params: { id: match.user2_id }}" class="pb-1 text-right z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+					<h1 class="[font-size:_calc(4px_+_0.01_*_100vw)] hover:text-yellow-300">{{ getShrunkUsername(match.user2_username) }}</h1>
 				</base-button>
-				<img :src="match.user2_avatar" class="aspect-square w-[calc(0.1_*_100vw)] border-2 object-cover"/>
+				<img :src="match.user2_avatar" class="aspect-square w-[calc(0.1_*_100vw)] sm:w-[calc(0.1_*_100vh)] border-2 object-cover"/>
 			</div>
-			<base-button @click="leaveMatch()" class="absolute left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
+			<base-button @click="leaveMatch()" class="absolute bottom-0 left-1/2 md:bottom-auto md:left-7 z-1 text-white font-BPNeon brightness-200 tracking-[0.3rem] sm:tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
 				<h1 class="[font-size:_calc(0.05_*_100vh)] hover:text-yellow-300">&lt;</h1>
 			</base-button>
 		</div>
-		<div class="flex flex-col justify-center items-center w-full pb-[calc(0.04*100vh)] h-[75%]">
+		<div class="flex flex-col justify-center items-center w-full pb-[calc(0.04*100vh)] pt-2 h-[75%]">
 			<div class="relative [aspect-ratio:_3989/2976] w-full">
 				<div v-if="isLoaded && (windowWidth > 1500)" class="absolute left-6 top-0 flex flex-col h-full w-[calc(0.5_*_100vh)] ml-5">
 					<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="text-left z-1 text-white font-VS brightness-100 tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
@@ -388,7 +379,7 @@ onUnmounted(() => {
 					<img :src="match.user2_avatar" class="h-[80%] border-2 object-cover"/>
 				</div>
 				<img class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-transparent.png">
-				<div  id="stage-container" ref='playGroundHeight' :class="returnSizePlayGround()" class="absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
+				<div  id="stage-container" ref='playGroundHeight' class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
 				<div class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>
