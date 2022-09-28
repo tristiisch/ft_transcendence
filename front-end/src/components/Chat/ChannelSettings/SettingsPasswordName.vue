@@ -28,10 +28,14 @@ const label = computed(() => {
 });
 
 function setRemovePassword() {
-	if (switchButtonActif.value) !switchButtonActif.value;
+	if (switchButtonActif.value) {
 		deletePassword.value = true;
-	if (!switchButtonActif.value)
+		switchButtonActif.value = true;
+	}
+	if (!switchButtonActif.value) {
 		deletePassword.value = false;
+		switchButtonActif.value = true;
+	}
 	newPassword.value = '';
 }
 
