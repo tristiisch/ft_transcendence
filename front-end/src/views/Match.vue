@@ -24,6 +24,7 @@ const windowWidth = ref(window.innerWidth);
 var isLoaded = ref(false)
 var isMounted = ref(false)
 var isPlayer = ref(false)
+var matchEnded = ref(false)
 
 document.documentElement.style.overflow = 'hidden';
 
@@ -67,13 +68,17 @@ onBeforeUnmount(() => {
 	socket.emit('update_status', status.ONLINE)
 })
 
-
 onUnmounted(() => {
-	if (isPlayer)
+	socket.off("startMatch")
+	socket.off("ballPos")
+	socket.off("p1Pos")
+	socket.off("p2Pos")
+	socket.off("newMatchRound")
+	socket.off("endMatch")
+	if (matchEnded.value)
 		socket.emit("leaveMatch", match_id)
 	window.removeEventListener('resize', handleResize);
 });
-
 
 function loadStage() {
 	const stage_container = document.getElementById('stage-container')!
@@ -223,14 +228,8 @@ function loadStage() {
 	// 	ball_x = x * backend_stage_ratio
 	// 	ball_y = y * backend_stage_ratio
 	// })
-	if (userStore.userData.id !== match.value.user1_id) {
-		console.log('p1Pos')
-		socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
-	}
-	if (userStore.userData.id !== match.value.user2_id) {
-		console.log('p2Pos')
-		socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
-	}
+	if (userStore.userData.id !== match.value.user1_id) socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
+	if (userStore.userData.id !== match.value.user2_id) socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
 
 	socket.on("startMatch", () => {
 		launchCountdown()
@@ -246,7 +245,8 @@ function loadStage() {
 		else if (data.scored === 'p2') match.value.score[1]++
 	})
 	socket.on("endMatch", () => {
-		router.replace('/home')
+		matchEnded.value = true
+		router.push('/home')
 	})
 
 	socket.emit("joinMatch", match_id, (match_infos: any) => {

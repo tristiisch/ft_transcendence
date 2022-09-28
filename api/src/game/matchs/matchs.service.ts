@@ -234,20 +234,27 @@ export class MatchService {
 		return ((n % m) + m) % m;
 	}
 
-	async endMatch(match: Match, forceEnd?: boolean) {
+	async endMatch(match: Match, forfeitUserId?: number) {
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
 		match.timestamp_ended = new Date
 		match.room_socket.emit("endMatch")
 
-		if (forceEnd != true) {
-			await this.save(match);
-			await this.matchStatsService.addDefeat(match.getLoser());
-			await this.matchStatsService.addVictory(match.getWinner());
+		if (match.user1_id === forfeitUserId)
+		{
+			console.log("setting user1 forfeit")
+			match.score[0] = -1
 		}
+		else if (match.user2_id === forfeitUserId){
+			console.log("setting user2 forfeit")
+			match.score[1] = -1
+	}
 
-		this.matches.delete(match.id)
+		console.log("forfeit!", forfeitUserId, match.score)
+		await this.save(match);
+		await this.matchStatsService.addDefeat(match.getLoser());
+		await this.matchStatsService.addVictory(match.getWinner());
 	}
 
 	async findHistory(userId: number) : Promise<MatchOwn[]> {

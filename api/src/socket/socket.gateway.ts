@@ -604,8 +604,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
-		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match))
-			await this.matchService.endMatch(match)
+		if (match){
+			if (this.matchService.isUserPlayerFromMatch(user.id, match))
+				await this.matchService.endMatch(match, user.id)
+		}
 	}
 
 	// UpdateLeaderboard
