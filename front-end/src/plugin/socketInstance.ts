@@ -40,7 +40,7 @@ socket.on("connect", () => {
 			console.log(notification.from_user)
 			if (notification.type == NotificationType.MATCH_CANCEL) {
 				globalStore.removeNotifCancel(notification, NotificationType.MATCH_REQUEST);
-				chatStore.removeSpinner(userStore.userData.id, notification.from_user_id)
+				chatStore.removeSpinner(notification.from_user_id, notification.from_user_id)
 			}
 			else if (notification.type == NotificationType.MATCH_DECLINE) {
 				globalStore.invitedUser = undefined

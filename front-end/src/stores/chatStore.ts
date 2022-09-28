@@ -12,6 +12,8 @@ import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import MessageType from '@/types/MessageType';
 import PartToDisplay from '@/types/ChatPartToDisplay';
+import type Notification from '@/types/Notification';
+import { NotificationType } from '@/types/Notification';
 
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
@@ -299,7 +301,8 @@ export const useChatStore = defineStore('chatStore', {
 				avatarSender: userStore.userData.avatar,
 				usernameSender: userStore.userData.username,
 				read: false,
-				type: type
+				type: type,
+				canUseButton: true
 			};
 			return messageDTO;
 		},
@@ -422,6 +425,20 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 			return 0;
-		}
+		},
+		removeSpinner(senderId: number, targetId: number) {
+			const discussion = this.userDiscussions.find(discussion => discussion.user.id === targetId);
+			if (discussion) 
+			{
+				let message;
+				if (senderId != targetId) {
+					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender !== targetId);
+				}
+				else {
+					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender === senderId);
+				}
+				if (message) message.canUseButton = false
+			}
+		},
 	},
 });

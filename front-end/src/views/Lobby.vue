@@ -33,7 +33,7 @@ function setRightPartToDisplay()
 		rightPartToDisplay.value = 'selectPlayer'
 }
 
-function fetchCurrentMatchs() {
+/*function fetchCurrentMatchs() {
 	isLoading.value = true
 	UsersService.getCurrentMatchs()
 		.then((response) => {
@@ -44,6 +44,23 @@ function fetchCurrentMatchs() {
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		});
+}*/
+
+function fetchAll() {
+	isLoading.value = true
+	Promise.all([UsersService.getCurrentMatchs(), globalStore.fetchGameInvitation()])
+	.then((result) => {
+		matchs.value = result[0].data
+		if (globalStore.invitedUser)
+		{
+			rightPartToDisplay.value = 'selectPlayer';
+			invitation.value = true
+		}
+		isLoading.value = false
+	})
+	.catch((error) => {
+		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+	})
 }
 
 function invitePlayer()
@@ -97,17 +114,14 @@ function onClose() {
 }
 
 onBeforeMount(() => {
-	fetchCurrentMatchs();
+	//fetchCurrentMatchs();
+	//globalStore.fetchGameInvitation()
+	fetchAll();
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;
 	globalStore.world = 1;
 	globalStore.winningScore = 5;
-	if (globalStore.invitedUser)
-	{
-		rightPartToDisplay.value = 'selectPlayer';
-		invitation.value = true
-	}
 });
 
 onBeforeUnmount(() => {
