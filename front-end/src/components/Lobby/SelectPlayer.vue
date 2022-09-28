@@ -5,10 +5,14 @@ import type User from '@/types/User';
 import ButtonPlus from '@/components/Button/ButtonPlus.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import { useGlobalStore } from '@/stores/globalStore';
+import { useChatStore } from '@/stores/chatStore';
 import socket from '@/plugin/socketInstance';
 import UserService from '@/services/UserService';
+import { useUserStore } from '@/stores/userStore';
 
 const globalStore = useGlobalStore();
+const userStore = useUserStore();
+const chatStore = useChatStore();
 const mode = ref('random')
 const router = useRouter();
 const route = useRoute();
@@ -38,8 +42,13 @@ function launchGame() {
 }
 
 function closeInvitation() {
-	globalStore.invitedUser = undefined;
 	UserService.removeInvitation()
+		.then(() => {
+			if (globalStore.invitedUser) {
+				chatStore.removeSpinner(userStore.userData.id, globalStore.invitedUser.id)
+				globalStore.invitedUser = undefined;
+			}
+		})
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})

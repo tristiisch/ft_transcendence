@@ -11,5 +11,5 @@ export default interface Message {
 	read: boolean,
 	date: string,
 	type: MessageType,
-	canUseButton?: boolean 
+	canUseButton: boolean 
 }

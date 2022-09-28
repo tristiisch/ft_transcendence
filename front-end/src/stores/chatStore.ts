@@ -12,6 +12,8 @@ import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import MessageType from '@/types/MessageType';
 import PartToDisplay from '@/types/ChatPartToDisplay';
+import type Notification from '@/types/Notification';
+import { NotificationType } from '@/types/Notification';
 
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
@@ -214,18 +216,18 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel);
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | undefined | null, userWhoChangeName: User }) {
+		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | undefined | null, userWhoChangeName: User }, oldId?: number) {
 			const userStore = useUserStore();
 			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
 				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (this.inChannel.hasPassword === false && newNamePassword.password !== '') || (newNamePassword.password === null))) {
 					socket.emit('chatChannelNamePassword', channel, newNamePassword, (body: any[]) => {
 						const channelUpdated: Channel = body[0];
-						this.updateChannel(channelUpdated);
+						this.updateChannel(channelUpdated, channel.id);
 					});
 				}
 			}
 			else
-				this.updateChannel(channel)
+				this.updateChannel(channel, oldId)
 		},
 		updateBanList(channel: Channel, newBanned: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
@@ -252,7 +254,7 @@ export const useChatStore = defineStore('chatStore', {
 			if (newMuted && newMuted.userWhoSelect.id === userStore.userData.id) {
 				socket.emit('chatChannelMute', channel, newMuted, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
-				 	this.updateChannel( channelUpdated);
+				 	this.updateChannel(channelUpdated);
 				});
 			}
 			else
@@ -299,7 +301,8 @@ export const useChatStore = defineStore('chatStore', {
 				avatarSender: userStore.userData.avatar,
 				usernameSender: userStore.userData.username,
 				read: false,
-				type: type
+				type: type,
+				canUseButton: true
 			};
 			return messageDTO;
 		},
@@ -356,11 +359,15 @@ export const useChatStore = defineStore('chatStore', {
 				if (index >= 0) this.userChannels[index].messages.push(data);
 			}
 		},
-		updateChannel(channelUpdated: Channel) {
-			const index = this.getIndexUserChannels(channelUpdated.id);
+		updateChannel(channelUpdated: Channel, oldId?:number) {
+			let index;
+			if (oldId)
+				index = this.getIndexUserChannels(oldId);
+			else
+				index = this.getIndexUserChannels(channelUpdated.id);
 			if (index >= 0) {
 				this.userChannels[index] = channelUpdated;
-				if (this.inChannel && this.inChannel.id === channelUpdated.id)
+				if (this.inChannel && ((this.inChannel.id === channelUpdated.id) || (this.inChannel.id === oldId)))
 					this.inChannel = this.userChannels[index]
 			}
 		},
@@ -422,6 +429,20 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 			return 0;
-		}
+		},
+		removeSpinner(senderId: number, targetId: number) {
+			const discussion = this.userDiscussions.find(discussion => discussion.user.id === targetId);
+			if (discussion) 
+			{
+				let message;
+				if (senderId != targetId) {
+					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender !== targetId);
+				}
+				else {
+					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender === senderId);
+				}
+				if (message) message.canUseButton = false
+			}
+		},
 	},
 });
