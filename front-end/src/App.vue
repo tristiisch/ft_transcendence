@@ -65,4 +65,21 @@ body,
 	margin: 0;
 	padding: 0;
 }
+
+::-webkit-scrollbar-track
+{
+	background-color: transparent;
+}
+
+::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb
+{
+	background-color: #f87171;
+	/* border: 2px solid #555555; */
+}
 </style>
