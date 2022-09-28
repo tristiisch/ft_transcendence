@@ -88,7 +88,8 @@ export class MatchsController {
 			user2_username: match.user2_username,
 			user1_avatar: match.user1_avatar,
 			user2_avatar: match.user2_avatar,
-			score: [0, 0]
+			score: [0, 0],
+			world: match.world
 		}
 	}
 }
