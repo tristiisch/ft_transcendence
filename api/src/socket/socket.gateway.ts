@@ -602,9 +602,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
-		if (match){
-			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match))
+		if (match) {
+			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match)) {
+				match.stopMatch = true
 				await this.matchService.endMatch(match, user.id)
+			}
 			else {
 				if (!match.started) {
 					if (user.id === match.user1_id)
