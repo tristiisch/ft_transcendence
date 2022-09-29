@@ -68,7 +68,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			if (!user) return clientSocket.disconnect();
 
-			this.socketService.saveClientSocket(user, clientSocket.id);
+			this.socketService.saveClientSocket(user, clientSocket);
 			this.updateStatus(clientSocket, user, UserStatus.ONLINE);
 		} catch (err) {
 			Logger.error(`Cannot handle connection ${err.message}`, 'WebSocket');
