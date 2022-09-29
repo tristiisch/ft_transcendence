@@ -193,7 +193,7 @@ onBeforeUnmount(() => {
 						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full h-[70px] sm:h-[calc(100%_/_6)]">
 							<discussion-list @click.right.prevent="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
 						</div>
-						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_6)]">
+						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-[70px] sm:h-[calc(100%_/_6)]">
 							<channels-list
 								v-if="memberInChannel(channel)"
 								@click.right.prevent="setDisplayDelete(index)"

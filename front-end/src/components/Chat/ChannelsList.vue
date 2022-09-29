@@ -74,7 +74,7 @@ const numberOfUnreadedMessage = computed(() => {
 <template>
      <button :class=firstCard() class="relative flex justify-between items-center w-full h-full border-b-[1px] border-slate-600 pr-2">
         <div class="shrink-0 flex items-center h-full gap-2">
-            <img class="aspect-square h-8 sm:h-[80%] rounded object-cover border-[1.5px]" :class="borderColor(channel)" :src="channelAvatar()" alt="Rounded avatar">
+            <img class="aspect-square h-[80%] rounded object-cover border-[1.5px]" :class="borderColor(channel)" :src="channelAvatar()" alt="Rounded avatar">
         </div>
 		<div v-if="numberOfUnreadedMessage" class="absolute flex justify-center items-center left-0 bottom-1 bg-red-600 w-3 h-3 sm:w-4 sm:h-4 rounded-full text-xxxs sm:text-xxs text-white">{{ numberOfUnreadedMessage }}</div>
         <p class="px-2 break-words truncate" :class="colorText()">{{ channel.name }}</p>
