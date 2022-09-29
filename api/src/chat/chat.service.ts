@@ -8,7 +8,7 @@ import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront, MessageType } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
-import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTOforHttp } from 'utils/utils';
+import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTO } from 'utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
@@ -282,7 +282,6 @@ export class ChatService {
 	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
 		let channel: Channel;
 
-		await validateDTOforHttp(plainToInstance(ChannelCreateDTO, channelDTO));
 
 		if (await this.isChannelExist(channelDTO.name)) {
 			throw new WsException('A channel already exist with same name.')
