@@ -8,7 +8,7 @@ import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront, MessageType } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
-import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTO } from 'utils/utils';
+import { checkImage, fromBase64, removeFromArray, removesFromArray, toBase64, validateDTO } from 'utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
@@ -282,6 +282,7 @@ export class ChatService {
 	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
 		let channel: Channel;
 
+		checkImage(channelDTO.avatar_64);
 
 		if (await this.isChannelExist(channelDTO.name)) {
 			throw new WsException('A channel already exist with same name.')
@@ -583,8 +584,9 @@ export class ChatService {
 		let dataUpdate: QueryDeepPartialEntity<ChannelProtected> = {};
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate;
 
-		if (newName)
+		if (newName !== undefined)
 			dataUpdate.name = newName;
+		
 		if (newPassword !== undefined && newPassword !== null && channel.type === ChatStatus.PROTECTED) {
 			dataUpdate.password = await hashPassword(newPassword);
 			await this.createAutoMsg(`⚪️　 ${userWhoChangeName.username} update the password to join.`, channel);
