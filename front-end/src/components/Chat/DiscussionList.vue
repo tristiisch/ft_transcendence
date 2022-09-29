@@ -60,7 +60,7 @@ watch(props.discussion.messages, () => {
         <div class="flex flex-col justify-center w-[calc(100%_-_32px)] sm:w-[calc(100%_-_75px)] 3xl:w-[calc(100%_-_68px)] h-full gap-1 pl-2">
             <div class="flex flex-wrap justify-between items-center">
                 <span class="text-sm" :class="colorText()">{{ discussion.user.username }}</span>
-                <span v-if="lastMessage" class="text-xxs" :class="colorText()">{{ lastMessage.date }}</span>
+                <span v-if="lastMessage" class="text-xxs" :class="colorText()">{{ lastMessage.date.toLocaleString() }}</span>
             </div>
             <div class="flex justify-between items-center">
                 <p v-if="lastMessage" class="text-left truncate text-xs" :class="colorText()"><span>{{ prefix() }}</span>{{ lastMessage.message }}</p>

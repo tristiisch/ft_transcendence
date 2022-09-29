@@ -43,7 +43,7 @@ export class Message {
 			idSender: this.id_sender,
 			message: this.message,
 			send: true,
-			read: chatRead ? this.id > chatRead.id_chat : false,
+			read: chatRead ? this.id <= chatRead.id_message : false,
 			date: this.date.toLocaleString(),
 			type: this.type,
 			canUseButton: this.canUseButton

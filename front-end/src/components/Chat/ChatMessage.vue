@@ -114,7 +114,7 @@ function chooseArray() {
 		<div class="flex flex-col gap-1 min-w-0">
 			<div class="flex flex-col sm:items-center sm:gap-2 pt-1 sm:flex-row text-red-300">
 				<p class="text-xs sm:text-sm">{{ message.usernameSender }}</p>
-				<p class="text-xxs pt-1">{{ message.date }}</p>
+				<p class="text-xxs pt-1">{{ message.date.toLocaleString() }}</p>
 			</div> 
 			<div v-if="message.type !== MessageType.GAME_INVITATION" :class="sizeText(message.type), colorMessage(message)" class="min-w-0 text-red-200 break-words"> {{ displayMessage(message) }} </div>
 			<div v-else class="flex items-center gap-2 bg-neutral-100 border-[1px] border-blue-600 w-full h-[42px] sm:h-[52px] rounded-lg pl-1">

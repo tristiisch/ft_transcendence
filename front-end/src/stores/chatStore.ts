@@ -271,7 +271,7 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		createMessage(newMessage: string, type: MessageType) {
 			const userStore = useUserStore();
-			const now = new Date().toLocaleString();
+			const now = new Date();
 			const messageDTO: Message = {
 				date: now,
 				message: newMessage,
@@ -356,7 +356,7 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		markMessageReaded(message: Message) {
-			if (message.read === false) {
+			if (message.read !== true) {
 				message.read = true;
 				let msgId;
 				if (this.inChannel)

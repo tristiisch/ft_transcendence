@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch} from 'vue';
+import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch } from 'vue';
 import Konva from 'konva'
 import socket from '@/plugin/socketInstance'
 import { useRoute, useRouter } from 'vue-router';
@@ -91,7 +91,7 @@ onUnmounted(() => {
 });
 
 function loadStage() {
-	console.log("LOADING STAGE", match.value)
+	console.log("LOADING STAGE")
 	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
@@ -198,31 +198,28 @@ function loadStage() {
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
-		stage_height = stage_container.offsetHeight
-		stage_width = stage_height * stage_ratio
-		stage.height(stage_height)
-		stage.width(stage_width)
+		stage.height(stage_container.offsetHeight)
+		stage.width(stage.height() * stage_ratio)
+		var ratio = stage.height() / stage_height
+		stage_height = stage.height()
+		stage_width = stage.width()
 		backend_stage_ratio = stage_width / match.value.stageWidth
 
-		var ratio = stage_width / stage_height
 		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
 		dx = dx < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 		dy = dy < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 
-		if (match.value.racketSize) {
-			p1_blocker.x(p1_blocker.x() * ratio)
-			p1_blocker.y(p1_blocker.y() * ratio)
-			p2_blocker.x(p2_blocker.x() * ratio)
-			p2_blocker.y(p2_blocker.y() * ratio)
-			blockers_width = computeBlockerWidth()
-			blockers_height = computeBlockerHeight()
-			p1_blocker.width(blockers_width)
-			p1_blocker.height(blockers_height)
-			p2_blocker.width(blockers_width)
-			p2_blocker.height(blockers_height)
-		}
-
+		p1_blocker.x(p1_blocker.x() * ratio)
+		p1_blocker.y(p1_blocker.y() * ratio)
+		p2_blocker.x(p2_blocker.x() * ratio)
+		p2_blocker.y(p2_blocker.y() * ratio)
+		blockers_width = computeBlockerWidth()
+		blockers_height = computeBlockerHeight()
+		p1_blocker.width(blockers_width)
+		p1_blocker.height(blockers_height)
+		p2_blocker.width(blockers_width)
+		p2_blocker.height(blockers_height)
 	}
 	window.onresize = resizeStage
 	// -------------------------------------------------
