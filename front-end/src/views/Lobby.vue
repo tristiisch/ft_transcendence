@@ -22,7 +22,6 @@ const toast = useToast();
 const matchs = ref([] as Match[]);
 const isLoading = ref(false);
 const rightPartToDisplay = ref('gameSettings');
-const invitation = ref(false);
 
 function setRightPartToDisplay()
 {
@@ -38,10 +37,7 @@ function fetchAll() {
 	.then((result) => {
 		matchs.value = result[0].data
 		if (globalStore.invitedUser)
-		{
 			rightPartToDisplay.value = 'selectPlayer';
-			invitation.value = true
-		}
 		isLoading.value = false
 	})
 	.catch((error) => {
@@ -52,7 +48,6 @@ function fetchAll() {
 function invitePlayer()
 {
     if (globalStore.selectedItems[0] && globalStore.isTypeUser(globalStore.selectedItems[0])) {
-		invitation.value = true
 		rightPartToDisplay.value = 'selectPlayer'
         globalStore.invitedUser = globalStore.selectedItems[0];
         globalStore.resetSelectedItems();
@@ -70,7 +65,6 @@ function invitePlayer()
 			if (response.data.message) toast.info(response.data.message)
 		})
 		.catch((error) => {
-			invitation.value = false
 			globalStore.invitedUser = undefined
 			if (error.response?.status === 406) toast.warning(error.response?.data?.message)
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
@@ -81,7 +75,6 @@ function invitePlayer()
 function unsetInvitedUser() {
 	rightPartToDisplay.value = 'selectWorld'
 	globalStore.invitedUser = undefined
-	invitation.value = false
 }
 
 function updateMatch(match: Match) {
@@ -106,6 +99,7 @@ onBeforeMount(() => {
 	globalStore.racketSize = 100;
 	globalStore.world = 1;
 	globalStore.winningScore = 5;
+	globalStore.increaseSpeed = false;
 });
 
 onBeforeUnmount(() => {
@@ -131,7 +125,7 @@ onBeforeUnmount(() => {
 						<button-return-next v-if="rightPartToDisplay === 'selectWorld'" @click="rightPartToDisplay = 'gameSettings'" side="previous" class="mb-1"></button-return-next>
 						<button-return-next  @click="setRightPartToDisplay()" side="next" class="mb-1"></button-return-next>
 					</div>
-					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="unsetInvitedUser()" @close="invitation = false" @invitePlayer="rightPartToDisplay = 'invitePlayer'" :invitation="invitation"></select-player>
+					<select-player v-else-if="rightPartToDisplay === 'selectPlayer'" @return="unsetInvitedUser()" @invitePlayer="rightPartToDisplay = 'invitePlayer'"></select-player>
 					<users-search v-if="rightPartToDisplay === 'invitePlayer'" :singleSelection="true" :type="'users'"></users-search>
 					<button-close-validate v-if="rightPartToDisplay === 'invitePlayer'" @validate="invitePlayer()" @close="onClose()"></button-close-validate>
 				</div>

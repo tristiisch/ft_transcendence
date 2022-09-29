@@ -79,7 +79,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div v-if="selectableItems.length !== 0" class="overflow-y-auto w-full h-full">
+	<div v-if="selectableItems.length !== 0" class="overflow-y-auto w-full h-full pr-2">
 		<div v-for="(item, index) in selectableItems" :key="item.id" class="flex justify-between items-center h-[calc(100%_/_4)] sm:h-[calc(100%_/_5)] 3xl:h-[calc(100%_/_6)] border-b w-full border-red-400">
 			<div class="inline-flex items-center py-4">
 				<img class="shrink-0 w-12 h-12 rounded-full object-cover border border-red-400" :class="formAvatar(item)" :src="item.avatar" alt="Rounded avatar">
