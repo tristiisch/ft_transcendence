@@ -285,7 +285,7 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		createMessage(newMessage: string, type: MessageType) {
 			const userStore = useUserStore();
-			const now = new Date().toLocaleString();
+			const now = new Date();
 			const messageDTO: Message = {
 				date: now,
 				message: newMessage,
