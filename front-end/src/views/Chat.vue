@@ -176,6 +176,10 @@ onBeforeUnmount(() => {
 	socket.off("chatChannelMessage");
 	socket.off("chatChannelNamePassword");
 	socket.off("exception");
+	if (chatStore.inDiscussion)
+		chatStore.inDiscussion = null
+	else (chatStore.inChannel)
+		chatStore.inChannel = null
 	// socket.off("gameInvitation")
 })
 </script>
