@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch, unwatch } from 'vue';
 import Konva from 'konva'
 import socket from '@/plugin/socketInstance'
 import { useRoute, useRouter } from 'vue-router';
@@ -19,14 +19,17 @@ var match_id = route.params.uuid as string
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
 
-const windowHeight = ref(window.innerHeight);
-const windowWidth = ref(window.innerWidth);
 
 var isLoaded = ref(false)
 var isMounted = ref(false)
+const matchPage = ref(null)
+
 var isPlayer = ref(false)
 var matchStarted = ref(false)
 var matchEnded = ref(false)
+
+const windowHeight = ref(window.innerHeight);
+const windowWidth = ref(window.innerWidth);
 
 document.documentElement.style.overflow = 'hidden';
 
@@ -47,9 +50,12 @@ MatchService.loadMatch(match_id)
 	})
 
 
-watch([isLoaded, isMounted], () => {
-	if (isLoaded.value && isMounted.value)
+watch([isLoaded, isMounted, matchPage], () => {
+	if (isLoaded.value && isMounted.value && matchPage.value)
+	{
+		console.log("Ready to load stage !")
 		loadStage()
+	}
 })
 
 onBeforeMount(() => {
@@ -63,6 +69,7 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
+	console.log("Mounted!")
 	isMounted.value = true
 })
 
@@ -192,7 +199,7 @@ function loadStage() {
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
 		stage_height = stage_container.offsetHeight
-		stage_width = stage.height() * stage_ratio
+		stage_width = stage_height * stage_ratio
 		stage.height(stage_height)
 		stage.width(stage_width)
 		backend_stage_ratio = stage_width / match.value.stageWidth
@@ -330,7 +337,7 @@ function handleResize() {
 </script>
 
 <template>
-	<div class="flex flex-col justify-between w-full h-full bg-[#9f9e89] bg-TvScreen-texture">
+	<div v-if="isLoaded" ref="matchPage" class="flex flex-col justify-between w-full h-full bg-[#9f9e89] bg-TvScreen-texture">
 		<div class="flex justify-center pt-[1vh] h-[15%] sm:gap-4">
 			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col justify-center items-center h-full w-full">
 				<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="pb-1 text-left z-1 text-white font-VS brightness-100  tracking-[0.3rem] sm:tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">

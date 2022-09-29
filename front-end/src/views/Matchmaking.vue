@@ -52,7 +52,7 @@ onBeforeUnmount(() => {
 <template>
 	<div class="relative flex flex-col justify-between h-full font-Noir mx-[4vw] gap-4">
 		<the-header></the-header>
-		<div v-if="!searchingMatch && !waitingForPlayer" class="flex flex-col justify-center items-center h-full w-full mb-40 gap-[44px]">
+		<div v-if="!searchingMatch" class="flex flex-col justify-center items-center h-full w-full mb-40 gap-[44px]">
 			<div class="flex flex-col sm:flex-row justify-center items-center">
 				<button-gradient class="m-3 h-[50px]" style="width:180px" @click="findMatch(MatchMakingTypes.NORMAL_MATCH, null)">Normal Match</button-gradient>
 				<button-gradient class="m-3 h-[50px]" style="width:180px" @click="findMatch(MatchMakingTypes.ANY_MATCH, null)">Any Match</button-gradient>
