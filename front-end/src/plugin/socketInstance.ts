@@ -64,4 +64,8 @@ socket.on("double_connection", () => {
 	userStore.handleLogout()
 })
 
+socket.on("disconnect", () => {
+	socket.off('addNotification');
+})
+
 export default socket;
