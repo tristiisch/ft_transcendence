@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch, unwatch } from 'vue';
+import { ref, onMounted, onUnmounted, onBeforeMount, onBeforeUnmount, watch} from 'vue';
 import Konva from 'konva'
 import socket from '@/plugin/socketInstance'
 import { useRoute, useRouter } from 'vue-router';
