@@ -65,7 +65,7 @@ onBeforeMount(() => {
         <h1 class="flex justify-center items-center w-3/4 h-[40px] sm:h-[50px] text-sm sm:text-base text-red-200 border-b border-red-500 bg-gradient-to-r from-red-500 via-red-600 to-red-500 shrink-0">PLAYERS</h1>
 		<div class="inline-flex justify-center w-full pt-4 sm:pt-12">
 			<button @click="changeMode('random')" class="w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600 rounded-l-md border" :class="mode === 'random' && !globalStore.invitedUser ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Random</button>
-			<button @click="changeMode('invite')" class="w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600 rounded-r-md border-t border-b" :class="mode === 'invite' || globalStore.invitedUser ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Invite</button>
+			<button @click="changeMode('invite')" class="w-[38%] py-1.5 sm:py-2.5 px-4 text-xs sm:text-sm border-blue-600 rounded-r-md border-t border-r border-b" :class="mode === 'invite' || globalStore.invitedUser ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-blue-600'">Invite</button>
 		</div>
 		<div v-if="mode === 'invite' || globalStore.invitedUser" class="h-full flex flex-col justify-center items-center w-full pt-2 gap-4">
 			<div :class="updateBackground()" class="flex justify-center items-center border text-blue-600 rounded-full min-w-[120px] min-h-[120px] sm:min-w-[150px] sm:min-h-[150px] w-[calc(0.18_*_100vh)] h-[calc(0.18_*_100vh)] w-[calc(0.2_*_100vh)] h-[calc(0.2_*_100vh)]">
