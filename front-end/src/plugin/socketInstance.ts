@@ -55,13 +55,13 @@ socket.on("connect", () => {
 	})
 })
 
-socket.on("disconnect", (reason) => {
+socket.on("double_connection", () => {
 	const userStore = useUserStore();
 	const toast = useToast();
-	if (reason === "io server disconnect") {
-		toast.error('Double connection')
-		userStore.handleLogout()
-	}
+	toast.error('You are connected from an other window.', {
+		timeout: false
+	})
+	userStore.handleLogout()
 })
 
 export default socket;

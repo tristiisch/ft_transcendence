@@ -14,8 +14,6 @@ async function bootstrap() {
 	app.enableCors({ origin: [process.env.FRONT_URL, `http://localhost:${process.env.FRONT_PORT}`] });
 	app.setGlobalPrefix('api');
 
-	// For avatar, max JSON (should be better if this rules is only for avatar request)
-	// https://stackoverflow.com/questions/12921658/use-specific-middleware-in-express-for-all-paths-except-a-specific-one
 	app.use(bodyParser.json({ limit: '10mb' }));
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

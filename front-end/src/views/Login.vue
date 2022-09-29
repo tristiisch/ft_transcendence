@@ -27,7 +27,7 @@ const isLoading = ref(false);
 function redirectTo42LoginPage(): void {
 	const baseUrl = import.meta.env.VITE_FT_API_OAUTH;
 	const randomString = (Math.random() + 1).toString(36).substring(2);
-	localStorage.setItem('state', JSON.stringify(randomString))
+	sessionStorage.setItem('state', randomString)
 
 	const options = {
 		client_id: import.meta.env.VITE_FT_UID,

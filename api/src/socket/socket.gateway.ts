@@ -53,26 +53,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	afterInit(server: Server): void {
 		this.socketService.server = server;
-		this.server.on("connection", (socket) => {
-			socket.prependAny((eventName, ...args) => {
-				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
-			});
-			socket.prependAnyOutgoing((eventName, ...args) => {
-				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
-			});
-			socket.on("ping", (count) => {
-				Logger.debug(`Ping ${count}`, 'WebSocket');
-			});
-		});
 	}
 
 	async handleConnection(clientSocket: Socket) {
 		try {
+			clientSocket.prependAny((eventName, ...args) => {
+				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+			});
+			clientSocket.prependAnyOutgoing((eventName, ...args) => {
+				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+			});
+			clientSocket.on("ping", (count) => {
+				Logger.debug(`Ping ${count}`, 'WebSocket');
+			});
+
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 
 			if (!user) return clientSocket.disconnect();
 
-			Logger.debug(`New connection ${user.username}`, 'WebSocket');
 			this.socketService.saveClientSocket(user, clientSocket.id);
 			this.updateStatus(clientSocket, user, UserStatus.ONLINE);
 		} catch (err) {
@@ -84,10 +82,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 
-			Logger.debug(`Disconnection ${user.username}`, 'WebSocket');
 			this.cancelFindMatch(clientSocket)
 			this.updateStatus(clientSocket, user, UserStatus.OFFLINE);
-			this.socketService.deleteClientSocket(user.id);
+			this.socketService.deleteClientSocket(user.id, clientSocket);
 		} catch (err) {
 			Logger.error(`Cannot get user from socket for handleDisconnect: ${err.message}`, 'WebSocket');
 		}
