@@ -19,16 +19,16 @@ COPY --chown=node:node package*.json ./
 
 # Bundle app source
 COPY --chown=node:node . .
-RUN mkdir -p dist node_modules
+RUN mkdir -p dist/assets node_modules
 RUN chown -R node:node .
+
+RUN env | grep VITE_ | while read -r var ; do VAR_ARRAY=${var//=/ }; echo $var >> .env ; done
 
 # Use the node user from the image (instead of the root user)
 USER node
 
 # Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
-
-
 
 ###################
 # PRODUCTION
@@ -47,6 +47,7 @@ COPY --chown=node:node package*.json ./
 COPY --chown=node:node --from=dev /usr/src/app/node_modules ./node_modules
 
 COPY --chown=node:node . .
+
 
 # Run the build command which creates the production bundle
 RUN npm run build

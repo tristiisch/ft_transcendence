@@ -7,8 +7,7 @@ services:
       context: ./api/
       target: ${NODE_ENV}
     volumes:
-    - ./api:/usr/src/app
-    # - /usr/src/app/dist
+    #- ./api:/usr/src/app
     - /usr/src/app/node_modules
     restart: always
     env_file:
@@ -27,8 +26,7 @@ services:
     build:
       context: ./front-end/
     volumes:
-    - ./front-end:/usr/src/app
-    # - /usr/src/app/dist
+    #- ./front-end:/usr/src/app
     - /usr/src/app/node_modules
     restart: always
     environment:

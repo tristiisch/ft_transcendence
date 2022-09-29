@@ -307,8 +307,8 @@ export class ChatService {
 				throw new WsException(`Unknown channel type ${channelDTO.type}.`)
 		}
 		channel.name = channelDTO.name;
-		if (channelDTO.avatar_64.startsWith('/src/assets/')) {
-			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
+		if (channelDTO.avatar_64.startsWith('/src/assets/') || channelDTO.avatar_64.startsWith('/assets/')) {
+			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}${channelDTO.avatar_64}`);
 			if (!channel.avatar_64)
 				throw new WsException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
 		} else {
