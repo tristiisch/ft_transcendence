@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/stores/globalStore';
 import { ref } from 'vue';
+import world1 from '@/assets/world1.jpeg'
+import world2 from '@/assets/world2.jpeg'
 
 const globalStore = useGlobalStore();
-const imageTab = ref(['src/assets/world1.jpeg', 'src/assets/world2.jpeg'] as string[])
+const imageTab = ref([world1, world2])
 const index = ref(0);
 
 function nextPrevious() { 
