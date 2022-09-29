@@ -38,11 +38,9 @@ export const useUserStore = defineStore('userStore', {
 				this.verifyState(state);
 				const response = await AuthService.login(code);
 				this.userAuth = response.data.auth;
-				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
 					this.userData = response.data.user;
-					console.log(this.userData)
 					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				} 
 			} catch (error: any) {
@@ -53,11 +51,9 @@ export const useUserStore = defineStore('userStore', {
 			try {
 				const response = await AuthService.fakeLogin(username);
 				this.userAuth = response.data.auth;
-				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
 					this.userData = response.data.user;
-					console.log(this.userData);
 					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				}
 			} catch (error: any) {

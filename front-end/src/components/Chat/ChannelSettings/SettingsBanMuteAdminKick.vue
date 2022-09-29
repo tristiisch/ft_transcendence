@@ -70,8 +70,7 @@ onBeforeMount(() => {
 	if (chatStore.inChannel)
 		selectableUsers.value = chatStore.inChannel.users.filter(user => user.id !== userStore.userData.id && user.id !== chatStore.inChannel?.owner?.id)
 	if (props.type === 'ban')
-		updateSelectableUsers()
-	console.log(props.type)
+		updateSelectableUsers();
 })
 </script>
 

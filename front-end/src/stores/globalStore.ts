@@ -98,7 +98,6 @@ export const useGlobalStore = defineStore('globalStore', {
 		async fetchGameInvitation() {
 			try {
 				const response = await UserService.getGameInvitation();
-				console.log(response)
 				if (response.data)
 					this.invitedUser = response.data
 			} catch (error: any) {

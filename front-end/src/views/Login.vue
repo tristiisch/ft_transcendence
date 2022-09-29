@@ -63,7 +63,6 @@ function submit2faForm() {
 		router.replace({ name: 'Home' });
 	})
 	.catch((error) => {
-		console.log(error)
 		if (error.response.status === 403) toast.error(error.response.data.message)
 		else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
 		else userStore.handleLogout()

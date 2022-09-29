@@ -147,7 +147,6 @@ export const useChatStore = defineStore('chatStore', {
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, password, (channelCreated: Channel) => {
-				console.log('channelCreated', channelCreated)
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
 				this.loadChannel(this.userChannels[0]);
 			});
@@ -292,7 +291,6 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatDiscussionMessage', discussion.user.id, messageDTO, (body: any[]) => {
 					const discu: Discussion = body[0];
 					const msg: Message = body[1];
-					console.log('chatDiscussionMessage', msg, 'Discussion', discu);
 					chat.messages.push(msg)
 				});
 			}
@@ -305,9 +303,8 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelMessage', { id: channel.id, type: channel.type }, messageDTO, (body: any[]) => {
 					const channel: Channel = body[0];
 					const msg: Message = body[1];
-					console.log('channel Message', msg);
 					if (!msg) {
-						console.log('ERROR chatChannelMessage', channel, 'messageDTO', messageDTO);
+						console.log('ERROR chatChannelMessage', channel, 'messageDTO', messageDTO); //TODO 
 					}
 					chat.messages.push(msg)
 				});
@@ -364,8 +361,6 @@ export const useChatStore = defineStore('chatStore', {
 				else if (this.inDiscussion)
 					msgId = this.inDiscussion.messages[this.inDiscussion.messages.length - 1].idMessage
 				if (msgId === message.idMessage) {
-					console.log(message.idMessage)
-					console.log(message.idChat)
 					socket.emit('chatMsgReaded', message.idMessage, message.idChat);
 				}
 			}
