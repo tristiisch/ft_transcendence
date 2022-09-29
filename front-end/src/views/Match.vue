@@ -40,6 +40,7 @@ MatchService.loadMatch(match_id)
 		match.value = response.data
 		if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
 			isPlayer.value = true
+		socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
 		isLoaded.value = true
 	})
 	.catch((e) => {
@@ -60,7 +61,6 @@ watch([isLoaded, isMounted, matchPage], () => {
 })
 
 onBeforeMount(() => {
-	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
 	window.addEventListener('resize', handleResize);
 	if (globalStore.gameInvitation)
 	{
@@ -75,7 +75,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-	socket.emit('update_status', status.ONLINE)
+	socket.emit('updateUserStatus', status.ONLINE)
 })
 
 onUnmounted(() => {
