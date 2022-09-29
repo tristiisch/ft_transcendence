@@ -20,7 +20,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		ballSpeed: 100,
 		racketSize: 100,
 		increaseSpeed: false,
-		world: 1,
+		world: 0,
 		winningScore: 5,
 		gameInvitation: false,
 	}),

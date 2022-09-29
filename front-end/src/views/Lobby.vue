@@ -97,7 +97,7 @@ onBeforeMount(() => {
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
 	globalStore.racketSize = 100;
-	globalStore.world = 1;
+	globalStore.world = 0;
 	globalStore.winningScore = 5;
 	globalStore.increaseSpeed = false;
 });
