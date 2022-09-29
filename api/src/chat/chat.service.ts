@@ -282,8 +282,6 @@ export class ChatService {
 	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
 		let channel: Channel;
 
-		checkImage(channelDTO.avatar_64);
-
 		if (await this.isChannelExist(channelDTO.name)) {
 			throw new WsException('A channel already exist with same name.')
 		}
@@ -314,6 +312,7 @@ export class ChatService {
 			if (!channel.avatar_64)
 				throw new WsException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
 		} else {
+			checkImage(channelDTO.avatar_64);
 			channel.avatar_64 = channelDTO.avatar_64;
 		}
 		channel.type = channelDTO.type;
