@@ -409,7 +409,7 @@ export class MatchService {
 
 			return { id: match_id };
 		} else {
-			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)
+			throw new NotAcceptableException(`User ${inviteUser.username} is not available.`)
 		}
 	}
 
