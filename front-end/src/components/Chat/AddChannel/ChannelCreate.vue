@@ -8,6 +8,9 @@ import { ChatStatus } from '@/types/ChatStatus';
 import UploadAvatar from '@/components/Divers/UploadAvatar.vue';
 import UsersSearch from '@/components/Divers/UsersChannelsSearch.vue';
 import ButtonCloseValidate from '@/components/Button/ButtonCloseValidate.vue';
+import ChanneldefaultAvatarPublic from '@/assets/ChannelDefaultPublic.png';
+import ChannelDefaultPrivate from '@/assets/ChannelDefaultPrivate.png';
+import ChannelDefaultProtected from '@/assets/ChannelDefaultProtected.png';
 
 const chatStore = useChatStore();
 const globalStore = useGlobalStore();
@@ -15,7 +18,7 @@ const userStore = useUserStore();
 const newChannelType = ref<ChatStatus>(ChatStatus.PUBLIC);
 const newChannelName = ref('');
 const newPassword = ref('');
-const newAvatar = ref('src/assets/ChannelDefaultPublic.png');
+const newAvatar = ref(ChanneldefaultAvatarPublic);
 const selectPlayer = ref(false);
 const error = ref('');
 let isUpload = false;
@@ -32,19 +35,19 @@ function uploadImage(imageData: string): void {
 function clickOnButtonPublic() {
 	newChannelType.value = ChatStatus.PUBLIC
     if (!isUpload)
-	    newAvatar.value = 'src/assets/ChannelDefaultPublic.png'
+	    newAvatar.value = ChanneldefaultAvatarPublic;
 }
 
 function clickOnButtonPrivate() {
 	newChannelType.value = ChatStatus.PRIVATE
     if (!isUpload)
-	    newAvatar.value = 'src/assets/ChannelDefaultPrivate.png'
+	    newAvatar.value = ChannelDefaultPrivate;
 }
 
 function clickOnButtonProtected() {
 	newChannelType.value = ChatStatus.PROTECTED
     if (!isUpload)
-	    newAvatar.value = 'src/assets/ChannelDefaultProtected.png'
+	    newAvatar.value = ChannelDefaultProtected;
 }
 
 function treatNewChannelData()
