@@ -135,7 +135,7 @@ onBeforeMount(() => {
 							router.replace({
 								name: 'Error',
 								params: { pathMatch: route.path.substring(1).split('/') },
-								query: { code: error.response?.status, message: error.response?.data.message }
+								query: { code: error.response?.status, message: error.response?.data?.message }
 							});
 						})
 						

@@ -22,9 +22,11 @@ instance.interceptors.response.use(function (response) {
 	},
 	function (error) {
 		const userStore = useUserStore();
-		if ([401].includes(error.response.status) && userStore.isLoggedIn) {
+		if ([401].includes(error.response?.status) && userStore.isLoggedIn) {
 			const toast = useToast();
-			toast.error('Your session has expired')
+			toast.error('Your session has expired', {
+				timeout: false
+			})
 			userStore.handleLogout()
 		}
 		return Promise.reject(error);

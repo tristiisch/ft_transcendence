@@ -48,7 +48,11 @@ function fetchAll() {
 		isLoading.value = false
 	})
 	.catch((error) => {
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+		router.replace({
+			name: 'Error',
+			params: { pathMatch: route.path.substring(1).split('/') },
+			query: { code: error.response?.status, message: error.response?.data?.message }
+		});
 	})
 }
 

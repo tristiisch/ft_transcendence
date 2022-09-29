@@ -46,7 +46,7 @@ function validate2FA() {
 			qrCode.value = ''
 		})
 		.catch((error) => {
-			if (error.response && error.response.status === 403) toast.error(error.response.data.message)
+			if (error.response?.status === 403) toast.error(error.response?.data?.message)
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}

@@ -65,9 +65,9 @@ function acceptInvitation(message: Message) {
 				router.push({ name: 'Match', params: { uuid: response?.data.id } });
 			})
 			.catch((error) => {
-				if (error.response.status === 406)
+				if (error.response?.status === 406)
 				{
-					toast.warning(error.response.data.message)
+					toast.warning(error.response?.data?.message)
 				}
 				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			})
@@ -83,9 +83,9 @@ function declineInvitation(message: Message) {
 				message.canUseButton = false
 			})
 			.catch((error) => {
-				if (error.response.status === 406)
+				if (error.response?.status === 406)
 				{
-					toast.warning(error.response.data.message)
+					toast.warning(error.response?.data?.message)
 				}
 				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			})
