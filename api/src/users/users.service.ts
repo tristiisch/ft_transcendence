@@ -11,6 +11,7 @@ import { AuthService } from "auth/auth.service";
 import { SocketService } from 'socket/socket.service';
 import { FriendsService } from "friends/friends.service";
 import { NotificationService } from "notification/notification.service";
+import { getAnoPicture } from "utils/ano";
 
 @Injectable()
 export class UsersService {
@@ -304,7 +305,8 @@ export class UsersService {
 	}
 	
 	async anonymizeUser(user: User) : Promise<User> {
-		user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/src/assets/anonymize.png`);
+		//user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/src/assets/anonymize.png`);
+		user.avatar_64 = getAnoPicture();
 		user.username = `${randomWord(3)}-${randomWord(5)}`
 		user.login_42 = null;
 		await this.authService.delete(user);

@@ -37,7 +37,7 @@ export class User extends BaseEntity {
 	}
 
 	public getAvatarURL() {
-		return `${process.env.API_URL}/users/avatar/${this.id}/id`;
+		return `${process.env.VITE_API_URL}/users/avatar/${this.id}/id`;
 	}
 
 	public isBlockedUser(userId: number) {

@@ -205,7 +205,7 @@ export class TestFakeService {
 				newChat = new ChannelPublic();
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
-				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=1024&h=1024'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],
 				newChat.banned_ids = [],
@@ -217,7 +217,7 @@ export class TestFakeService {
 				newChat = new ChannelPrivate();
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
-				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=1024&h=1024'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],
 				newChat.banned_ids = [],
@@ -228,7 +228,7 @@ export class TestFakeService {
 				newChat = new ChannelProtected();
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
-				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=1024&h=1024'),
 				(newChat as ChannelProtected).password = await hashPassword('bob'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],

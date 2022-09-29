@@ -307,8 +307,8 @@ export class ChatService {
 				throw new WsException(`Unknown channel type ${channelDTO.type}.`)
 		}
 		channel.name = channelDTO.name;
-		if (channelDTO.avatar_64.startsWith('/src/assets/')) {
-			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
+		if (channelDTO.avatar_64.startsWith('/src/assets/') || channelDTO.avatar_64.startsWith('/assets/')) {
+			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}${channelDTO.avatar_64}`);
 			if (!channel.avatar_64)
 				throw new WsException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
 		} else {
@@ -328,7 +328,8 @@ export class ChatService {
 
 		const users: User[] = await this.userService.findMany(channel.users_ids.filter(id => id !== user.id));
 		await this.createAutoMsg(`⚪️　${user.username} is the creator of this channel.`, channel);
-		await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
+		if (users.length !== 0)
+			await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
 		return channel;
 	}
 
