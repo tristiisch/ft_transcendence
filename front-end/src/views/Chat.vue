@@ -107,6 +107,18 @@ function scrollToTop() {
 	}
 }
 
+function changeList(clickOn: string) {
+	let i = -1;
+	while (++i < displayDelete.value.length) {
+		if (displayDelete.value[i] === true)
+			displayDelete.value[i] = false;
+	}
+	if (clickOn === 'discussion')
+		chatStore.setLeftPartToDisplay('discussion')
+	else
+		chatStore.setLeftPartToDisplay('channels')
+}
+
 onBeforeMount(() => {
 	isLoading.value = true
 	chatStore.fetchAll()
@@ -166,22 +178,21 @@ onBeforeUnmount(() => {
 				<div class="flex flex-col justify-between items-center h-full w-full px-8">
 					<div class="flex w-full justify-around gap-2 flex-wrap sm:pb-5">
 						<button
-							@click="chatStore.setLeftPartToDisplay('discussion')"
+							@click="changeList('discussion')"
 							class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500"
 						>
 							DISCUSSIONS
 						</button>
 						<button
-							@click="chatStore.setLeftPartToDisplay('channels')"
+							@click="changeList('channels')"
 							class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500"
 						>
 							CHANNELS
 						</button>
 					</div>
 					<div id="scrollbar" class="flex flex-col overflow-x-auto sm:overflow-y-auto h-full w-full pr-2" ref="scroll">
-						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="relative w-full h-full sm:h-[calc(100%_/_6)]">
+						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full h-full sm:h-[calc(100%_/_6)]">
 							<discussion-list @click.right.prevent="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
-							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
 						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_6)]">
 							<channels-list
