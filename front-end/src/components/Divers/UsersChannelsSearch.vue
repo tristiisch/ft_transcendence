@@ -30,7 +30,7 @@ const props = defineProps<{
 }>();
 
 function changeDisplayToFriends() {
-	if (props.type === 'usersNotInChannel') itemsToDisplay.value = globalStore.friends.filter((user) => !chatStore.inChannel?.users.includes(user))
+	if (props.type === 'usersNotInChannel') itemsToDisplay.value = globalStore.friends.filter((user) => chatStore.inChannel?.users.includes(user))
 	else itemsToDisplay.value = globalStore.friends
     filterButton.value = 'Friends';
 }
@@ -52,7 +52,12 @@ function changeDisplayToAllChannels() {
 }
 
 function placeHolder() {
-	return props.type === 'users' ? 'player name' : 'channel name';
+	if (props.type === 'users')
+		return  'player name';
+	else if (props.type === 'usersNotInChannel')
+		return  'player name';
+	else 
+		return 'channel name';
 }
 
 function searchPlayer() {
