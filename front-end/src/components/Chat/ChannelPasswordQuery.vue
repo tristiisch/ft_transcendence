@@ -22,7 +22,8 @@ function checkPassword()
 		socket.emit('chatPassCheck', channelToJoin, password.value, (ok: boolean) => {
 			if (ok) {
 				chatStore.joinNewChannel(channelToJoin, password.value);
-				if (channelToJoin.banned.find(user => user.id === userStore.userData.id))
+				const index = channelToJoin.banned.findIndex(user => user.id === userStore.userData.id)
+				if (index >= 0)
 					chatStore.setRightPartToDisplay(PartToDisplay.CHAT);
 				globalStore.resetSelectedItems();
 			}

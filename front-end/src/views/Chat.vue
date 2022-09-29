@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
 						</button>
 					</div>
 					<div id="scrollbar" class="flex flex-col overflow-x-auto sm:overflow-y-auto h-full w-full pr-2" ref="scroll">
-						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full h-full sm:h-[calc(100%_/_6)]">
+						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full h-[70px] sm:h-[calc(100%_/_6)]">
 							<discussion-list @click.right.prevent="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
 						</div>
 						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_6)]">

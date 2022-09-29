@@ -37,7 +37,6 @@ socket.on("connect", () => {
 		else if (notification.type == NotificationType.FRIEND_CANCEL) globalStore.removeNotifCancel(notification, NotificationType.FRIEND_REQUEST);
 		else {
 			globalStore.addNotification(notification);
-			console.log(notification.from_user)
 			if (notification.type == NotificationType.MATCH_CANCEL) {
 				globalStore.removeNotifCancel(notification, NotificationType.MATCH_REQUEST);
 				chatStore.removeSpinner(notification.from_user_id, notification.from_user_id)
