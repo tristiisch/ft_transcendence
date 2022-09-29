@@ -500,13 +500,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelDTO: ChannelFront = body[0];
 		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1];
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+		const oldId = channel.id;
 
 		if (newNamePassword.name !== channel.name)
 			await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}.`, channel);
 
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, channel.id)
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, oldId);
 		return [channelFront, channel.id];
 	}
 
