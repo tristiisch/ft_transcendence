@@ -10,15 +10,10 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { MatchMakingTypes } from '@/types/MatchMaking';
 import TheHeader from '../components/Ui/TheHeader.vue';
 
-
 const searchingMatch = ref(false)
-const waitingForPlayer = ref(false)
 
-const MatchService = useMatchService
 const router = useRouter()
 const route = useRoute()
-const userStore = useUserStore();
-const userData = userStore.userData
 const globalStore = useGlobalStore()
 
 function findMatch(type: number, match_live_infos: any) {
@@ -64,14 +59,10 @@ onBeforeUnmount(() => {
 			</div>
 			<base-button link :to="{ name: 'Home' }" type="button" class="m-3 h-[50px] w-[80px] sm:w-[130px] text-white bg-gradient-to-l 
 				from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-r focus:ring-1 focus:outline-none focus:ring-purple-200 font-medium rounded-lg text-xs sm:text-sm py-3.5 text-center" 
-				style="width:180px" @click="findMatch(MatchMakingTypes.ANY_MATCH, null)">Home</base-button>
+				style="width:180px">Home</base-button>
 		</div>
 		<div v-if="searchingMatch" class="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
 			<base-spinner game></base-spinner>
-			<button-gradient class="-mt-16 h-[50px]" style="width:180px" @click="router.push('/home')">Cancel</button-gradient>
-		</div>
-		<div v-if="waitingForPlayer" class="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
-			<base-spinner invite></base-spinner>
 			<button-gradient class="-mt-16 h-[50px]" style="width:180px" @click="router.push('/home')">Cancel</button-gradient>
 		</div>
 	</div>
