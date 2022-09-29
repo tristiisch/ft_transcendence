@@ -49,7 +49,7 @@ socket.on("connect", () => {
 			else if (notification.type == NotificationType.FRIEND_ACCEPT) globalStore.addFriend(notification.from_user)
 			else if (notification.type == NotificationType.FRIEND_DECLINE) globalStore.removePendingFriend(notification.from_user.id)
 			else if (notification.type == NotificationType.FRIEND_REMOVE) globalStore.removeFriend(notification.from_user.id)
-			if (userStore.userData.status !== Status.INGAME) toast.info(notification.message)
+			toast.info(notification.message)
 		}
 	})
 })

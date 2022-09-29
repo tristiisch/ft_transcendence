@@ -22,12 +22,16 @@ instance.interceptors.response.use(function (response) {
 	},
 	function (error) {
 		const userStore = useUserStore();
-		if ([401].includes(error.response?.status) && userStore.isLoggedIn) {
+		if ([401, 416].includes(error.response?.status) && userStore.isLoggedIn) {
 			const toast = useToast();
-			toast.error('Your session has expired', {
-				timeout: false
-			})
-			userStore.handleLogout()
+			if (error.response?.status === 401) {
+				toast.error('Your session has expired', {
+					timeout: false
+				})
+				userStore.handleLogout()
+			}
+			if (error.response?.status === 413)
+				toast.error('File too big')
 		}
 		return Promise.reject(error);
 	}
