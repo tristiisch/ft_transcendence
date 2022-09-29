@@ -7,7 +7,7 @@ export class UserDTO {
 	@IsString()
 	@IsOptional()
 	@MinLength(3)
-	@MaxLength(16)
+	@MaxLength(10)
     @IsAlphanumeric()
 	username?: string;
 
