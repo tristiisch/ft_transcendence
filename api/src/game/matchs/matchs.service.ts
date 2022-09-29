@@ -224,13 +224,10 @@ export class MatchService {
 			y2 = this.stageHeight - (this.mod(y2, this.stageHeight))
 		}
 
-		// if ((x2 >= this.p1XPos && x2 < this.p1XPos + this.blockerWidth && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-		// 	(x2 >= this.p2XPos && x2 < this.p2XPos + this.blockerWidth && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight)) {
-		// 		console.log("Y hit !")
-		// 		match.ballYDir *= -1
-		// 		y2 = y2 + 2 * match.ballYDir
-		// 	}
-		if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
+		if (((y2 < match.p1Pos || y2 >= match.p1Pos + match.racketSize) &&  x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
+			((y2 < match.p2Pos || y2 >= match.p2Pos + match.racketSize) &&  x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
+			match.ballYDir *= -1
+		else if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
 				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
 					match.ballXDir *= -1
 

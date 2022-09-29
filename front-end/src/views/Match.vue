@@ -124,7 +124,7 @@ function loadStage() {
 	var ball: Konva.Circle = new Konva.Circle({
 		x: stage_width / 2,
 		y: stage_height / 2,
-		radius: ball_radius,
+		radius: 2, //ball_radius,
 		fill: 'dark',
 		visible: false
 	})
