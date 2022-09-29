@@ -48,9 +48,9 @@ MatchService.loadMatch(match_id)
 
 
 watch([isLoaded, isMounted], () => {
-	if (isLoaded.value && isMounted.value)
-		loadStage()
-})
+	if (isLoaded.value && isMounted.value) 
+		 loadStage()
+});
 
 onBeforeMount(() => {
 	socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
@@ -326,6 +326,12 @@ function handleResize() {
 	windowHeight.value = window.innerHeight;
 }
 
+function colorBackground() {
+	if (match.value.world === 0)
+		return '[background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)]';
+	else
+		return '[background:radial-gradient(circle,_#458ac3,_#468dc5,_#4890c6,_#4992c8,_#4b95c9,_#569ecd,_#61a6d1,_#6cafd5,_#85c0dd,_#9ed0e5,_#b9e1ee,_#d4f1f8);]'
+}
 
 </script>
 
@@ -367,9 +373,10 @@ function handleResize() {
 					</base-button>
 					<img :src="match.user2_avatar" class="h-[80%] border-2 object-cover"/>
 				</div>
-				<img class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-transparent.png">
-				<div  id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
-				<div class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+				<img v-if="match.world === 0" class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-world1.png">
+				<img v-else class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-world2.png">
+				<div  id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border" :class="match.world === 0 ? 'border-[#595959]' : 'border-[#D4F1F8]'"></div>
+				<div :class="colorBackground()" class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>
 				<div class="absolute w-100 w-100 m-auto left-0 right-0 bottom-0 top-0"></div>
