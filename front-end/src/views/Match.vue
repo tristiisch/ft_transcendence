@@ -19,14 +19,17 @@ var match_id = route.params.uuid as string
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
 
-const windowHeight = ref(window.innerHeight);
-const windowWidth = ref(window.innerWidth);
 
 var isLoaded = ref(false)
 var isMounted = ref(false)
+const matchPage = ref(null)
+
 var isPlayer = ref(false)
 var matchStarted = ref(false)
 var matchEnded = ref(false)
+
+const windowHeight = ref(window.innerHeight);
+const windowWidth = ref(window.innerWidth);
 
 document.documentElement.style.overflow = 'hidden';
 
@@ -47,9 +50,12 @@ MatchService.loadMatch(match_id)
 	})
 
 
-watch([isLoaded, isMounted], () => {
-	if (isLoaded.value && isMounted.value)
+watch([isLoaded, isMounted, matchPage], () => {
+	if (isLoaded.value && isMounted.value && matchPage.value)
+	{
+		console.log("Ready to load stage !")
 		loadStage()
+	}
 })
 
 onBeforeMount(() => {
@@ -63,6 +69,7 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
+	console.log("Mounted!")
 	isMounted.value = true
 })
 
@@ -84,7 +91,7 @@ onUnmounted(() => {
 });
 
 function loadStage() {
-	console.log("LOADING STAGE", match.value)
+	console.log("LOADING STAGE")
 	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
@@ -191,31 +198,28 @@ function loadStage() {
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
-		stage_height = stage_container.offsetHeight
-		stage_width = stage.height() * stage_ratio
-		stage.height(stage_height)
-		stage.width(stage_width)
+		stage.height(stage_container.offsetHeight)
+		stage.width(stage.height() * stage_ratio)
+		var ratio = stage.height() / stage_height
+		stage_height = stage.height()
+		stage_width = stage.width()
 		backend_stage_ratio = stage_width / match.value.stageWidth
 
-		var ratio = stage_width / stage_height
 		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
 		dx = dx < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 		dy = dy < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 
-		if (match.value.racketSize) {
-			p1_blocker.x(p1_blocker.x() * ratio)
-			p1_blocker.y(p1_blocker.y() * ratio)
-			p2_blocker.x(p2_blocker.x() * ratio)
-			p2_blocker.y(p2_blocker.y() * ratio)
-			blockers_width = computeBlockerWidth()
-			blockers_height = computeBlockerHeight()
-			p1_blocker.width(blockers_width)
-			p1_blocker.height(blockers_height)
-			p2_blocker.width(blockers_width)
-			p2_blocker.height(blockers_height)
-		}
-
+		p1_blocker.x(p1_blocker.x() * ratio)
+		p1_blocker.y(p1_blocker.y() * ratio)
+		p2_blocker.x(p2_blocker.x() * ratio)
+		p2_blocker.y(p2_blocker.y() * ratio)
+		blockers_width = computeBlockerWidth()
+		blockers_height = computeBlockerHeight()
+		p1_blocker.width(blockers_width)
+		p1_blocker.height(blockers_height)
+		p2_blocker.width(blockers_width)
+		p2_blocker.height(blockers_height)
 	}
 	window.onresize = resizeStage
 	// -------------------------------------------------
@@ -326,11 +330,17 @@ function handleResize() {
 	windowHeight.value = window.innerHeight;
 }
 
+function colorBackground() {
+	if (match.value.world === 0)
+		return '[background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)]';
+	else
+		return '[background:radial-gradient(circle,_#458ac3,_#468dc5,_#4890c6,_#4992c8,_#4b95c9,_#569ecd,_#61a6d1,_#6cafd5,_#85c0dd,_#9ed0e5,_#b9e1ee,_#d4f1f8);]'
+}
 
 </script>
 
 <template>
-	<div class="flex flex-col justify-between w-full h-full bg-[#9f9e89] bg-TvScreen-texture">
+	<div v-if="isLoaded" ref="matchPage" class="flex flex-col justify-between w-full h-full bg-[#9f9e89] bg-TvScreen-texture">
 		<div class="flex justify-center pt-[1vh] h-[15%] sm:gap-4">
 			<div v-if="isLoaded && (windowWidth <= 1500)" class="flex flex-col justify-center items-center h-full w-full">
 				<base-button link :to="{ name: 'Profile', params: { id: match.user1_id }}" class="pb-1 text-left z-1 text-white font-VS brightness-100  tracking-[0.3rem] sm:tracking-[0.6rem] [text-shadow:0_0_0.1vw_#fa1c16,0_0_0.3vw_#fa1c16,0_0_1vw_#fa1c16,0_0_1vw_#fa1c16,0_0_0.04vw_#fed128,0.05vw_0.05vw_0.01vw_#806914]">
@@ -367,9 +377,10 @@ function handleResize() {
 					</base-button>
 					<img :src="match.user2_avatar" class="h-[80%] border-2 object-cover"/>
 				</div>
-				<img class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-transparent.png">
-				<div  id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border border-[#595959]"></div>
-				<div class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
+				<img v-if="match.world === 0" class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-world1.png">
+				<img v-else class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-world2.png">
+				<div  id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border" :class="match.world === 0 ? 'border-[#595959]' : 'border-[#D4F1F8]'"></div>
+				<div :class="colorBackground()" class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>
 				<div class="absolute w-100 w-100 m-auto left-0 right-0 bottom-0 top-0"></div>
