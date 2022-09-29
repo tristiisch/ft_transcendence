@@ -93,12 +93,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage(null)
-	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket, @Req() req) {
-		Logger.debug(`Client ${req.user.username} send us a msg`, 'WebSocket');
-	}
-
-	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('updateUserStatus')
 	handleUserStatus(@MessageBody() data: number, @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
