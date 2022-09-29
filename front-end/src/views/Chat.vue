@@ -145,7 +145,6 @@ onBeforeMount(() => {
 			
 		})
 		.catch((error) => {
-			console.log(error)
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		})
 });
