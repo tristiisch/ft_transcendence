@@ -100,7 +100,7 @@ function loadStage() {
 	const ball_size_quotient = 100 // the least, the bigger
 	const ball_speed = 12 //if client compensator for ball movements
 	const blocker_width_quotient = 50 // the least, the bigger
-	const blocker_xpos_quotient = 10 // the more, the closer to the stage
+	const blocker_xpos_quotient = 20 // the more, the closer to the stage
 
 	var stage_height = stage_container.offsetHeight
 	var stage_width = stage_height * stage_ratio
@@ -124,7 +124,7 @@ function loadStage() {
 	var ball: Konva.Circle = new Konva.Circle({
 		x: stage_width / 2,
 		y: stage_height / 2,
-		radius: 2, //ball_radius,
+		radius: ball_radius,
 		fill: match.value.world === 0 ? 'dark' : '#D4F1F8',
 		visible: false
 	})
@@ -237,8 +237,9 @@ function loadStage() {
 		router.push('/home')
 	})
 
-	socket.emit("joinMatch", match_id, (match_infos: any) => {
+	socket.emit("joinMatch", match_id, (match_infos_array: any) => {
 		console.log("Joining match!")
+		let match_infos = match_infos_array[0]
 		blockers_height = computeBlockerHeight()
 		p1_blocker.height(blockers_height)
 		p2_blocker.height(blockers_height)
