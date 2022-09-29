@@ -500,13 +500,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelDTO: ChannelFront = body[0];
 		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1];
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+		const oldId = channel.id;
 
 		if (newNamePassword.name !== channel.name)
 			await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}.`, channel);
 
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, channel.id)
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, oldId);
 		return [channelFront, channel.id];
 	}
 
@@ -544,23 +545,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// once the match is created: for players and spectators
 		console.log("joinMatch :", id, "!", client.id)
 		if (this.matches.has(id)) {
-			let stageWidth = this.matchService.getStageWidth()
 			let match = this.matches.get(id)
-			let started = match.started
-			let waiting = match.waiting
-			let racketSize = match.racketSize
-			// let ballXPos = match.ballXPos
-			// let ballYPos = match.ballYPos
-			let p1Ready = match.p1Ready
-			let p2Ready = match.p2Ready
-			let p1Pos = match.p1Pos
-			let p2Pos = match.p2Pos
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
 			console.log("match_" + id, "nb clients = ", clients.size)
-			// if (started)
-				// return { stageWidth, started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
-			return { stageWidth, started, waiting, racketSize, p1Ready, p2Ready, p1Pos, p2Pos }
+			return {
+				started: match.started,
+				p1Ready: match.p1Ready,
+				p2Ready: match.p2Ready,
+				p1Pos: match.p1Pos,
+				p2Pos: match.p2Pos
+			}
 		}
 	}
 
@@ -602,9 +597,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
-		if (match){
-			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match))
+		if (match) {
+			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match)) {
+				match.stopMatch = true
 				await this.matchService.endMatch(match, user.id)
+			}
 			else {
 				if (!match.started) {
 					if (user.id === match.user1_id)

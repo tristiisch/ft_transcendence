@@ -18,6 +18,7 @@ import { ChatService } from 'chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
 import { Message } from 'chat/entity/message.entity';
 import { v4 as uuid } from "uuid"
+import { hashPassword } from 'utils/bcrypt';
 
 @Injectable()
 export class TestFakeService {
@@ -228,7 +229,7 @@ export class TestFakeService {
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
 				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
-				(newChat as ChannelProtected).password = 'bob',
+				(newChat as ChannelProtected).password = await hashPassword('bob'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],
 				newChat.banned_ids = [],

@@ -84,37 +84,36 @@ onUnmounted(() => {
 });
 
 function loadStage() {
+	console.log("LOADING STAGE", match.value)
 	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
 	const stage_ratio = default_stage_width/default_stage_height
 	const ball_size_quotient = 100 // the least, the bigger
-	const ball_speed = 12
-
+	const ball_speed = 12 //if client compensator for ball movements
 	const blocker_width_quotient = 50 // the least, the bigger
 	const blocker_xpos_quotient = 10 // the more, the closer to the stage
 
-	function computeBallSize(): number { return stage.width() / ball_size_quotient }
-	function computeBlockerWidth(): number { return stage.width() / blocker_width_quotient }
-	function computeBlockerHeight(): number { return backend_racket_size * backend_stage_ratio }
-
 	var stage_height = stage_container.offsetHeight
 	var stage_width = stage_height * stage_ratio
+	var backend_stage_ratio: number = stage_width / match.value.stageWidth
+	var ball_radius = computeBallSize()
+	var blockers_width: number = computeBlockerWidth()
+	var blockers_height: number = computeBlockerHeight()
+	
+	function computeBallSize(): number { return stage_width / ball_size_quotient }
+	function computeBlockerWidth(): number { return stage_width / blocker_width_quotient }
+	function computeBlockerHeight(): number { return match.value.racketSize * backend_stage_ratio }
+
 	var stage = new Konva.Stage({
 		container: 'stage-container',
 		visible: true,
-		// height: computeStageHeight(),
 		height: stage_height,
 		width: stage_width
 	})
 	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
-	var backend_stage_width: number = default_stage_width
-	var backend_stage_ratio: number = stage.width() / backend_stage_width
-	var backend_racket_size: number
-
 	var layer = new Konva.Layer()
-	var ball_radius = computeBallSize()
 	var ball: Konva.Circle = new Konva.Circle({
 		x: stage_width / 2,
 		y: stage_height / 2,
@@ -122,11 +121,10 @@ function loadStage() {
 		fill: 'dark',
 		visible: false
 	})
-	var blockers_width: number = computeBlockerWidth()
-	var blockers_height: number
 	var p1_blocker: Konva.Rect = new Konva.Rect({
 		x: stage_width / blocker_xpos_quotient,
 		width: blockers_width,
+		height: blockers_height,
 		fill: 'lightgreen',
 		cornerRadius: 2,
 		visible: false
@@ -134,6 +132,7 @@ function loadStage() {
 	var p2_blocker: Konva.Rect = new Konva.Rect({
 		x: stage.width() - stage.width() / blocker_xpos_quotient,
 		width: blockers_width,
+		height: blockers_height,
 		fill: 'lightgreen',
 		cornerRadius: 2,
 		visible: false
@@ -150,12 +149,12 @@ function loadStage() {
 		var stage_pos = stage_container.getBoundingClientRect()
 		var mouse_ypos = event.clientY - stage_pos.y
 
-		if (mouse_ypos < computeBlockerHeight() / 2)
+		if (mouse_ypos < blockers_height / 2)
 			racket.y(0)
-		else if (mouse_ypos > stage.height() - computeBlockerHeight() / 2)
-			racket.y(stage.height() - computeBlockerHeight())
+		else if (mouse_ypos > stage.height() - blockers_height / 2)
+			racket.y(stage.height() - blockers_height)
 		else
-			racket.y(mouse_ypos - computeBlockerHeight() / 2)
+			racket.y(mouse_ypos - blockers_height / 2)
 		socket.emit(emit_message, {id: match_id, pos: racket.y() / backend_stage_ratio})
 	}
 
@@ -192,18 +191,19 @@ function loadStage() {
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
-		// stage.height(computeStageHeight())
-		stage.height(stage_container.offsetHeight)
-		stage.width(stage.height() * stage_ratio)
-		backend_stage_ratio = stage.width() / backend_stage_width
+		stage_height = stage_container.offsetHeight
+		stage_width = stage.height() * stage_ratio
+		stage.height(stage_height)
+		stage.width(stage_width)
+		backend_stage_ratio = stage_width / match.value.stageWidth
 
-		var ratio = stage.height() / stage_height
+		var ratio = stage_width / stage_height
 		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
 		dx = dx < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 		dy = dy < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 
-		if (backend_racket_size) {
+		if (match.value.racketSize) {
 			p1_blocker.x(p1_blocker.x() * ratio)
 			p1_blocker.y(p1_blocker.y() * ratio)
 			p2_blocker.x(p2_blocker.x() * ratio)
@@ -216,8 +216,6 @@ function loadStage() {
 			p2_blocker.height(blockers_height)
 		}
 
-		stage_height = stage.height()
-		stage_width = stage.width()
 	}
 	window.onresize = resizeStage
 	// -------------------------------------------------
@@ -251,9 +249,6 @@ function loadStage() {
 
 	socket.emit("joinMatch", match_id, (match_infos: any) => {
 		console.log("Joining match!")
-		backend_stage_width = match_infos.stageWidth
-		backend_stage_ratio = stage_width / backend_stage_width
-		backend_racket_size = match_infos.racketSize
 		blockers_height = computeBlockerHeight()
 		p1_blocker.height(blockers_height)
 		p2_blocker.height(blockers_height)
@@ -264,10 +259,10 @@ function loadStage() {
 		p1_blocker.visible(true)
 		p2_blocker.visible(true)
 		if (match.value.user1_id == userStore.userData.id) {
-			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p1_blocker, "p1Pos"));
+			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p1_blocker, "p1Pos"), { passive: true });
 		}
 		else if (match.value.user2_id == userStore.userData.id) {
-			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"));
+			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"), { passive: true });
 		}
 
 		// setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
@@ -377,6 +372,7 @@ function handleResize() {
 				<div class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>
+				<div class="absolute w-100 w-100 m-auto left-0 right-0 bottom-0 top-0"></div>
 			</div>
 		</div>
 		<div class="flex flex-col bg-[#cdb887] w-full h-[10%]">

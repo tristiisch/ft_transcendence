@@ -134,23 +134,29 @@ export class MatchService {
 
 		let oldp1Pos = match.p1Pos
 		let oldp2Pos = match.p2Pos
-		match.playersPosInterval = setInterval(() => {
-			if (match.p1Pos != oldp1Pos) {
-				match.room_socket.emit('p1Pos', match.p1Pos)
-				oldp1Pos = match.p1Pos
-			}
-			if (match.p2Pos != oldp2Pos) {
-				match.room_socket.emit('p2Pos', match.p2Pos)
-				oldp2Pos = match.p2Pos
-			}
-		}, 1)
 
+		match.timestamp_started = new Date
 		match.room_socket.emit("startMatch")
+
 		setTimeout(() => {
-			match.timestamp_started = new Date
-			match.ballPosInterval = setInterval(() => {
-				match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
-			}, 1)
+			if (!match.stopMatch) {
+				match.playersPosInterval = setInterval(() => {
+					if (match.p1Pos != oldp1Pos) {
+						match.room_socket.emit('p1Pos', match.p1Pos)
+						oldp1Pos = match.p1Pos
+					}
+					if (match.p2Pos != oldp2Pos) {
+						match.room_socket.emit('p2Pos', match.p2Pos)
+						oldp2Pos = match.p2Pos
+					}
+				}, 1)
+			}
+
+			if (!match.stopMatch) {
+				match.ballPosInterval = setInterval(() => {
+					match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
+				}, 1)
+			}
 			this.startMatchLoop(match)
 		}, 3000)
 	}
@@ -177,16 +183,18 @@ export class MatchService {
 		// 	setTimeout(update.bind(this), 0)
 		// }
 		// update.bind(this)()
-		match.matchLoopInterval = setInterval(() => {
-			match.T = this.calcBallPos(match)
-			// console.log(match.ballXPos, match.ballYPos)
-			// if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-			// 	(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-			// 		match.ballYDir *= -1
-			// else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-			// 		(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-			// 		match.ballXDir *= -1
-		}, 0)
+		if (!match.stopMatch) {
+			match.matchLoopInterval = setInterval(() => {
+				match.T = this.calcBallPos(match)
+				// console.log(match.ballXPos, match.ballYPos)
+				// if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+				// 	(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
+				// 		match.ballYDir *= -1
+				// else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
+				// 		(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
+				// 		match.ballXDir *= -1
+			}, 0)
+		}
 	}
  	calcBallPos(match: Match) {
 		let T2 = new Date
@@ -239,10 +247,10 @@ export class MatchService {
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
-		match.timestamp_ended = new Date
-
 		match.room_socket.emit("endMatch")
-		this.matches.delete(match.id)
+		match.room_socket.socketsLeave("match_" + match.id)
+
+		match.timestamp_ended = new Date
 
 		if (match.user1_id === forfeitUserId)
 			match.score[0] = -1
@@ -252,6 +260,8 @@ export class MatchService {
 		await this.save(match);
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());
+
+		this.matches.delete(match.id)
 	}
 
 	async findHistory(userId: number) : Promise<MatchOwn[]> {
@@ -261,7 +271,7 @@ export class MatchService {
 				web.where('matchhistory.user1_id = :id', { id: userId }),
 				web.orWhere('matchhistory.user2_id = :id')
 			}))
-			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
+			.addOrderBy('matchhistory.timestamp_ended', 'DESC', 'NULLS LAST');
 		try {
 			return await sqlStatement.getMany().then(async (matchs: Match[]) => {
 				const matchsFormatted: MatchOwn[] = new Array();
