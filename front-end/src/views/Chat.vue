@@ -147,6 +147,11 @@ onBeforeMount(() => {
 		.catch((error) => {
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		})
+	if (chatStore.inDiscussion)
+		chatStore.inDiscussion = null
+	else (chatStore.inChannel)
+		chatStore.inChannel = null
+	chatStore.setRightPartToDisplay(PartToDisplay.CHAT);
 });
 
 onBeforeUnmount(() => {
@@ -163,10 +168,6 @@ onBeforeUnmount(() => {
 	socket.off("chatChannelMessage");
 	socket.off("chatChannelNamePassword");
 	socket.off("exception");
-	if (chatStore.inDiscussion)
-		chatStore.inDiscussion = null
-	else (chatStore.inChannel)
-		chatStore.inChannel = null
 })
 </script>
 

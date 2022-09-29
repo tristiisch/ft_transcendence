@@ -125,7 +125,7 @@ function loadStage() {
 		x: stage_width / 2,
 		y: stage_height / 2,
 		radius: 2, //ball_radius,
-		fill: 'dark',
+		fill: match.value.world === 0 ? 'dark' : '#D4F1F8',
 		visible: false
 	})
 	var p1_blocker: Konva.Rect = new Konva.Rect({
