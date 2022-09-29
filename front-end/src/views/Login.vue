@@ -133,7 +133,7 @@ onBeforeMount(() => {
 		<div class="font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
 		<button-gradient v-if="!userStore.userAuth.token_jwt" @click="redirectTo42LoginPage()">Login with 42 </button-gradient>
 		<BaseCard v-else-if="!userStore.isRegistered && !userStore.userAuth.has_2fa">
-			<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent>
+			<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent="submitRegistrationForm">
 				<div class="flex flex-col gap-4 items-center">
 					<p class="text-slate-500 text-center w-full">Please choose an username and avatar</p>
 					<input
@@ -149,12 +149,12 @@ onBeforeMount(() => {
 			</form>
 		</BaseCard>
 		<BaseCard v-else-if="userStore.userAuth.has_2fa">
-			<form class="flex flex-col justify-center items-center gap-4" @submit.prevent>
+			<form class="flex flex-col justify-center items-center gap-4" @submit.prevent="submit2faForm">
 				<h1 class="text-lime-400">⚠️ Two Factor Authentification enabled</h1>
 				<p class="text-slate-500">Please enter your 2FA code below</p>
 				<div class="flex justify-center gap-4">
 					<input
-						type="password"
+						type="text"
 						name="twoFaCode"
 						v-model="twoFaCode"
 						placeholder="2FA code"
