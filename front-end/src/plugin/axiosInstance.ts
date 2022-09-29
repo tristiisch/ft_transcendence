@@ -4,7 +4,7 @@ import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
 
 const instance = axios.create({
-	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_API_PORT}/api`
+	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_APP_API_PORT}/api`
 });
 
 instance.interceptors.request.use(function (config) {
@@ -22,16 +22,12 @@ instance.interceptors.response.use(function (response) {
 	},
 	function (error) {
 		const userStore = useUserStore();
-		if ([401, 416].includes(error.response?.status) && userStore.isLoggedIn) {
+		if ([401].includes(error.response?.status) && userStore.isLoggedIn) {
 			const toast = useToast();
-			if (error.response?.status === 401) {
-				toast.error('Your session has expired', {
-					timeout: false
-				})
-				userStore.handleLogout()
-			}
-			if (error.response?.status === 413)
-				toast.error('File too big')
+			toast.error('Your session has expired', {
+				timeout: false
+			})
+			userStore.handleLogout()
 		}
 		return Promise.reject(error);
 	}
