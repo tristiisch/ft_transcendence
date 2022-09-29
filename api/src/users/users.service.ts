@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res, UnprocessableEntityException, Inject, forwardRef, UnsupportedMediaTypeException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { toBase64, isNumberPositive, fromBase64, removeFromArray, randomWord } from "../utils/utils";
+import { toBase64, isNumberPositive, fromBase64, removeFromArray, randomWord, checkImage } from "../utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
 import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
@@ -11,6 +11,7 @@ import { AuthService } from "auth/auth.service";
 import { SocketService } from 'socket/socket.service';
 import { FriendsService } from "friends/friends.service";
 import { NotificationService } from "notification/notification.service";
+import { getAnoPicture } from "utils/ano";
 
 @Injectable()
 export class UsersService {
@@ -91,12 +92,12 @@ export class UsersService {
 	}
 
 	async findOne(id: number): Promise<User> {
-		isNumberPositive(id, 'get a user');
+		isNumberPositive(id, 'find a user');
 		return await this.usersRepository.findOneBy({ id }).then((user: User) => this.lambdaGetUser(user, id), this.lambdaDatabaseUnvailable);
 	}
 
 	async findOneWithCache(id: number, usersCached: User[]): Promise<User> {
-		isNumberPositive(id, 'get a user');
+		isNumberPositive(id, 'find a user');
 		let user: User = usersCached.find((user: User) => user.id === id);
 		if (user) {
 			delete user.avatar_64;
@@ -110,7 +111,7 @@ export class UsersService {
 
 	async findOneByUsername(name: string): Promise<User> {
 		if (!name || name.length == 0) {
-			throw new PreconditionFailedException("Can't get a user by an empty name.");
+			throw new PreconditionFailedException("Can't find a user by an empty name.");
 		}
 		return await this.usersRepository.findOne({ where: {username : name }}).then((user: User) => {
 			return this.lambdaGetUser(user, name);
@@ -119,7 +120,7 @@ export class UsersService {
 
 	async findOneBy42Login(login42: string): Promise<User> {
 		if (!login42 || login42.length == 0) {
-			throw new PreconditionFailedException("Can't get a user by an empty 42login.");
+			throw new PreconditionFailedException("Can't find a user by an empty 42login.");
 		}
 		return await this.usersRepository.findOne({ where: { login_42: login42 } }).then((user: User) => {
 			return this.lambdaGetUser(user, login42);
@@ -153,15 +154,19 @@ export class UsersService {
 		if (!array)
 			return null;
 		const users: User[] = new Array();
-		const usersToFetch: number[] = array.filter(id => usersCached.find(u => u.id !== id));
+		let usersToFetch: number[];
 
+		if (usersCached && usersCached.length !== 0)
+			usersToFetch = array.filter(id => usersCached.find(u => u.id !== id));
+		else
+			usersToFetch = array;
 		if (usersToFetch && usersToFetch.length > 0)
-			usersCached = [...usersCached, ...await this.findMany(usersToFetch)]
+			usersCached = usersCached.concat(await this.findMany(usersToFetch));
 	
 		for (const [index, id] of array.entries()) {
 			let cacheUser: User = usersCached.find((user: User) => user.id === id);
-			if (!cacheUser)
-				throw new UnprocessableEntityException(`Can't get user ${array} with cache ${usersCached.map(user => user.id)}.`);
+			if (cacheUser === undefined)
+				throw new UnprocessableEntityException(`Can't get user ${id} with cache ${JSON.stringify(usersCached.map(user => user.id))}.`);
 			users.push(cacheUser);
 		}
 		return users;
@@ -185,10 +190,10 @@ export class UsersService {
 
 		await sqlStatement.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
-				throw new ConflictException(`User ${checkUserExist.username} already exist with same id, email or username.`); // TODO Change msg for client
+				throw new ConflictException(`User ${checkUserExist.username} already exist with same id, email or username.`);
 		}, this.lambdaDatabaseUnvailable);
 
-		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
+		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
 				throw new InternalServerErrorException(`Can't add user ${newUser.username}.`);
 			} else if (insertResult.identifiers.length > 1) {
@@ -210,16 +215,8 @@ export class UsersService {
 		return await this.findOne(userId);
 	}
 
-	private checkAvatar(avatar_64: string) {
-		const toString = avatar_64.substring(0, 20) + (avatar_64.length > 20 ? '...' : '');
-		if (!fromBase64(avatar_64))
-			throw new PreconditionFailedException(`Unknown type for avatar. '${toString}'`);
-		if (!avatar_64.startsWith('data:image/'))
-			throw new PreconditionFailedException(`Avatar is not a picture. '${toString}'`);
-	}
-
 	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
-		this.checkAvatar(avatar_64);
+		checkImage(avatar_64);
 		await this.usersRepository.update(userId, { avatar_64: avatar_64 }).catch(this.lambdaDatabaseUnvailable);
 		const user: User = await this.findOne(userId);
 
@@ -233,7 +230,7 @@ export class UsersService {
 
 		try {
 			if (user.avatar_64 != null && user.avatar_64 != '') {
-				this.checkAvatar(user.avatar_64);
+				checkImage(user.avatar_64);
 				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
 			} else
 				this.usersRepository.update(userId, { username: user.username }).catch(this.lambdaDatabaseUnvailable);
@@ -280,8 +277,8 @@ export class UsersService {
 
 		user.blocked_ids.push(target.id);
 		try {
-			await this.friendsService.declineFriendShipIgnore(user, target); // TODO verif
-			await this.notifService.removeNotifFriendRequest(user, target); // TODO same
+			await this.friendsService.declineFriendShipIgnore(user, target);
+			await this.notifService.removeNotifFriendRequest(user, target);
 		} catch (err) {
 			if (!(err instanceof NotAcceptableException))
 				throw err;
@@ -298,8 +295,6 @@ export class UsersService {
 			throw new NotFoundException('This user is not blocked.');
 		if (user.blocked_ids.length == 1)
 			user.blocked_ids = null;
-		else if (user.blocked_ids.indexOf(target.id) !== -1)
-			throw new PreconditionFailedException('User is not blocked')
 		else
 			user.blocked_ids = removeFromArray(user.blocked_ids, target.id);
 
@@ -308,7 +303,8 @@ export class UsersService {
 	}
 	
 	async anonymizeUser(user: User) : Promise<User> {
-		user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/src/assets/anonymize.png`);
+		//user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/src/assets/anonymize.png`);
+		user.avatar_64 = getAnoPicture();
 		user.username = `${randomWord(3)}-${randomWord(5)}`
 		user.login_42 = null;
 		await this.authService.delete(user);

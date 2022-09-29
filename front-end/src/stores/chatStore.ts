@@ -50,45 +50,25 @@ export const useChatStore = defineStore('chatStore', {
 		async fetchAll() {
 			try {
 				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
-				//await Promise.all([this.fetchUserChats(null, null)])
 			} catch (error: any) {
 				throw error;
 			}
 		},
-		/**
-		 * @Deprecated
-		 */
-		async fetchUserChats(func: { (discu: Discussion[], channel: Channel[]): any } | null, err: { (error: any): any } | null) {
-			socket.emit('chatFindAll', (body: any[]) => {
-				this.userDiscussions = body[0];
-				this.userChannels = body[1];
-				if (func)
-					func(this.userDiscussions, this.userChannels);
-			});
-			// if (err)
-			// 	err(null);
-		},
 		async fetchUserChannels() {
-			if (!this.userChannels.length)
-			{
 				try {
 					const response = await UserService.getUserChannels();
 					this.userChannels = response.data;
 				} catch (error: any) {
 					throw error;
 				}
-			}
 		},
 		async fetchUserDiscussions() {
-			if (!this.userDiscussions.length)
-			{
 				try {
 					const response = await UserService.getUserDiscussions();
 					this.userDiscussions = response.data;
 				} catch (error: any) {
 					throw error;
 				}
-			}
 		},
 		async fetchChannels() {
 			try {
@@ -167,7 +147,6 @@ export const useChatStore = defineStore('chatStore', {
 				type: newChannel.type,
 				users_ids: newChannel.users.map((user: User) => user.id)
 			}, password, (channelCreated: Channel) => {
-				console.log('channelCreated', channelCreated)
 				this.userChannels.length ? this.userChannels.unshift(channelCreated) : this.userChannels.push(channelCreated);
 				this.loadChannel(this.userChannels[0]);
 			});
@@ -214,18 +193,18 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel);
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | null, removePassword: boolean, userWhoChangeName: User }) {
+		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | undefined | null, userWhoChangeName: User } | null, oldId?: number) {
 			const userStore = useUserStore();
 			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
-				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (this.inChannel.hasPassword === false && newNamePassword.password !== '') || newNamePassword.removePassword)) {
+				if (this.inChannel && ((newNamePassword.name !== '' && newNamePassword.name !== this.inChannel.name) || (newNamePassword.password && newNamePassword.password !== '') || (newNamePassword.password === null))) {
 					socket.emit('chatChannelNamePassword', channel, newNamePassword, (body: any[]) => {
 						const channelUpdated: Channel = body[0];
-						this.updateChannel(channelUpdated);
+						this.updateChannel(channelUpdated, channel.id);
 					});
 				}
 			}
 			else
-				this.updateChannel(channel)
+				this.updateChannel(channel, oldId)
 		},
 		updateBanList(channel: Channel, newBanned: {list: User[], userWhoSelect: User }) {
 			const userStore = useUserStore();
@@ -252,7 +231,7 @@ export const useChatStore = defineStore('chatStore', {
 			if (newMuted && newMuted.userWhoSelect.id === userStore.userData.id) {
 				socket.emit('chatChannelMute', channel, newMuted, (body: any[]) => {
 					const channelUpdated: Channel = body[0];
-				 	this.updateChannel( channelUpdated);
+				 	this.updateChannel(channelUpdated);
 				});
 			}
 			else
@@ -291,7 +270,7 @@ export const useChatStore = defineStore('chatStore', {
 		},
 		createMessage(newMessage: string, type: MessageType) {
 			const userStore = useUserStore();
-			const now = new Date().toLocaleString();
+			const now = new Date();
 			const messageDTO: Message = {
 				date: now,
 				message: newMessage,
@@ -299,7 +278,8 @@ export const useChatStore = defineStore('chatStore', {
 				avatarSender: userStore.userData.avatar,
 				usernameSender: userStore.userData.username,
 				read: false,
-				type: type
+				type: type,
+				canUseButton: true
 			};
 			return messageDTO;
 		},
@@ -311,7 +291,6 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatDiscussionMessage', discussion.user.id, messageDTO, (body: any[]) => {
 					const discu: Discussion = body[0];
 					const msg: Message = body[1];
-					console.log('chatDiscussionMessage', msg, 'Discussion', discu);
 					chat.messages.push(msg)
 				});
 			}
@@ -324,9 +303,8 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelMessage', { id: channel.id, type: channel.type }, messageDTO, (body: any[]) => {
 					const channel: Channel = body[0];
 					const msg: Message = body[1];
-					console.log('channel Message', msg);
 					if (!msg) {
-						console.log('ERROR chatChannelMessage', channel, 'messageDTO', messageDTO);
+						console.log('ERROR chatChannelMessage', channel, 'messageDTO', messageDTO); //TODO 
 					}
 					chat.messages.push(msg)
 				});
@@ -356,11 +334,15 @@ export const useChatStore = defineStore('chatStore', {
 				if (index >= 0) this.userChannels[index].messages.push(data);
 			}
 		},
-		updateChannel(channelUpdated: Channel) {
-			const index = this.getIndexUserChannels(channelUpdated.id);
+		updateChannel(channelUpdated: Channel, oldId?:number) {
+			let index;
+			if (oldId)
+				index = this.getIndexUserChannels(oldId);
+			else
+				index = this.getIndexUserChannels(channelUpdated.id);
 			if (index >= 0) {
 				this.userChannels[index] = channelUpdated;
-				if (this.inChannel && this.inChannel.id === channelUpdated.id)
+				if (this.inChannel && ((this.inChannel.id === channelUpdated.id) || (this.inChannel.id === oldId)))
 					this.inChannel = this.userChannels[index]
 			}
 		},
@@ -371,7 +353,7 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		markMessageReaded(message: Message) {
-			if (message.read === false) {
+			if (message.read !== true) {
 				message.read = true;
 				let msgId;
 				if (this.inChannel)
@@ -379,8 +361,6 @@ export const useChatStore = defineStore('chatStore', {
 				else if (this.inDiscussion)
 					msgId = this.inDiscussion.messages[this.inDiscussion.messages.length - 1].idMessage
 				if (msgId === message.idMessage) {
-					console.log(message.idMessage)
-					console.log(message.idChat)
 					socket.emit('chatMsgReaded', message.idMessage, message.idChat);
 				}
 			}
@@ -422,6 +402,20 @@ export const useChatStore = defineStore('chatStore', {
 				}
 			}
 			return 0;
-		}
+		},
+		removeSpinner(senderId: number, targetId: number) {
+			const discussion = this.userDiscussions.find(discussion => discussion.user.id === targetId);
+			if (discussion) 
+			{
+				let message;
+				if (senderId !== targetId) {
+					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender !== targetId);
+				}
+				else {
+					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender === senderId);
+				}
+				if (message) message.canUseButton = false
+			}
+		},
 	},
 });

@@ -39,7 +39,6 @@ export class AuthService {
 		} catch (err) {
 			if (err instanceof NotFoundException) {
 				user = new User;
-				// user.username = userInfo42.data.login; Est définie a null tant que l'user n'est pas register
 				user.login_42 = userInfo42.data.login;
 				user.username = null;
 				user.avatar_64 = await toBase64(userInfo42.data.image_url);
@@ -90,6 +89,7 @@ export class AuthService {
 		return this.jwtService.signAsync(payload, {
 			secret: process.env.JWT_SECRET,
 		});
+		//expiresIn: "30sec"
 	}
 
 	/*public async createTempToken(id: number): Promise<string> {

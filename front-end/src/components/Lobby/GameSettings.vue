@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref } from 'vue';
 import Toogle from '@/components/Divers/ToogleButton.vue';
 
 const globalStore = useGlobalStore();
@@ -18,21 +17,21 @@ const emit = defineEmits<{
         <div class="flex justify-center items-center gap-2 w-full relative">
             <span class="absolute -top-[14px] sm:-top-4 text-red-700 text-xs sm:text-sm">{{ globalStore.winningScore }}pts</span>
             <span class="text-xs sm:text-sm"> 1 </span>
-            <input v-model="globalStore.winningScore" id="small-range" type="range" min="1" max="10" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
-            <span class="text-xs sm:text-sm"> 10 </span>
+            <input v-model.number="globalStore.winningScore" id="small-range" type="range" min="1" max="50" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
+            <span class="text-xs sm:text-sm"> 50 </span>
         </div>
         <label class="text-xs sm:text-sm">BALL SPEED</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
             <span class="absolute -top-[14px] sm:-top-4 text-red-700 text-xs sm:text-sm">{{ globalStore.ballSpeed / 100 }}<span class="pl-1">x</span></span>
             <span class="text-xs sm:text-sm"> 1/2x </span>
-            <input v-model="globalStore.ballSpeed" id="small-range" type="range" min="50" max="200" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
+            <input v-model.number="globalStore.ballSpeed" id="small-range" type="range" min="50" max="200" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
             <span class="text-xs sm:text-sm">2x</span>
         </div>
         <label class="text-xs sm:text-sm">RACKET SIZE</label>
         <div class="flex justify-center items-center gap-2 w-full relative">
             <span class="absolute -top-[14px] sm:-top-4 text-red-700 text-xs sm:text-sm">{{ globalStore.racketSize }}%</span>
             <span class="text-xs sm:text-sm"> 50% </span>
-            <input v-model="globalStore.racketSize" id="small-range" type="range" min="50" max="150" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
+            <input v-model.number="globalStore.racketSize" id="small-range" type="range" min="50" max="150" class="slider w-full h-0.5 bg-neutral-50 rounded-lg appearance-none cursor-pointer range-sm">
             <span class="text-xs sm:text-sm"> 150% </span>
         </div>
 		<label class="text-xs sm:text-sm sm:pt-6">INCREASE SPEED / TIME</label>

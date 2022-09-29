@@ -24,10 +24,10 @@ export class AuthController {
 		try {
 			const postData = {
 				grant_type: 'authorization_code',
-				client_id: process.env.FT_UID,
+				client_id: process.env.VITE_FT_UID,
 				client_secret: process.env.FT_SECRET,
 				code: req.body.code,
-				// redirect_uri: process.env.FT_OAUTH_REDIRECT
+				// redirect_uri: process.env.VITE_FT_OAUTH_REDIRECT
 				redirect_uri: `${getFrontRelativeURL(req)}/login`
 			};
 			const url = process.env.FT_API;
@@ -45,7 +45,7 @@ export class AuthController {
 			throw new ForbiddenException("Unauthorized - Unable to get your infos with 42 API");
 		}
 		const { user, userAuth } = await this.authService.UserConnecting(userInfo);
-		delete userAuth.twoFactorSecret; // TODO Verif this method
+		delete userAuth.twoFactorSecret;
 
 		if (!user)
 			throw new BadRequestException('User is null');

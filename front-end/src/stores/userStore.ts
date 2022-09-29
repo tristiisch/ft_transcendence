@@ -22,15 +22,15 @@ export const useUserStore = defineStore('userStore', {
 		logUser() {
 			if (this.userAuth.token_jwt)
 			{
-				localStorage.setItem('userAuth', this.userAuth.token_jwt);
+				sessionStorage.setItem('userAuth', this.userAuth.token_jwt);
 				this.userAuth.islogin = true
 				this.userData.status = Status.ONLINE
 			}
 		},
 		verifyState(state: string) {
-			const randomString = localStorage.getItem('state')
-			localStorage.removeItem('state');
-			if (!randomString || randomString && state !== JSON.parse(randomString))
+			const randomString = sessionStorage.getItem('state')
+			sessionStorage.removeItem('state');
+			if (!randomString || randomString && state !== randomString)
 				throw new Error('State is not valid')
 		},
 		async handleLogin(code: string, state: string) {
@@ -38,17 +38,11 @@ export const useUserStore = defineStore('userStore', {
 				this.verifyState(state);
 				const response = await AuthService.login(code);
 				this.userAuth = response.data.auth;
-				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
 					this.userData = response.data.user;
-					console.log(this.userData)
 					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				} 
-				/*else {
-					// TODO this.userAuth will be null here
-					localStorage.setItem('userAuth2FA', response.data.jwtToken2FA);
-				}*/
 			} catch (error: any) {
 				throw error;
 			}
@@ -57,11 +51,9 @@ export const useUserStore = defineStore('userStore', {
 			try {
 				const response = await AuthService.fakeLogin(username);
 				this.userAuth = response.data.auth;
-				console.log(this.userAuth);
 				if (!this.userAuth.has_2fa)
 				{
 					this.userData = response.data.user;
-					console.log(this.userData);
 					if (this.isRegistered && !this.userAuth.has_2fa) this.logUser()
 				}
 			} catch (error: any) {
@@ -82,7 +74,7 @@ export const useUserStore = defineStore('userStore', {
 			const globalStore = useGlobalStore();
 			const chatStore = useChatStore();
 			this.userAuth = {} as Auth
-			localStorage.clear();
+			sessionStorage.clear();
 			globalStore.$reset();
 			chatStore.$reset();
 			socket.disconnect()
@@ -141,13 +133,5 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
-		/*async deleteAccount() {
-			try {
-				const res = await UserService.deleteAccount();
-				this.userData = res.data;
-			} catch (error: any) {
-				throw error;
-			}
-		},*/
 	},
 });

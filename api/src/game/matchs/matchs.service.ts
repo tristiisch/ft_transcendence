@@ -9,6 +9,8 @@ import { Notification, NotificationFront, NotificationType } from 'notification/
 import { SocketService } from 'socket/socket.service';
 import { NotificationService } from 'notification/notification.service';
 import { v4 as uuid } from "uuid"
+import { ChatService } from 'chat/chat.service';
+import { Message } from 'chat/entity/message.entity';
 
 @Injectable()
 export class MatchService {
@@ -24,11 +26,11 @@ export class MatchService {
 	private readonly stageWidth = 3989
 	private readonly stageHeight = 2976
 	private readonly blockerWidth = this.stageWidth / 50
-	private readonly blockerHeight = this.stageHeight / 5
-	private readonly p1XPos = this.stageWidth / 10
+	private readonly blockerHeight = this.stageHeight / 6.5
+	private readonly p1XPos = this.stageWidth / 20
 	private readonly p2XPos = this.stageWidth - this.p1XPos
-	private readonly winningScore = 5
-	private readonly ballSpeed = 2
+	private readonly winningScore = 10
+	private readonly ballSpeed = 3
 	private readonly increaseBallSpeed = false
 	private readonly world = 0
 
@@ -40,6 +42,8 @@ export class MatchService {
 	private readonly notifService: NotificationService;
 	@Inject(forwardRef(() => SocketService))
 	private readonly socketService: SocketService;
+	@Inject(forwardRef(() => ChatService))
+	private readonly chatService: ChatService;
 
 	public getRepo() {
 		return this.matchsHistoryRepository;
@@ -53,15 +57,18 @@ export class MatchService {
 	public getStageWidth() {
 		return this.stageWidth
 	}
-	public addPlayerToQueue(user_id, data) {
+	public addPlayerToQueue(user_id: number, data: { user: User, match_type: MatchMakingTypes, custom_match_infos: CustomMatchInfos }) {
 		this.players_queue.set(user_id, data)
 	}
-	public removePlayerFromQueue(user_id) {
+	public removePlayerFromQueue(user_id: number) {
 		this.players_queue.delete(user_id)
+	}
+	public getMatch(user_id: number): Match | undefined {
+		return [...this.matches.values()].find((match) => match.user1_id === user_id || match.user2_id === user_id)
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
-		console.log("match_type:", match_type)
+		// console.log("match_type:", match_type)
 		for (const [key, value] of this.players_queue.entries()) {
 			if ((match_type === MatchMakingTypes.NORMAL_MATCH && value.match_type !== MatchMakingTypes.OWN_MATCH) ||
 				(match_type === MatchMakingTypes.ANY_MATCH) ||
@@ -72,6 +79,7 @@ export class MatchService {
 	}
 
 	async createNewMatch(p1: User, p2: User, custom: CustomMatchInfos) {
+		// console.log("=> MAKING A NEW MATCH-> (", p1.username, "vs", p2.username + ")")
 		const match = new Match()
 		match.id = uuid()
 		match.user1_id = p1.id
@@ -85,8 +93,8 @@ export class MatchService {
 		match.waiting = true
 		match.stopMatch = false
 		
-		if (custom) {
-			console.log("custom!")
+		if (custom) { // check custom infos
+			// console.log("custom!", custom)
 			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
 			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
 			match.increaseBallSpeed = custom.increaseBallSpeed
@@ -94,7 +102,7 @@ export class MatchService {
 			match.winningScore = custom.winningScore
 		}
 		else {
-			console.log("not custom!")
+			// console.log("not custom!")
 			match.ballSpeed = this.ballSpeed
 			match.racketSize = this.blockerHeight
 			match.increaseBallSpeed = this.increaseBallSpeed
@@ -127,28 +135,35 @@ export class MatchService {
 
 		let oldp1Pos = match.p1Pos
 		let oldp2Pos = match.p2Pos
-		match.playersPosInterval = setInterval(() => {
-			if (match.p1Pos != oldp1Pos) {
-				match.room_socket.emit('p1Pos', match.p1Pos)
-				oldp1Pos = match.p1Pos
-			}
-			if (match.p2Pos != oldp2Pos) {
-				match.room_socket.emit('p2Pos', match.p2Pos)
-				oldp2Pos = match.p2Pos
-			}
-		}, 1)
+
+		match.timestamp_started = new Date
+		match.room_socket.emit("startMatch")
 
 		setTimeout(() => {
-			match.timestamp_started = new Date
-			match.ballPosInterval = setInterval(() => {
-				match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
-			}, 1)
+			if (!match.stopMatch) {
+				match.playersPosInterval = setInterval(() => {
+					if (match.p1Pos != oldp1Pos) {
+						match.room_socket.emit('p1Pos', match.p1Pos)
+						oldp1Pos = match.p1Pos
+					}
+					if (match.p2Pos != oldp2Pos) {
+						match.room_socket.emit('p2Pos', match.p2Pos)
+						oldp2Pos = match.p2Pos
+					}
+				}, 25)
+			}
+
+			if (!match.stopMatch) {
+				match.ballPosInterval = setInterval(() => {
+					match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
+				}, 10)
+			}
 			this.startMatchLoop(match)
-		}, 3000)
+		}, 6000)
 	}
 	setNewMatchRoundVar(match: Match) {
 		match.ballXPos = this.stageWidth / 2
-		match.ballYPos = this.stageHeight / 2//Math.random() * this.stageHeight
+		match.ballYPos = Math.random() * this.stageHeight
 		if (match.increaseBallSpeed && match.ballSpeed <= 5)
 			match.ballSpeed += 0.2
 		match.ballXDir = (Math.round(Math.random() * 10)) % 2 ? match.ballSpeed : -match.ballSpeed
@@ -163,34 +178,20 @@ export class MatchService {
 			dy: match.ballYDir,
 			scored: undefined
 		})
-		// function update() {
-		// 	match.T = this.calcBallPos(match)
-
-		// 	setTimeout(update.bind(this), 0)
-		// }
-		// update.bind(this)()
-		match.matchLoopInterval = setInterval(() => {
-			match.T = this.calcBallPos(match)
-			// console.log(match.ballXPos, match.ballYPos)
-			// if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-			// 	(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-			// 		match.ballYDir *= -1
-			// else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-			// 		(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-			// 		match.ballXDir *= -1
-		}, 0)
+		if (!match.stopMatch)
+			match.matchLoopInterval = setInterval(async () => match.T = await this.calcBallPos(match), 0)
 	}
- 	calcBallPos(match: Match) {
+ 	async calcBallPos(match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - match.T.getTime()
 
 		var x2 = match.ballXPos + (tdiff * match.ballXDir)
-		if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
-		// if (x2 < 0 || x2 >= this.stageWidth) {
+		// if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
+		if (x2 < 0 || x2 >= this.stageWidth) {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
 			if (match.score[0] === match.winningScore || match.score[1] === match.winningScore) {
-				this.endMatch(match) // TODO add await
+				await this.endMatch(match)
 				return
 			}
 			this.setNewMatchRoundVar(match)
@@ -204,19 +205,23 @@ export class MatchService {
 
 		var y2 = match.ballYPos + (tdiff * match.ballYDir)
 		if (y2 < 0 || y2 >= this.stageHeight) {
+			// match.ballYDir *= -1
 			if ((y2 / this.stageHeight) % 2) match.ballYDir *= -1
 			y2 = this.stageHeight - (this.mod(y2, this.stageHeight))
 		}
 
-		// if ((x2 >= this.p1XPos && x2 < this.p1XPos + this.blockerWidth && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-		// 	(x2 >= this.p2XPos && x2 < this.p2XPos + this.blockerWidth && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + this.blockerHeight)) {
-		// 		console.log("Y hit !")
-		// 		match.ballYDir *= -1
-		// 		y2 = y2 + 2 * match.ballYDir
-		// 	}
-		if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
-				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-					match.ballXDir *= -1
+		let p1Pos = match.p1Pos
+		let p2Pos = match.p2Pos
+			if (((x2 < this.p1XPos + this.blockerWidth && x2 >= this.p1XPos) && x2 < this.p2XPos + this.blockerWidth && y2 >= p1Pos && y2 < p1Pos + match.racketSize && match.ballXDir < 0)
+			|| ((x2 >= this.p2XPos /*|| x2 + match.ballXDir >= this.p2XPos*/) && x2 < this.p2XPos + this.blockerWidth && y2 >= p2Pos && y2 < p2Pos + match.racketSize && match.ballXDir > 0))
+				match.ballXDir *= -1
+			// || x2 + match.ballXDir >= this.p2XPos)//x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
+		// if (x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= p1Pos && y2 + match.ballYDir < p1Pos + match.racketSize) {
+			// for (let i = 0; i < 9999999999999; i++) ;
+		// }
+		// else if ((x2 >= this.p1XPos + match.racketSize && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
+		// 		(x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
+		// 			match.ballXDir *= -1
 
 		match.ballXPos = x2
 		match.ballYPos = y2
@@ -227,20 +232,56 @@ export class MatchService {
 		return ((n % m) + m) % m;
 	}
 
-	async endMatch(match: Match, forceEnd?: boolean) {
+	async endMatch(match: Match, forfeitUserId?: number) {
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
-		match.timestamp_ended = new Date
-		match.room_socket.emit("endMatch")
 
-		if (forceEnd != true) {
-			await this.save(match);
-			await this.matchStatsService.addDefeat(match.getLoser());
-			await this.matchStatsService.addVictory(match.getWinner());
+		match.timestamp_ended = new Date
+
+		if (match.user1_id === forfeitUserId){
+			match.score[0] = -1
+			match.room_socket.emit("endMatch", "Yay! " + match.user2_username + " won the match by forfeit against " + match.user1_username + "!")
+		}
+		else if (match.user2_id === forfeitUserId) {
+			match.score[1] = -1
+			match.room_socket.emit("endMatch", "Yay! " + match.user1_username + " won the match by forfeit against " + match.user2_username + "!")
+		}
+		else {
+			if (match.score[0] > match.score[1])
+				match.room_socket.emit("endMatch", "Yay! " + match.user1_username + " won the match against " + match.user2_username + "!")
+			else
+				match.room_socket.emit("endMatch", "Yay! " + match.user2_username + " won the match against " + match.user1_username + "!")
 		}
 
+		match.room_socket.socketsLeave("match_" + match.id)
+
+		await this.save(match);
+		await this.matchStatsService.addDefeat(match.getLoser());
+		await this.matchStatsService.addVictory(match.getWinner());
+
 		this.matches.delete(match.id)
+	}
+
+	removeUserFromMatch(user_id: number) {
+		this.matches.forEach((match) => {
+			if (match.started) {
+				if (user_id === match.user1_id) {
+					match.p1Ready = false
+					setTimeout(() => {
+						// console.log("p1Ready:", match.p1Ready)
+						if (!match.p1Ready) this.endMatch(match, user_id)
+					}, 5000)
+				}
+				else if (user_id === match.user2_id) {
+					match.p2Ready = false
+					setTimeout(() => {
+						// console.log("p2Ready:", match.p2Ready)
+						if (!match.p2Ready) this.endMatch(match, user_id)
+					}, 5000)
+				}
+			}
+		})
 	}
 
 	async findHistory(userId: number) : Promise<MatchOwn[]> {
@@ -250,7 +291,7 @@ export class MatchService {
 				web.where('matchhistory.user1_id = :id', { id: userId }),
 				web.orWhere('matchhistory.user2_id = :id')
 			}))
-			.addOrderBy('matchhistory.id', 'DESC', 'NULLS LAST');
+			.addOrderBy('matchhistory.timestamp_ended', 'DESC', 'NULLS LAST');
 		try {
 			return await sqlStatement.getMany().then(async (matchs: Match[]) => {
 				const matchsFormatted: MatchOwn[] = new Array();
@@ -310,11 +351,11 @@ export class MatchService {
 		return null;
 	}
 
-	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos) {
+	async addRequest(user: User, id: any, matchInfo: CustomMatchInfos | null) {
 		const target: User = await this.userService.findOne(id);
 		
 		if (this.requests.has(user.id))
-			throw new BadRequestException(`You have already invited someone.`);
+			throw new NotAcceptableException(`You have already invited someone.`);
 		if (user.isBlockedUser(target.id))
 			throw new NotAcceptableException(`You have blocked ${target.username}. You can't invite him.`);
 		if (target.isBlockedUser(user.id))
@@ -328,7 +369,8 @@ export class MatchService {
 		this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));
 
 		const gameInvit = new GameInvitation();
-		gameInvit.matchInfo = matchInfo;
+		if (matchInfo)
+			gameInvit.matchInfo = matchInfo;
 		gameInvit.toUserId = target.id;
 
 		this.requests.set(user.id, gameInvit);
@@ -338,6 +380,10 @@ export class MatchService {
 		const req: [number, GameInvitation] = this.getRequest(inviteUser.id, invitedUser.id);
 		if (!req) {
 			throw new NotAcceptableException(`You didn't have a invitation of ${inviteUser.username} for playing pong.`)
+		}
+
+		if (this.getMatch(inviteUser.id) !== undefined) {
+			throw new NotAcceptableException(`${inviteUser.username} is already in a match.`)
 		}
 
 		const custonGameInfo: CustomMatchInfos = req[1].matchInfo as CustomMatchInfos;
@@ -352,12 +398,14 @@ export class MatchService {
 			notif.from_user_id = invitedUser.id;
 			notif.type = NotificationType.MATCH_ACCEPT;
 			notif.date = new Date();
-			//notif = await this.notifService.addNotif(notif);
 	
 			const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);
 			notifFront.match_uuid = match_id;
 
 			this.socketService.AddNotification(inviteUser, notifFront);
+			this.requests.delete(inviteUser.id);
+
+			await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 
 			return { id: match_id };
 		} else {
@@ -379,6 +427,7 @@ export class MatchService {
 		this.socketService.AddNotification(inviteUser, await notif.toFront(this.userService, [invitedUser, inviteUser]));
 
 		this.requests.delete(inviteUser.id);
+		await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 	}
 
 	async removeOwnGameInvitation(inviteUser: User) {
@@ -393,13 +442,13 @@ export class MatchService {
 		notif.from_user_id = inviteUser.id;
 		notif.type = NotificationType.MATCH_CANCEL;
 		notif.date = new Date();
-		//notif = await this.notifService.addNotif(notif);
 
 		const notifFront: NotificationFront = await notif.toFront(this.userService, [invitedUser, inviteUser]);
 		this.socketService.AddNotification(invitedUser, notifFront);
 	
 		await this.notifService.removeNotifMatchRequest(inviteUser, invitedUser);
 		this.requests.delete(inviteUser.id);
+		await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 	}
 
 	getOwnRequest(user: User) : GameInvitation {

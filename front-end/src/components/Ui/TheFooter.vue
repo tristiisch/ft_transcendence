@@ -24,10 +24,6 @@ const button = computed<string[]>(() => {
     }
 });
 
-/*watch(() => route.name,() => {
-	 console.log(route.name)
-	 changeTitle()
-	  });*/
 </script>
 
 <template>

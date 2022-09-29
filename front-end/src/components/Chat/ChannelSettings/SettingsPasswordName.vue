@@ -9,6 +9,7 @@ import Toogle from '@/components/Divers/ToogleButton.vue';
 const chatStore = useChatStore();
 const userStore = useUserStore();
 const newPassword = ref('');
+const deletePassword = ref(false);
 const newChannelName = ref('');
 const switchButtonActif = ref(false);
 
@@ -27,14 +28,20 @@ const label = computed(() => {
 });
 
 function setRemovePassword() {
-	switchButtonActif.value = !switchButtonActif.value;
+	if (switchButtonActif.value) {
+		deletePassword.value = false;
+		switchButtonActif.value = false;
+	}
+	if (!switchButtonActif.value) {
+		deletePassword.value = true;
+		switchButtonActif.value = true;
+	}
 	newPassword.value = '';
 }
 
 function updatePasswordName() {
     if (chatStore.inChannel) {
-        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value ? newPassword.value : null,
-			removePassword: switchButtonActif.value, userWhoChangeName: userStore.userData });	
+        chatStore.updateChannelNamePassword(chatStore.inChannel, { name: newChannelName.value, password: newPassword.value ? newPassword.value : (deletePassword.value ? null : undefined), userWhoChangeName: userStore.userData });	
     }
     emit('close')
 }

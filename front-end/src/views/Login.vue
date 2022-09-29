@@ -21,17 +21,13 @@ const image = ref(userStore.userData.avatar);
 const twoFaCode = ref('');
 const isLoading = ref(false);
 
-// var currentUrl = window.location.host;
-// console.log('host', window.location.host, 'hostname', window.location.hostname, window.location.protocol, window.location.port);
-
 function redirectTo42LoginPage(): void {
 	const baseUrl = import.meta.env.VITE_FT_API_OAUTH;
 	const randomString = (Math.random() + 1).toString(36).substring(2);
-	localStorage.setItem('state', JSON.stringify(randomString))
+	sessionStorage.setItem('state', randomString)
 
 	const options = {
 		client_id: import.meta.env.VITE_FT_UID,
-		// http://172.26.43.86:8001/login
 		redirect_uri: `${window.location.protocol}//${window.location.host}/login`,
 		scope: 'public',
 		state: randomString,
@@ -67,9 +63,8 @@ function submit2faForm() {
 		router.replace({ name: 'Home' });
 	})
 	.catch((error) => {
-		console.log(error)
-		if (error.response.status === 403) toast.error(error.response.data.message)
-		else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+		if (error.response?.status === 403) toast.error(error.response?.data?.message)
+		else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 		else userStore.handleLogout()
 	});
 }
@@ -90,8 +85,8 @@ function submitRegistrationForm() {
 			})
 			.catch((error) => {
 				isLoading.value = false;
-				if (error.response.status === 403) toast.error(error.response.data.message)
-				else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+				if (error.response?.status === 403) toast.error(error.response?.data?.message)
+				else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 				else userStore.handleLogout()
 			});
 	}
@@ -124,8 +119,8 @@ onBeforeMount(() => {
 		})
 		.catch((error) => {
 			isLoading.value = false;
-			if (error.response.data) toast.error(error.response.data.message)
-			else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+			if (error.response?.data) toast.error(error.response?.data?.message)
+			else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 			router.replace({ name: 'Login' });
 		});
 	}
@@ -138,7 +133,7 @@ onBeforeMount(() => {
 		<div class="font-Arlon text-white text-5xl sm:text-6xl m-4">TV PONG<span class="text-white">™</span></div>
 		<button-gradient v-if="!userStore.userAuth.token_jwt" @click="redirectTo42LoginPage()">Login with 42 </button-gradient>
 		<BaseCard v-else-if="!userStore.isRegistered && !userStore.userAuth.has_2fa">
-			<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent>
+			<form class="flex justify-center items-center gap-4 sm:gap-8 w-full" @submit.prevent="submitRegistrationForm">
 				<div class="flex flex-col gap-4 items-center">
 					<p class="text-slate-500 text-center w-full">Please choose an username and avatar</p>
 					<input
@@ -154,7 +149,7 @@ onBeforeMount(() => {
 			</form>
 		</BaseCard>
 		<BaseCard v-else-if="userStore.userAuth.has_2fa">
-			<form class="flex flex-col justify-center items-center gap-4" @submit.prevent>
+			<form class="flex flex-col justify-center items-center gap-4" @submit.prevent="submit2faForm">
 				<h1 class="text-lime-400">⚠️ Two Factor Authentification enabled</h1>
 				<p class="text-slate-500">Please enter your 2FA code below</p>
 				<div class="flex justify-center gap-4">

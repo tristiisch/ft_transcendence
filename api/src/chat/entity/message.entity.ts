@@ -31,6 +31,9 @@ export class Message {
 	@Column({ type: 'enum', enum: MessageType, default: MessageType.MSG, name: 'type' })
 	type: MessageType;
 
+	@Column({ nullable: true, default: null })
+	canUseButton: boolean;
+
 	public toFront(user: User | null, chatRead: ChatRead | null): MessageFront {
 		if (chatRead != null && chatRead.id_chat !== this.id_channel)
 			throw new WsException('Not same id in Message#toFront');
@@ -40,9 +43,10 @@ export class Message {
 			idSender: this.id_sender,
 			message: this.message,
 			send: true,
-			read: chatRead ? this.id > chatRead.id_chat : false,
+			read: chatRead ? this.id <= chatRead.id_message : false,
 			date: this.date.toLocaleString(),
-			type: this.type
+			type: this.type,
+			canUseButton: this.canUseButton
 		};
 		if (this.type === MessageType.MSG || this.type === MessageType.GAME_INVIT) {
 			if (!user) {
@@ -67,4 +71,5 @@ export class MessageFront {
 	read: boolean;
 	date: string;
 	type: MessageType;
+	canUseButton: boolean;
 }

@@ -78,6 +78,10 @@ class UserService {
 		return axios.get('matchs/request/remove');
 	}
 
+	getGameInvitation() {
+		return axios.get('matchs/request');
+	}
+
 	sendGameRequest(targetId: number, gameInfo: MatchInfo) {
 		return axios.post(`matchs/request/add`, { id: targetId, gameInfo: gameInfo });
 	}

@@ -6,7 +6,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import UsersService from '@/services/UserService';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import { useToast } from 'vue-toastification';
-import BaseButton from '../Ui/BaseButton.vue';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();
@@ -52,7 +51,7 @@ function treatFriendRequest() {
 					toast.info(response.data.message)
 				})
 				.catch((error) => {
-					if (error.response.status === 406) toast.warning(error.response.data.message)
+					if (error.response?.status === 406) toast.warning(error.response?.data?.message)
 					else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 				});
 		}
@@ -63,7 +62,7 @@ function treatFriendRequest() {
 					toast.info(response.data.message)
 				})
 				.catch((error) => {
-					if (error.response.status === 406) toast.warning(error.response.data.message)
+					if (error.response?.status === 406) toast.warning(error.response?.data?.message)
 					else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 				});
 		}
@@ -79,7 +78,7 @@ function treatBlock() {
 			toast.info(response.data.message)
 		})
 		.catch((error) => {
-			if (error.response.status === 412) toast.warning(error.response.data.message)
+			if (error.response?.status === 412) toast.warning(error.response?.data?.message)
 			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		});
 	}
@@ -93,7 +92,7 @@ function treatBlock() {
 				toast.info(response.data.message)
 			})
 			.catch((error) => {
-				if (error.response.status === 412) toast.warning(error.response.data.message)
+				if (error.response?.status === 412) toast.warning(error.response?.data?.message)
 				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
 	}

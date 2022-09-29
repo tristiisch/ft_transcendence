@@ -18,6 +18,7 @@ import { ChatService } from 'chat/chat.service';
 import { Discussion } from 'chat/entity/discussion.entity';
 import { Message } from 'chat/entity/message.entity';
 import { v4 as uuid } from "uuid"
+import { hashPassword } from 'utils/bcrypt';
 
 @Injectable()
 export class TestFakeService {
@@ -110,7 +111,7 @@ export class TestFakeService {
 
 	async initMatchHistory(user: User, userIds: number[]): Promise<Match> {
 		if (userIds.length === 0) {
-			Logger.warn(`Can't find a valid userId for matchHistory of ${user.username}`, 'Fake Match')
+			Logger.warn(`Can't find a valid userId for matchHistory of ${user.username}`, 'FakeMatch')
 			return null;
 		}
 		const targetId: number = randomElement(userIds);
@@ -204,7 +205,7 @@ export class TestFakeService {
 				newChat = new ChannelPublic();
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
-				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=1024&h=1024'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],
 				newChat.banned_ids = [],
@@ -216,7 +217,7 @@ export class TestFakeService {
 				newChat = new ChannelPrivate();
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
-				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=1024&h=1024'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],
 				newChat.banned_ids = [],
@@ -227,8 +228,8 @@ export class TestFakeService {
 				newChat = new ChannelProtected();
 				newChat.name = `${ChatStatus[type]}_${randomWord(randomNumber(3, 32))}`,
 				newChat.owner_id = user.id,
-				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=256&h=256'),
-				(newChat as ChannelProtected).password = 'bob',
+				newChat.avatar_64 = await toBase64('https://api.lorem.space/image?w=1024&h=1024'),
+				(newChat as ChannelProtected).password = await hashPassword('bob'),
 				newChat.admins_ids = [],
 				newChat.muted_ids = [],
 				newChat.banned_ids = [],

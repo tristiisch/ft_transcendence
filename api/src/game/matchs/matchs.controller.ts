@@ -13,7 +13,7 @@ export class MatchsController {
 	@Inject(UsersService)
 	private readonly usersService: UsersService;
 
-	constructor(private readonly matchsService: MatchService) {}
+	constructor(private readonly matchService: MatchService) {}
 
 	@Post('start')
 	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<Match> {
@@ -22,7 +22,7 @@ export class MatchsController {
 		const match: Match = new Match();
 		match.user1_id = user.id;
 		match.user2_id = target.id;
-		return await this.matchsService.save(match);
+		return await this.matchService.save(match);
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -36,13 +36,13 @@ export class MatchsController {
 		} else {
 			target = await userSelected.resolveUser(this.usersService);
 		}
-		return await this.matchsService.findHistory(target.id);
+		return await this.matchService.findHistory(target.id);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get('current')
 	async getCurrentMatchs() {
-		return await this.matchsService.findOnlineMatchs();
+		return await this.matchService.findOnlineMatchs();
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -51,15 +51,35 @@ export class MatchsController {
 		if (Number.isNaN(body.id) || !body.gameInfo) {
 			throw new PreconditionFailedException(`Missing id or matchInfo on request`);
 		}
-		return await this.matchsService.addRequest(req.user, body.id, body.gameInfo);
+		return await this.matchService.addRequest(req.user, body.id, body.gameInfo);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('request/remove')
+	removeOwnGameInvitation(@Req() req) {
+		const user: User = req.user;
+
+		return this.matchService.removeOwnGameInvitation(user);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('request')
+	async getRequest(@Req() req) {
+		const user: User = req.user;
+		const gameinvit = this.matchService.getOwnRequest(user);
+
+		if (!gameinvit)
+			return null;
+		const target: User = await this.usersService.findOne(gameinvit.toUserId);
+		return target;
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get(':id')
 	sendMatchInfos(@Param('id') id: string) {
-		if (!this.matchsService.getMatches().has(id))
+		if (!this.matchService.getMatches().has(id))
 			throw new NotFoundException(`Unknown match`);
-		let match: Match = this.matchsService.getMatches().get(id)
+		let match: Match = this.matchService.getMatches().get(id)
 		return {
 			id: match.id,
 			user1_id: match.user1_id,
@@ -68,27 +88,11 @@ export class MatchsController {
 			user2_username: match.user2_username,
 			user1_avatar: match.user1_avatar,
 			user2_avatar: match.user2_avatar,
-			score: [0, 0]
+			score: match.score,
+			world: match.world,
+			stageWidth: this.matchService.getStageWidth(),
+			racketSize: match.racketSize,
+			started: match.started
 		}
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Get('request/remove')
-	removeOwnGameInvitation(@Req() req) {
-		const user: User = req.user;
-
-		return this.matchsService.removeOwnGameInvitation(user);
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Get('request')
-	async getRequest(@Req() req) {
-		const user: User = req.user;
-		const gameinvit = this.matchsService.getOwnRequest(user);
-
-		if (!gameinvit)
-			return null;
-		const target: User = await this.usersService.findOne(gameinvit.toUserId);
-		return target;
 	}
 }

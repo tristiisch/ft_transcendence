@@ -33,7 +33,7 @@ while ! docker container inspect front api postgreSQL pgAdmin &> /dev/null; do
     timeoutCheck
 done
 
-while ! docker-compose logs front | grep -q "ready in"; do
+while ! docker-compose logs front | grep -q "ready in" && ! docker-compose logs front | grep -q "Local:"; do
     echo "Waiting for Front to end ... $i secondes"
     sleep $TIME_CICLE
 	let "i = i + $TIME_CICLE"

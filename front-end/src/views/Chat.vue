@@ -93,17 +93,13 @@ socket.on("chatChannelMessage", (channel: Channel, data: Message) => {
 	chatStore.addChannelMessage(channel, data);
 });
 
-socket.on("chatChannelNamePassword", (channel: Channel, newNamePassword: { name: string, password: string | null, removePassword: boolean,  userWhoChangeName: User }) => {
-	chatStore.updateChannelNamePassword(channel, newNamePassword);
+socket.on("chatChannelNamePassword", (channel: Channel, oldId: number) => {
+	chatStore.updateChannelNamePassword(channel, null, oldId);
 });
 
 socket.on("exception", (err) => {
 	toast.warning(err.message)
 });
-
-// socket.on("gameInvitation", (gameId: number) => {
-// 	router.push('match/' + gameId)
-// });
 
 function scrollToTop() {
 	if (scroll.value) {
@@ -111,31 +107,23 @@ function scrollToTop() {
 	}
 }
 
+function changeList(clickOn: string) {
+	let i = -1;
+	while (++i < displayDelete.value.length) {
+		if (displayDelete.value[i] === true)
+			displayDelete.value[i] = false;
+	}
+	if (clickOn === 'discussion')
+		chatStore.setLeftPartToDisplay('discussion')
+	else
+		chatStore.setLeftPartToDisplay('channels')
+}
+
 onBeforeMount(() => {
 	isLoading.value = true
-	/*chatStore.fetchUserChats((discu: Discussion[], channels: Channel[]) => {
-		if (route.query.discussion) {
-			const discussion = discu.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-			if (discussion) chatStore.loadDiscussion(discussion);
-			else {
-				const user = globalStore.getUser(parseInt(route.query.discussion as string));
-				if (user) {
-					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-					if (!chatStore.isNewDiscussion(newDiscussion))
-						chatStore.createNewDiscussion(newDiscussion, true);
-				}
-			}
-		}
-		isLoading.value = false
-	}, (error: any) => {
-		console.log(error)
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-	});*/
 	chatStore.fetchAll()
 		.then(() => {
 			if (route.query.discussion) {
-				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-				// if (discussion) chatStore.loadDiscussion(discussion);
 				if (!chatStore.isNewDiscussion(parseInt(route.query.discussion as string)) && parseInt(route.query.discussion as string) !== userStore.userData.id) {
 					UserService.getUser(parseInt(route.query.discussion as string))
 						.then((response) => {
@@ -144,7 +132,11 @@ onBeforeMount(() => {
 							chatStore.setLeftPartToDisplay('discussion');
 						})
 						.catch((error) => {
-							router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
+							router.replace({
+								name: 'Error',
+								params: { pathMatch: route.path.substring(1).split('/') },
+								query: { code: error.response?.status, message: error.response?.data?.message }
+							});
 						})
 						
 				}
@@ -153,9 +145,13 @@ onBeforeMount(() => {
 			
 		})
 		.catch((error) => {
-			console.log(error)
 			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
 		})
+	if (chatStore.inDiscussion)
+		chatStore.inDiscussion = null
+	else (chatStore.inChannel)
+		chatStore.inChannel = null
+	chatStore.setRightPartToDisplay(PartToDisplay.CHAT);
 });
 
 onBeforeUnmount(() => {
@@ -172,7 +168,6 @@ onBeforeUnmount(() => {
 	socket.off("chatChannelMessage");
 	socket.off("chatChannelNamePassword");
 	socket.off("exception");
-	// socket.off("gameInvitation")
 })
 </script>
 
@@ -181,26 +176,25 @@ onBeforeUnmount(() => {
 		<div class="flex flex-col h-full sm:flex-row">
 			<card-left>
 				<div class="flex flex-col justify-between items-center h-full w-full px-8">
-					<div class="flex w-full justify-around gap-2 flex-wrap sm:pb-5 sm:border-b-[1px] sm:border-slate-700">
+					<div class="flex w-full justify-around gap-2 flex-wrap sm:pb-5">
 						<button
-							@click="chatStore.setLeftPartToDisplay('discussion')"
+							@click="changeList('discussion')"
 							class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500"
 						>
 							DISCUSSIONS
 						</button>
 						<button
-							@click="chatStore.setLeftPartToDisplay('channels')"
+							@click="changeList('channels')"
 							class="font-Arlon tracking-tight text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500"
 						>
 							CHANNELS
 						</button>
 					</div>
-					<div class="flex flex-col overflow-x-auto sm:overflow-y-auto h-full w-full" ref="scroll">
-						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full h-full sm:h-[calc(100%_/_6)]">
+					<div id="scrollbar" class="flex flex-col overflow-x-auto sm:overflow-y-auto h-full w-full pr-2" ref="scroll">
+						<div v-if="chatStore.leftPartIsDiscussion" v-for="(discussion, index) in chatStore.userDiscussions" :key="discussion.user.id" class="w-full h-[70px] sm:h-[calc(100%_/_6)]">
 							<discussion-list @click.right.prevent="setDisplayDelete(index)" @click.left="chatStore.loadDiscussion(discussion), scrollToTop()" :discussion="discussion" :index="index"></discussion-list>
-							<button-delete v-if="displayDelete[index]" @close="unsetDisplayDelete(index)" :index="index" :isChannel="false"></button-delete>
 						</div>
-						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-full sm:h-[calc(100%_/_6)]">
+						<div v-else v-for="(channel, index) in chatStore.userChannels" :key="channel.name" class="relative h-[70px] sm:h-[calc(100%_/_6)]">
 							<channels-list
 								v-if="memberInChannel(channel)"
 								@click.right.prevent="setDisplayDelete(index)"
@@ -234,3 +228,24 @@ onBeforeUnmount(() => {
 		</div>
 	</base-ui>
 </template>
+
+<style>
+#scrollbar::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: transparent;
+	background-clip: content-box; 
+}
+
+#scrollbar::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: transparent;
+}
+
+#scrollbar::-webkit-scrollbar-thumb
+{
+	background-color: #334155;
+}
+</style>

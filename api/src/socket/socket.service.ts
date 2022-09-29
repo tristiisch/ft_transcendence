@@ -1,11 +1,11 @@
-import { forwardRef, Inject,Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject,Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from 'auth/auth.service';
 import { UsersService } from 'users/users.service';
 import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
 import { NotificationFront, NotificationType } from 'notification/entity/notification.entity';
-import { User } from 'users/entity/user.entity';
+import { User, UserStatus } from 'users/entity/user.entity';
 
 @Injectable()
 export class SocketService {
@@ -24,7 +24,6 @@ export class SocketService {
 	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
 		if (!token || token.length === 0) {
-			Logger.debug(`Token is null or empty`, 'WebSocket');
 			throw new UnauthorizedException('Invalid token.');
 		}
 		const user = await this.authService.getUserFromAuthenticationToken(token);
@@ -34,20 +33,27 @@ export class SocketService {
 		return user;
 	}
 
-	saveClientSocket(user: User, clientSocketId: string) {
+	updateStatus(clientSocket: Socket, user: User, status: UserStatus) {
+		clientSocket.broadcast.emit('updateUserStatus', ({ id: user.id, status: status }))
+		this.userService.getRepo().update(user.id, { status: status });
+	}
+
+	async saveClientSocket(user: User, clientSocket: Socket) {
 		const oldClientSocketId: string = this.usersSocket.get(user.id);
 		if (oldClientSocketId) {
 			const oldSocket: Socket = this.server.sockets.sockets.get(oldClientSocketId);
-			oldSocket.emit('');
-			oldSocket.disconnect();
-			Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
+			oldSocket.emit('double_connection', () => {
+				oldSocket.disconnect();
+				this.updateStatus(clientSocket, user, UserStatus.ONLINE);
+			});
 		}
-		this.usersSocket.set(user.id, clientSocketId)
+		this.usersSocket.set(user.id, clientSocket.id)
 		return oldClientSocketId;
 	}
 
-	deleteClientSocket(userId: number) {
-		this.usersSocket.delete(userId);
+	deleteClientSocket(userId: number, clientSocket: Socket) {
+		if (this.usersSocket.get(userId) === clientSocket.id)
+			this.usersSocket.delete(userId);
 	}
 
 	getSocketToEmit(targetId: number) : Socket {

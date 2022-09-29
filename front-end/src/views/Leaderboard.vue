@@ -134,11 +134,6 @@ function removeFriend(targetId: number) {
 	if (index !== -1) leaderboardFriends.value.splice(index, 1);
 }
 
-function updateLeaderboard(data: { leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[] }) {
-	leaderboard.value = data.leaderBoard;
-	leaderboardFriends.value = data.leaderBoardFriends;
-}
-
 function updateStatus(target: UserStatus) {
 	if (leaderboard.value) {
 		const index = leaderboard.value.findIndex((user) => user.id === target.id);
@@ -152,14 +147,12 @@ function updateStatus(target: UserStatus) {
 
 onBeforeMount(() => {
 	fetchLeaderboard()
-	socket.on('UpdateLeaderboard', updateLeaderboard);
 	socket.on('updateUserStatus', updateStatus);
 	socket.on('addFriendLeaderboard', addFriend);
 	socket.on('removeFriendLeaderboard', removeFriend);
 });
 
 onBeforeUnmount(() => {
-	socket.off('UpdateLeaderboard', updateLeaderboard);
 	socket.off('updateUserStatus', updateStatus);
 	socket.off('addFriendLeaderboard', addFriend);
 	socket.off('removeFriendLeaderboard', removeFriend);
@@ -204,10 +197,29 @@ onBeforeUnmount(() => {
 				<base-button @click="rankOrder()">Rank</base-button>
 			</div>
 		</div>
-		<div class="overflow-y-scroll h-3/4 bg-slate-900">
+		<div id="scrollbar" class="overflow-y-scroll h-3/4 bg-slate-900">
 			<div v-for="user in displayUser" :key="user.id" class="text-sm sm:text-base h-[calc(100%_/_4)] 3xl:h-[calc(100%_/_5)] pb-3 px-3">
 				<CardLeaderboard :user="user"></CardLeaderboard>
 			</div>
 		</div>
 	</base-ui>
 </template>
+
+<style>
+#scrollbar::-webkit-scrollbar-track
+{
+	background-color: transparent;
+	background-clip: content-box; 
+}
+
+#scrollbar::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: transparent;
+}
+
+#scrollbar::-webkit-scrollbar-thumb
+{
+	background-color: #4b5563;
+}
+</style>

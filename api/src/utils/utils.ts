@@ -1,5 +1,7 @@
 import { Logger, PreconditionFailedException, Req } from "@nestjs/common";
+import { WsException } from "@nestjs/websockets";
 import axios from 'axios';
+import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 
 export function isEquals(entity1: any, entity2: any) : boolean {
@@ -33,6 +35,14 @@ export function isNumberPositive(nb: number, actionMsg: string): boolean {
 		throw new PreconditionFailedException(`Can't ${actionMsg} with a non-numeric variable.`);
 	else if (nb < 0)
 		throw new PreconditionFailedException(`Can't ${actionMsg} with negative number ${nb}.`);
+	return true;
+}
+
+export function isNumberPositiveSocket(nb: number, actionMsg: string): boolean {
+	if (Number.isNaN(nb))
+		throw new WsException(`Can't ${actionMsg} with a non-numeric variable.`);
+	else if (nb < 0)
+		throw new WsException(`Can't ${actionMsg} with negative number ${nb}.`);
 	return true;
 }
 
@@ -70,12 +80,9 @@ export function randomEnum<T>(enumeration: T) {
 export function removesFromArray<T>(array: Array<T>, arrayToSubstract: Array<T>): Array<T> {
 	if (!array)
 		return undefined;
-	const newArray: T[] = new Array();
-	array.forEach(nb => {
-		if (arrayToSubstract && arrayToSubstract.indexOf(nb) === -1)
-			newArray.push(nb);
-	});
-	return newArray;
+	if (!arrayToSubstract)
+		return array;
+	return array.filter(o => arrayToSubstract.indexOf(o) === -1);
 }
 
 export function removeFromArray<T>(array: Array<T>, key: T): Array<T> {
@@ -122,8 +129,8 @@ export function fromBase64(imageBase64: string): { imageType: any; imageBuffer: 
 	return null;
 }
 
-export async function validateDTOforHttp<T extends Object>(dto: T) {
-	return await validate(dto).then(errors => {
+export async function validateDTO<T extends Object>(cls: ClassConstructor<T>, dto: T) {
+	return await validate(plainToInstance(cls, dto)).then(errors => {
 		if (errors.length > 0) {
 			const messageJoiner: string[] = new Array();
 			for (let validator of errors) {
@@ -131,7 +138,7 @@ export async function validateDTOforHttp<T extends Object>(dto: T) {
 					messageJoiner.push(validator.constraints[key]);
 				}
 			}
-			throw new PreconditionFailedException(`${messageJoiner.join(', ')}`);
+			throw new WsException(messageJoiner.join(', '));
 		}
 	});
 }
@@ -149,3 +156,11 @@ export function getFrontRelativeURL(req: any) {
 // 	if (v && v.length)
 // 		return v[0]
 // }
+
+export function checkImage(avatar_64: string) {
+	const toString = avatar_64.substring(0, 20) + (avatar_64.length > 20 ? '...' : '');
+	if (!fromBase64(avatar_64))
+		throw new PreconditionFailedException(`Unknown type for avatar. '${toString}'`);
+	if (!avatar_64.startsWith('data:image/'))
+		throw new PreconditionFailedException(`The picture is not a valid picture. '${toString}'`);
+}

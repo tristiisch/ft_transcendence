@@ -22,8 +22,9 @@ const toast = useToast();
 const userStatus = computed(() => {
 	if (props.user?.status === Status.INGAME) return 'Ingame';
 	else if (props.user?.status === Status.OFFLINE) return 'Offline';
+	else if (props.user?.status === Status.SPEC) return 'Spectating';
 	else props.user?.status === Status.ONLINE;
-	return 'Online';
+		return 'Online';
 });
 
 function handleResize() {
@@ -60,7 +61,7 @@ function friendRequest() {
 				toast.info(response.data.message)
 			})
 			.catch((error) => {
-				if (error.response.status === 406) toast.warning(error.response.data.message)
+				if (error.response?.status === 406) toast.warning(error.response?.data?.message)
 				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
 		}
@@ -77,7 +78,7 @@ function unblockUser() {
 				toast.info(response.data.message)
 			})
 			.catch((error) => {
-				if (error.response.status === 406) toast.warning(error.response.data.message)
+				if (error.response?.status === 406) toast.warning(error.response?.data?.message)
 				else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 			});
 		}

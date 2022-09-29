@@ -4,10 +4,7 @@ import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
 
 const instance = axios.create({
-	//baseURL: 'http://localhost:3000/api',
-	//headers: {'Content-Type': 'application/json'}
-	// baseURL: import.meta.env.VITE_API_URL // It send all env vars to client \!/
-	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_API_PORT}/api`
+	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_APP_API_PORT}/api`
 });
 
 instance.interceptors.request.use(function (config) {
@@ -25,9 +22,11 @@ instance.interceptors.response.use(function (response) {
 	},
 	function (error) {
 		const userStore = useUserStore();
-		if ([401].includes(error.response.status) && userStore.isLoggedIn) {
+		if ([401].includes(error.response?.status) && userStore.isLoggedIn) {
 			const toast = useToast();
-			toast.error('Your session has expired')
+			toast.error('Your session has expired', {
+				timeout: false
+			})
 			userStore.handleLogout()
 		}
 		return Promise.reject(error);

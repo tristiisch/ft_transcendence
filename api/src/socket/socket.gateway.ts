@@ -9,25 +9,22 @@ import {
 	WsException,
 } from '@nestjs/websockets';
 import { ChatService } from 'chat/chat.service';
-import { ChannelCreateDTO, ChannelSelectDTO } from 'chat/entity/channel-dto';
+import { ChannelCreateDTO, ChannelFetchDTO, ChannelSelectDTO, MessageDTO } from 'chat/entity/channel-dto';
 import { Channel, ChannelFront, ChannelPrivate, ChannelProtected } from 'chat/entity/channel.entity';
 import { Server, Socket } from 'socket.io';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { SocketService } from './socket.service';
-import { Message, MessageFront } from 'chat/entity/message.entity';
-import { Chat, ChatFront, ChatStatus } from 'chat/entity/chat.entity';
+import { Message, MessageFront, MessageType } from 'chat/entity/message.entity';
 import { Discussion, DiscussionFront } from 'chat/entity/discussion.entity';
-import { ForbiddenException, forwardRef, Inject, Logger, NotAcceptableException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Logger, NotAcceptableException, PreconditionFailedException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { comparePassword } from 'utils/bcrypt';
 import { JwtSocketGuard } from './strategy/jwt-socket.strategy';
 import { UsersService } from 'users/users.service';
 import { AuthService } from 'auth/auth.service';
 import { MatchService } from 'game/matchs/matchs.service';
-import { validate, validateOrReject } from 'class-validator';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { Notification, NotificationType } from 'notification/entity/notification.entity';
 import { NotificationService } from 'notification/notification.service';
 import { MatchMakingTypes } from 'game/matchs/entity/match.entity';
+import { isNumberPositiveSocket, validateDTO } from 'utils/utils';
 
 @WebSocketGateway({
 	cors: { origin: [process.env.FRONT_URL, `http://localhost:${process.env.FRONT_PORT}`] }
@@ -47,33 +44,31 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly authService: AuthService,
 		@Inject(forwardRef(() => MatchService))
 		private readonly matchService: MatchService,
-		// @Inject(forwardRef(() => NotificationService))
-		// private readonly notificationService: NotificationService
+		@Inject(forwardRef(() => NotificationService))
+		private readonly notifService: NotificationService
 	) {}
 
 	afterInit(server: Server): void {
 		this.socketService.server = server;
-		this.server.on("connection", (socket) => {
-			socket.prependAny((eventName, ...args) => {
-				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
-			});
-			socket.prependAnyOutgoing((eventName, ...args) => {
-				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
-			});
-			socket.on("ping", (count) => {
-				Logger.debug(`Ping ${count}`, 'WebSocket');
-			});
-		});
 	}
 
 	async handleConnection(clientSocket: Socket) {
 		try {
+			clientSocket.prependAny((eventName, ...args) => {
+				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+			});
+			clientSocket.prependAnyOutgoing((eventName, ...args) => {
+				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+			});
+			clientSocket.on("ping", (count) => {
+				Logger.debug(`Ping ${count}`, 'WebSocket');
+			});
+
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 
 			if (!user) return clientSocket.disconnect();
 
-			Logger.debug(`New connection ${user.username}`, 'WebSocket');
-			this.socketService.saveClientSocket(user, clientSocket.id);
+			this.socketService.saveClientSocket(user, clientSocket);
 			this.updateStatus(clientSocket, user, UserStatus.ONLINE);
 		} catch (err) {
 			Logger.error(`Cannot handle connection ${err.message}`, 'WebSocket');
@@ -84,10 +79,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 
-			Logger.debug(`Disconnection ${user.username}`, 'WebSocket');
+			this.matchService.removeUserFromMatch(user.id)
 			this.cancelFindMatch(clientSocket)
 			this.updateStatus(clientSocket, user, UserStatus.OFFLINE);
-			this.socketService.deleteClientSocket(user.id);
+			this.socketService.deleteClientSocket(user.id, clientSocket);
 		} catch (err) {
 			Logger.error(`Cannot get user from socket for handleDisconnect: ${err.message}`, 'WebSocket');
 		}
@@ -99,24 +94,27 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage(null)
-	handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket, @Req() req) {
-		Logger.debug(`Client ${req.user.username} send us a msg`, 'WebSocket');
-	}
-
-	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('updateUserStatus')
 	handleUserStatus(@MessageBody() data: number, @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
+		if (!data)
+			throw new WsException('The body requires at least 1 argument.');
+		isNumberPositiveSocket(data, 'update status');
+
 		client.broadcast.emit('updateUserStatus', ({id: user.id, status: data}))
+		this.userService.getRepo().update(user.id, { status: data });
 	}
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelCreate')
 	async createChannel(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
 		const user: User = req.user;
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
 		const channelDTO: ChannelCreateDTO = body[1];
 		const password: string = body[2];
+
+		await validateDTO(ChannelCreateDTO, channelDTO);
 
 		channelDTO.password = password;
 		try {
@@ -131,37 +129,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('chatDiscussionCreate')
-	async chatDiscussionCreate(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<DiscussionFront> {
-		const user: User = req.user;
-		const discussionFront: DiscussionFront = body[1];
-		const discu: Discussion = {
-			type: ChatStatus.DISCUSSION,
-			users_ids: [user.id, discussionFront['user'].id],
-			hidden_ids: undefined
-		}
-		let newDiscu: Discussion;
-		try {
-			newDiscu = await this.chatService.addDiscussion(discu);
-		} catch (err) {
-			if (err instanceof NotAcceptableException) {
-				// finalDiscu = await this.chatService.findUserDiscussion
-			}
-			throw err;
-		}
-		const finalDiscu: Discussion = await this.chatService.fetchChat(user, newDiscu.id, newDiscu.type) as Discussion;
-		return finalDiscu.toFront(this.chatService, user, [user]);
-	}
-
-
-	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatDiscussionMessage')
 	async chatDiscussionMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
 		const targetId: number = body[0];
-		const messageDTO: MessageFront = body[1];
+		const messageDTO: MessageDTO = body[1];
 		const target: User = await this.userService.findOne(targetId);
 
+		await validateDTO(MessageDTO, messageDTO);
 		messageDTO.idSender = user.id;
 
 		if (target.isBlockedUser(user.id)) {
@@ -179,9 +156,23 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			message.message = messageDTO.message;
 			message.type = messageDTO.type;
 
+			if (message.type === MessageType.GAME_INVIT) {
+				message.canUseButton = true;
+				await this.matchService.addRequest(req.user, target.id, null);
+			}
+
 			message = await this.chatService.addMessage(message);
 			const msgFront: MessageFront = message.toFront(user, null);
 			const discuFront: DiscussionFront = await discu.toFront(this.chatService, user, [user]);
+			
+			////////////
+			/*let notif: Notification = new Notification();
+			notif.user_id = target.id;
+			notif.from_user_id = user.id;
+			notif.type = NotificationType.MATCH_REQUEST;
+			notif = await this.notifService.addNotif(notif);
+			this.socketService.AddNotification(target, await notif.toFront(this.userService, [user, target]));*/
+			//////////////
 
 			discu.sendMessage(this.socketService, user, 'chatDiscussionMessage', discuFront, msgFront, user);
 			// client.broadcast.emit("chatDiscussionMessage", discussion, msgFront);
@@ -196,10 +187,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chatChannelMessage')
 	async chatChannelMessage(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
 		const user: User = req.user;
-		const channelDTO: ChannelSelectDTO = body[0];
-		const msgFront: MessageFront = body[1];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelFetchDTO = body[0];
+		const msgFront: MessageDTO = body[1];
 
-		validate(channelDTO);
+		await validateDTO(ChannelFetchDTO, channelDTO);
+		await validateDTO(MessageDTO, msgFront);
 		//if (channelDTO.id == null || !channelDTO.type)
 		//	throw new WsException(`Channel of message must be a valid channel with id & type.`);
 
@@ -234,8 +228,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatDiscussionHide')
 	async chatDiscuHide(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const targetId: number = body[0];
 		const user: User = req.user;
+		if (!body || body.length < 1)
+			throw new WsException('The body requires at least 1 argument.');
+		const targetId: number = body[0];
+
+		isNumberPositiveSocket(targetId, 'hide a discussion');
 
 		let discu: Discussion = await this.chatService.findDiscussion(user.id, targetId);
 		if (!discu) {
@@ -248,8 +246,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelDelete')
 	async chatChannelDelete(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 1)
+			throw new WsException('The body requires at least 1 argument.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const user: User = req.user;
+	
+		await validateDTO(ChannelSelectDTO, channelDTO);
 
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
@@ -262,10 +264,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelJoin')
 	async chatChannelJoin(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<ChannelFront> {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 1)
+			throw new WsException('The body requires at least 1 argument.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const joinedUser: User = req.user;
 
 		let channel: Channel = await this.chatService.fetchChannel(joinedUser, channelDTO.id, channelDTO.type);
+
+
+		await validateDTO(ChannelSelectDTO, channelDTO);
 
 		if (channel.banned_ids && channel.banned_ids.indexOf(joinedUser.id) !== -1) {
 			throw new WsException(`You are banned in channel ${channel.name}.`);
@@ -288,9 +295,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelLeave')
 	async chatChannelLeave(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 1)
+			throw new WsException('The body requires at least 1 argument.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const leaveUser: User = req.user;
 
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(leaveUser, channelDTO.id, channelDTO.type);
 
 		const tmpChannel = await this.chatService.leaveChannel(leaveUser, channel);
@@ -310,8 +320,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelInvitation')
 	async chatChannelInvitation(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const invitedUsersDTO: User[] = body[1];
+
+		await validateDTO(ChannelSelectDTO, channelDTO);
 
 		const user: User = req.user;
 		let channelTmp: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
@@ -325,7 +339,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		channel = await this.chatService.inviteUsers(channel, users.map(user => user.id));
 
-		await this.chatService.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} been added to ${channel.name} by ${user.username}.`, channel);
+		await this.chatService.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
 
 		const channelFront = await channel.toFront(this.chatService, user, [...users, user]);
 
@@ -338,19 +352,22 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelBan')
 	async chatChannelBan(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const newBanned:{ list: User[], userWhoSelect: User} = body[1];
 		const user: User = req.user;
 
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newBanned.list.map(user => user.id));
 		newBanned.list = users;
 		newBanned.userWhoSelect = user;
-		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id)); // TODO optimize
+		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id)); 
 
-		const channelFront: ChannelFront = await this.chatService.setBanned(channel, user, users.map(user => user.id));
+		const channelFront: ChannelFront = await this.chatService.setBanned(channel, user, users);
 
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelBan', channelFront, newBanned);
 		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelBan', channelFront, newBanned);
@@ -360,16 +377,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelAdmin')
 	async chatChannelAdmin(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
 		const user: User = req.user;
 
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newAdmin.list.map(user => user.id));
-		newAdmin.list = users;
-		const channelFront: ChannelFront = await this.chatService.setAdmin(channel, user, newAdmin);
+		const channelFront: ChannelFront = await this.chatService.setAdmin(channel, user, users);
 
 		
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelAdmin', channelFront);
@@ -379,17 +398,19 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelMute')
 	async chatChannelMute(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const newMuted:{ list: User[], userWhoSelect: User} = body[1];
 		const user: User = req.user;
 
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
 		const users: User[] = await this.userService.findMany(newMuted.list.map(user => user.id));
-		newMuted.list = users;
 
-		const channelFront: ChannelFront = await this.chatService.setMuted(channel, user, users.map(user => user.id));
+		const channelFront: ChannelFront = await this.chatService.setMuted(channel, user, users);
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelMute', channelFront);
 		return [channelFront];
 	}
@@ -397,10 +418,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelKick')
 	async chatChannelKick(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const newKicked:{ list: User[], userWhoSelect: User} = body[1];
 		const user: User = req.user;
 
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
 		channel.checkAdminPermission(user);
@@ -409,14 +433,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		newKicked.userWhoSelect = user;
 		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id));
 
-		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} has been kicked by ${user.username}`, channel);
+		let leaveMessage: Message = await this.chatService.createAutoMsg(`🔴　${users.map(user => user.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been kicked by ${user.username}.`, channel);
 		
 
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [...users, user]);
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelKick', channelFront, newKicked);
 		await this.socketService.emitIds(user, users.map(user => user.id), 'chatChannelKick', channelFront, newKicked);
-		
-		 // TODO get user from db
+
 		await channel.sendMessage(this.socketService, 'chatChannelMessage', leaveMessage.toFront(user, null));
 		return [channelFront];
 	}
@@ -424,13 +447,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatPassCheck')
 	async chatPassCheck(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req): Promise<boolean> {
-		const channelDTO: ChannelFront = body[0];
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
+		const channelDTO: ChannelSelectDTO = body[0];
 		const password: string = body[1];
 		const user: User = req.user;
 		let tempChannel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 		if (!(tempChannel instanceof ChannelProtected && tempChannel.password)) {
 			throw new WsException(`${channelDTO.name} is not a protected channel.`);
 		}
+
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		const channel: ChannelProtected = tempChannel as ChannelProtected;
 
 		return comparePassword(password, channel.password)
@@ -439,11 +466,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelOtherUsers')
 	async chatChannelOtherUsers(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req) {
+		if (!body)
+			throw new WsException('The body requires at least 1 arguments.');
 		const channelDTO: ChannelFront = body;
 		const user: User = req.user;
 
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		if (!channel.hasAdminPermission(user))
 			throw new ForbiddenException("You can't fetch other users, because you are not admin.");
 
@@ -451,17 +481,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		usersExceptInChannel = usersExceptInChannel.filter((user: User) => {
 			return (!channel.users_ids || channel.users_ids.indexOf(user.id) === -1) && (!channel.banned_ids || channel.banned_ids.indexOf(user.id) === -1);
 		});
-			// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
-		return usersExceptInChannel;
+		return [usersExceptInChannel];
 	}
 
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatMsgReaded')
 	async chatMsgReaded(@MessageBody() body: any[], @ConnectedSocket() client: Socket, @Req() req) {
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
 		const user: User = req.user;
 		const idMsg: number = body[0];
 		const idChannel: number = body[1];
 
+		isNumberPositiveSocket(idMsg, 'read a message');
+		isNumberPositiveSocket(idChannel, 'read a message');
 		let msg: Message = await this.chatService.findMessage(idMsg);
 		if (!msg) {
 			Logger.error(`Can't read a message for ${user.username} with msg id ${idMsg}.`);
@@ -470,31 +503,32 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.chatService.setReadMessage(user, idChannel, msg);
 	}
 
-	/*@UseGuards(JwtSocketGuard)
-	@SubscribeMessage('chatFindAll')
-	async chatFindAll(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req): Promise<any[]> {
-		const user: User = req.user;
-		const userCached: User[] = new Array();
-
-		let channelsFront: ChannelFront[] = await this.chatService.findUserChannel(user, userCached);
-		let discussionFront: DiscussionFront[] = await this.chatService.findUserDiscussion(user, userCached);
-
-		return [discussionFront, channelsFront];
-	}*/
-
 	@UseGuards(JwtSocketGuard)
 	@SubscribeMessage('chatChannelNamePassword')
 	async editChannel(@MessageBody() body: any, @ConnectedSocket() client: Socket, @Req() req) {
+		if (!body || body.length < 2)
+			throw new WsException('The body requires at least 2 arguments.');
 		const user: User = req.user;
-		const channelDTO: ChannelFront = body[0];
-		const newNamePassword: { name: string | null, password: string | null, userWhoChangeName: User } = body[1];
+		const channelDTO: ChannelSelectDTO = body[0];
+		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1];
+		
+		if (newNamePassword.name === null || newNamePassword.name.length < 3 || newNamePassword.name.length > 16 ){
+			throw new WsException('The name of the channel need to be between 3 and 16 charaters.');
+		}
+		
+		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
+		const oldId = channel.id;
+		const oldName = channel.name;
 
-		let msg: Message = await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}`, channel);
+
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
+		if (newNamePassword.name !== oldName)
+			await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}.`, channel);
+
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
-		await channel.sendMessage(this.socketService, 'chatChannelNamePassword', channelFront)
-		return [channelFront];
+		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, oldId);
+		return [channelFront, channel.id];
 	}
 
 
@@ -507,15 +541,28 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
+		// console.log("findMatch!", client.id)
 		const user = await this.socketService.getUserFromSocket(client)
 		const match_found = this.matchService.findUserToPlay(data.type)
 		if (match_found) {
+			// console.log("!!", user.username, "found a match !")
+			// console.log("players_queue", this.players_queue, "before")
 			this.matchService.removePlayerFromQueue(match_found.user.id)
+			// console.log("players_queue", this.players_queue, "after")
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
-			var match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
-			this.matches.get(match_id).room_socket = this.server.to('match_' + match_id)
+			let match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
+			let match = this.matches.get(match_id)
+			match.room_socket = this.server.to('match_' + match_id)
 			client.emit('foundMatch', match_id)
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
+			setTimeout(() => {
+				if (!match.started) {
+					// console.log("Match was canceled :", match)
+					match.room_socket.emit("endMatch", "Match was cancelled because one or more players were absent...")
+					match.room_socket.socketsLeave("match_" + match.id)
+					this.matches.delete(match.id)
+				}
+			}, 15000)
 		}
 		else this.matchService.addPlayerToQueue(user.id, {user: user, match_type: data.type, custom_match_infos: data.custom_match_infos})
 	}
@@ -528,25 +575,19 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('joinMatch')
 	handleJoinMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		// once the match is created: for players and spectators
-		console.log(client.id, "wants to join : ", id)
+		// console.log("joinMatch :", id, "!", client.id)
 		if (this.matches.has(id)) {
-			let stageWidth = this.matchService.getStageWidth()
 			let match = this.matches.get(id)
-			let started = match.started
-			let waiting = match.waiting
-			let racketSize = match.racketSize
-			// let ballXPos = match.ballXPos
-			// let ballYPos = match.ballYPos
-			let p1Ready = match.p1Ready
-			let p2Ready = match.p2Ready
-			let p1Pos = match.p1Pos
-			let p2Pos = match.p2Pos
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
-			console.log("match_" + id, "nb clients = ", clients.size)
-			// if (started)
-				// return { stageWidth, started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
-			return { stageWidth, started, waiting, racketSize, p1Ready, p2Ready, p1Pos, p2Pos }
+			// console.log("match_" + id, "nb clients = ", clients.size)
+			return [{
+				started: match.started,
+				p1Ready: match.p1Ready,
+				p2Ready: match.p2Ready,
+				p1Pos: match.p1Pos,
+				p2Pos: match.p2Pos
+			}]
 		}
 	}
 
@@ -558,9 +599,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			match.p1Ready = true
 		else if (match.user2_id === user.id)
 			match.p2Ready = true
-		if (!match.started && match.p1Ready && match.p2Ready)
-		{
-			console.log("match ", id, "ready !")
+		if (!match.started && match.p1Ready && match.p2Ready) {
+			// console.log("match ", id, "ready !")
 			match.started = true
 			this.matchService.startMatch(match)
 		}
@@ -588,8 +628,19 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
 		let user = await this.socketService.getUserFromSocket(client)
-		if (match !== undefined && this.matchService.isUserPlayerFromMatch(user.id, match))
-			await this.matchService.endMatch(match)
+		if (match) {
+			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match)) {
+				match.stopMatch = true
+				await this.matchService.endMatch(match, user.id)
+			}
+			else {
+				if (!match.started) {
+					if (user.id === match.user1_id) match.p1Ready = false
+					else if (user.id === match.user2_id) match.p2Ready = false
+				}
+				client.leave("match_" + match.id)
+			}
+		}
 	}
 
 	// UpdateLeaderboard

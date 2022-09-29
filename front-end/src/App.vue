@@ -3,7 +3,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
-import status from '@/types/Status';
 import AuthService from '@/services/AuthService';
 import socket from '@/plugin/socketInstance';
 import Status from '@/types/Status';
@@ -64,5 +63,21 @@ body,
 	width: 100%;
 	margin: 0;
 	padding: 0;
+}
+
+::-webkit-scrollbar-track
+{
+	background-color: transparent;
+}
+
+::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb
+{
+	background-color: #f87171;
 }
 </style>

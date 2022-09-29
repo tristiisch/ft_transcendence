@@ -48,8 +48,6 @@ export class NotificationService {
 		sqlStatement.andWhere('notification.from_user_id = :from_user', { from_user: inviteUser.id });
 		sqlStatement.andWhere('notification.is_deleted IS NOT TRUE');
 		sqlStatement.andWhere(`notification.type = :notif_type`, { notif_type: NotificationType.MATCH_REQUEST});
-	
-		Logger.debug(`${sqlStatement.getQueryAndParameters()}`, 'DeleteQueryBuilder');
 
 		return await sqlStatement.execute();
 	}

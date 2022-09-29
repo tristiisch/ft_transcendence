@@ -50,7 +50,6 @@ export class ChatController {
 		return this.chatService.findChannelPrivateAvatar(id, res);
 	}
 
-	// TODO remove it
 	@UseGuards(JwtAuthGuard)
 	@Post('fetch-messsages')
 	fetchMessages(@Req() req, @Body() channelDTO: ChannelFetchDTO) : Promise<MessageFront[]>  {
@@ -58,7 +57,6 @@ export class ChatController {
 		return this.chatService.fetchMessageSafe(user, channelDTO);
 	}
 
-	// TODO remove it
 	@UseGuards(JwtAuthGuard)
 	@Post('fetch-chat')
 	async fetchChat(@Req() req, @Body() channelDTO: ChannelFetchDTO) : Promise<ChannelFront | DiscussionFront>  {

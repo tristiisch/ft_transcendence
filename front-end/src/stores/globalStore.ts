@@ -20,7 +20,7 @@ export const useGlobalStore = defineStore('globalStore', {
 		ballSpeed: 100,
 		racketSize: 100,
 		increaseSpeed: false,
-		world: 1,
+		world: 0,
 		winningScore: 5,
 		gameInvitation: false,
 	}),
@@ -29,7 +29,7 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (array: selectedItems): array is User[] => (array as User[])[0] === undefined || (array as User[])[0].username !== undefined;
 		},
 		isTypeUser: (state) => {
-			return (user: selectedItem): user is User => (user as User).username !== undefined;
+			return (user: selectedItem): user is User =>  (user as User) === undefined || (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
 			return (userId: number) => state.friends.some((friend) => friend.id === userId);
@@ -40,29 +40,17 @@ export const useGlobalStore = defineStore('globalStore', {
 		isBlockedUser: (state) => {
 			return (userId: number) => state.blockedUsers.some((blockedUser) => blockedUser.id === userId);
 		},
-		// getUserName: (state) => {
-		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.username;
-		// },
-		// getUserAvatar: (state) => {
-		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.avatar;
-		// },
-		// getUserId: (state) => {
-		// 	return (idSender: number) => state.users.find((user) => user.id === idSender)?.id;
-		// },
 		getUser: (state) => {
 			return (userId: number) => state.users.find((user) => user.id === userId);  //TODO remove
 		},
 		getIndexSelectedItems: (state) => {
 			return  (user: User) => state.selectedItems.findIndex((userSelectioned) => userSelectioned.id === user.id);
 		},
-		// getUsersFiltered: (state) => {
-		// 	return  (userToFilter: User) => state.users.filter((user) => user.id != userToFilter.id);
-		// },
 	},
 	actions: {
 		async fetchAll() {
 			try {
-				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers()]);
+				await Promise.all([this.fetchfriends(), this.fetchPendingfriends(), this.fetchNotifications(), this.fetchblockedUsers(), this.fetchGameInvitation()]);
 			} catch (error: any) {
 				throw error;
 			}
@@ -107,6 +95,15 @@ export const useGlobalStore = defineStore('globalStore', {
 				throw error;
 			}
 		},
+		async fetchGameInvitation() {
+			try {
+				const response = await UserService.getGameInvitation();
+				if (response.data)
+					this.invitedUser = response.data
+			} catch (error: any) {
+				throw error;
+			}
+		},
 		checkChangeInArray(baseArray: User[]) {
 			if (baseArray) {
 				for (const userBa of baseArray) {
@@ -125,9 +122,6 @@ export const useGlobalStore = defineStore('globalStore', {
 		resetSelectedItems() {
 			this.selectedItems = []
 		},
-		// addUser(user: User) {
-		// 	this.users.push(user);
-		// },
 		addFriend(friend: User) {
 			this.removePendingFriend(friend.id)
 			this.friends.push(friend);
@@ -141,10 +135,6 @@ export const useGlobalStore = defineStore('globalStore', {
 		addNotification(notification: Notification) {
 			this.notifications.push(notification);
 		},
-		// removeUser(userToRemoveId: number) {
-		// 	const index = this.users.findIndex(user => user.id === userToRemoveId);
-		// 	this.users.splice(index, 1);
-		// },
 		removeFriend(friendToRemoveId: number) {
 			this.removePendingFriend(friendToRemoveId)
 			const index = this.friends.findIndex(friend => friend.id === friendToRemoveId);
@@ -176,6 +166,11 @@ export const useGlobalStore = defineStore('globalStore', {
 		removeNotifCancel(notif: Notification, notifType: NotificationType) {
 			this.notifications = this.notifications.filter(notification => notification.from_user_id !== notif.from_user_id
 				&& notification.type !== notifType);
+		},
+		getNotifGameByUserID(userId: number) {
+			const index = this.notifications.findIndex(notification => notification.from_user_id === userId && notification.type == NotificationType.MATCH_REQUEST);
+			if (index !== -1) return this.notifications[index].id;
+			return null
 		},
 	}
 });

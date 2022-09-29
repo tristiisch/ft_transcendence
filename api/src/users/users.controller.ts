@@ -13,39 +13,17 @@ export class UsersController {
 
 	constructor(private readonly usersService: UsersService) {}
 
-	// TODO: this work
-	// @Inject(forwardRef(() => AuthService))
-	// private readonly authService: AuthService;
-
 	@UseGuards(JwtAuthGuard)
 	@Get()
-	getAllUsers(@Req() req): Promise<User[]> {
-		return this.usersService.findAllExcept(req.user);
+	async getAllUsers(@Req() req): Promise<User[]> {
+		return await this.usersService.findAllExcept(req.user);
 	}
-
-	/*@Post()
-	addUser(@Body() newUser: User) {
-		return this.usersService.add(newUser);
-	}*/
-
-	/*
-	@Get('name/:name')
-	getUserByUsername(@Param('name') name: string): Promise<User> {
-		return this.usersService.findOneByUsername(name);
-	}
-
-	@Get('login42/:login')
-	getUserBy42Login(@Param('login') login: string): Promise<User> {
-		return this.usersService.findOneBy42Login(login);
-	}
-	*/
 
 	@UseGuards(JwtAuthGuard)
 	@Get('blocked-users')
 	async blockedUsers(@Req() req) {
 		const user: User = req.user;
 
-		//Logger.debug(`blocked_ids ${user.blocked_ids}`)
 		if (!user.blocked_ids)
 			return [];
 		const blockedUsers: User[] = new Array();
@@ -56,9 +34,9 @@ export class UsersController {
 
 	@UseGuards(JwtAuthGuard)
 	@Patch('register')
-	registerUser(@Req() req, @Body() userToUpdate: UserDTO) {
+	async egisterUser(@Req() req, @Body() userToUpdate: UserDTO) {
 		const user: User = req.user;
-		return this.usersService.register(user.id, userToUpdate);
+		await this.usersService.register(user.id, userToUpdate);
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -81,7 +59,6 @@ export class UsersController {
 	@Get('me')
 	async getOwnInfo(@Req() req) {
 		const user: User = req.user;
-		// const userAuth: UserAuth = await this.authService.findOne(user.id);
 		return user;
 	}
 
@@ -92,12 +69,6 @@ export class UsersController {
 
 		return this.usersService.anonymizeUser(user);
 	}
-
-
-	/*@Delete(':id')
-	deleteUser(@Param('id') id: number) {
-		return this.usersService.remove(id);
-	}*/
 
 	@Get('avatar/:id/id')
 	async getAvatarById(@Param('id') id: number, @Res() res: Response) {

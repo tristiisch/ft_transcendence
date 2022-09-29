@@ -27,7 +27,10 @@ const createBase64Image = (event: Event) => {
 		imageData.value = reader.result as string;
 		emit('imageLoaded', imageData.value);
 	};
-	reader.readAsDataURL(fileName);
+	if(fileName && reader){
+		reader.readAsDataURL(fileName);
+	}
+	else return;
 };
 
 const changeAvatar = () => {
