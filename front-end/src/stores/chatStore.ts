@@ -370,7 +370,7 @@ export const useChatStore = defineStore('chatStore', {
 			}
 		},
 		markMessageReaded(message: Message) {
-			if (message.read === false) {
+			if (message.read !== true) {
 				message.read = true;
 				let msgId;
 				if (this.inChannel)
