@@ -134,11 +134,6 @@ function removeFriend(targetId: number) {
 	if (index !== -1) leaderboardFriends.value.splice(index, 1);
 }
 
-function updateLeaderboard(data: { leaderBoard: LeaderboardUser[], leaderBoardFriends: LeaderboardUser[] }) {
-	leaderboard.value = data.leaderBoard;
-	leaderboardFriends.value = data.leaderBoardFriends;
-}
-
 function updateStatus(target: UserStatus) {
 	if (leaderboard.value) {
 		const index = leaderboard.value.findIndex((user) => user.id === target.id);
@@ -152,14 +147,12 @@ function updateStatus(target: UserStatus) {
 
 onBeforeMount(() => {
 	fetchLeaderboard()
-	socket.on('UpdateLeaderboard', updateLeaderboard);
 	socket.on('updateUserStatus', updateStatus);
 	socket.on('addFriendLeaderboard', addFriend);
 	socket.on('removeFriendLeaderboard', removeFriend);
 });
 
 onBeforeUnmount(() => {
-	socket.off('UpdateLeaderboard', updateLeaderboard);
 	socket.off('updateUserStatus', updateStatus);
 	socket.off('addFriendLeaderboard', addFriend);
 	socket.off('removeFriendLeaderboard', removeFriend);

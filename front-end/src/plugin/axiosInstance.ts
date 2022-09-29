@@ -4,9 +4,6 @@ import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
 
 const instance = axios.create({
-	//baseURL: 'http://localhost:3000/api',
-	//headers: {'Content-Type': 'application/json'}
-	// baseURL: import.meta.env.VITE_API_URL // It send all env vars to client \!/
 	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_API_PORT}/api`
 });
 

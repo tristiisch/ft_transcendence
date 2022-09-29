@@ -1,12 +1,17 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsNumber, IsPositive, IsAlphanumeric, MinLength, MaxLength } from "class-validator";
+import { IsInt, IsNotEmpty, IsOptional, IsString, IsNumber, IsPositive, IsAlphanumeric, MinLength, MaxLength, IsEnum } from "class-validator";
 import { ChatStatus } from "./chat.entity";
-import { MessageFront } from "./message.entity";
+import { MessageFront, MessageType } from "./message.entity";
 
 export class ChannelSelectDTO {
 
     @IsInt()
     @IsPositive()
     id: number;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    name: string;
 
     @IsInt()
     type: ChatStatus;
@@ -81,4 +86,22 @@ export class ChannelEditUsersDTO {
 
     @IsNumber({},{each: true})
 	users_ids: number[];
+}
+
+export class MessageDTO {
+	idMessage?: number;
+	idChat?: number;
+
+    @IsInt()
+    @IsPositive()
+	idSender: number;
+
+	avatarSender?: string;
+	usernameSender?: string;
+
+    @IsNotEmpty()
+	message: string;
+
+    @IsEnum(MessageType)
+	type: MessageType;
 }

@@ -111,7 +111,7 @@ export class TestFakeService {
 
 	async initMatchHistory(user: User, userIds: number[]): Promise<Match> {
 		if (userIds.length === 0) {
-			Logger.warn(`Can't find a valid userId for matchHistory of ${user.username}`, 'Fake Match')
+			Logger.warn(`Can't find a valid userId for matchHistory of ${user.username}`, 'FakeMatch')
 			return null;
 		}
 		const targetId: number = randomElement(userIds);

@@ -6,7 +6,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import UsersService from '@/services/UserService';
 import ButtonGradient from '@/components/Button/ButtonGradient.vue';
 import { useToast } from 'vue-toastification';
-import BaseButton from '../Ui/BaseButton.vue';
 
 const userStore = useUserStore();
 const globalStore = useGlobalStore();

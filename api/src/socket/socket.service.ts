@@ -24,7 +24,6 @@ export class SocketService {
 	async getUserFromSocket(socket: Socket) : Promise<User> {
 		const token = socket.handshake.auth.token;
 		if (!token || token.length === 0) {
-			Logger.debug(`Token is null or empty`, 'WebSocket');
 			throw new UnauthorizedException('Invalid token.');
 		}
 		const user = await this.authService.getUserFromAuthenticationToken(token);
@@ -41,7 +40,7 @@ export class SocketService {
 			oldSocket.emit('double_connection', () => {
 				oldSocket.disconnect();
 			});
-			Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
+			//Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
 		}
 		this.usersSocket.set(user.id, clientSocketId)
 		return oldClientSocketId;

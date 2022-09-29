@@ -137,13 +137,5 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
-		/*async deleteAccount() {
-			try {
-				const res = await UserService.deleteAccount();
-				this.userData = res.data;
-			} catch (error: any) {
-				throw error;
-			}
-		},*/
 	},
 });

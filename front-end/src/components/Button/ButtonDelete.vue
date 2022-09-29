@@ -11,14 +11,10 @@ const emit = defineEmits<{
 	(event: 'close'): void;
 }>();
 
-function deleteChannelDiscussion(index: number)
+function deleteChannel(index: number)
 {
     if (props.isChannel) {
         chatStore.leaveChannel(chatStore.userChannels[index], userStore.userData)
-        emit('close')
-    }
-    else {
-        chatStore.deleteUserDiscussion(index)
         emit('close')
     }
 }
@@ -26,7 +22,7 @@ function deleteChannelDiscussion(index: number)
 
 <template>
     <div class="absolute top-[6px] z-10 w-full h-[90%] flex justify-center bg-blue-600 text-white text-sm">
-        <button @click="deleteChannelDiscussion(index)" class="w-full">
+        <button @click="deleteChannel(index)" class="w-full">
             Delete
         </button>
         <button @click="emit('close')" class="inline-flex justify-center items-center bg-blue-700 rounded-sm h-4 w-4 mr-2 mt-2">
