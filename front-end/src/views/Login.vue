@@ -138,7 +138,7 @@ onBeforeMount(() => {
 					<p class="text-slate-500 text-center w-full">Please choose an username and avatar</p>
 					<input
 						class="text-center text-neutral-100 text-xs px-3 py-2 sm:px-5 sm:py-2.5 w-full rounded bg-slate-800 placeholder-slate-600 placeholder:text-center"
-						type="text"
+						type="password"
 						name="username"
 						v-model.trim="username"
 						placeholder="Username"
