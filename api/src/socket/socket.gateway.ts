@@ -99,7 +99,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: User = req.user;
 		if (!data)
 			throw new WsException('The body requires at least 1 argument.');
+		isNumberPositiveSocket(data, 'update status');
+
 		client.broadcast.emit('updateUserStatus', ({id: user.id, status: data}))
+		this.userService.getRepo().update(user.id, { status: data });
 	}
 
 	@UseGuards(JwtSocketGuard)
@@ -509,15 +512,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const channelDTO: ChannelSelectDTO = body[0];
 		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1]; // TODO check this
 		
+		if (newNamePassword.name === null || newNamePassword.name.length < 3 || newNamePassword.name.length > 16 ){
+			throw new WsException('The name of the channel need to be between 3 and 16 charaters.');
+		}
 		
 		await validateDTO(ChannelSelectDTO, channelDTO);
 		let channel: Channel = await this.chatService.fetchChannel(user, channelDTO.id, channelDTO.type);
 		const oldId = channel.id;
+		const oldName = channel.name;
 
-		if (newNamePassword.name !== channel.name)
-			await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}.`, channel);
 
 		channel = await this.chatService.updateChannel(channel, newNamePassword.name, newNamePassword.password, user);
+		if (newNamePassword.name !== oldName)
+			await this.chatService.createAutoMsg(`⚪️　 ${user.username} change the channel name to ${newNamePassword.name}.`, channel);
+
 		const channelFront: ChannelFront = await channel.toFront(this.chatService, user, [user]);
 		await channel.sendMessageFrom(this.socketService, user, 'chatChannelNamePassword', channelFront, oldId);
 		return [channelFront, channel.id];

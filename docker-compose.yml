@@ -26,7 +26,6 @@ services:
   front:
     build:
       context: ./front-end/
-      target: ${NODE_ENV}
     volumes:
     - ./front-end:/usr/src/app
     # - /usr/src/app/dist
