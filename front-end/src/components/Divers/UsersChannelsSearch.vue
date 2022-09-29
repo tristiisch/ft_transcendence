@@ -81,7 +81,8 @@ onBeforeMount(() => {
 			});
 		}
 		else {
-			socket.emit('chatChannelOtherUsers', chatStore.inChannel, (usersNotInChannel: User[]) => {
+			socket.emit('chatChannelOtherUsers', chatStore.inChannel, (body: any[]) => {
+				const usersNotInChannel: User[] = body[0];
 				globalStore.users = usersNotInChannel;
 				itemsToDisplay.value = globalStore.users;
 				isLoading.value = false;
