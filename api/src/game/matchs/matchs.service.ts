@@ -29,7 +29,7 @@ export class MatchService {
 	private readonly blockerHeight = this.stageHeight / 5
 	private readonly p1XPos = this.stageWidth / 20
 	private readonly p2XPos = this.stageWidth - this.p1XPos
-	private readonly winningScore = 5
+	private readonly winningScore = 50
 	private readonly ballSpeed = 2
 	private readonly increaseBallSpeed = false
 	private readonly world = 0
@@ -204,16 +204,23 @@ export class MatchService {
 
 		var y2 = match.ballYPos + (tdiff * match.ballYDir)
 		if (y2 < 0 || y2 >= this.stageHeight) {
+			// match.ballYDir *= -1
 			if ((y2 / this.stageHeight) % 2) match.ballYDir *= -1
 			y2 = this.stageHeight - (this.mod(y2, this.stageHeight))
 		}
 
-		if (((y2 < match.p1Pos || y2 >= match.p1Pos + match.racketSize) &&  x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
-			((y2 < match.p2Pos || y2 >= match.p2Pos + match.racketSize) &&  x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-			match.ballYDir *= -1
-		else if ((x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
-				(x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-					match.ballXDir *= -1
+		let p1Pos = match.p1Pos
+		let p2Pos = match.p2Pos
+			if (((x2 < this.p1XPos + this.blockerWidth && x2 >= this.p1XPos) && x2 < this.p2XPos + this.blockerWidth && y2 >= p1Pos && y2 < p1Pos + match.racketSize && match.ballXDir < 0)
+			|| ((x2 >= this.p2XPos /*|| x2 + match.ballXDir >= this.p2XPos*/) && x2 < this.p2XPos + this.blockerWidth && y2 >= p2Pos && y2 < p2Pos + match.racketSize && match.ballXDir > 0))
+				match.ballXDir *= -1
+			// || x2 + match.ballXDir >= this.p2XPos)//x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
+		// if (x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= p1Pos && y2 + match.ballYDir < p1Pos + match.racketSize) {
+			// for (let i = 0; i < 9999999999999; i++) ;
+		// }
+		// else if ((x2 >= this.p1XPos + match.racketSize && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
+		// 		(x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
+		// 			match.ballXDir *= -1
 
 		match.ballXPos = x2
 		match.ballYPos = y2

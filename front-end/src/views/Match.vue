@@ -34,38 +34,37 @@ const windowWidth = ref(window.innerWidth);
 
 document.documentElement.style.overflow = 'hidden';
 
-MatchService.loadMatch(match_id)
-	.then((response) => {
-		console.log(response.data)
-		match.value = response.data
-		if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
-			isPlayer.value = true
-		socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
-		isLoaded.value = true
-	})
-	.catch((e) => {
-		router.replace({
-			name: 'Error',
-			params: { pathMatch: route.path.substring(1).split('/') },
-			query: { code: e.response?.status, message: e.response?.data.message }
-		});
-	})
+onBeforeMount(() => {
+	MatchService.loadMatch(match_id)
+		.then((response) => {
+			console.log(response.data)
+			match.value = response.data
+			if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
+				isPlayer.value = true
+			socket.emit('updateUserStatus', isPlayer.value ? status.INGAME : status.SPEC )
+			isLoaded.value = true
+		})
+		.catch((e) => {
+			router.replace({
+				name: 'Error',
+				params: { pathMatch: route.path.substring(1).split('/') },
+				query: { code: e.response?.status, message: e.response?.data.message }
+			});
+		})
 
+	window.addEventListener('resize', handleResize);
+	if (globalStore.gameInvitation)
+	{
+		globalStore.gameInvitation = false
+		globalStore.invitedUser = undefined
+	}
+})
 
 watch([isLoaded, isMounted, matchPage], () => {
 	if (isLoaded.value && isMounted.value && matchPage.value)
 	{
 		console.log("Ready to load stage !")
 		loadStage()
-	}
-})
-
-onBeforeMount(() => {
-	window.addEventListener('resize', handleResize);
-	if (globalStore.gameInvitation)
-	{
-		globalStore.gameInvitation = false
-		globalStore.invitedUser = undefined
 	}
 })
 
