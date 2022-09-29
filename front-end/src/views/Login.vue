@@ -63,8 +63,8 @@ function submit2faForm() {
 		router.replace({ name: 'Home' });
 	})
 	.catch((error) => {
-		if (error.response.status === 403) toast.error(error.response.data.message)
-		else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+		if (error.response?.status === 403) toast.error(error.response?.data?.message)
+		else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 		else userStore.handleLogout()
 	});
 }
@@ -85,8 +85,8 @@ function submitRegistrationForm() {
 			})
 			.catch((error) => {
 				isLoading.value = false;
-				if (error.response.status === 403) toast.error(error.response.data.message)
-				else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+				if (error.response?.status === 403) toast.error(error.response?.data?.message)
+				else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 				else userStore.handleLogout()
 			});
 	}
@@ -119,8 +119,8 @@ onBeforeMount(() => {
 		})
 		.catch((error) => {
 			isLoading.value = false;
-			if (error.response.data) toast.error(error.response.data.message)
-			else if (error.response.status === 0) toast.error("Network Error: unable to connect to server")
+			if (error.response?.data) toast.error(error.response?.data?.message)
+			else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 			router.replace({ name: 'Login' });
 		});
 	}
