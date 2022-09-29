@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/stores/globalStore';
-import { ref } from 'vue';
 import Toogle from '@/components/Divers/ToogleButton.vue';
 
 const globalStore = useGlobalStore();

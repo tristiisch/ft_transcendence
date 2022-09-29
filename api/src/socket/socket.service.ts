@@ -1,4 +1,4 @@
-import { forwardRef, Inject,Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject,Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from 'auth/auth.service';
 import { UsersService } from 'users/users.service';
 import { Server, Socket } from 'socket.io';
@@ -34,24 +34,22 @@ export class SocketService {
 		return user;
 	}
 
-	saveClientSocket(user: User, clientSocketId: string) {
-		console.log(this.usersSocket)
-		console.log(user.id)
+	async saveClientSocket(user: User, clientSocketId: string) {
 		const oldClientSocketId: string = this.usersSocket.get(user.id);
-		console.log(oldClientSocketId)
 		if (oldClientSocketId) {
 			const oldSocket: Socket = this.server.sockets.sockets.get(oldClientSocketId);
-			oldSocket.emit('');
-			oldSocket.disconnect();
+			oldSocket.emit('double_connection', () => {
+				oldSocket.disconnect();
+			});
 			Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
 		}
 		this.usersSocket.set(user.id, clientSocketId)
-		console.log(this.usersSocket)
 		return oldClientSocketId;
 	}
 
-	deleteClientSocket(userId: number) {
-		this.usersSocket.delete(userId);
+	deleteClientSocket(userId: number, clientSocket: Socket) {
+		if (this.usersSocket.get(userId) === clientSocket.id)
+			this.usersSocket.delete(userId);
 	}
 
 	getSocketToEmit(targetId: number) : Socket {
