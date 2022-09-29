@@ -295,8 +295,6 @@ export class UsersService {
 			throw new NotFoundException('This user is not blocked.');
 		if (user.blocked_ids.length == 1)
 			user.blocked_ids = null;
-		else if (user.blocked_ids.indexOf(target.id) !== -1)
-			throw new PreconditionFailedException('User is not blocked')
 		else
 			user.blocked_ids = removeFromArray(user.blocked_ids, target.id);
 
