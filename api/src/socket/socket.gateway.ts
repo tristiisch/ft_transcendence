@@ -478,7 +478,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		usersExceptInChannel = usersExceptInChannel.filter((user: User) => {
 			return (!channel.users_ids || channel.users_ids.indexOf(user.id) === -1) && (!channel.banned_ids || channel.banned_ids.indexOf(user.id) === -1);
 		});
-			// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
 		return [usersExceptInChannel];
 	}
 
@@ -569,13 +568,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
 			console.log("match_" + id, "nb clients = ", clients.size)
-			return {
+			return [{
 				started: match.started,
 				p1Ready: match.p1Ready,
 				p2Ready: match.p2Ready,
 				p1Pos: match.p1Pos,
 				p2Pos: match.p2Pos
-			}
+			}]
 		}
 	}
 

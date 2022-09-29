@@ -27,7 +27,7 @@ export class MatchService {
 	private readonly stageHeight = 2976
 	private readonly blockerWidth = this.stageWidth / 50
 	private readonly blockerHeight = this.stageHeight / 5
-	private readonly p1XPos = this.stageWidth / 10
+	private readonly p1XPos = this.stageWidth / 20
 	private readonly p2XPos = this.stageWidth - this.p1XPos
 	private readonly winningScore = 5
 	private readonly ballSpeed = 2
@@ -177,32 +177,16 @@ export class MatchService {
 			dy: match.ballYDir,
 			scored: undefined
 		})
-		// function update() {
-		// 	match.T = this.calcBallPos(match)
-
-		// 	setTimeout(update.bind(this), 0)
-		// }
-		// update.bind(this)()
-		if (!match.stopMatch) {
-			match.matchLoopInterval = setInterval(() => {
-				match.T = this.calcBallPos(match)
-				// console.log(match.ballXPos, match.ballYPos)
-				// if ((match.ballXPos >= this.p1XPos && match.ballXPos < this.p1XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-				// 	(match.ballXPos >= this.p2XPos && match.ballXPos < this.p2XPos + this.blockerWidth && match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-				// 		match.ballYDir *= -1
-				// else if ((match.ballXPos + match.ballXDir >= this.p1XPos && match.ballXPos + match.ballXDir < this.p1XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p1Pos && match.ballYPos + match.ballYDir < match.p1Pos + this.blockerHeight) ||
-				// 		(match.ballXPos + match.ballXDir >= this.p2XPos && match.ballXPos + match.ballXDir < this.p2XPos + this.blockerWidth && match.ballYPos + match.ballYDir >= match.p2Pos && match.ballYPos + match.ballYDir < match.p2Pos + this.blockerHeight))
-				// 		match.ballXDir *= -1
-			}, 0)
-		}
+		if (!match.stopMatch)
+			match.matchLoopInterval = setInterval(() => match.T = this.calcBallPos(match), 0)
 	}
  	calcBallPos(match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - match.T.getTime()
 
 		var x2 = match.ballXPos + (tdiff * match.ballXDir)
-		if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
-		// if (x2 < 0 || x2 >= this.stageWidth) {
+		// if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
+		if (x2 < 0 || x2 >= this.stageWidth) {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
 			if (match.score[0] === match.winningScore || match.score[1] === match.winningScore) {
