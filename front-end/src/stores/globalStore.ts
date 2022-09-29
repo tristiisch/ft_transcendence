@@ -29,7 +29,7 @@ export const useGlobalStore = defineStore('globalStore', {
 			return (array: selectedItems): array is User[] => (array as User[])[0] === undefined || (array as User[])[0].username !== undefined;
 		},
 		isTypeUser: (state) => {
-			return (user: selectedItem): user is User => (user as User).username !== undefined;
+			return (user: selectedItem): user is User =>  (user as User) === undefined || (user as User).username !== undefined;
 		},
 		isFriend: (state) => {
 			return (userId: number) => state.friends.some((friend) => friend.id === userId);
