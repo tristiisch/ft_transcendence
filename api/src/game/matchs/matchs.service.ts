@@ -68,7 +68,7 @@ export class MatchService {
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
-		console.log("match_type:", match_type)
+		// console.log("match_type:", match_type)
 		for (const [key, value] of this.players_queue.entries()) {
 			if ((match_type === MatchMakingTypes.NORMAL_MATCH && value.match_type !== MatchMakingTypes.OWN_MATCH) ||
 				(match_type === MatchMakingTypes.ANY_MATCH) ||
@@ -79,7 +79,7 @@ export class MatchService {
 	}
 
 	async createNewMatch(p1: User, p2: User, custom: CustomMatchInfos) {
-		console.log("=> MAKING A NEW MATCH-> (", p1.username, "vs", p2.username + ")")
+		// console.log("=> MAKING A NEW MATCH-> (", p1.username, "vs", p2.username + ")")
 		const match = new Match()
 		match.id = uuid()
 		match.user1_id = p1.id
@@ -94,7 +94,7 @@ export class MatchService {
 		match.stopMatch = false
 		
 		if (custom) { // check custom infos
-			console.log("custom!", custom)
+			// console.log("custom!", custom)
 			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
 			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
 			match.increaseBallSpeed = custom.increaseBallSpeed
@@ -102,7 +102,7 @@ export class MatchService {
 			match.winningScore = custom.winningScore
 		}
 		else {
-			console.log("not custom!")
+			// console.log("not custom!")
 			match.ballSpeed = this.ballSpeed
 			match.racketSize = this.blockerHeight
 			match.increaseBallSpeed = this.increaseBallSpeed
@@ -261,7 +261,7 @@ export class MatchService {
 		await this.matchStatsService.addVictory(match.getWinner());
 
 
-		console.log("Match ended :", match)
+		// console.log("Match ended :", match)
 		this.matches.delete(match.id)
 	}
 
@@ -271,14 +271,14 @@ export class MatchService {
 				if (user_id === match.user1_id) {
 					match.p1Ready = false
 					setTimeout(() => {
-						console.log("p1Ready:", match.p1Ready)
+						// console.log("p1Ready:", match.p1Ready)
 						if (!match.p1Ready) this.endMatch(match, user_id)
 					}, 5000)
 				}
 				else if (user_id === match.user2_id) {
 					match.p2Ready = false
 					setTimeout(() => {
-						console.log("p2Ready:", match.p2Ready)
+						// console.log("p2Ready:", match.p2Ready)
 						if (!match.p2Ready) this.endMatch(match, user_id)
 					}, 5000)
 				}
