@@ -9,10 +9,12 @@ import UserService from '@/services/UserService'
 import { useUserStore } from '@/stores/userStore';
 import status from '@/types/Status';
 import { useGlobalStore } from '@/stores/globalStore';
-import ButtonCloseValidateVue from '@/components/Button/ButtonCloseValidate.vue';
+import { useToast } from "vue-toastification"
+
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 var match = ref()
 var match_id = route.params.uuid as string
 
@@ -20,13 +22,12 @@ const userStore = useUserStore();
 const globalStore = useGlobalStore();
 
 
-var isLoaded = ref(false)
-var isMounted = ref(false)
+const isLoaded = ref(false)
+const isMounted = ref(false)
 const matchPage = ref(null)
 
-var isPlayer = ref(false)
-var matchStarted = ref(false)
-var matchEnded = ref(false)
+const isPlayer = ref(false)
+const matchEnded = ref(false)
 
 const windowHeight = ref(window.innerHeight);
 const windowWidth = ref(window.innerWidth);
@@ -118,7 +119,6 @@ function loadStage() {
 		height: stage_height,
 		width: stage_width
 	})
-	// stage.getContent().style.backgroundColor = 'rgba(0, 0, 255, 0.2)'
 
 	var layer = new Konva.Layer()
 	var ball: Konva.Circle = new Konva.Circle({
@@ -144,13 +144,6 @@ function loadStage() {
 		cornerRadius: 2,
 		visible: false
 	})
-	// var line = new Konva.Line({
-	// 	x: stage.width() / 2 - 1,
-	// 	y: 0,
-	// 	width: 2,
-	// 	height: stage.height(),
-	// 	fill: "white"
-	// })
 
 	function moveRacket(event: MouseEvent, racket: Konva.Rect, emit_message: string) {
 		var stage_pos = stage_container.getBoundingClientRect()
@@ -168,11 +161,6 @@ function loadStage() {
 	layer.add(ball)
 	layer.add(p1_blocker)
 	layer.add(p2_blocker)
-	// layer.add(line)
-
-	//with ballAnimation
-	// let dx = 75 * backend_stage_ratio
-	// let dy = 5 * backend_stage_ratio
 
 	//with setInterval
 	let dx = ball_speed * backend_stage_ratio
@@ -238,16 +226,14 @@ function loadStage() {
 
 	socket.on("startMatch", () => launchCountdown())
 	socket.on("newMatchRound", (data) => {
-		// console.log(data)
 		ball.x(data.ballX)
 		ball.y(data.ballY)
-		// dx = data.dx
-		// dy = data.dy
 		if (data.scored === 'p1') match.value.score[0]++
 		else if (data.scored === 'p2') match.value.score[1]++
 	})
-	socket.on("endMatch", () => {
+	socket.on("endMatch", (msg: string) => {
 		matchEnded.value = true
+		toast.info(msg)
 		router.push('/home')
 	})
 
@@ -262,54 +248,62 @@ function loadStage() {
 
 		p1_blocker.visible(true)
 		p2_blocker.visible(true)
-		if (match.value.user1_id == userStore.userData.id) {
-			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p1_blocker, "p1Pos"), { passive: true });
-		}
-		else if (match.value.user2_id == userStore.userData.id) {
-			stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"), { passive: true });
-		}
 
-		// setInterval(() => ball.position({x: ball_x, y: ball_y}), 1)
 		if (match_infos.started) {
 			ball.visible(true)
-			// launchMatchLoop()
+			if (match.value.user1_id == userStore.userData.id)
+				stage_container.addEventListener('mousemove', (event) => moveRacket(event, p1_blocker, "p1Pos"), { passive: true });
+			else if (match.value.user2_id == userStore.userData.id)
+				stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"), { passive: true });
 		}
-		else if (isPlayer)
+		if (isPlayer)
 			socket.emit("readyToPlay", match_id)
 	})
 
 	function launchCountdown() {
-		matchStarted.value = true
+		match.value.score = [5, 5]
+		match.value.started = true
+		let interval = setInterval(() => {
+			match.value.score[0]--
+			match.value.score[1]--
+		}, 1000)
 		setTimeout(() => {
+			clearInterval(interval)
+			ball.x(stage_width/2)
+			ball.y(stage_height/2)
 			ball.visible(true)
-		}, 3000)
+			if (match.value.user1_id == userStore.userData.id)
+				stage_container.addEventListener('mousemove', (event) => moveRacket(event, p1_blocker, "p1Pos"), { passive: true });
+			else if (match.value.user2_id == userStore.userData.id)
+				stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"), { passive: true });
+		}, 5000)
 	}
 
-	async function launchMatchLoop() {
-		setInterval(() => {
-			if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
-			// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-			// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-			// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-			// 		dy = -dy
-			// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-			// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-			// 		dx = -dx
-			ball_x += dx
-			// ball_y += dy
-		}, 1)
-		// if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
-		// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-		// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-		// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-		// 		dy = -dy
-		// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-		// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-		// 		dx = -dx
-		// ball_x += dx
-		// ball_y += dy
-		// setTimeout(launchMatchLoop, 0)
-	}
+	// async function launchMatchLoop() {
+	// 	setInterval(() => {
+	// 		if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
+	// 		// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+	// 		// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+	// 		// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+	// 		// 		dy = -dy
+	// 		// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+	// 		// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+	// 		// 		dx = -dx
+	// 		ball_x += dx
+	// 		// ball_y += dy
+	// 	}, 1)
+	// 	// if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
+	// 	// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
+	// 	// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+	// 	// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+	// 	// 		dy = -dy
+	// 	// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
+	// 	// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
+	// 	// 		dx = -dx
+	// 	// ball_x += dx
+	// 	// ball_y += dy
+	// 	// setTimeout(launchMatchLoop, 0)
+	// }
 
 // -----------------------------------------------------
 }
@@ -318,8 +312,7 @@ function leaveMatch() {
 	router.push('/home')
 }
 
-function getShrunkUsername(username: string)
-{
+function getShrunkUsername(username: string) {
 	if (username.length > 11)
 		return username.slice(0, 10) + '.'
 	return username
@@ -335,6 +328,10 @@ function colorBackground() {
 		return '[background:_radial-gradient(circle,rgba(85,_107,_47,_1)_0%,rgba(32,_32,_32,_1)_75%)]';
 	else
 		return '[background:radial-gradient(circle,_#458ac3,_#468dc5,_#4890c6,_#4992c8,_#4b95c9,_#569ecd,_#61a6d1,_#6cafd5,_#85c0dd,_#9ed0e5,_#b9e1ee,_#d4f1f8);]'
+}
+
+function msgTextSize() {
+	return "text-xs"
 }
 
 </script>
@@ -379,11 +376,14 @@ function colorBackground() {
 				</div>
 				<img v-if="match.world === 0" class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-world1.png">
 				<img v-else class="absolute m-auto left-0 right-0 bottom-0 top-0 z-10 [aspect-ratio:_3989/2976] h-full object-contain" src="@/assets/TV_screen-world2.png">
-				<div  id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border" :class="match.world === 0 ? 'border-[#595959]' : 'border-[#D4F1F8]'"></div>
+				<div id="stage-container" class="h-[70%] [aspect-ratio:_3989/2976] absolute m-auto left-0 right-0 bottom-0 top-0 z-30 border" :class="match.world === 0 ? 'border-[#595959]' : 'border-[#D4F1F8]'"></div>
 				<div :class="colorBackground()" class="animationFlicker z-20 [aspect-ratio:_3989/2860] absolute m-auto left-0 right-0 top-0 h-[92%] bottom-0 rounded-[calc(0.3*100vh)] bg-[#202020] [filter:_blur(10px)_contrast(0.98)_sepia(0.25)] overflow-hidden [animation:_flicker_0.15s_infinite alternate]">
 					<div class="animationRefresh absolute w-[115%] h-[80px] m-auto -left-18 right-0 opacity-10 [background:_linear-gradient(0deg,_#00ff00,_rgba(255,_255,_255,_0.25)_10%,_rgba(0,_0,_0,_0.1)_100%)]"></div>
 				</div>
-				<div class="absolute w-100 w-100 m-auto left-0 right-0 bottom-0 top-0"></div>
+				<div v-if="!match.started" :class="msgTextSize()" class="flex flex-col justify-center items-center absolute z-[999] w-[200px] h-[50px] m-auto left-0 right-0 bottom-0 top-0 font-extralight text-slate-700">
+					<img class="m-7 opacity-30" src="@/assets/tail-spin.svg"/>
+					<p class="m-15">Waiting for players</p>
+				</div>
 			</div>
 		</div>
 		<div class="flex flex-col bg-[#cdb887] w-full h-[10%]">
@@ -418,35 +418,5 @@ function colorBackground() {
 	border: 1px solid rgb(89, 89, 89);
 	/* background-color:rgba(1,255,1,1);
 } */
-
-@keyframes refresh {
-	0% {
-		bottom: 100%;
-	}
-	60% {
-		bottom: 100%;
-	}
-	100% {
-		bottom: 0%;
-	}
-}
-
-@keyframes flicker {
-	0% {
-		opacity: 0.98;
-	}
-	1% {
-		opacity: 0.95;
-	}
-}
-
-.animationFlicker {
-	animation: flicker 0.15s infinite alternate;
-}
-
-.animationRefresh {
-	animation: refresh 5s linear infinite;
-}
-
 
 </style>

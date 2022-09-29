@@ -58,10 +58,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(clientSocket: Socket) {
 		try {
 			clientSocket.prependAny((eventName, ...args) => {
-				Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			clientSocket.prependAnyOutgoing((eventName, ...args) => {
-				Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
 			});
 			clientSocket.on("ping", (count) => {
 				Logger.debug(`Ping ${count}`, 'WebSocket');
@@ -82,6 +82,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			const user = await this.socketService.getUserFromSocket(clientSocket);
 
+			this.matchService.removeUserFromMatch(user.id)
 			this.cancelFindMatch(clientSocket)
 			this.updateStatus(clientSocket, user, UserStatus.OFFLINE);
 			this.socketService.deleteClientSocket(user.id, clientSocket);
@@ -524,10 +525,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (match_found) {
 			this.matchService.removePlayerFromQueue(match_found.user.id)
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
-			var match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
-			this.matches.get(match_id).room_socket = this.server.to('match_' + match_id)
+			let match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
+			let match = this.matches.get(match_id)
+			match.room_socket = this.server.to('match_' + match_id)
 			client.emit('foundMatch', match_id)
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
+			setTimeout(() => {
+				if (!match.started) {
+					match.room_socket.emit("endMatch", "Match was cancelled because one or more players were absent...")
+					this.matches.delete(match.id)
+				}
+			}, 15000)
 		}
 		else this.matchService.addPlayerToQueue(user.id, {user: user, match_type: data.type, custom_match_infos: data.custom_match_infos})
 	}
@@ -564,8 +572,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			match.p1Ready = true
 		else if (match.user2_id === user.id)
 			match.p2Ready = true
-		if (!match.started && match.p1Ready && match.p2Ready)
-		{
+		if (!match.started && match.p1Ready && match.p2Ready) {
 			console.log("match ", id, "ready !")
 			match.started = true
 			this.matchService.startMatch(match)

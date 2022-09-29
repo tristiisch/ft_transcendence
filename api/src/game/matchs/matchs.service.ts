@@ -158,7 +158,7 @@ export class MatchService {
 				}, 1)
 			}
 			this.startMatchLoop(match)
-		}, 3000)
+		}, 6000)
 	}
 	setNewMatchRoundVar(match: Match) {
 		match.ballXPos = this.stageWidth / 2
@@ -247,21 +247,52 @@ export class MatchService {
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
-		match.room_socket.emit("endMatch")
-		match.room_socket.socketsLeave("match_" + match.id)
 
 		match.timestamp_ended = new Date
 
-		if (match.user1_id === forfeitUserId)
+		if (match.user1_id === forfeitUserId){
 			match.score[0] = -1
-		else if (match.user2_id === forfeitUserId)
+			match.room_socket.emit("endMatch", "Yay! " + match.user2_username + " won the match by forfeit against " + match.user1_username + "!")
+		}
+		else if (match.user2_id === forfeitUserId) {
 			match.score[1] = -1
+			match.room_socket.emit("endMatch", "Yay! " + match.user1_username + " won the match by forfeit against " + match.user2_username + "!")
+		}
+		else {
+			if (match.score[0] > match.score[1])
+				match.room_socket.emit("endMatch", "Yay! " + match.user1_username + " won the match against " + match.user2_username + "!")
+			else
+				match.room_socket.emit("endMatch", "Yay! " + match.user2_username + " won the match against " + match.user1_username + "!")
+		}
+
+		match.room_socket.socketsLeave("match_" + match.id)
 
 		await this.save(match);
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());
 
 		this.matches.delete(match.id)
+	}
+
+	removeUserFromMatch(user_id: number) {
+		this.matches.forEach((match) => {
+			if (match.started) {
+				if (user_id === match.user1_id) {
+					match.p1Ready = false
+					setTimeout(() => {
+						console.log("p1Ready:", match.p1Ready)
+						if (!match.p1Ready) this.endMatch(match, user_id)
+					}, 5000)
+				}
+				else if (user_id === match.user2_id) {
+					match.p2Ready = false
+					setTimeout(() => {
+						console.log("p2Ready:", match.p2Ready)
+						if (!match.p2Ready) this.endMatch(match, user_id)
+					}, 5000)
+				}
+			}
+		})
 	}
 
 	async findHistory(userId: number) : Promise<MatchOwn[]> {

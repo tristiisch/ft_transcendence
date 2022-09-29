@@ -91,7 +91,8 @@ export class MatchsController {
 			score: match.score,
 			world: match.world,
 			stageWidth: this.matchService.getStageWidth(),
-			racketSize: match.racketSize
+			racketSize: match.racketSize,
+			started: match.started
 		}
 	}
 }
