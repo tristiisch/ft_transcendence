@@ -38,7 +38,7 @@ function redirectTo42LoginPage(): void {
 	window.location.href = `${baseUrl}?${queryString}`
 }
 
-function uploadImage(imageData: string): void {
+function uploadImage(imageData: string, fileSize:number): void {
 	image.value = imageData;
 }
 

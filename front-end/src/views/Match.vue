@@ -37,7 +37,7 @@ document.documentElement.style.overflow = 'hidden';
 onBeforeMount(() => {
 	MatchService.loadMatch(match_id)
 		.then((response) => {
-			console.log(response.data)
+			// console.log(response.data)
 			match.value = response.data
 			if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
 				isPlayer.value = true
@@ -63,13 +63,13 @@ onBeforeMount(() => {
 watch([isLoaded, isMounted, matchPage], () => {
 	if (isLoaded.value && isMounted.value && matchPage.value)
 	{
-		console.log("Ready to load stage !")
+		// console.log("Ready to load stage !")
 		loadStage()
 	}
 })
 
 onMounted(() => {
-	console.log("Mounted!")
+	// console.log("Mounted!")
 	isMounted.value = true
 })
 
@@ -91,7 +91,7 @@ onUnmounted(() => {
 });
 
 function loadStage() {
-	console.log("LOADING STAGE")
+	// console.log("LOADING STAGE")
 	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
@@ -237,7 +237,7 @@ function loadStage() {
 	})
 
 	socket.emit("joinMatch", match_id, (match_infos_array: any) => {
-		console.log("Joining match!")
+		// console.log("Joining match!")
 		let match_infos = match_infos_array[0]
 		blockers_height = computeBlockerHeight()
 		p1_blocker.height(blockers_height)

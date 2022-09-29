@@ -2,6 +2,7 @@
 import { useChatStore } from '@/stores/chatStore';
 import { useUserStore } from '@/stores/userStore';
 import { useGlobalStore } from '@/stores/globalStore';
+import { useToast } from 'vue-toastification';
 import { ref, watch } from 'vue';
 import type Channel from '@/types/Channel';
 import { ChatStatus } from '@/types/ChatStatus';
@@ -14,6 +15,7 @@ import ChannelDefaultProtected from '@/assets/ChannelDefaultProtected.png';
 
 const chatStore = useChatStore();
 const globalStore = useGlobalStore();
+const toast = useToast();
 const userStore = useUserStore();
 const newChannelType = ref<ChatStatus>(ChatStatus.PUBLIC);
 const newChannelName = ref('');
@@ -22,14 +24,17 @@ const newAvatar = ref(ChanneldefaultAvatarPublic);
 const selectPlayer = ref(false);
 const error = ref('');
 let isUpload = false;
+const avatarTooBig = ref(false)
 
 const emit = defineEmits<{
 	(e: 'close'): void,
 }>()
 
-function uploadImage(imageData: string): void {
+function uploadImage(imageData: string, fileSize: number): void {
 	newAvatar.value = imageData;
 	isUpload = true;
+	if (fileSize > 1)
+		avatarTooBig.value = true;
 }
 
 function clickOnButtonPublic() {
@@ -52,25 +57,31 @@ function clickOnButtonProtected() {
 
 function treatNewChannelData()
 {
-    if (globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
-        const selection = globalStore.selectedItems;
-        const newChannel: Channel = {
-            name: newChannelName.value,
-            owner: null,
-            avatar: newAvatar.value,
-            hasPassword: newPassword.value !== '' ? true : false,
-            users: selection,
-            admins: [],
-            muted: [],
-            banned: [],
-            type: newChannelType.value, 
-            messages: [],
-        }
-        if (!globalStore.isTypeUser(newChannel)) {
-            chatStore.createNewChannel(newChannel, selection, newPassword.value)
-            globalStore.resetSelectedItems();
-        }
-    }
+	if (!avatarTooBig.value) {
+		if (globalStore.isTypeArrayUsers(globalStore.selectedItems)) {
+			const selection = globalStore.selectedItems;
+			const newChannel: Channel = {
+				name: newChannelName.value,
+				owner: null,
+				avatar: newAvatar.value,
+				hasPassword: newPassword.value !== '' ? true : false,
+				users: selection,
+				admins: [],
+				muted: [],
+				banned: [],
+				type: newChannelType.value, 
+				messages: [],
+			}
+			if (!globalStore.isTypeUser(newChannel)) {
+				chatStore.createNewChannel(newChannel, selection, newPassword.value)
+				globalStore.resetSelectedItems();
+			}
+		}
+	}
+	else {
+		toast.warning('Selected file too big.');
+		avatarTooBig.value = false;
+	}
 }
 
 function onValidation() {

@@ -12,7 +12,7 @@ const route = useRoute();
 const newUsername = ref(userStore.userData.username);
 const newAvatar = ref(userStore.userData.avatar);
 
-function uploadImage(imageData: string): void {
+function uploadImage(imageData: string, fileSize: number): void {
 	newAvatar.value = imageData;
 }
 
