@@ -4,7 +4,7 @@ import { useToast } from 'vue-toastification';
 import AuthService from '@/services/AuthService';
 
 const instance = axios.create({
-	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_APP_API_PORT}/api`
+	baseURL: `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_API_PORT}/api`
 });
 
 instance.interceptors.request.use(function (config) {
