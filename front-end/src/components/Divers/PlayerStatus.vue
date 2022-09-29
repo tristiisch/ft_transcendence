@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Status from '@/types/Status';
-import type Leaderboard from '@/types/Leaderboard';
 
 const props = defineProps<{ userStatus?: Status }>()
 

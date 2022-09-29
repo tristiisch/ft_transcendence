@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { onBeforeMount, ref} from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type User from '@/types/User';
 import ButtonPlus from '@/components/Button/ButtonPlus.vue';
 import ButtonReturnNext from '@/components/Button/ButtonReturnNext.vue';
 import { useGlobalStore } from '@/stores/globalStore';
 import { useChatStore } from '@/stores/chatStore';
-import socket from '@/plugin/socketInstance';
 import UserService from '@/services/UserService';
 import { useUserStore } from '@/stores/userStore';
 

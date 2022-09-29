@@ -18,7 +18,7 @@ const props = defineProps<{
 
 function markItems(index: number) {
 	if (props.singleSelection) {
-		for (const value of showCheckMark.value)						//check if there is already an active selection, only one selection possible
+		for (const value of showCheckMark.value)
 			if (value === true) return
 	}
 	if (!props.singleSelection) {

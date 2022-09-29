@@ -101,10 +101,6 @@ socket.on("exception", (err) => {
 	toast.warning(err.message)
 });
 
-// socket.on("gameInvitation", (gameId: number) => {
-// 	router.push('match/' + gameId)
-// });
-
 function scrollToTop() {
 	if (scroll.value) {
 		scroll.value.scrollTop = 0;
@@ -113,29 +109,9 @@ function scrollToTop() {
 
 onBeforeMount(() => {
 	isLoading.value = true
-	/*chatStore.fetchUserChats((discu: Discussion[], channels: Channel[]) => {
-		if (route.query.discussion) {
-			const discussion = discu.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-			if (discussion) chatStore.loadDiscussion(discussion);
-			else {
-				const user = globalStore.getUser(parseInt(route.query.discussion as string));
-				if (user) {
-					const newDiscussion: Discussion = { type: ChatStatus.DISCUSSION, user: user, messages: [] as Message[] };
-					if (!chatStore.isNewDiscussion(newDiscussion))
-						chatStore.createNewDiscussion(newDiscussion, true);
-				}
-			}
-		}
-		isLoading.value = false
-	}, (error: any) => {
-		console.log(error)
-		router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-	});*/
 	chatStore.fetchAll()
 		.then(() => {
 			if (route.query.discussion) {
-				// const discussion = chatStore.userDiscussions.find((discussion: Discussion) => discussion.user.id === parseInt(route.query.discussion as string));
-				// if (discussion) chatStore.loadDiscussion(discussion);
 				if (!chatStore.isNewDiscussion(parseInt(route.query.discussion as string)) && parseInt(route.query.discussion as string) !== userStore.userData.id) {
 					UserService.getUser(parseInt(route.query.discussion as string))
 						.then((response) => {
@@ -180,7 +156,6 @@ onBeforeUnmount(() => {
 		chatStore.inDiscussion = null
 	else (chatStore.inChannel)
 		chatStore.inChannel = null
-	// socket.off("gameInvitation")
 })
 </script>
 

@@ -92,16 +92,6 @@ function declineInvitation(message: Message) {
 	}
 }
 
-/*function acceptInvitation() {
-	socket.emit("gameInvitation", true, (match_uuid: string) => {
-		router.push({ name: 'Match', params: { uuid: match_uuid } })
-	})
-}
-
-function declineInvitation() {
-	socket.emit("gameInvitation", false);
-}*/
-
 onUpdated(()=> {
     emit('scroll')
 });

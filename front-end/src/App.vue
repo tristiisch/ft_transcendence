@@ -3,7 +3,6 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
-import status from '@/types/Status';
 import AuthService from '@/services/AuthService';
 import socket from '@/plugin/socketInstance';
 import Status from '@/types/Status';
@@ -80,6 +79,5 @@ body,
 ::-webkit-scrollbar-thumb
 {
 	background-color: #f87171;
-	/* border: 2px solid #555555; */
 }
 </style>

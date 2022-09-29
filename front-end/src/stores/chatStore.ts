@@ -50,23 +50,9 @@ export const useChatStore = defineStore('chatStore', {
 		async fetchAll() {
 			try {
 				await Promise.all([this.fetchUserChannels(), this.fetchUserDiscussions()])
-				//await Promise.all([this.fetchUserChats(null, null)])
 			} catch (error: any) {
 				throw error;
 			}
-		},
-		/**
-		 * @Deprecated
-		 */
-		async fetchUserChats(func: { (discu: Discussion[], channel: Channel[]): any } | null, err: { (error: any): any } | null) {
-			socket.emit('chatFindAll', (body: any[]) => {
-				this.userDiscussions = body[0];
-				this.userChannels = body[1];
-				if (func)
-					func(this.userDiscussions, this.userChannels);
-			});
-			// if (err)
-			// 	err(null);
 		},
 		async fetchUserChannels() {
 				try {

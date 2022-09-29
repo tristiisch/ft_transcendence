@@ -5,7 +5,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import UsersService from '@/services/UserService';
 import type Match from '@/types/Match';
-import type User from '@/types/User';
 import CurrentGame from '@/components/Lobby/CurrentGame.vue';
 import UsersSearch from '@/components/Divers/UsersChannelsSearch.vue';
 import SelectWorld from '@/components/Lobby/SelectWorld.vue'
@@ -32,19 +31,6 @@ function setRightPartToDisplay()
 	else if (rightPartToDisplay.value === 'selectWorld')
 		rightPartToDisplay.value = 'selectPlayer'
 }
-
-/*function fetchCurrentMatchs() {
-	isLoading.value = true
-	UsersService.getCurrentMatchs()
-		.then((response) => {
-			matchs.value = response.data;
-			console.log(matchs.value)
-			isLoading.value = false
-		})
-		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status } });
-		});
-}*/
 
 function fetchAll() {
 	isLoading.value = true
@@ -114,8 +100,6 @@ function onClose() {
 }
 
 onBeforeMount(() => {
-	//fetchCurrentMatchs();
-	//globalStore.fetchGameInvitation()
 	fetchAll();
 	socket.on('UpdateMatch', updateMatch);
 	globalStore.ballSpeed = 100;
@@ -126,7 +110,6 @@ onBeforeMount(() => {
 
 onBeforeUnmount(() => {
 	socket.off('UpdateMatch', updateMatch);
-	socket.off('gameInvitation')
 });
 </script>
 

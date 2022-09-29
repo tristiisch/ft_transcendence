@@ -21,9 +21,6 @@ const image = ref(userStore.userData.avatar);
 const twoFaCode = ref('');
 const isLoading = ref(false);
 
-// var currentUrl = window.location.host;
-// console.log('host', window.location.host, 'hostname', window.location.hostname, window.location.protocol, window.location.port);
-
 function redirectTo42LoginPage(): void {
 	const baseUrl = import.meta.env.VITE_FT_API_OAUTH;
 	const randomString = (Math.random() + 1).toString(36).substring(2);
@@ -31,7 +28,6 @@ function redirectTo42LoginPage(): void {
 
 	const options = {
 		client_id: import.meta.env.VITE_FT_UID,
-		// http://172.26.43.86:8001/login
 		redirect_uri: `${window.location.protocol}//${window.location.host}/login`,
 		scope: 'public',
 		state: randomString,
