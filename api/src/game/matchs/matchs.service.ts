@@ -179,9 +179,9 @@ export class MatchService {
 			scored: undefined
 		})
 		if (!match.stopMatch)
-			match.matchLoopInterval = setInterval(() => match.T = this.calcBallPos(match), 0)
+			match.matchLoopInterval = setInterval(async () => match.T = await this.calcBallPos(match), 0)
 	}
- 	calcBallPos(match: Match) {
+ 	async calcBallPos(match: Match) {
 		let T2 = new Date
 		let tdiff = T2.getTime() - match.T.getTime()
 
@@ -191,7 +191,7 @@ export class MatchService {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
 			if (match.score[0] === match.winningScore || match.score[1] === match.winningScore) {
-				this.endMatch(match) // TODO add await
+				await this.endMatch(match)
 				return
 			}
 			this.setNewMatchRoundVar(match)
@@ -260,8 +260,6 @@ export class MatchService {
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());
 
-
-		// console.log("Match ended :", match)
 		this.matches.delete(match.id)
 	}
 

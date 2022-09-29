@@ -45,7 +45,7 @@ export class AuthController {
 			throw new ForbiddenException("Unauthorized - Unable to get your infos with 42 API");
 		}
 		const { user, userAuth } = await this.authService.UserConnecting(userInfo);
-		delete userAuth.twoFactorSecret; // TODO Verif this method
+		delete userAuth.twoFactorSecret;
 
 		if (!user)
 			throw new BadRequestException('User is null');

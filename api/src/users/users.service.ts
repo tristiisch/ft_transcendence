@@ -190,10 +190,10 @@ export class UsersService {
 
 		await sqlStatement.getOne().then((checkUserExist: User) => {
 			if (checkUserExist)
-				throw new ConflictException(`User ${checkUserExist.username} already exist with same id, email or username.`); // TODO Change msg for client
+				throw new ConflictException(`User ${checkUserExist.username} already exist with same id, email or username.`);
 		}, this.lambdaDatabaseUnvailable);
 
-		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => { // This didn't use anotations check of User or UserDTO !!
+		return await this.usersRepository.insert(newUser).then((insertResult: InsertResult) => {
 			if (insertResult.identifiers.length < 1) {
 				throw new InternalServerErrorException(`Can't add user ${newUser.username}.`);
 			} else if (insertResult.identifiers.length > 1) {
@@ -277,8 +277,8 @@ export class UsersService {
 
 		user.blocked_ids.push(target.id);
 		try {
-			await this.friendsService.declineFriendShipIgnore(user, target); // TODO verif
-			await this.notifService.removeNotifFriendRequest(user, target); // TODO same
+			await this.friendsService.declineFriendShipIgnore(user, target);
+			await this.notifService.removeNotifFriendRequest(user, target);
 		} catch (err) {
 			if (!(err instanceof NotAcceptableException))
 				throw err;

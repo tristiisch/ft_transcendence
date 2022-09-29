@@ -323,7 +323,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!body || body.length < 2)
 			throw new WsException('The body requires at least 2 arguments.');
 		const channelDTO: ChannelSelectDTO = body[0];
-		const invitedUsersDTO: User[] = body[1]; // TODO check this
+		const invitedUsersDTO: User[] = body[1];
 
 		await validateDTO(ChannelSelectDTO, channelDTO);
 
@@ -355,7 +355,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!body || body.length < 2)
 			throw new WsException('The body requires at least 2 arguments.');
 		const channelDTO: ChannelSelectDTO = body[0];
-		const newBanned:{ list: User[], userWhoSelect: User} = body[1]; // TODO check this
+		const newBanned:{ list: User[], userWhoSelect: User} = body[1];
 		const user: User = req.user;
 
 		await validateDTO(ChannelSelectDTO, channelDTO);
@@ -365,7 +365,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const users: User[] = await this.userService.findMany(newBanned.list.map(user => user.id));
 		newBanned.list = users;
 		newBanned.userWhoSelect = user;
-		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id)); // TODO optimize
+		channel = await this.chatService.kickUsers(channel, user, users.map(user => user.id)); 
 
 		const channelFront: ChannelFront = await this.chatService.setBanned(channel, user, users);
 
@@ -380,7 +380,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!body || body.length < 2)
 			throw new WsException('The body requires at least 2 arguments.');
 		const channelDTO: ChannelSelectDTO = body[0];
-		const newAdmin:{ list: User[], userWhoSelect: User} = body[1]; // TODO check
+		const newAdmin:{ list: User[], userWhoSelect: User} = body[1];
 		const user: User = req.user;
 
 		await validateDTO(ChannelSelectDTO, channelDTO);
@@ -510,7 +510,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			throw new WsException('The body requires at least 2 arguments.');
 		const user: User = req.user;
 		const channelDTO: ChannelSelectDTO = body[0];
-		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1]; // TODO check this
+		const newNamePassword: { name: string | null, password: string | null | undefined, userWhoChangeName: User } = body[1];
 		
 		if (newNamePassword.name === null || newNamePassword.name.length < 3 || newNamePassword.name.length > 16 ){
 			throw new WsException('The name of the channel need to be between 3 and 16 charaters.');
