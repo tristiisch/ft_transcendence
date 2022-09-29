@@ -74,7 +74,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-	socket.emit('update_status', status.ONLINE)
+	socket.emit('updateUserStatus', status.ONLINE)
 })
 
 onUnmounted(() => {

@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException, PreconditionFailedException, ServiceUnavailableException, NotAcceptableException, InternalServerErrorException, Injectable, BadRequestException, Res, UnprocessableEntityException, Inject, forwardRef, UnsupportedMediaTypeException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { toBase64, isNumberPositive, fromBase64, removeFromArray, randomWord } from "../utils/utils";
+import { toBase64, isNumberPositive, fromBase64, removeFromArray, randomWord, checkImage } from "../utils/utils";
 import { DataSource, DeleteResult, InsertResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm";
 import { UserSelectDTO } from "./entity/user-select.dto";
 import { UserDTO } from "./entity/user.dto";
@@ -214,16 +214,8 @@ export class UsersService {
 		return await this.findOne(userId);
 	}
 
-	private checkAvatar(avatar_64: string) {
-		const toString = avatar_64.substring(0, 20) + (avatar_64.length > 20 ? '...' : '');
-		if (!fromBase64(avatar_64))
-			throw new PreconditionFailedException(`Unknown type for avatar. '${toString}'`);
-		if (!avatar_64.startsWith('data:image/'))
-			throw new PreconditionFailedException(`Avatar is not a picture. '${toString}'`);
-	}
-
 	async updateAvatar(userId: number, avatar_64: string): Promise<User> {
-		this.checkAvatar(avatar_64);
+		checkImage(avatar_64);
 		await this.usersRepository.update(userId, { avatar_64: avatar_64 }).catch(this.lambdaDatabaseUnvailable);
 		const user: User = await this.findOne(userId);
 
@@ -237,7 +229,7 @@ export class UsersService {
 
 		try {
 			if (user.avatar_64 != null && user.avatar_64 != '') {
-				this.checkAvatar(user.avatar_64);
+				checkImage(user.avatar_64);
 				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
 			} else
 				this.usersRepository.update(userId, { username: user.username }).catch(this.lambdaDatabaseUnvailable);

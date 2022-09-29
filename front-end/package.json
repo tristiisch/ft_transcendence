@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite --host",
-    "prod": "run-p type-check build-only && vite preview --port $FRONT_PORT",
+    "prod": "vite preview --host --port $FRONT_PORT",
     "build": "run-p type-check build-only",
-    "preview": "vite preview --port 8000",
+    "preview": "vite preview --port 8001",
     "test:unit": "vitest --environment jsdom",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",

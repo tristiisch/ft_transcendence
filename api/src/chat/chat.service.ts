@@ -8,7 +8,7 @@ import { Chat, ChatFront, ChatStatus } from './entity/chat.entity';
 import { Message, MessageFront, MessageType } from './entity/message.entity';
 import { User } from 'users/entity/user.entity';
 import { Discussion, DiscussionFront } from './entity/discussion.entity';
-import { fromBase64, removeFromArray, removesFromArray, toBase64, validateDTO } from 'utils/utils';
+import { checkImage, fromBase64, removeFromArray, removesFromArray, toBase64, validateDTO } from 'utils/utils';
 import { Response } from 'express';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ChannelCreateDTO, ChannelEditDTO, ChannelFetchDTO } from './entity/channel-dto';
@@ -282,7 +282,6 @@ export class ChatService {
 	async createChannel(user: User, channelDTO: ChannelCreateDTO): Promise<Channel> {
 		let channel: Channel;
 
-
 		if (await this.isChannelExist(channelDTO.name)) {
 			throw new WsException('A channel already exist with same name.')
 		}
@@ -308,11 +307,12 @@ export class ChatService {
 				throw new WsException(`Unknown channel type ${channelDTO.type}.`)
 		}
 		channel.name = channelDTO.name;
-		if (channelDTO.avatar_64.startsWith('src/assets/')) {
+		if (channelDTO.avatar_64.startsWith('/src/assets/')) {
 			channel.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/${channelDTO.avatar_64}`);
 			if (!channel.avatar_64)
 				throw new WsException(`Bad channel avatar '${process.env.FRONT_PORT}/${channelDTO.avatar_64}'`);
 		} else {
+			checkImage(channelDTO.avatar_64);
 			channel.avatar_64 = channelDTO.avatar_64;
 		}
 		channel.type = channelDTO.type;
@@ -583,8 +583,9 @@ export class ChatService {
 		let dataUpdate: QueryDeepPartialEntity<ChannelProtected> = {};
 		let chat: ChannelPublic | ChannelProtected | ChannelPrivate;
 
-		if (newName)
+		if (newName !== undefined)
 			dataUpdate.name = newName;
+		
 		if (newPassword !== undefined && newPassword !== null && channel.type === ChatStatus.PROTECTED) {
 			dataUpdate.password = await hashPassword(newPassword);
 			await this.createAutoMsg(`⚪️　 ${userWhoChangeName.username} update the password to join.`, channel);
