@@ -542,23 +542,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// once the match is created: for players and spectators
 		console.log("joinMatch :", id, "!", client.id)
 		if (this.matches.has(id)) {
-			let stageWidth = this.matchService.getStageWidth()
 			let match = this.matches.get(id)
-			let started = match.started
-			let waiting = match.waiting
-			let racketSize = match.racketSize
-			// let ballXPos = match.ballXPos
-			// let ballYPos = match.ballYPos
-			let p1Ready = match.p1Ready
-			let p2Ready = match.p2Ready
-			let p1Pos = match.p1Pos
-			let p2Pos = match.p2Pos
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
 			console.log("match_" + id, "nb clients = ", clients.size)
-			// if (started)
-				// return { stageWidth, started, waiting, ballXPos, ballYPos, p1Ready, p2Ready, p1Pos, p2Pos }
-			return { stageWidth, started, waiting, racketSize, p1Ready, p2Ready, p1Pos, p2Pos }
+			return {
+				started: match.started,
+				p1Ready: match.p1Ready,
+				p2Ready: match.p2Ready,
+				p1Pos: match.p1Pos,
+				p2Pos: match.p2Pos
+			}
 		}
 	}
 

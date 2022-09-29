@@ -93,8 +93,8 @@ socket.on("chatChannelMessage", (channel: Channel, data: Message) => {
 	chatStore.addChannelMessage(channel, data);
 });
 
-socket.on("chatChannelNamePassword", (channel: Channel, newNamePassword: { name: string, password: string | null, removePassword: boolean,  userWhoChangeName: User }, oldId: number) => {
-	chatStore.updateChannelNamePassword(channel, newNamePassword, oldId);
+socket.on("chatChannelNamePassword", (channel: Channel, oldId: number) => {
+	chatStore.updateChannelNamePassword(channel, null, oldId);
 });
 
 socket.on("exception", (err) => {
@@ -176,6 +176,10 @@ onBeforeUnmount(() => {
 	socket.off("chatChannelMessage");
 	socket.off("chatChannelNamePassword");
 	socket.off("exception");
+	if (chatStore.inDiscussion)
+		chatStore.inDiscussion = null
+	else (chatStore.inChannel)
+		chatStore.inChannel = null
 	// socket.off("gameInvitation")
 })
 </script>

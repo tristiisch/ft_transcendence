@@ -12,8 +12,6 @@ import type Message from '@/types/Message';
 import ChatStatus from '@/types/ChatStatus';
 import MessageType from '@/types/MessageType';
 import PartToDisplay from '@/types/ChatPartToDisplay';
-import type Notification from '@/types/Notification';
-import { NotificationType } from '@/types/Notification';
 
 export const useChatStore = defineStore('chatStore', {
 	state: (): ChatState => ({
@@ -71,26 +69,20 @@ export const useChatStore = defineStore('chatStore', {
 			// 	err(null);
 		},
 		async fetchUserChannels() {
-			if (!this.userChannels.length)
-			{
 				try {
 					const response = await UserService.getUserChannels();
 					this.userChannels = response.data;
 				} catch (error: any) {
 					throw error;
 				}
-			}
 		},
 		async fetchUserDiscussions() {
-			if (!this.userDiscussions.length)
-			{
 				try {
 					const response = await UserService.getUserDiscussions();
 					this.userDiscussions = response.data;
 				} catch (error: any) {
 					throw error;
 				}
-			}
 		},
 		async fetchChannels() {
 			try {
@@ -216,7 +208,7 @@ export const useChatStore = defineStore('chatStore', {
 			else
 				this.updateChannel(channel);
 		},
-		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | undefined | null, userWhoChangeName: User }, oldId?: number) {
+		updateChannelNamePassword(channel: Channel, newNamePassword?: { name: string, password: string | undefined | null, userWhoChangeName: User } | null, oldId?: number) {
 			const userStore = useUserStore();
 			if (newNamePassword && newNamePassword.userWhoChangeName.id === userStore.userData.id) {
 				if (this.inChannel && ((newNamePassword.name != '' && newNamePassword.name !== this.inChannel.name) || (newNamePassword.password !== '') || (newNamePassword.password === null))) {
@@ -435,7 +427,7 @@ export const useChatStore = defineStore('chatStore', {
 			if (discussion) 
 			{
 				let message;
-				if (senderId != targetId) {
+				if (senderId !== targetId) {
 					message = discussion.messages.find(message => message.canUseButton === true && message.type === MessageType.GAME_INVITATION && message.idSender !== targetId);
 				}
 				else {
