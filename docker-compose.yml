@@ -13,7 +13,7 @@ services:
     env_file:
     - .env
     ports:
-    - ${API_PORT}:${API_PORT}
+    - ${VITE_API_PORT}:${VITE_API_PORT}
     networks:
     - ft_transcendence_network
     container_name : api
@@ -30,12 +30,6 @@ services:
     - /usr/src/app/node_modules
     restart: always
     environment:
-      VITE_FT_UID: ${FT_UID}
-      VITE_FT_API_OAUTH: ${FT_API_OAUTH}
-      VITE_FT_OAUTH_REDIRECT: ${FT_OAUTH_REDIRECT}
-      VITE_API_URL: ${API_URL}
-      VITE_API_PORT: ${API_PORT}
-      VITE_SOCKET_URL: ${SOCKET_URL}
       FRONT_PORT: ${FRONT_PORT}
     ports:
     - ${FRONT_PORT}:${FRONT_PORT}
@@ -43,8 +37,6 @@ services:
     - ft_transcendence_network
     container_name : front
     hostname: front
-    # depends_on:
-    # - api
     command: npm run ${NODE_ENV}
 
   postgreSQL:
@@ -57,8 +49,6 @@ services:
     volumes:
     - postgres_data:/data/postgres:Z
     restart: always
-    # ports:
-    # - ${DATABASE_PORT}
     networks:
     - ft_transcendence_network
     container_name : postgreSQL

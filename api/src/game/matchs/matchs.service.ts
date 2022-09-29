@@ -26,11 +26,11 @@ export class MatchService {
 	private readonly stageWidth = 3989
 	private readonly stageHeight = 2976
 	private readonly blockerWidth = this.stageWidth / 50
-	private readonly blockerHeight = this.stageHeight / 5
+	private readonly blockerHeight = this.stageHeight / 6.5
 	private readonly p1XPos = this.stageWidth / 20
 	private readonly p2XPos = this.stageWidth - this.p1XPos
-	private readonly winningScore = 50
-	private readonly ballSpeed = 2
+	private readonly winningScore = 10
+	private readonly ballSpeed = 3
 	private readonly increaseBallSpeed = false
 	private readonly world = 0
 
@@ -68,7 +68,7 @@ export class MatchService {
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
-		console.log("match_type:", match_type)
+		// console.log("match_type:", match_type)
 		for (const [key, value] of this.players_queue.entries()) {
 			if ((match_type === MatchMakingTypes.NORMAL_MATCH && value.match_type !== MatchMakingTypes.OWN_MATCH) ||
 				(match_type === MatchMakingTypes.ANY_MATCH) ||
@@ -79,6 +79,7 @@ export class MatchService {
 	}
 
 	async createNewMatch(p1: User, p2: User, custom: CustomMatchInfos) {
+		// console.log("=> MAKING A NEW MATCH-> (", p1.username, "vs", p2.username + ")")
 		const match = new Match()
 		match.id = uuid()
 		match.user1_id = p1.id
@@ -93,7 +94,7 @@ export class MatchService {
 		match.stopMatch = false
 		
 		if (custom) { // check custom infos
-			console.log("custom!", custom)
+			// console.log("custom!", custom)
 			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
 			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
 			match.increaseBallSpeed = custom.increaseBallSpeed
@@ -101,7 +102,7 @@ export class MatchService {
 			match.winningScore = custom.winningScore
 		}
 		else {
-			console.log("not custom!")
+			// console.log("not custom!")
 			match.ballSpeed = this.ballSpeed
 			match.racketSize = this.blockerHeight
 			match.increaseBallSpeed = this.increaseBallSpeed
@@ -149,20 +150,20 @@ export class MatchService {
 						match.room_socket.emit('p2Pos', match.p2Pos)
 						oldp2Pos = match.p2Pos
 					}
-				}, 1)
+				}, 25)
 			}
 
 			if (!match.stopMatch) {
 				match.ballPosInterval = setInterval(() => {
 					match.room_socket.emit('ballPos', match.ballXPos, match.ballYPos)
-				}, 1)
+				}, 10)
 			}
 			this.startMatchLoop(match)
 		}, 6000)
 	}
 	setNewMatchRoundVar(match: Match) {
 		match.ballXPos = this.stageWidth / 2
-		match.ballYPos = this.stageHeight / 2//Math.random() * this.stageHeight
+		match.ballYPos = Math.random() * this.stageHeight
 		if (match.increaseBallSpeed && match.ballSpeed <= 5)
 			match.ballSpeed += 0.2
 		match.ballXDir = (Math.round(Math.random() * 10)) % 2 ? match.ballSpeed : -match.ballSpeed
@@ -259,6 +260,8 @@ export class MatchService {
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());
 
+
+		// console.log("Match ended :", match)
 		this.matches.delete(match.id)
 	}
 
@@ -268,14 +271,14 @@ export class MatchService {
 				if (user_id === match.user1_id) {
 					match.p1Ready = false
 					setTimeout(() => {
-						console.log("p1Ready:", match.p1Ready)
+						// console.log("p1Ready:", match.p1Ready)
 						if (!match.p1Ready) this.endMatch(match, user_id)
 					}, 5000)
 				}
 				else if (user_id === match.user2_id) {
 					match.p2Ready = false
 					setTimeout(() => {
-						console.log("p2Ready:", match.p2Ready)
+						// console.log("p2Ready:", match.p2Ready)
 						if (!match.p2Ready) this.endMatch(match, user_id)
 					}, 5000)
 				}

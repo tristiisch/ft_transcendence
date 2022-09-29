@@ -3,6 +3,7 @@
 ENV=.env
 ENV_LOCAL=local.env
 ENV_TEMP=tmp.env
+FRONT_FOLDER=front-end
 
 UID_NAME=FT_UID
 SECRET_NAME=FT_SECRET
@@ -57,7 +58,9 @@ function updateEnv() {
         mv $ENV outdated.env
     fi
     cp -R $ENV_LOCAL $ENV
+    cp -R $ENV_LOCAL $FRONT_FOLDER/$ENV
     previewEnv $ENV
+    previewEnv $FRONT_FOLDER/$ENV
     echo -e "\033[0;32mYour $ENV as been updated.\033[0m"
 }
 
@@ -86,7 +89,7 @@ if ! test -f "$ENV"; then
 elif [ -z "$FT_UID" ] || [ -z "$FT_SECRET" ]; then
     echo -e "\033[1;34mYou didn't add your 42API credentials. Get it from $APP_URL\033[0m"
     askCredentials $@
-elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ "$LOCAL_HOSTNAME" != "$REAL_HOSTNAME" ]; then
+elif [ `cat $ENV | wc -l` -ne `cat $ENV_LOCAL | wc -l` ] || [ "$LOCAL_HOSTNAME" != "$REAL_HOSTNAME" ] || ! test -f "$FRONT_FOLDER/$ENV"; then
     echo -e "\033[1;33mYou need to update your .env.\033[0m"
     cp "$ENV_LOCAL" "$ENV_TEMP"
     previewEnv "$ENV_TEMP"

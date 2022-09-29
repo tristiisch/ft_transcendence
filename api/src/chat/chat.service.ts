@@ -328,7 +328,8 @@ export class ChatService {
 
 		const users: User[] = await this.userService.findMany(channel.users_ids.filter(id => id !== user.id));
 		await this.createAutoMsg(`⚪️　${user.username} is the creator of this channel.`, channel);
-		await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
+		if (users.length !== 0)
+			await this.createAutoMsg(`⚪️　${users.map(u => u.username).join(', ')} ${users.length === 1 ? 'have' : 'has'} been added to ${channel.name} by ${user.username}.`, channel);
 		return channel;
 	}
 

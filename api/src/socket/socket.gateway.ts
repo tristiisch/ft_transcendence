@@ -68,7 +68,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			if (!user) return clientSocket.disconnect();
 
-			this.socketService.saveClientSocket(user, clientSocket.id);
+			this.socketService.saveClientSocket(user, clientSocket);
 			this.updateStatus(clientSocket, user, UserStatus.ONLINE);
 		} catch (err) {
 			Logger.error(`Cannot handle connection ${err.message}`, 'WebSocket');
@@ -541,11 +541,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
-		console.log("findMatch!", client.id)
+		// console.log("findMatch!", client.id)
 		const user = await this.socketService.getUserFromSocket(client)
 		const match_found = this.matchService.findUserToPlay(data.type)
 		if (match_found) {
+			// console.log("!!", user.username, "found a match !")
+			// console.log("players_queue", this.players_queue, "before")
 			this.matchService.removePlayerFromQueue(match_found.user.id)
+			// console.log("players_queue", this.players_queue, "after")
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
 			let match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
 			let match = this.matches.get(match_id)
@@ -554,7 +557,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
 			setTimeout(() => {
 				if (!match.started) {
+					// console.log("Match was canceled :", match)
 					match.room_socket.emit("endMatch", "Match was cancelled because one or more players were absent...")
+					match.room_socket.socketsLeave("match_" + match.id)
 					this.matches.delete(match.id)
 				}
 			}, 15000)
@@ -570,12 +575,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('joinMatch')
 	handleJoinMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		// once the match is created: for players and spectators
-		console.log("joinMatch :", id, "!", client.id)
+		// console.log("joinMatch :", id, "!", client.id)
 		if (this.matches.has(id)) {
 			let match = this.matches.get(id)
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
-			console.log("match_" + id, "nb clients = ", clients.size)
+			// console.log("match_" + id, "nb clients = ", clients.size)
 			return [{
 				started: match.started,
 				p1Ready: match.p1Ready,
@@ -595,7 +600,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		else if (match.user2_id === user.id)
 			match.p2Ready = true
 		if (!match.started && match.p1Ready && match.p2Ready) {
-			console.log("match ", id, "ready !")
+			// console.log("match ", id, "ready !")
 			match.started = true
 			this.matchService.startMatch(match)
 		}
@@ -630,10 +635,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			else {
 				if (!match.started) {
-					if (user.id === match.user1_id)
-						match.p1Ready = false
-					else if (user.id === match.user2_id)
-						match.p2Ready = false
+					if (user.id === match.user1_id) match.p1Ready = false
+					else if (user.id === match.user2_id) match.p2Ready = false
 				}
 				client.leave("match_" + match.id)
 			}

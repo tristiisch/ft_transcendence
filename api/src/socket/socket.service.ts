@@ -5,7 +5,7 @@ import { Server, Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { WebSocketServer } from '@nestjs/websockets';
 import { NotificationFront, NotificationType } from 'notification/entity/notification.entity';
-import { User } from 'users/entity/user.entity';
+import { User, UserStatus } from 'users/entity/user.entity';
 
 @Injectable()
 export class SocketService {
@@ -33,16 +33,21 @@ export class SocketService {
 		return user;
 	}
 
-	async saveClientSocket(user: User, clientSocketId: string) {
+	updateStatus(clientSocket: Socket, user: User, status: UserStatus) {
+		clientSocket.broadcast.emit('updateUserStatus', ({ id: user.id, status: status }))
+		this.userService.getRepo().update(user.id, { status: status });
+	}
+
+	async saveClientSocket(user: User, clientSocket: Socket) {
 		const oldClientSocketId: string = this.usersSocket.get(user.id);
 		if (oldClientSocketId) {
 			const oldSocket: Socket = this.server.sockets.sockets.get(oldClientSocketId);
 			oldSocket.emit('double_connection', () => {
 				oldSocket.disconnect();
+				this.updateStatus(clientSocket, user, UserStatus.ONLINE);
 			});
-			//Logger.debug(`${user.username} socket ${oldClientSocketId} was remplaced.`, 'WebSocket');
 		}
-		this.usersSocket.set(user.id, clientSocketId)
+		this.usersSocket.set(user.id, clientSocket.id)
 		return oldClientSocketId;
 	}
 
