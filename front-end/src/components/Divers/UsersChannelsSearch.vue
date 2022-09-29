@@ -30,7 +30,8 @@ const props = defineProps<{
 }>();
 
 function changeDisplayToFriends() {
-    itemsToDisplay.value = globalStore.friends;
+	if (props.type === 'usersNotInChannel') itemsToDisplay.value = globalStore.friends.filter((user) => !chatStore.inChannel?.users.includes(user))
+	else itemsToDisplay.value = globalStore.friends
     filterButton.value = 'Friends';
 }
 function changeDisplayToAllUsers() {
