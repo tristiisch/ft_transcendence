@@ -478,7 +478,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		usersExceptInChannel = usersExceptInChannel.filter((user: User) => {
 			return (!channel.users_ids || channel.users_ids.indexOf(user.id) === -1) && (!channel.banned_ids || channel.banned_ids.indexOf(user.id) === -1);
 		});
-			// const userBanned = usersExceptInChannel.filter((user: User) => channel.banned_ids.indexOf(user.id) === -1)
 		return [usersExceptInChannel];
 	}
 

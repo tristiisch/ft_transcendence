@@ -138,7 +138,7 @@ onBeforeMount(() => {
 					<p class="text-slate-500 text-center w-full">Please choose an username and avatar</p>
 					<input
 						class="text-center text-neutral-100 text-xs px-3 py-2 sm:px-5 sm:py-2.5 w-full rounded bg-slate-800 placeholder-slate-600 placeholder:text-center"
-						type="password"
+						type="text"
 						name="username"
 						v-model.trim="username"
 						placeholder="Username"
@@ -154,7 +154,7 @@ onBeforeMount(() => {
 				<p class="text-slate-500">Please enter your 2FA code below</p>
 				<div class="flex justify-center gap-4">
 					<input
-						type="text"
+						type="password"
 						name="twoFaCode"
 						v-model="twoFaCode"
 						placeholder="2FA code"
