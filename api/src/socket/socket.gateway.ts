@@ -53,39 +53,33 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleConnection(clientSocket: Socket) {
-		try {
-			clientSocket.prependAny((eventName, ...args) => {
-				// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
-			});
-			clientSocket.prependAnyOutgoing((eventName, ...args) => {
-				// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
-			});
-			clientSocket.on("ping", (count) => {
-				Logger.debug(`Ping ${count}`, 'WebSocket');
-			});
+		clientSocket.prependAny((eventName, ...args) => {
+			// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
+		});
+		clientSocket.prependAnyOutgoing((eventName, ...args) => {
+			// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
+		});
+		clientSocket.on("ping", (count) => {
+			Logger.debug(`Ping ${count}`, 'WebSocket');
+		});
 
-			const user = await this.socketService.getUserFromSocket(clientSocket);
+		const user = await this.socketService.getUserFromSocket(clientSocket);
 
-			if (!user) return clientSocket.disconnect();
+		if (!user) return clientSocket.disconnect();
 
-			this.socketService.saveClientSocket(user, clientSocket);
-			this.updateStatus(clientSocket, user, UserStatus.ONLINE);
-		} catch (err) {
-			Logger.error(`Cannot handle connection ${err.message}`, 'WebSocket');
-		}
+		this.socketService.saveClientSocket(user, clientSocket);
+		this.updateStatus(clientSocket, user, UserStatus.ONLINE);
 	}
 
 	async handleDisconnect(clientSocket: Socket) {
-		try {
-			const user = await this.socketService.getUserFromSocket(clientSocket);
+		const user: User | null = await this.socketService.getUserFromSocket(clientSocket);
+		if (!user)
+			return;
 
-			this.matchService.removeUserFromMatch(user.id)
-			this.cancelFindMatch(clientSocket)
-			this.updateStatus(clientSocket, user, UserStatus.OFFLINE);
-			this.socketService.deleteClientSocket(user.id, clientSocket);
-		} catch (err) {
-			Logger.error(`Cannot get user from socket for handleDisconnect: ${err.message}`, 'WebSocket');
-		}
+		this.matchService.removeUserFromMatch(user.id)
+		this.cancelFindMatch(clientSocket)
+		this.updateStatus(clientSocket, user, UserStatus.OFFLINE);
+		this.socketService.deleteClientSocket(user.id, clientSocket);
 	}
 
 	updateStatus(clientSocket: Socket, user: User, status: UserStatus) {
@@ -542,7 +536,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
 		// console.log("findMatch!", client.id)
-		const user = await this.socketService.getUserFromSocket(client)
+		const user: User | null = await this.socketService.getUserFromSocket(client)
+		if (!user)
+			return;
 		const match_found = this.matchService.findUserToPlay(data.type)
 		if (match_found) {
 			// console.log("!!", user.username, "found a match !")
@@ -568,7 +564,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 	@SubscribeMessage('cancelFindMatch')
 	async cancelFindMatch(@ConnectedSocket() client: Socket): Promise<void> {
-		const user = await this.socketService.getUserFromSocket(client)
+		const user: User | null = await this.socketService.getUserFromSocket(client)
+		if (!user)
+			return;
 		if (this.players_queue.has(user.id)) this.matchService.removePlayerFromQueue(user.id)
 	}
 
@@ -593,8 +591,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('readyToPlay')
 	async handleReadyPlayerFromMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
-		const user = await this.socketService.getUserFromSocket(client)
+		const user: User | null = await this.socketService.getUserFromSocket(client)
+		if (!user)
+			return;
 		const match = this.matches.get(id)
+
 		if (match.user1_id === user.id)
 			match.p1Ready = true
 		else if (match.user2_id === user.id)
@@ -627,22 +628,21 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('leaveMatch')
 	async handleLeaveMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		let match = this.matches.get(id)
-		let user = await this.socketService.getUserFromSocket(client)
-		if (match) {
-			if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match)) {
-				match.stopMatch = true
-				await this.matchService.endMatch(match, user.id)
+		let user: User | null = await this.socketService.getUserFromSocket(client)
+
+		if (!match || !user)
+			return;
+
+		if (match.started && this.matchService.isUserPlayerFromMatch(user.id, match)) {
+			match.stopMatch = true
+			await this.matchService.endMatch(match, user.id)
+		}
+		else {
+			if (!match.started) {
+				if (user.id === match.user1_id) match.p1Ready = false
+				else if (user.id === match.user2_id) match.p2Ready = false
 			}
-			else {
-				if (!match.started) {
-					if (user.id === match.user1_id) match.p1Ready = false
-					else if (user.id === match.user2_id) match.p2Ready = false
-				}
-				client.leave("match_" + match.id)
-			}
+			client.leave("match_" + match.id)
 		}
 	}
-
-	// UpdateLeaderboard
-	// AdduUserLeaderboard
 }

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from 'friends/friends.service';
 import { User } from 'users/entity/user.entity';
@@ -49,6 +49,7 @@ export class StatsService {
     }
 
     async addDefeat(userId: number) {
+		Logger.verbose(`${userId} has LOSS`);
 		await this.statsRepository.createQueryBuilder()
 			.update(UserStats).where({ user_id: userId })
 			.set({ defeats: () => "defeats + 1" })
@@ -56,6 +57,7 @@ export class StatsService {
     }
 
     async addVictory(userId: number) {
+		Logger.verbose(`${userId} has WIN !`);
 		await this.statsRepository.createQueryBuilder()
 			.update(UserStats).where({ user_id: userId })
 			.set({ victories: () => "victories + 1" })

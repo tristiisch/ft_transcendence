@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
@@ -233,11 +233,15 @@ export class MatchService {
 	}
 
 	async endMatch(match: Match, forfeitUserId?: number) {
+		if (match.timestamp_ended) {
+			Logger.verbose(`Match saved 2 times ${match.id}`); // TODO remove it
+			return;
+		}
+
+		match.timestamp_ended = new Date
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
-
-		match.timestamp_ended = new Date
 
 		if (match.user1_id === forfeitUserId){
 			match.score[0] = -1
@@ -256,11 +260,11 @@ export class MatchService {
 
 		match.room_socket.socketsLeave("match_" + match.id)
 
-		await this.save(match);
+		this.matches.delete(match.id)
+		match = await this.save(match);
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());
 
-		this.matches.delete(match.id)
 	}
 
 	removeUserFromMatch(user_id: number) {
@@ -268,16 +272,16 @@ export class MatchService {
 			if (match.started) {
 				if (user_id === match.user1_id) {
 					match.p1Ready = false
-					setTimeout(() => {
+					setTimeout(async () => {
 						// console.log("p1Ready:", match.p1Ready)
-						if (!match.p1Ready) this.endMatch(match, user_id)
+						if (!match.p1Ready) await this.endMatch(match, user_id)
 					}, 5000)
 				}
 				else if (user_id === match.user2_id) {
 					match.p2Ready = false
-					setTimeout(() => {
+					setTimeout(async () => {
 						// console.log("p2Ready:", match.p2Ready)
-						if (!match.p2Ready) this.endMatch(match, user_id)
+						if (!match.p2Ready) await this.endMatch(match, user_id)
 					}, 5000)
 				}
 			}
@@ -335,11 +339,8 @@ export class MatchService {
 	}
 
 	async save(match: Match) {
+		Logger.verbose(`match saved ${match.id}.`)
 		return this.matchsHistoryRepository.save(match)
-	}
-
-	async add(matchHistory: Match) {
-		return this.matchsHistoryRepository.save(matchHistory);
 	}
 
 	private readonly requests: Map<number, GameInvitation> = new Map();

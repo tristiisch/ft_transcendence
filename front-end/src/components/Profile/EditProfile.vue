@@ -35,7 +35,6 @@ function submitProfileForm() {
 			router.push({ name: 'Profile', params: { username: userStore.userData.username } });
 		})
 		.catch((error) => {
-			//check for name already exist in database --> Code === 403 ?
 			if (error.response?.status === 403) toast.error(error.response?.data?.message)
 			else if (error.response?.status === 400) toast.warning('Username is not correct : ' + (error.response?.data?.message as string[]).join(', '));
 			else if (error.response?.status === 412) toast.warning(error.response?.data?.message);

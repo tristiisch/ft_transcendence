@@ -204,10 +204,12 @@ export class UsersService {
 	}
 
 	async updateUsername(userId: number, username: string): Promise<User> {
+		if (await this.isUserExist(username))
+			throw new PreconditionFailedException('Username already taken.');
 		try {
-			await this.usersRepository.update(userId, { username: username }).catch(this.lambdaDatabaseUnvailable);
+			await this.usersRepository.update(userId, { username: username });
 		} catch (err) {
-			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
+			if (err.message.includes('duplicate key value violates unique constraint'))
 				throw new PreconditionFailedException('Username already taken.');
 			else
 				throw err;
@@ -223,17 +225,27 @@ export class UsersService {
 		return user;
 	}
 
+	async isUserExist(name: string): Promise<boolean> {
+		try {
+			return await this.usersRepository.findOne({ where: { username : name }}) !== null;
+		} catch {
+			return false;
+		}
+	}
+
 	async register(userId: number, user: UserDTO) {
 		const userBefore: User = await this.findOne(userId);
 		if (userBefore.username !== null)
-			throw new BadRequestException(`You are already registered.`);
+			throw new PreconditionFailedException(`You are already registered.`);
+		if (await this.isUserExist(user.username))
+			throw new PreconditionFailedException('Username already taken.');
 
 		try {
 			if (user.avatar_64 != null && user.avatar_64 != '') {
 				checkImage(user.avatar_64);
-				this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username }).catch(this.lambdaDatabaseUnvailable);
+				await this.usersRepository.update(userId, { avatar_64: user.avatar_64, username: user.username });
 			} else
-				this.usersRepository.update(userId, { username: user.username }).catch(this.lambdaDatabaseUnvailable);
+				await this.usersRepository.update(userId, { username: user.username });
 		} catch (err) {
 			if (err instanceof ServiceUnavailableException && err.message.includes('duplicate key value violates unique constraint'))
 				throw new PreconditionFailedException('Username already taken.');
@@ -303,9 +315,12 @@ export class UsersService {
 	}
 	
 	async anonymizeUser(user: User) : Promise<User> {
-		//user.avatar_64 = await toBase64(`http://${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}/src/assets/anonymize.png`);
 		user.avatar_64 = getAnoPicture();
-		user.username = `${randomWord(3)}-${randomWord(5)}`
+
+		do {
+			user.username = `${randomWord(3)}-${randomWord(5)}`
+		} while (await this.isUserExist(user.username))
+
 		user.login_42 = null;
 		await this.authService.delete(user);
 		await this.usersRepository.update(user.id, { username: user.username, login_42: user.login_42, avatar_64: user.avatar_64 });

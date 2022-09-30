@@ -23,7 +23,6 @@ async function bootstrap() {
 		Logger.log(`API localhost\t\thttp://localhost:${process.env.VITE_API_PORT}`, process.env.NAME);
 		Logger.log(`Front\t\t\t${process.env.FRONT_URL}`, process.env.NAME);
 		Logger.log(`Front localhost\t\thttp://localhost:${process.env.FRONT_PORT}`, process.env.NAME);
-		Logger.log(`Front Docker\t\t${process.env.FRONT_HOSTNAME_FOR_API}:${process.env.FRONT_PORT}`, process.env.NAME);
 	});
 }
 bootstrap();

@@ -21,16 +21,26 @@ export class SocketService {
 
 	private readonly usersSocket: Map<number, string> = new Map<number, string>()
 
-	async getUserFromSocket(socket: Socket) : Promise<User> {
+	async getUserFromSocket(socket: Socket) : Promise<User | null> {
 		const token = socket.handshake.auth.token;
-		if (!token || token.length === 0) {
-			throw new UnauthorizedException('Invalid token.');
+		try {
+			if (!token || token.length === 0) {
+				const kv: [number, string] = [...this.usersSocket.entries()].find((kv) => kv[1] === socket.id);
+				if (kv === null && kv.length >= 1)
+					this.usersSocket.delete(kv[0]);
+				throw new UnauthorizedException('invalid token');
+			}
+			const user = await this.authService.getUserFromAuthenticationToken(token);
+			if (!user)
+				throw new UnauthorizedException('invalid credentials');
+			return user;
+
+		} catch (err) {
+			if (socket && socket.connected)
+				socket.disconnect(true);
+			Logger.warn(`Socket ${socket.id} was forced-closed because ${err.message}.`);
+			return null;
 		}
-		const user = await this.authService.getUserFromAuthenticationToken(token);
-		if (!user) {
-			throw new UnauthorizedException('Invalid credentials.');
-		}
-		return user;
 	}
 
 	updateStatus(clientSocket: Socket, user: User, status: UserStatus) {
