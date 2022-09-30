@@ -14,13 +14,8 @@ export class DatabaseService implements TypeOrmOptionsFactory {
 			database: process.env.DATABASE_NAME,
 			username: process.env.DATABASE_USER,
 			password: process.env.DATABASE_PASSWORD,
-			// entities: ['dist/**/**/*.entity.{ts,js}'],
-			// entities: [User, Channel],
-			// migrations: ['dist/migrations/*.{ts,js}'],
-			// migrationsTableName: 'typeorm_migrations',
 			logger: 'file',
 			autoLoadEntities: true,
-			// TypeORM should update any changes of your entities automatically ?
 			synchronize: true,
 			subscribers: [UserSubscriber, UserAuthSubscriber],
 		};

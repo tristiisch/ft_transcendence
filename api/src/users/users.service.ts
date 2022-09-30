@@ -45,34 +45,6 @@ export class UsersService {
 		throw new ServiceUnavailableException(`Database error with reason '${reason}'.`);
 	};
 
-	/*users: User[] = [
-		{
-			id: 1,
-			username: 'tglory',
-			email: 'tglory@student.42Lyon.fr'
-		},
-		{
-			id: 2,
-			username: 'alganoun',
-			email: 'alganoun@student.42Lyon.fr'
-		},
-		{
-			id: 3,
-			username: 'jlaronch',
-			email: 'jlaronch@student.42Lyon.fr'
-		},
-		{
-			id: 4,
-			username: 'nlaronch',
-			email: 'nlaronch@student.42Lyon.fr'
-		},
-		{
-			id: 5,
-			username: 'bperez',
-			email: 'bperez@student.42Lyon.fr'
-		}
-	];*/
-
 	async findAll(): Promise<User[]> {
 		const sqlStatement: SelectQueryBuilder<User> = this.usersRepository.createQueryBuilder('user')
 			.where('user.username IS NOT NULL');

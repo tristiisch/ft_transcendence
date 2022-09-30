@@ -732,7 +732,6 @@ export class ChatService {
 				await this.chatReadRepo.update({ id_user: user.id , id_chat: chatId }, { id_message: message.id });
 		} catch (err) {
 			if (err.message.includes('duplicate key value violates unique constraint')) {
-				Logger.error(`Duplicate insert for ${user.username} chat id : ${chatId}  msg id : ${message.id} chat read : ${JSON.stringify(chatRead)}`, 'ChatRead');
 				throw new WsException(`Duplicate ChatRead ${chatId}`);
 			}
 			throw err;

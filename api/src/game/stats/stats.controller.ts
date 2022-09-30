@@ -15,10 +15,10 @@ export class StatsController {
 
 	constructor(private readonly statsService: StatsService) {}
 
-    @Get('leaderboard')
+    /*@Get('leaderboard')
 	getLeaderboard() {
 		return this.statsService.leaderboard();
-	}
+	}*/
 
 	@UseGuards(JwtAuthGuard)
     @Get('leaderboard-with-friends')
@@ -30,19 +30,13 @@ export class StatsController {
 
 	/**
 	 * Won't be used but worked.
-	 */
+
     @Get('leaderboard/:page')
 	getLeaderboardPage(@Param('page') page: number) {
         const min: number = (page - 1) * this.userPerPage;
         const max: number = this.userPerPage;
 		return this.statsService.leaderboardPage(min, max);
-	}
-
-	@Patch(':id')
-	changeStats(@Param('id') id: number, @Body() stats: UserStats) {
-        stats.user_id = id
-		return this.statsService.update(stats);
-	}
+	}*/
 
 	@UseGuards(JwtAuthGuard)
     @Post()
