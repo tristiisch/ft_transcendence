@@ -102,7 +102,7 @@ export class MatchService {
 			else match.increaseBallSpeed = this.increaseBallSpeed
 			if (custom.world == 0 || custom.world == 1) match.world = custom.world
 			else match.world = this.world
-			if (match.winningScore >= 1 && match.winningScore <= 50) match.winningScore = custom.winningScore
+			if (custom.winningScore >= 1 && custom.winningScore <= 50) match.winningScore = custom.winningScore
 			else match.winningScore = this.winningScore
 		}
 		else {
