@@ -26,7 +26,7 @@ function errorContainer() {
     exit 1
 }
 
-while ! docker container inspect front api postgreSQL pgAdmin &> /dev/null; do
+while ! docker container inspect front api postgreSQL &> /dev/null; do
     echo "Waiting for containers to be create ... $i secondes"
     sleep $TIME_CICLE
 	let "i = i + $TIME_CICLE"
