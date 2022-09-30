@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable, Logger, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
+import { BadGatewayException, Injectable, Logger, NotFoundException, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport"
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { User } from "users/entity/user.entity";
@@ -23,7 +23,7 @@ export class JwtTFAStrategy extends PassportStrategy(Strategy, "jwt-2fa") {
 			userAuth = await this.authService.findOne(jwtData.id);
 		} catch (err) {
 			if (err instanceof NotFoundException)
-				throw new BadGatewayException('Unknown user.');
+				throw new UnauthorizedException('Unknown user.');
 			if (err instanceof ServiceUnavailableException)
 				throw err;
 			Logger.error(`Unable to validate jwt strategy of ${JSON.stringify(jwtData)}: ${err.message}`, 'JWT 2FA')

@@ -49,7 +49,6 @@ export class StatsService {
     }
 
     async addDefeat(userId: number) {
-		Logger.verbose(`${userId} has LOSS`);
 		await this.statsRepository.createQueryBuilder()
 			.update(UserStats).where({ user_id: userId })
 			.set({ defeats: () => "defeats + 1" })
@@ -57,7 +56,6 @@ export class StatsService {
     }
 
     async addVictory(userId: number) {
-		Logger.verbose(`${userId} has WIN !`);
 		await this.statsRepository.createQueryBuilder()
 			.update(UserStats).where({ user_id: userId })
 			.set({ victories: () => "victories + 1" })

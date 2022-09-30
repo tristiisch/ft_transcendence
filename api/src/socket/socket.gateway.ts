@@ -53,12 +53,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleConnection(clientSocket: Socket) {
-		clientSocket.prependAny((eventName, ...args) => {
+		/*clientSocket.prependAny((eventName, ...args) => {
 			// Logger.debug(`Receive ${eventName} => ${JSON.stringify(args)}`, 'WebSocket');
 		});
 		clientSocket.prependAnyOutgoing((eventName, ...args) => {
 			// Logger.debug(`Send ${eventName} <= ${JSON.stringify(args)}`, 'WebSocket');
-		});
+		});*/
 		clientSocket.on("ping", (count) => {
 			Logger.debug(`Ping ${count}`, 'WebSocket');
 		});

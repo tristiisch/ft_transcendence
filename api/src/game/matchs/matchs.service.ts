@@ -237,7 +237,6 @@ export class MatchService {
 
 	async endMatch(match: Match, forfeitUserId?: number) {
 		if (match.timestamp_ended) {
-			Logger.verbose(`Match saved 2 times ${match.id}`); // TODO remove it
 			return;
 		}
 
