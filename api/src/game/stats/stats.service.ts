@@ -119,6 +119,9 @@ export class StatsService {
 			const leaderUser: LeaderboardUser = new LeaderboardUser();
 			const target: User = await this.userService.findOne(us.user_id);
 
+			if (!target.username || target.username.length === 0)
+				continue;
+
 			leaderUser.rank = index++;
 			leaderUser.username = target.username;
 			leaderUser.id = target.id;

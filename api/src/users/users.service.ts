@@ -243,7 +243,7 @@ export class UsersService {
 		const avatar: { imageType: any; imageBuffer: any; } = fromBase64(target.avatar_64);
 		if (!avatar) {
 			Logger.error(`Can't get a valid image from ${target.avatar_64} for ${target.username}.`, 'AvatarUser');
-			throw new UnsupportedMediaTypeException(`Can't get a valid image from ${target.avatar_64} for ${target.username}.`);
+			throw new UnsupportedMediaTypeException(`This is not a valid image.`);
 		}
 
 		res.writeHead(200, { 'Content-Type': avatar.imageType, 'Content-Length': avatar.imageBuffer.length });

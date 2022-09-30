@@ -158,9 +158,9 @@ export function getFrontRelativeURL(req: any) {
 // }
 
 export function checkImage(avatar_64: string) {
-	const toString = avatar_64.substring(0, 20) + (avatar_64.length > 20 ? '...' : '');
+	//const toString = avatar_64.substring(0, 20) + (avatar_64.length > 20 ? '...' : '');
 	if (!fromBase64(avatar_64))
-		throw new PreconditionFailedException(`Unknown type for avatar. '${toString}'`);
+		throw new PreconditionFailedException(`Unknown type of picture.`);
 	if (!avatar_64.startsWith('data:image/'))
-		throw new PreconditionFailedException(`The picture is not a valid picture. '${toString}'`);
+		throw new PreconditionFailedException(`The picture is not a valid picture.`);
 }

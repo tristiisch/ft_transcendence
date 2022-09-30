@@ -544,6 +544,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
 			let match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
 			let match = this.matches.get(match_id)
+			if (!match)
+				return
 			match.room_socket = this.server.to('match_' + match_id)
 			client.emit('foundMatch', match_id)
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
@@ -569,6 +571,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	handleJoinMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
 		if (this.matches.has(id)) {
 			let match = this.matches.get(id)
+			if (!match)
+				return
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
 			return [{
@@ -587,7 +591,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!user)
 			return;
 		const match = this.matches.get(id)
-
+		if (!match)
+			return
 		if (match.user1_id === user.id) match.p1Ready = true
 		else if (match.user2_id === user.id) match.p2Ready = true
 		if (!match.started && match.p1Ready && match.p2Ready) {
