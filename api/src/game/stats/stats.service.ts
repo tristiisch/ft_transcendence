@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, PreconditionFailedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FriendsService } from 'friends/friends.service';
 import { User } from 'users/entity/user.entity';
@@ -118,6 +118,9 @@ export class StatsService {
 		for (let us of userStats) {
 			const leaderUser: LeaderboardUser = new LeaderboardUser();
 			const target: User = await this.userService.findOne(us.user_id);
+
+			if (!target.username || target.username.length === 0)
+				continue;
 
 			leaderUser.rank = index++;
 			leaderUser.username = target.username;

@@ -15,16 +15,6 @@ export class MatchsController {
 
 	constructor(private readonly matchService: MatchService) {}
 
-	@Post('start')
-	async startMatch(@Body() usersSelected: UserSelectDTO[]): Promise<Match> {
-		const user: User = await usersSelected[0].resolveUser(this.usersService);
-		const target: User = await usersSelected[1].resolveUser(this.usersService);
-		const match: Match = new Match();
-		match.user1_id = user.id;
-		match.user2_id = target.id;
-		return await this.matchService.save(match);
-	}
-
 	@UseGuards(JwtAuthGuard)
 	@Post('history')
 	async getUserHistory(@Req() req, @Body() userSelected: UserSelectDTO) {

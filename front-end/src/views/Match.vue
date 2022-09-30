@@ -37,7 +37,6 @@ document.documentElement.style.overflow = 'hidden';
 onBeforeMount(() => {
 	MatchService.loadMatch(match_id)
 		.then((response) => {
-			console.log(response.data)
 			match.value = response.data
 			if (userStore.userData.id === match.value.user1_id || userStore.userData.id === match.value.user2_id)
 				isPlayer.value = true
@@ -62,14 +61,10 @@ onBeforeMount(() => {
 
 watch([isLoaded, isMounted, matchPage], () => {
 	if (isLoaded.value && isMounted.value && matchPage.value)
-	{
-		console.log("Ready to load stage !")
 		loadStage()
-	}
 })
 
 onMounted(() => {
-	console.log("Mounted!")
 	isMounted.value = true
 })
 
@@ -91,7 +86,6 @@ onUnmounted(() => {
 });
 
 function loadStage() {
-	console.log("LOADING STAGE")
 	const stage_container = document.getElementById('stage-container')!
 	const default_stage_width = 3989
 	const default_stage_height = 2976
@@ -161,27 +155,6 @@ function loadStage() {
 	layer.add(p1_blocker)
 	layer.add(p2_blocker)
 
-	//with setInterval
-	let dx = ball_speed * backend_stage_ratio
-	let dy = ball_speed * backend_stage_ratio
-	let ball_x = stage_width/2
-	let ball_y = -50
-
-	// var ballAnimation = new Konva.Animation(function(frame) {
-	// 	if (ball.x() + dx < 0 || ball.x() + dx > stage_width) { dx = -dx; }
-	// 	if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-	// 	if ((ball.x() > p1_blocker.x() && ball.x() < p1_blocker.x() + blockers_width && ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-	// 		(ball.x() > p2_blocker.x() && ball.x() < p2_blocker.x() + blockers_width && ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-	// 			dy = -dy
-	// 	else if ((ball.x() + dx > p1_blocker.x() && ball.x() + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-	// 			(ball.x() + dx > p2_blocker.x() && ball.x() + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-	// 			dx = -dx
-	// 	ball.x(ball.x() + dx)
-	// 	ball.y(ball.y() + dy)
-	// 	// ball.x(ball_x)
-	// 	// ball.y(ball_y)
-	// }, layer)
-
 	//--------------------------------------------------
 	//	Resize whole stage once the window gets resized
 	function resizeStage() {
@@ -194,8 +167,6 @@ function loadStage() {
 
 		ball_radius = computeBallSize()
 		ball.radius(ball_radius)
-		dx = dx < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
-		dy = dy < 0 ? -(ball_speed * backend_stage_ratio) : ball_speed * backend_stage_ratio
 
 		p1_blocker.x(p1_blocker.x() * ratio)
 		p1_blocker.y(p1_blocker.y() * ratio)
@@ -216,10 +187,6 @@ function loadStage() {
 // -----------------------------------------------------
 // sockets after loading stage
 	socket.on("ballPos", (x, y) => ball.position({x: x * backend_stage_ratio, y: y * backend_stage_ratio}))
-	// socket.on("ballPos", (x, y) => {
-	// 	ball_x = x * backend_stage_ratio
-	// 	ball_y = y * backend_stage_ratio
-	// })
 	if (userStore.userData.id !== match.value.user1_id) socket.on("p1Pos", (y) => p1_blocker.y(y * backend_stage_ratio))
 	if (userStore.userData.id !== match.value.user2_id) socket.on("p2Pos", (y) => p2_blocker.y(y * backend_stage_ratio))
 
@@ -237,7 +204,6 @@ function loadStage() {
 	})
 
 	socket.emit("joinMatch", match_id, (match_infos_array: any) => {
-		console.log("Joining match!")
 		let match_infos = match_infos_array[0]
 		blockers_height = computeBlockerHeight()
 		p1_blocker.height(blockers_height)
@@ -278,34 +244,6 @@ function loadStage() {
 				stage_container.addEventListener('mousemove', (event) => moveRacket(event, p2_blocker, "p2Pos"), { passive: true });
 		}, 5000)
 	}
-
-	// async function launchMatchLoop() {
-	// 	setInterval(() => {
-	// 		if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
-	// 		// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-	// 		// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-	// 		// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-	// 		// 		dy = -dy
-	// 		// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-	// 		// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-	// 		// 		dx = -dx
-	// 		ball_x += dx
-	// 		// ball_y += dy
-	// 	}, 1)
-	// 	// if (ball_x + dx < 0 || ball_x + dx > stage_width) { dx = -dx; }
-	// 	// if (ball_y + dy < 0 || ball_y + dy > stage_height) { dy = -dy; }
-	// 	// if ((ball_x > p1_blocker.x() && ball_x < p1_blocker.x() + blockers_width && ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-	// 	// 	(ball_x > p2_blocker.x() && ball_x < p2_blocker.x() + blockers_width && ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-	// 	// 		dy = -dy
-	// 	// else if ((ball_x + dx > p1_blocker.x() && ball_x + dx < p1_blocker.x() + blockers_width && ball_y + dy > p1_blocker.y() && ball_y + dy < p1_blocker.y() + blockers_height) ||
-	// 	// 		(ball_x + dx > p2_blocker.x() && ball_x + dx < p2_blocker.x() + blockers_width && ball_y + dy > p2_blocker.y() && ball_y + dy < p2_blocker.y() + blockers_height))
-	// 	// 		dx = -dx
-	// 	// ball_x += dx
-	// 	// ball_y += dy
-	// 	// setTimeout(launchMatchLoop, 0)
-	// }
-
-// -----------------------------------------------------
 }
 
 function leaveMatch() {

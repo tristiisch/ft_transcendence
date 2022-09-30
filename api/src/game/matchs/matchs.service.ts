@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotAcceptableException, PreconditionFailedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from 'users/entity/user.entity';
 import { UsersService } from 'users/users.service';
@@ -68,7 +68,6 @@ export class MatchService {
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
-		// console.log("match_type:", match_type)
 		for (const [key, value] of this.players_queue.entries()) {
 			if ((match_type === MatchMakingTypes.NORMAL_MATCH && value.match_type !== MatchMakingTypes.OWN_MATCH) ||
 				(match_type === MatchMakingTypes.ANY_MATCH) ||
@@ -79,7 +78,6 @@ export class MatchService {
 	}
 
 	async createNewMatch(p1: User, p2: User, custom: CustomMatchInfos) {
-		// console.log("=> MAKING A NEW MATCH-> (", p1.username, "vs", p2.username + ")")
 		const match = new Match()
 		match.id = uuid()
 		match.user1_id = p1.id
@@ -93,16 +91,19 @@ export class MatchService {
 		match.waiting = true
 		match.stopMatch = false
 		
-		if (custom) { // check custom infos
-			// console.log("custom!", custom)
-			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
-			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
-			match.increaseBallSpeed = custom.increaseBallSpeed
-			match.world = custom.world
-			match.winningScore = custom.winningScore
+		if (custom) {
+			if (custom.ballSpeed >= 50 && custom.ballSpeed <= 200) match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
+			else match.ballSpeed = this.ballSpeed
+			if (custom.racketSize >= 50 && custom.racketSize <= 200) match.racketSize = this.blockerHeight * (custom.racketSize / 100)
+			else match.racketSize = this.blockerHeight
+			if (custom.increaseBallSpeed === true || custom.increaseBallSpeed === false) match.increaseBallSpeed = custom.increaseBallSpeed
+			else match.increaseBallSpeed = this.increaseBallSpeed
+			if (custom.world == 0 || custom.world == 1) match.world = custom.world
+			else match.world = this.world
+			if (custom.winningScore >= 1 && custom.winningScore <= 50) match.winningScore = custom.winningScore
+			else match.winningScore = this.winningScore
 		}
 		else {
-			// console.log("not custom!")
 			match.ballSpeed = this.ballSpeed
 			match.racketSize = this.blockerHeight
 			match.increaseBallSpeed = this.increaseBallSpeed
@@ -186,7 +187,6 @@ export class MatchService {
 		let tdiff = T2.getTime() - match.T.getTime()
 
 		var x2 = match.ballXPos + (tdiff * match.ballXDir)
-		// if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
 		if (x2 < 0 || x2 >= this.stageWidth) {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
@@ -213,15 +213,8 @@ export class MatchService {
 		let p1Pos = match.p1Pos
 		let p2Pos = match.p2Pos
 			if (((x2 < this.p1XPos + this.blockerWidth && x2 >= this.p1XPos) && x2 < this.p2XPos + this.blockerWidth && y2 >= p1Pos && y2 < p1Pos + match.racketSize && match.ballXDir < 0)
-			|| ((x2 >= this.p2XPos /*|| x2 + match.ballXDir >= this.p2XPos*/) && x2 < this.p2XPos + this.blockerWidth && y2 >= p2Pos && y2 < p2Pos + match.racketSize && match.ballXDir > 0))
+			|| ((x2 >= this.p2XPos) && x2 < this.p2XPos + this.blockerWidth && y2 >= p2Pos && y2 < p2Pos + match.racketSize && match.ballXDir > 0))
 				match.ballXDir *= -1
-			// || x2 + match.ballXDir >= this.p2XPos)//x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-		// if (x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= p1Pos && y2 + match.ballYDir < p1Pos + match.racketSize) {
-			// for (let i = 0; i < 9999999999999; i++) ;
-		// }
-		// else if ((x2 >= this.p1XPos + match.racketSize && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
-		// 		(x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-		// 			match.ballXDir *= -1
 
 		match.ballXPos = x2
 		match.ballYPos = y2
@@ -233,11 +226,14 @@ export class MatchService {
 	}
 
 	async endMatch(match: Match, forfeitUserId?: number) {
+		if (match.timestamp_ended) {
+			return;
+		}
+
+		match.timestamp_ended = new Date
 		clearInterval(match.matchLoopInterval)
 		clearInterval(match.ballPosInterval)
 		clearInterval(match.playersPosInterval)
-
-		match.timestamp_ended = new Date
 
 		if (match.user1_id === forfeitUserId){
 			match.score[0] = -1
@@ -256,11 +252,11 @@ export class MatchService {
 
 		match.room_socket.socketsLeave("match_" + match.id)
 
-		await this.save(match);
+		this.matches.delete(match.id)
+		match = await this.save(match);
 		await this.matchStatsService.addDefeat(match.getLoser());
 		await this.matchStatsService.addVictory(match.getWinner());
 
-		this.matches.delete(match.id)
 	}
 
 	removeUserFromMatch(user_id: number) {
@@ -268,16 +264,14 @@ export class MatchService {
 			if (match.started) {
 				if (user_id === match.user1_id) {
 					match.p1Ready = false
-					setTimeout(() => {
-						// console.log("p1Ready:", match.p1Ready)
-						if (!match.p1Ready) this.endMatch(match, user_id)
+					setTimeout(async () => {
+						if (!match.p1Ready) await this.endMatch(match, user_id)
 					}, 5000)
 				}
 				else if (user_id === match.user2_id) {
 					match.p2Ready = false
-					setTimeout(() => {
-						// console.log("p2Ready:", match.p2Ready)
-						if (!match.p2Ready) this.endMatch(match, user_id)
+					setTimeout(async () => {
+						if (!match.p2Ready) await this.endMatch(match, user_id)
 					}, 5000)
 				}
 			}
@@ -338,10 +332,6 @@ export class MatchService {
 		return this.matchsHistoryRepository.save(match)
 	}
 
-	async add(matchHistory: Match) {
-		return this.matchsHistoryRepository.save(matchHistory);
-	}
-
 	private readonly requests: Map<number, GameInvitation> = new Map();
 
 	getRequest(inviteUser: number, invitedUser: number): [number, GameInvitation] | null {
@@ -390,7 +380,8 @@ export class MatchService {
 
 		if (inviteUser.status === UserStatus.ONLINE) {
 			let match_id = await this.createNewMatch(inviteUser, invitedUser, custonGameInfo)
-			this.matches.get(match_id).room_socket = this.socketService.server.to('match_' + match_id)
+			let match = this.matches.get(match_id)
+			match.room_socket = this.socketService.server.to('match_' + match_id)
 			this.socketService.getSocketToEmit(inviteUser.id).emit('foundMatch', match_id)
 
 			let notif: Notification = new Notification();
@@ -407,9 +398,17 @@ export class MatchService {
 
 			await this.chatService.disableButtonMessages(inviteUser, invitedUser);
 
+			setTimeout(() => {
+				if (!match.started) {
+					match.room_socket.emit("endMatch", "Match was cancelled because one or more players were absent...")
+					match.room_socket.socketsLeave("match_" + match.id)
+					this.matches.delete(match.id)
+				}
+			}, 15000)
+
 			return { id: match_id };
 		} else {
-			throw new PreconditionFailedException(`User ${inviteUser.username} is not connected.`)
+			throw new NotAcceptableException(`User ${inviteUser.username} is not available.`)
 		}
 	}
 

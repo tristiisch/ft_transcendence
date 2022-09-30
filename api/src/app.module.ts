@@ -26,7 +26,7 @@ import { SocketModule } from './socket/socket.module';
 		StatsModule,
 		AuthModule,
 		MatchStatsModule,
-		TestModule,
+		// TestModule,
 		NotificationModule,
 		SocketModule,
 	],

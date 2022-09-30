@@ -20,22 +20,6 @@ export class FriendsController {
 		return func(user, target);
 	}
 
-	/**
-	 * @Debug request used for debug
-	 */
-	@Get('any')
-	getAll() {
-		return this.friendsService.findAll();
-	}
-
-	/**
-	 * @Debug request used for debug
-	 */
-	@Get('any/:id')
-	getAllRelations(@Param('id') id: number) {
-		return this.friendsService.findAllRelations(id);
-	}
-
 	@UseGuards(JwtAuthGuard)
 	@Post('request/add')
 	addFriendRequest(@Req() req, @Body() targetSelect: UserSelectDTO) {

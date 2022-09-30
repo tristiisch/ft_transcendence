@@ -15,7 +15,7 @@ const imageData = ref('');
 const inputEvent = ref<HTMLInputElement | null>(null);
 
 const emit = defineEmits<{
-	(event: 'imageLoaded', imageData: string): void;
+	(event: 'imageLoaded', imageData: string, fileSize:number): void;
 }>();
 
 const createBase64Image = (event: Event) => {
@@ -25,7 +25,7 @@ const createBase64Image = (event: Event) => {
 
 	reader.onload = function () {
 		imageData.value = reader.result as string;
-		emit('imageLoaded', imageData.value);
+		emit('imageLoaded', imageData.value, (fileName.size / 1024) /1024);
 	};
 	if(fileName && reader){
 		reader.readAsDataURL(fileName);

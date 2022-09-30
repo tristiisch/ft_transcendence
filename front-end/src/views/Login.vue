@@ -38,7 +38,7 @@ function redirectTo42LoginPage(): void {
 	window.location.href = `${baseUrl}?${queryString}`
 }
 
-function uploadImage(imageData: string): void {
+function uploadImage(imageData: string, fileSize:number): void {
 	image.value = imageData;
 }
 
@@ -74,7 +74,7 @@ function onlyLettersAndNumbers(str: string) {
 }
 
 function submitRegistrationForm() {
-	if (!username.value || !(username.value.length > 2 && username.value.length <= 16)) toast.warning('Username should have at least 2 and at most 16 characters.');
+	if (!username.value || !(username.value.length > 2 && username.value.length <= 10)) toast.warning('Username should have at least 3 and at most 10 characters.');
 	else if (!onlyLettersAndNumbers(username.value)) toast.warning('Username can only contain alphanumeric characters.');
 	else {
 		isLoading.value = true;
@@ -85,7 +85,7 @@ function submitRegistrationForm() {
 			})
 			.catch((error) => {
 				isLoading.value = false;
-				if (error.response?.status === 403) toast.error(error.response?.data?.message)
+				if (error.response?.status === 403 || error.response?.status === 412 || error.response?.status === 400) toast.error(error.response?.data?.message)
 				else if (error.response?.status === 0) toast.error("Network Error: unable to connect to server")
 				else userStore.handleLogout()
 			});
