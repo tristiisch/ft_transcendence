@@ -7,6 +7,7 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useChatStore } from '@/stores/chatStore';
 import UserService from '@/services/UserService';
 import { useUserStore } from '@/stores/userStore';
+import { useToast } from 'vue-toastification';
 
 const globalStore = useGlobalStore();
 const userStore = useUserStore();
@@ -14,6 +15,7 @@ const chatStore = useChatStore();
 const mode = ref('random')
 const router = useRouter();
 const route = useRoute();
+const toast = useToast();
 
 function changeMode(type: string) {
     if (!globalStore.invitedUser) {
@@ -43,7 +45,9 @@ function closeInvitation() {
 			}
 		})
 		.catch((error) => {
-			router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
+			if (error.response?.status === 406)
+				toast.warning(error.response?.data?.message)
+			else router.replace({ name: 'Error', params: { pathMatch: route.path.substring(1).split('/') }, query: { code: error.response?.status }});
 		})
 }
 
