@@ -596,12 +596,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		const match = this.matches.get(id)
 
-		if (match.user1_id === user.id)
-			match.p1Ready = true
-		else if (match.user2_id === user.id)
-			match.p2Ready = true
+		if (match.user1_id === user.id) match.p1Ready = true
+		else if (match.user2_id === user.id) match.p2Ready = true
 		if (!match.started && match.p1Ready && match.p2Ready) {
-			// console.log("match ", id, "ready !")
 			match.started = true
 			this.matchService.startMatch(match)
 		}

@@ -93,16 +93,19 @@ export class MatchService {
 		match.waiting = true
 		match.stopMatch = false
 		
-		if (custom) { // check custom infos
-			// console.log("custom!", custom)
-			match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
-			match.racketSize = this.blockerHeight * (custom.racketSize / 100)
-			match.increaseBallSpeed = custom.increaseBallSpeed
-			match.world = custom.world
-			match.winningScore = custom.winningScore
+		if (custom) {
+			if (custom.ballSpeed >= 50 && custom.ballSpeed <= 200) match.ballSpeed = this.ballSpeed * (custom.ballSpeed / 100)
+			else match.ballSpeed = this.ballSpeed
+			if (custom.racketSize >= 50 && custom.racketSize <= 200) match.racketSize = this.blockerHeight * (custom.racketSize / 100)
+			else match.racketSize = this.blockerHeight
+			if (custom.increaseBallSpeed === true || custom.increaseBallSpeed === false) match.increaseBallSpeed = custom.increaseBallSpeed
+			else match.increaseBallSpeed = this.increaseBallSpeed
+			if (custom.world == 0 || custom.world == 1) match.world = custom.world
+			else match.world = this.world
+			if (match.winningScore >= 1 && match.winningScore <= 50) match.winningScore = custom.winningScore
+			else match.winningScore = this.winningScore
 		}
 		else {
-			// console.log("not custom!")
 			match.ballSpeed = this.ballSpeed
 			match.racketSize = this.blockerHeight
 			match.increaseBallSpeed = this.increaseBallSpeed
