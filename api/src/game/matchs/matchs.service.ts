@@ -329,7 +329,6 @@ export class MatchService {
 	}
 
 	async save(match: Match) {
-		Logger.verbose(`match saved ${match.id}.`)
 		return this.matchsHistoryRepository.save(match)
 	}
 
