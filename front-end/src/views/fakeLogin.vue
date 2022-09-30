@@ -11,7 +11,7 @@ const router = useRouter();
 const toast = useToast()
 const route = useRoute();
 
-userStore.handleFakeLogin(route.params.username as string).then(() => {
+/*userStore.handleFakeLogin(route.params.username as string).then(() => {
 	if (userStore.isRegistered && !userStore.userAuth.has_2fa)
 	{
 		userStore.userData.status = Status.ONLINE;
@@ -23,7 +23,7 @@ userStore.handleFakeLogin(route.params.username as string).then(() => {
 .catch((e) => {
 	if (e.response.data) toast.error(e.response.data.message);
 	userStore.handleLogout()
-});
+});*/
 
 </script>
 

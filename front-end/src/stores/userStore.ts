@@ -47,7 +47,7 @@ export const useUserStore = defineStore('userStore', {
 				throw error;
 			}
 		},
-		async handleFakeLogin(username: string) {
+		/*async handleFakeLogin(username: string) {
 			try {
 				const response = await AuthService.fakeLogin(username);
 				this.userAuth = response.data.auth;
@@ -59,7 +59,7 @@ export const useUserStore = defineStore('userStore', {
 			} catch (error: any) {
 				throw error;
 			}
-		},
+		},*/
 		async handleLogin2Fa(twoFaCode: string) {
 			try {
 				const response = await AuthService.login2FA(twoFaCode);
