@@ -535,16 +535,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('findMatch')
 	async handleFindMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
-		// console.log("findMatch!", client.id)
 		const user: User | null = await this.socketService.getUserFromSocket(client)
 		if (!user)
 			return;
 		const match_found = this.matchService.findUserToPlay(data.type)
 		if (match_found) {
-			// console.log("!!", user.username, "found a match !")
-			// console.log("players_queue", this.players_queue, "before")
 			this.matchService.removePlayerFromQueue(match_found.user.id)
-			// console.log("players_queue", this.players_queue, "after")
 			let custom_match_infos = data.type === MatchMakingTypes.OWN_MATCH ? data.custom_match_infos : match_found.custom_match_infos
 			let match_id = await this.matchService.createNewMatch(user, match_found.user, custom_match_infos)
 			let match = this.matches.get(match_id)
@@ -553,7 +549,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.socketService.getSocketToEmit(match_found.user.id).emit('foundMatch', match_id)
 			setTimeout(() => {
 				if (!match.started) {
-					// console.log("Match was canceled :", match)
 					match.room_socket.emit("endMatch", "Match was cancelled because one or more players were absent...")
 					match.room_socket.socketsLeave("match_" + match.id)
 					this.matches.delete(match.id)
@@ -572,13 +567,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('joinMatch')
 	handleJoinMatch(@MessageBody() id: string, @ConnectedSocket() client: Socket) {
-		// once the match is created: for players and spectators
-		// console.log("joinMatch :", id, "!", client.id)
 		if (this.matches.has(id)) {
 			let match = this.matches.get(id)
 			client.join('match_' + id)
 			const clients = this.server.sockets.adapter.rooms.get('match_' + id);
-			// console.log("match_" + id, "nb clients = ", clients.size)
 			return [{
 				started: match.started,
 				p1Ready: match.p1Ready,

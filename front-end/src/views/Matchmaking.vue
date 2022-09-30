@@ -35,7 +35,6 @@ onBeforeMount(() => {
 			world: globalStore.world,
 			winningScore: globalStore.winningScore
 		}
-		// console.log(custom_match_infos)
 		searchingMatch.value = true
 		findMatch(MatchMakingTypes.OWN_MATCH, custom_match_infos)
 	}

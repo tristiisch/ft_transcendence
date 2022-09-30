@@ -68,7 +68,6 @@ export class MatchService {
 	}
 
 	public findUserToPlay(match_type: MatchMakingTypes) {
-		// console.log("match_type:", match_type)
 		for (const [key, value] of this.players_queue.entries()) {
 			if ((match_type === MatchMakingTypes.NORMAL_MATCH && value.match_type !== MatchMakingTypes.OWN_MATCH) ||
 				(match_type === MatchMakingTypes.ANY_MATCH) ||
@@ -79,7 +78,6 @@ export class MatchService {
 	}
 
 	async createNewMatch(p1: User, p2: User, custom: CustomMatchInfos) {
-		// console.log("=> MAKING A NEW MATCH-> (", p1.username, "vs", p2.username + ")")
 		const match = new Match()
 		match.id = uuid()
 		match.user1_id = p1.id
@@ -189,7 +187,6 @@ export class MatchService {
 		let tdiff = T2.getTime() - match.T.getTime()
 
 		var x2 = match.ballXPos + (tdiff * match.ballXDir)
-		// if (x2 < -(500 * match.ballSpeed) || x2 >= this.stageWidth + (500 * match.ballSpeed)) {
 		if (x2 < 0 || x2 >= this.stageWidth) {
 			if (x2 < 0) match.score[1]++
 			else match.score[0]++
@@ -216,15 +213,8 @@ export class MatchService {
 		let p1Pos = match.p1Pos
 		let p2Pos = match.p2Pos
 			if (((x2 < this.p1XPos + this.blockerWidth && x2 >= this.p1XPos) && x2 < this.p2XPos + this.blockerWidth && y2 >= p1Pos && y2 < p1Pos + match.racketSize && match.ballXDir < 0)
-			|| ((x2 >= this.p2XPos /*|| x2 + match.ballXDir >= this.p2XPos*/) && x2 < this.p2XPos + this.blockerWidth && y2 >= p2Pos && y2 < p2Pos + match.racketSize && match.ballXDir > 0))
+			|| ((x2 >= this.p2XPos) && x2 < this.p2XPos + this.blockerWidth && y2 >= p2Pos && y2 < p2Pos + match.racketSize && match.ballXDir > 0))
 				match.ballXDir *= -1
-			// || x2 + match.ballXDir >= this.p2XPos)//x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-		// if (x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= p1Pos && y2 + match.ballYDir < p1Pos + match.racketSize) {
-			// for (let i = 0; i < 9999999999999; i++) ;
-		// }
-		// else if ((x2 >= this.p1XPos + match.racketSize && x2 + match.ballXDir >= this.p1XPos && x2 + match.ballXDir < this.p1XPos + this.blockerWidth && y2 + match.ballYDir >= match.p1Pos && y2 + match.ballYDir < match.p1Pos + match.racketSize) ||
-		// 		(x2 < this.p2XPos && x2 + match.ballXDir >= this.p2XPos && x2 + match.ballXDir < this.p2XPos + this.blockerWidth && y2 + match.ballYDir >= match.p2Pos && y2 + match.ballYDir < match.p2Pos + match.racketSize))
-		// 			match.ballXDir *= -1
 
 		match.ballXPos = x2
 		match.ballYPos = y2
@@ -275,14 +265,12 @@ export class MatchService {
 				if (user_id === match.user1_id) {
 					match.p1Ready = false
 					setTimeout(async () => {
-						// console.log("p1Ready:", match.p1Ready)
 						if (!match.p1Ready) await this.endMatch(match, user_id)
 					}, 5000)
 				}
 				else if (user_id === match.user2_id) {
 					match.p2Ready = false
 					setTimeout(async () => {
-						// console.log("p2Ready:", match.p2Ready)
 						if (!match.p2Ready) await this.endMatch(match, user_id)
 					}, 5000)
 				}

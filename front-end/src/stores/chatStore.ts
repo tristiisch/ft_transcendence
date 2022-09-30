@@ -303,9 +303,6 @@ export const useChatStore = defineStore('chatStore', {
 				socket.emit('chatChannelMessage', { id: channel.id, type: channel.type }, messageDTO, (body: any[]) => {
 					const channel: Channel = body[0];
 					const msg: Message = body[1];
-					// if (!msg) {
-					// 	console.log('ERROR chatChannelMessage', channel, 'messageDTO', messageDTO); 
-					// }
 					chat.messages.push(msg)
 				});
 			}
