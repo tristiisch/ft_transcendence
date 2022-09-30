@@ -390,7 +390,8 @@ export class MatchService {
 
 		if (inviteUser.status === UserStatus.ONLINE) {
 			let match_id = await this.createNewMatch(inviteUser, invitedUser, custonGameInfo)
-			this.matches.get(match_id).room_socket = this.socketService.server.to('match_' + match_id)
+			let match = this.matches.get(match_id)
+			match.room_socket = this.socketService.server.to('match_' + match_id)
 			this.socketService.getSocketToEmit(inviteUser.id).emit('foundMatch', match_id)
 
 			let notif: Notification = new Notification();
@@ -406,6 +407,14 @@ export class MatchService {
 			this.requests.delete(inviteUser.id);
 
 			await this.chatService.disableButtonMessages(inviteUser, invitedUser);
+
+			setTimeout(() => {
+				if (!match.started) {
+					match.room_socket.emit("endMatch", "Match was cancelled because one or more players were absent...")
+					match.room_socket.socketsLeave("match_" + match.id)
+					this.matches.delete(match.id)
+				}
+			}, 15000)
 
 			return { id: match_id };
 		} else {
