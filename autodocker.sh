@@ -49,13 +49,15 @@ while ! docker-compose logs postgreSQL | grep -q "database system is ready to ac
 done
 echo "postgreSQL finish !"
 
-while ! docker-compose logs pgAdmin | grep -q "Listening at"; do
-    echo "Waiting for pgAdmin to end ... $i secondes"
-    sleep $TIME_CICLE
-	let "i = i + $TIME_CICLE"
-    timeoutCheck
-done
-echo "pgAdmin finish !"
+if docker container inspect pgAdmin &> /dev/null; then
+    while ! docker-compose logs pgAdmin | grep -q "Listening at"; do
+        echo "Waiting for pgAdmin to end ... $i secondes"
+        sleep $TIME_CICLE
+        let "i = i + $TIME_CICLE"
+        timeoutCheck
+    done
+    echo "pgAdmin finish !"
+fi
 
 while ! docker-compose logs api | grep -q "successfully started"; do
     if docker-compose logs api | grep -q "errors. Watching for file changes."; then
